@@ -145,8 +145,8 @@ contains
             !   Matrix of order 1: the trivial case; we assume that the value
             !   of EAV is available
 
-            call alloc (shifted_eigenvalues, 1,"EVAL", "MANEIG" )
-            call alloc (csf_mixing_coefficients, 1, "EVECO", "MANEIG")
+            call alloc (shifted_eigenvalues, 1,"shifted_eigenvalues", "diagonalize_hamiltonian_block" )
+            call alloc (csf_mixing_coefficients, 1, "csf_mixing_coefficients", "diagonalize_hamiltonian_block")
             shifted_eigenvalues(1) = 0.0_real64
             csf_mixing_coefficients(1) = 1.0_real64
 
@@ -185,17 +185,17 @@ contains
                 !   Allocate storage for the dense representation of the matrix
                 !   and initialize emt
 
-                call alloc (hamiltonian_values, ndense, "EMT", "MANEIG")
+                call alloc (hamiltonian_values, ndense, "hamiltonian_values", "diagonalize_hamiltonian_block")
                 call initialize_real_vector (ndense, 0.0_real64, hamiltonian_values, 1)
 
                 !   Read the matrix into position from the disc file; it's already
                 !   been properly positioned.
 
-                call alloc (real_workspace, csf_count,"WORK", "MANEIG" )
-                call alloc (matrix_partner_indices, csf_count, "IROW", "MANEIG")
+                call alloc (real_workspace, csf_count,"real_workspace", "diagonalize_hamiltonian_block" )
+                call alloc (matrix_partner_indices, csf_count, "matrix_partner_indices", "diagonalize_hamiltonian_block")
                 read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
                 if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) stop &
-                    "maneig:1"
+                    "diagonalize_hamiltonian_block:1"
 
                 do i = mpi_rank + 1, csf_count, mpi_process_count
                     iofset = (i*(i - 1))/2
@@ -210,8 +210,8 @@ contains
 
                 end do
 
-                call dalloc (real_workspace, "WORK", "MANEIG")
-                call dalloc (matrix_partner_indices, "IROW", "MANEIG")
+                call dalloc (real_workspace, "real_workspace", "diagonalize_hamiltonian_block")
+                call dalloc (matrix_partner_indices, "matrix_partner_indices", "diagonalize_hamiltonian_block")
 
                 !   Find the eigenpairs
                 !
@@ -226,24 +226,25 @@ contains
                     nvecmn = min(nvecmn,active_level_indices(i))
                 end do
                 nvex = highest_active_level_index - nvecmn + 1
-                call alloc (w, nvex, "W", "MANEIG")
-                call alloc (z, csf_count*nvex,"Z", "MANEIG" )
-                call alloc (real_workspace, csf_count*8,"WORK", "MANEIG" )
-                call alloc (integer_workspace, csf_count*5,"IWORK", "MANEIG" )
+                call alloc (w, nvex, "W", "diagonalize_hamiltonian_block")
+                call alloc (z, csf_count*nvex,"Z", "diagonalize_hamiltonian_block" )
+                call alloc (real_workspace, csf_count*8,"real_workspace", "diagonalize_hamiltonian_block" )
+                call alloc (integer_workspace, csf_count*5,"integer_workspace", "diagonalize_hamiltonian_block" )
                 ! GG            CALL ALLOC (IFAIL, NVEX, 'IFAIL', 'MANEIG')
-                call alloc (ifail, csf_count, "IFAIL", "MANEIG")
+                call alloc (ifail, csf_count, "IFAIL", "diagonalize_hamiltonian_block")
                 call dspevx ("V", "I", "U", csf_count, hamiltonian_values, dummy, dummy, nvecmn, highest_active_level_index&
                     , abstol, m, w, z, csf_count, real_workspace, integer_workspace, ifail, info)
-                if (info /= 0) stop "maneig: Failure in DSPEVX [LAPACK]"
-                call dalloc (real_workspace, "WORK", "MANEIG")
-                call dalloc (integer_workspace, "IWORK", "MANEIG")
-                call dalloc (ifail, "IFAIL", "MANEIG")
-                call dalloc (hamiltonian_values, "EMT", "MANEIG")
+                if (info /= 0) stop "diagonalize_hamiltonian_block: Failure in DSPEVX [LAPACK]"
+                call dalloc (real_workspace, "real_workspace", "diagonalize_hamiltonian_block")
+                call dalloc (integer_workspace, "integer_workspace", "diagonalize_hamiltonian_block")
+                call dalloc (ifail, "IFAIL", "diagonalize_hamiltonian_block")
+                call dalloc (hamiltonian_values, "hamiltonian_values", "diagonalize_hamiltonian_block")
 
                 !   Store the eigenpairs in their proper positions EVAL() and EVEC()
 
-                call alloc (shifted_eigenvalues, active_level_count,"EVAL", "MANEIG" )
-                call alloc (csf_mixing_coefficients, csf_count*active_level_count, "EVEC", "MANEIG")
+                call alloc (shifted_eigenvalues, active_level_count,"shifted_eigenvalues", "diagonalize_hamiltonian_block" )
+                call alloc (csf_mixing_coefficients, csf_count*active_level_count, "csf_mixing_coefficients", &
+                    "diagonalize_hamiltonian_block")
 
                 do i = 1, active_level_count
                     loc = active_level_indices(i)
@@ -252,8 +253,8 @@ contains
                     loc = csf_count*(loc - nvecmn)
                     call dcopy (csf_count, z(loc + 1:loc+(csf_count)), 1, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1)
                 end do
-                call dalloc (w, "W", "MANEIG")
-                call dalloc (z, "Z", "MANEIG")
+                call dalloc (w, "W", "diagonalize_hamiltonian_block")
+                call dalloc (z, "Z", "diagonalize_hamiltonian_block")
 
             else
                 !-----------------------------------------------------------------------
@@ -261,7 +262,7 @@ contains
                 ! (2.2) - DVDSON --- preparation work
                 !
                 !-------------------------------------------------------
-                write (summary_output_unit,*)"DVDSON routine selected for eigenvalue problem;"
+                write (summary_output_unit,*)"solve_davidson_eigenpairs routine selected for eigenvalue problem;"
 
                 !   Sparse or dense matrix multiply? On disc or in core?
 
@@ -276,7 +277,7 @@ contains
                 sparse = .true.
                 nstore = stored_matrix_element_count + stored_matrix_element_count/2 + (csf_count + 1)/2
 
-                call alloc (matrix_diagonal, csf_count, "DIAG", "MANEIG")
+                call alloc (matrix_diagonal, csf_count, "matrix_diagonal", "diagonalize_hamiltonian_block")
 
                 if (nstore > in_memory_matrix_element_limit) then
                     !-----------------------------------------------------------------------
@@ -299,7 +300,7 @@ contains
                     read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
                     if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) &
                         & stop &
-                        "maneig:2"
+                        "diagonalize_hamiltonian_block:2"
 
                     do i = mpi_rank + 1, csf_count, mpi_process_count
                         read (restart_matrix_unit) nelc, elsto, (dummy,ir=2,nelc), diatmp
@@ -327,15 +328,18 @@ contains
 
                         imv = 2
                         write (output_unit, *) "nelmnt = ", stored_matrix_element_count
-                        call alloc (hamiltonian_values, stored_matrix_element_count, "EMT", "MANEIG")
-                        call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "MANEIG")
-                        call alloc (stored_segment_end_offsets, 0, csf_count , "IENDC", "MANEIG")
+                        call alloc (hamiltonian_values, stored_matrix_element_count, "hamiltonian_values", &
+                            "diagonalize_hamiltonian_block")
+                        call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", &
+                            "diagonalize_hamiltonian_block")
+                        call alloc (stored_segment_end_offsets, 0, csf_count , "stored_segment_end_offsets", &
+                            "diagonalize_hamiltonian_block")
                         iofset = 0
                         stored_segment_end_offsets(0) = 0
 
                         read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
                         if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) &
-                            stop "maneig:3"
+                            stop "diagonalize_hamiltonian_block:3"
                         do i = mpi_rank + 1, csf_count, mpi_process_count
                             read (restart_matrix_unit) nelc, elsto, (hamiltonian_values(ir+iofset),ir=1,nelc), (&
                                 matrix_partner_indices(ir + iofset),ir=1,nelc)
@@ -364,14 +368,14 @@ contains
                             ndense_l = ndense_l + i
                         end do
 
-                        call alloc (hamiltonian_values, ndense_l, "EMT", "MANEIG")
+                        call alloc (hamiltonian_values, ndense_l, "hamiltonian_values", "diagonalize_hamiltonian_block")
                         call initialize_real_vector (ndense_l, 0.0_real64, hamiltonian_values, 1)
-                        call alloc (real_workspace, csf_count, "WORK", "MANEIG")
-                        call alloc (matrix_partner_indices, csf_count, "IROW", "MANEIG")
+                        call alloc (real_workspace, csf_count, "real_workspace", "diagonalize_hamiltonian_block")
+                        call alloc (matrix_partner_indices, csf_count, "matrix_partner_indices", "diagonalize_hamiltonian_block")
 
                         read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
                         if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) &
-                            stop "maneig:4"
+                            stop "diagonalize_hamiltonian_block:4"
 
                         iofset = 0
                         do i = mpi_rank + 1, csf_count, mpi_process_count
@@ -384,8 +388,8 @@ contains
                             end do
                             iofset = iofset + i
                         end do
-                        call dalloc (real_workspace, "WORK", "MANEIG")
-                        call dalloc (matrix_partner_indices, "IROW", "MANEIG")
+                        call dalloc (real_workspace, "real_workspace", "diagonalize_hamiltonian_block")
+                        call dalloc (matrix_partner_indices, "matrix_partner_indices", "diagonalize_hamiltonian_block")
 
                     end if
                     !               ...Memory mode - sparse or dense
@@ -406,9 +410,9 @@ contains
                 !           lwork = 2*ncf*lim + lim*lim + (nvecmx+10)*lim + nvecmx
                 real_workspace_size = 2*csf_count*subspace_limit + subspace_limit*subspace_limit*2 + 11*subspace_limit + &
                     highest_active_level_index
-                call alloc (real_workspace, real_workspace_size, "WORK", "MANEIG")
+                call alloc (real_workspace, real_workspace_size, "real_workspace", "diagonalize_hamiltonian_block")
                 integer_workspace_size = 6*subspace_limit + highest_active_level_index
-                call alloc (integer_workspace, integer_workspace_size, "IWORK", "MANEIG")
+                call alloc (integer_workspace, integer_workspace_size, "integer_workspace", "diagonalize_hamiltonian_block")
                 !*changed by Misha 02/12/97
                 eigenvalue_tolerance = 1.0e-17_real64
                 coefficient_tolerance = 1.0e-9_real64
@@ -418,10 +422,11 @@ contains
                 !            maxitr = MAX (nvecmx*100, ncf/10)
                 iteration_limit = max(highest_active_level_index*200,csf_count/10)
                 !maxitr = MIN (nvect*100, ncf)  ! FROM RSCFVU !!!
-                call alloc (selected_pair_indices, subspace_limit,"JWORK", "MANEIG" )
+                call alloc (selected_pair_indices, subspace_limit,"selected_pair_indices", "diagonalize_hamiltonian_block" )
 
-                call alloc (shifted_eigenvalues, highest_active_level_index, "EVAL", "MANEIG")
-                call alloc (csf_mixing_coefficients, csf_count*highest_active_level_index, "EVEC", "MANEIG")
+                call alloc (shifted_eigenvalues, highest_active_level_index, "shifted_eigenvalues", "diagonalize_hamiltonian_block")
+                call alloc (csf_mixing_coefficients, csf_count*highest_active_level_index, "csf_mixing_coefficients", &
+                    "diagonalize_hamiltonian_block")
 
                 dmungo = 10.0e99_real64
                 call initialize_real_vector (highest_active_level_index, dmungo, shifted_eigenvalues, 1)
@@ -484,9 +489,9 @@ contains
                     !WRITE (*, *) LIM, ILOW, IHIGH, MBLOCK, MAXITR, LWORK, LIWORK
                     !WRITE (*, *) HIEND, NLOOPS, NMV, IERR
 
-                    call dalloc (hamiltonian_values, "EMT", "MANEIG")
-                    call dalloc (matrix_partner_indices, "IROW", "MANEIG")
-                    call dalloc (stored_segment_end_offsets, "IENDC", "MANEIG")
+                    call dalloc (hamiltonian_values, "hamiltonian_values", "diagonalize_hamiltonian_block")
+                    call dalloc (matrix_partner_indices, "matrix_partner_indices", "diagonalize_hamiltonian_block")
+                    call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "diagonalize_hamiltonian_block")
 
                 case (3)
                     !*************************** dense and in memory **********************
@@ -501,33 +506,33 @@ contains
                         & iteration_limit, real_workspace, real_workspace_size, &
                         integer_workspace, integer_workspace_size, solve_high_end, iteration_count, &
                         & matrix_vector_product_count, ierr)
-                    call dalloc (hamiltonian_values, "EMT", "MANEIG")
+                    call dalloc (hamiltonian_values, "hamiltonian_values", "diagonalize_hamiltonian_block")
                 end select
                 !************************************************************************
-                call dalloc (matrix_diagonal, "DIAG", "MANEIG")
-                call dalloc (integer_workspace, "IWORK", "MANEIG")
-                call dalloc (selected_pair_indices, "JWORK", "MANEIG")
+                call dalloc (matrix_diagonal, "matrix_diagonal", "diagonalize_hamiltonian_block")
+                call dalloc (integer_workspace, "integer_workspace", "diagonalize_hamiltonian_block")
+                call dalloc (selected_pair_indices, "selected_pair_indices", "diagonalize_hamiltonian_block")
 
                 write (summary_output_unit, *) " ", iteration_count, " iterations;"
                 write (summary_output_unit, *) " ", matrix_vector_product_count, " matrix-vector multiplies."
 
                 if (ierr /= 0) then
-                    write (stderr_unit, *) "MANEIG: Returned from DVDSON with"
+                    write (stderr_unit, *) "diagonalize_hamiltonian_block: Returned from solve_davidson_eigenpairs with"
                     write (stderr_unit, *) " IERR = ", ierr, "."
-                    stop "maneig: DVDSON wrong"
+                    stop "diagonalize_hamiltonian_block: solve_davidson_eigenpairs wrong"
                 end if
 
                 !   Put the eigenpairs in order, overwriting as necessary
 
                 call dcopy (nvex, real_workspace(nend+1:nend+(nvex)), 1, shifted_eigenvalues, 1)
                 call dcopy (csf_count*nvex, real_workspace(1:csf_count*nvex), 1, csf_mixing_coefficients, 1)
-                call dalloc (real_workspace, "WORK", "MANEIG")
+                call dalloc (real_workspace, "real_workspace", "diagonalize_hamiltonian_block")
 
                 !   Rearrange and reallocate storage for the eigenpairs
                 !   as necessary
 
                 if (active_level_count < highest_active_level_index) then
-                    call alloc (integer_workspace, highest_active_level_index, "IWORK", "MANEIG")
+                    call alloc (integer_workspace, highest_active_level_index, "integer_workspace", "diagonalize_hamiltonian_block")
                     do i = 1, highest_active_level_index
                         integer_workspace(i) = i
                     end do
@@ -543,9 +548,10 @@ contains
                         call dswap (csf_count, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1, &
                             & csf_mixing_coefficients(loc+1:loc+(csf_count)), 1)
                     end do
-                    call dalloc (integer_workspace, "IWORK", "MANEIG")
-                    call ralloc (shifted_eigenvalues,  active_level_count, "EVAL", "MANEIG")
-                    call ralloc (csf_mixing_coefficients, csf_count*active_level_count, "EVEC", "MANEIG" )
+                    call dalloc (integer_workspace, "integer_workspace", "diagonalize_hamiltonian_block")
+                    call ralloc (shifted_eigenvalues,  active_level_count, "shifted_eigenvalues", "diagonalize_hamiltonian_block")
+                    call ralloc (csf_mixing_coefficients, csf_count*active_level_count, "csf_mixing_coefficients", &
+                        "diagonalize_hamiltonian_block" )
 
                 end if
 

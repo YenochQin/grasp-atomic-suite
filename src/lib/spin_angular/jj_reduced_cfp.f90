@@ -85,7 +85,7 @@ contains
         else if(two_orbital_j == 9) then
             if(bra_term_index > 300) then
                 if(ket_term_index < 300) then
-                    write(output_unit,"(A)") " ERROR IN  RMEAJJ "
+                    write(output_unit,"(A)") " ERROR IN  evaluate_jj_reduced_cfp "
                     stop
                 end if
                 if(two_orbital_j == two_ket_term_j) then

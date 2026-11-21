@@ -69,7 +69,7 @@ contains
             end select
 
             if (i < orbital_count) then
-                write (stderr_unit, *) "In setham. The number of orbitals is too"
+                write (stderr_unit, *) "In prepare_correction_integral_tables. The number of orbitals is too"
                 write (stderr_unit, *) "large for the brint routine"
                 stop
             end if

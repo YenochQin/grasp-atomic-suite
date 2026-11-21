@@ -134,7 +134,7 @@ contains
         !
         if(trace_level>=100) then
             write(output_unit,*)
-            write(output_unit,*) " Input and output vectors from TI1TV I,L",subshell_index,symmetry_index
+            write(output_unit,*) " Input and output vectors from apply_subshell_transfer I,L",subshell_index,symmetry_index
             call write_matrix(input_mixing_coefficients,csf_count,level_count,csf_count,level_count)
             write(output_unit,*)
             call write_matrix(transformed_mixing_coefficients,csf_count,level_count,csf_count,level_count)

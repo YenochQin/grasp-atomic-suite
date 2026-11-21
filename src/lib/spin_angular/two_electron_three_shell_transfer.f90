@@ -28,7 +28,7 @@ contains
                 ket_shell_1,ket_shell_2,interaction_type)
         else
             call ensure_debug_output()
-            write(angular_debug_unit,'(5x,"ERRO IN EL4 ")')
+            write(angular_debug_unit,'(5x,"ERRO IN accumulate_three_shell_transfers ")')
             stop
         end if
         return

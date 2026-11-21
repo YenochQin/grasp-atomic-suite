@@ -100,7 +100,8 @@ contains
         !   of the lists of V coefficients of each multipolarity
         !
         stage_start_count = stage_clock()
-        call alloc(two_electron_counts_by_rank, 0, max_coulomb_multipole_rank, "LLISTV", "MCPMPI")
+        call alloc(two_electron_counts_by_rank, 0, max_coulomb_multipole_rank, "two_electron_counts_by_rank", &
+            "compute_mcp_angular_coefficients_mpi")
         !
         !   If this is a restart, determine the pair of CSFs with which
         !   the computation should begin.
@@ -129,7 +130,7 @@ contains
         !
         if (ldbpa(2) .or. ldbpa(3)) then
             call ensure_debug_output()
-            write (angular_debug_unit,'(/"From MCPMPI:")')
+            write (angular_debug_unit,'(/"From compute_mcp_angular_coefficients_mpi:")')
         end if
         !
         !   JA and JB respectively refer to the initial and final states
@@ -236,9 +237,9 @@ contains
         !
         !   Deallocate storage that is no longer required
         !
-        call dalloc (csf_subshell_occupations, "IQA", "MCPMPI")
-        call dalloc (csf_subshell_quantum_codes, "JQSA", "MCPMPI")
-        call dalloc (csf_coupling_quantum_codes, "JCUPA", "MCPMPI")
+        call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "compute_mcp_angular_coefficients_mpi")
+        call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "compute_mcp_angular_coefficients_mpi")
+        call dalloc (csf_coupling_quantum_codes, "csf_coupling_quantum_codes", "compute_mcp_angular_coefficients_mpi")
         call manage_angular_coefficient_buffer (3)
         call record_stage("csf_and_pair_buffer_release",nb,stage_start_count)
         !
@@ -287,7 +288,7 @@ contains
             close (mcp_temporary_units(k+32), status = "DELETE")
             call record_stage("sort_and_output",nb,stage_start_count,int(two_electron_counts_by_rank(k),int64),k+32,"disk")
         end do
-        call dalloc(two_electron_counts_by_rank, "LLISTV", "MCPMPI")
+        call dalloc(two_electron_counts_by_rank, "two_electron_counts_by_rank", "compute_mcp_angular_coefficients_mpi")
         return
     end subroutine compute_mcp_angular_coefficients_mpi
 end module compute_mcp_angular_coefficients_mpi_interface

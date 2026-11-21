@@ -79,7 +79,7 @@ contains
         transition_multipole_rank = abs(requested_multipole_codes(transition_type_index))
         operator_parity = isign(1,requested_multipole_codes(transition_type_index))
         if (cache_exists) return
-        write (output_unit, *) "LK,IOPAR,from MCTOUT"
+        write (output_unit, *) "LK,IOPAR,from write_transition_angular_coefficients"
         write (output_unit, *) transition_multipole_rank, operator_parity
         !
         ! Start of the block loops
@@ -99,8 +99,8 @@ contains
                 !   Allocate storage to buffer arrays
                 !
                 nlabel = 32
-                call alloc (label, nlabel, "LABEL", "MCTOUT")
-                call alloc (coeff, nlabel, "COEFF", "MCTOUT")
+                call alloc (label, nlabel, "LABEL", "write_transition_angular_coefficients")
+                call alloc (coeff, nlabel, "COEFF", "write_transition_angular_coefficients")
 
                 if (initial_block_index == 1) then
                     first_initial_csf_index = 1
@@ -144,8 +144,8 @@ contains
                                     ncr = ncr + 1
                                     if (ncr > nlabel) then
                                         newsiz = 2*nlabel
-                                        call ralloc (label,  newsiz, "LABEL", "MCTOUT")
-                                        call ralloc (coeff,  newsiz, "COEFF", "MCTOUT")
+                                        call ralloc (label,  newsiz, "LABEL", "write_transition_angular_coefficients")
+                                        call ralloc (coeff,  newsiz, "COEFF", "write_transition_angular_coefficients")
                                         nlabel = newsiz
                                     end if
                                     label(ncr) = orbital_index*orbital_index_radix + orbital_index
@@ -156,8 +156,8 @@ contains
                                     ncr = ncr + 1
                                     if (ncr > nlabel) then
                                         newsiz = 2*nlabel
-                                        call ralloc (label,  newsiz, "LABEL", "MCTOUT")
-                                        call ralloc (coeff,  newsiz, "COEFF", "MCTOUT")
+                                        call ralloc (label,  newsiz, "LABEL", "write_transition_angular_coefficients")
+                                        call ralloc (coeff,  newsiz, "COEFF", "write_transition_angular_coefficients")
                                         nlabel = newsiz
                                     end if
                                     label(ncr) = orbital_index*orbital_index_radix + ket_orbital_index
@@ -178,8 +178,8 @@ contains
                 !
                 !   Deallocate storage for buffer arrays
                 !
-                call dalloc (label,  "LABEL", "MCTOUT")
-                call dalloc (coeff,  "COEFF", "MCTOUT")
+                call dalloc (label,  "LABEL", "write_transition_angular_coefficients")
+                call dalloc (coeff,  "COEFF", "write_transition_angular_coefficients")
                 !
                 write (*, '(/,/,/,1x,i8," MCT coefficients generated for rank ",i2," and parity ",i2,/,/)') &
                     nmct, transition_multipole_rank, operator_parity

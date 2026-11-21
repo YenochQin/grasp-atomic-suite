@@ -70,7 +70,7 @@ contains
         !   Print out
         !
         write (*, *) "********************"
-        write (*, *) " S matrix from GETS"
+        write (*, *) " S matrix from calculate_subshell_overlap"
         write (*, *) "********************"
 
         call write_matrix (overlap_matrix, initial_orbital_count, final_orbital_count, initial_orbital_count, final_orbital_count)

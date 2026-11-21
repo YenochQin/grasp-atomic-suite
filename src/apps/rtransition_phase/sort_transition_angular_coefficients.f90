@@ -106,8 +106,8 @@ contains
         !   Initial allocation of storage to local arrays
         !
         record_capacity = 1
-        call alloc (record_integral_labels, record_capacity, "JLABL", "TRSORT")
-        call alloc (record_coefficients, record_capacity, "XL", "TRSORT")
+        call alloc (record_integral_labels, record_capacity, "record_integral_labels", "sort_transition_angular_coefficients")
+        call alloc (record_coefficients, record_capacity, "record_coefficients", "sort_transition_angular_coefficients")
         !
         call resize_transition_label_arrays (first_coefficient_indices, node_integral_labels, parent_nodes, &
             & left_child_nodes, coefficient_end_offsets, right_child_nodes, sorted_integral_labels, &
@@ -124,14 +124,16 @@ contains
             if (io_status == iostat_end) exit
             if (io_status /= 0) error stop trim(io_message)
             if (record_coefficient_count > record_capacity) then
-                call ralloc (record_integral_labels, record_coefficient_count, "JLABL", "TRSORT")
-                call ralloc (record_coefficients, record_coefficient_count, "XL", "TRSORT")
+                call ralloc (record_integral_labels, record_coefficient_count, "record_integral_labels", &
+                    "sort_transition_angular_coefficients")
+                call ralloc (record_coefficients, record_coefficient_count, "record_coefficients", &
+                    "sort_transition_angular_coefficients")
                 record_capacity = record_coefficient_count
             end if
             read (coefficient_scratch_unit, iostat=io_status) (record_integral_labels(i),record_coefficients(i),i=1, &
                 & record_coefficient_count)
             if (io_status /= 0) then
-                write (output_unit, *) "TRSORT: Error reading CSF-based file."
+                write (output_unit, *) "sort_transition_angular_coefficients: Error reading CSF-based file."
                 stop
             end if
             if (initial_csf_index==0 .or. final_csf_index==0 .or. record_coefficient_count==0) cycle
@@ -317,8 +319,8 @@ contains
         !
         !   Deallocate storage for local arrays
         !
-        call dalloc (record_integral_labels, "JLABJ", "TRSORT")
-        call dalloc (record_coefficients, "XL", "TRSORT")
+        call dalloc (record_integral_labels, "record_integral_labels", "sort_transition_angular_coefficients")
+        call dalloc (record_coefficients, "record_coefficients", "sort_transition_angular_coefficients")
         call resize_transition_label_arrays (first_coefficient_indices, node_integral_labels, parent_nodes, &
             & left_child_nodes, coefficient_end_offsets, right_child_nodes, sorted_integral_labels, &
             label_capacity, 3)

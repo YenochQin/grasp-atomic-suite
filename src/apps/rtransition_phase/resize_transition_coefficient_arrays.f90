@@ -45,10 +45,13 @@ contains
             !
             !   Allocate storage for arrays
             !
-            call alloc (coefficient_sort_links, coefficient_capacity, "IPTR", "ALCNMA")
-            call alloc (initial_csf_index_workspace, coefficient_capacity, "ISLDR", "ALCNMA")
-            call alloc (final_csf_indices, coefficient_capacity, "ISLDR1", "ALCNMA")
-            call alloc (sorted_angular_coefficients, coefficient_capacity, "XSLDR", "ALCNMA")
+            call alloc (coefficient_sort_links, coefficient_capacity, "coefficient_sort_links", &
+                "resize_transition_coefficient_arrays")
+            call alloc (initial_csf_index_workspace, coefficient_capacity, "initial_csf_index_workspace", &
+                "resize_transition_coefficient_arrays")
+            call alloc (final_csf_indices, coefficient_capacity, "final_csf_indices", "resize_transition_coefficient_arrays")
+            call alloc (sorted_angular_coefficients, coefficient_capacity, "sorted_angular_coefficients", &
+                "resize_transition_coefficient_arrays")
         !
         case (2)
             !
@@ -56,10 +59,12 @@ contains
             !
             new_capacity = 2*coefficient_capacity
             !
-            call ralloc (coefficient_sort_links, new_capacity, "IPTR", "ALCNMA")
-            call ralloc (initial_csf_index_workspace, new_capacity, "ISLDR", "ALCNMA")
-            call ralloc (final_csf_indices, new_capacity, "ISLDR1", "ALCNMA")
-            call ralloc (sorted_angular_coefficients, new_capacity, "XSLDR", "ALCNMA")
+            call ralloc (coefficient_sort_links, new_capacity, "coefficient_sort_links", "resize_transition_coefficient_arrays")
+            call ralloc (initial_csf_index_workspace, new_capacity, "initial_csf_index_workspace", &
+                "resize_transition_coefficient_arrays")
+            call ralloc (final_csf_indices, new_capacity, "final_csf_indices", "resize_transition_coefficient_arrays")
+            call ralloc (sorted_angular_coefficients, new_capacity, "sorted_angular_coefficients", &
+                "resize_transition_coefficient_arrays")
             !
             coefficient_capacity = new_capacity
         !
@@ -67,14 +72,14 @@ contains
             !
             !   Deallocate the storage for the arrays
             !
-            call dalloc (coefficient_sort_links,  "IPTR", "ALCNMA")
-            call dalloc (initial_csf_index_workspace, "ISLDR", "ALCNMA")
-            call dalloc (final_csf_indices, "ISLDR1", "ALCNMA")
-            call dalloc (sorted_angular_coefficients,  "XSLDR", "ALCNMA")
+            call dalloc (coefficient_sort_links,  "coefficient_sort_links", "resize_transition_coefficient_arrays")
+            call dalloc (initial_csf_index_workspace, "initial_csf_index_workspace", "resize_transition_coefficient_arrays")
+            call dalloc (final_csf_indices, "final_csf_indices", "resize_transition_coefficient_arrays")
+            call dalloc (sorted_angular_coefficients,  "sorted_angular_coefficients", "resize_transition_coefficient_arrays")
         !
         case default
             !
-            write (output_unit, *) "ALCNMA: Invalid argument IMODE = ", resize_mode
+            write (output_unit, *) "resize_transition_coefficient_arrays: Invalid resize_mode = ", resize_mode
             stop
             !
         end select

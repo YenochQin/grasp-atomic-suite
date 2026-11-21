@@ -28,17 +28,17 @@ contains
         real(real64) :: aitken_table((maximum_stencil_size*(maximum_stencil_size + 1))/2)
         real(real64) :: nearest_offset, candidate_offset, best_relative_change, estimate_relative_change
         logical :: selected_nodes(2*maximum_stencil_size + 2)
-        if (table_size < 1) error stop "INTERP: empty table"
+        if (table_size < 1) error stop "interpolate_aitken: empty table"
         stencil_size = min(maximum_stencil_size,table_size)
         lower_bracket_index = 1
         if (target_x < tabulated_x(1)) then
             lower_bracket_index = 1
             upper_bracket_index = 1
-            write (*, '("INTERP: Extrapolating, not interpolating.")')
+            write (*, '("interpolate_aitken: Extrapolating, not interpolating.")')
         else if (target_x > tabulated_x(table_size)) then
             lower_bracket_index = table_size
             upper_bracket_index = table_size
-            write (*, '("INTERP: Extrapolating, not interpolating.")')
+            write (*, '("interpolate_aitken: Extrapolating, not interpolating.")')
         else
             search_or_table_index = 0
             do
@@ -65,7 +65,7 @@ contains
                 if (.not.selected_nodes(nearest_unused_index-stencil_window_offset)) exit
                 nearest_unused_index = nearest_unused_index + 1
             end do
-            if (nearest_unused_index > search_upper_bound) error stop "INTERP: exhausted stencil"
+            if (nearest_unused_index > search_upper_bound) error stop "interpolate_aitken: exhausted stencil"
             nearest_offset = tabulated_x(nearest_unused_index) - target_x
             do search_or_table_index = nearest_unused_index + 1, search_upper_bound
                 if (selected_nodes(search_or_table_index-stencil_window_offset)) cycle
@@ -92,7 +92,7 @@ contains
         end do
         if (stencil_size == 1) then
             interpolated_y = estimates(1)
-            write (*,"(A)") "INTERP: One-point extrapolation; accuracy cannot be estimated."
+            write (*,"(A)") "interpolate_aitken: One-point extrapolation; accuracy cannot be estimated."
             return
         end if
         ! Select the diagonal estimate with the smallest change relative to the previous estimate.
@@ -109,7 +109,7 @@ contains
 
         end do
         interpolated_y = estimates(best_estimate_index)
-        if (best_relative_change > relative_tolerance) write (*, '("INTERP: Accuracy of interpolation (",1p,1d10.3,&
+        if (best_relative_change > relative_tolerance) write (*, '("interpolate_aitken: Accuracy of interpolation (",1p,1d10.3,&
             &") is"," below input criterion (",1d10.3,").")') best_relative_change, relative_tolerance
         return
         return

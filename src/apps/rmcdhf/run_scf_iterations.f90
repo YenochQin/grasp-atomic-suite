@@ -119,10 +119,10 @@ contains
         !   Allocate and fill in auxiliary arrays
         !=======================================================================
 
-        call alloc (csf_offsets_by_block, symmetry_block_count, "NCFPAST", "SCF")
-        call alloc (eigenvalue_offsets_by_block, symmetry_block_count, "NCMINPAST", "SCF")
-        call alloc (mixing_offsets_by_block, symmetry_block_count, "NEVECPAST", "SCF")
-        call alloc (mean_energy_by_block, symmetry_block_count, "EAVBLK", "SCF")
+        call alloc (csf_offsets_by_block, symmetry_block_count, "csf_offsets_by_block", "run_scf_iterations")
+        call alloc (eigenvalue_offsets_by_block, symmetry_block_count, "eigenvalue_offsets_by_block", "run_scf_iterations")
+        call alloc (mixing_offsets_by_block, symmetry_block_count, "mixing_offsets_by_block", "run_scf_iterations")
+        call alloc (mean_energy_by_block, symmetry_block_count, "mean_energy_by_block", "run_scf_iterations")
 
         csf_offsets_by_block(1) = 0
         eigenvalue_offsets_by_block(1) = 0
@@ -142,8 +142,8 @@ contains
             & eigenvector_counts_by_block(symmetry_block_count)*csf_counts_by_block(symmetry_block_count)
 
         if (extended_optimal_level) then
-            call alloc (shifted_eigenvalues, selected_level_count, "EVAL", "SCF")
-            call alloc (csf_mixing_coefficients, mixing_coefficient_storage_size, "EVEC", "SCF")
+            call alloc (shifted_eigenvalues, selected_level_count, "shifted_eigenvalues", "run_scf_iterations")
+            call alloc (csf_mixing_coefficients, mixing_coefficient_storage_size, "csf_mixing_coefficients", "run_scf_iterations")
             !GG         CALL ALLOC (IATJPO, NCMIN, 'IATJPO', 'SCF')
             !GG         CALL ALLOC (IASPAR, NCMIN, 'IASPAR', 'SCF')
         end if
@@ -274,44 +274,44 @@ contains
         !
         !   Deallocate storage
         !
-        call dalloc (level_average_weights, "WT", "SCF")                       !Either getold or getald
+        call dalloc (level_average_weights, "level_average_weights", "run_scf_iterations")                       !Either getold or getald
 
         if (lagrange_multiplier_count > 0) then
-            call dalloc (lagrange_orbital_pair_labels, "IECC", "SCF")
-            call dalloc (lagrange_multiplier_values, "ECV", "SCF")
+            call dalloc (lagrange_orbital_pair_labels, "lagrange_orbital_pair_labels", "run_scf_iterations")
+            call dalloc (lagrange_multiplier_values, "lagrange_multiplier_values", "run_scf_iterations")
             !GG         CALL DALLOC (IQAR, 'IQAR', 'SCF')
-            call dalloc (csf_subshell_occupations, "IQA", "SCF")
+            call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "run_scf_iterations")
         end if
 
         if (direct_coefficient_capacity > 0) then
-            call dalloc (direct_coefficients, "DA", "SCF")
-            call dalloc (direct_orbital_indices, "NDA", "SCF")
+            call dalloc (direct_coefficients, "direct_coefficients", "run_scf_iterations")
+            call dalloc (direct_orbital_indices, "direct_orbital_indices", "run_scf_iterations")
         end if
 
         if (exchange_coefficient_capacity > 0) then
-            call dalloc (exchange_coefficients, "XA", "SCF")
-            call dalloc (exchange_coefficient_labels, "NXA", "SCF")
+            call dalloc (exchange_coefficients, "exchange_coefficients", "run_scf_iterations")
+            call dalloc (exchange_coefficient_labels, "exchange_coefficient_labels", "run_scf_iterations")
         end if
 
         if (y_potential_coefficient_capacity > 0) then
-            call dalloc (y_potential_coefficients, "YA", "SCF")
-            call dalloc (y_potential_coefficient_labels, "NYA", "SCF")
+            call dalloc (y_potential_coefficients, "y_potential_coefficients", "run_scf_iterations")
+            call dalloc (y_potential_coefficient_labels, "y_potential_coefficient_labels", "run_scf_iterations")
         end if
 
         if (extended_optimal_level) then
-            call dalloc (shifted_eigenvalues, "EVAL", "SCF")
-            call dalloc (csf_mixing_coefficients, "EvEC", "SCF")
+            call dalloc (shifted_eigenvalues, "shifted_eigenvalues", "run_scf_iterations")
+            call dalloc (csf_mixing_coefficients, "csf_mixing_coefficients", "run_scf_iterations")
             !GG         CALL DALLOC (IATJPO, 'IATJPO', 'SCF')
             !GG         CALL DALLOC (IASPAR, 'IASPAR', 'SCF')
-            call dalloc (highest_selected_level_by_block, "NCMAXBLK", "SCF") ! getold.f
-            call dalloc (mean_energy_by_block, "EAVBLK", "SCF")     ! getold.f
-            call dalloc (level_block_indices, "IDXBLK", "SCF")     ! Allocated in getold.f
-            call dalloc (requested_level_indices, "ICCMIN", "SCF")       ! Allocated in items.f<-getold.f
+            call dalloc (highest_selected_level_by_block, "highest_selected_level_by_block", "run_scf_iterations") ! getold.f
+            call dalloc (mean_energy_by_block, "mean_energy_by_block", "run_scf_iterations")     ! getold.f
+            call dalloc (level_block_indices, "level_block_indices", "run_scf_iterations")     ! Allocated in getold.f
+            call dalloc (requested_level_indices, "requested_level_indices", "run_scf_iterations")       ! Allocated in items.f<-getold.f
         end if
         !
-        call dalloc (csf_offsets_by_block, "NCFPAST", "SCF")
-        call dalloc (eigenvalue_offsets_by_block, "NCMINPAST", "SCF")
-        call dalloc (mixing_offsets_by_block, "NEVECPAST", "SCF")
+        call dalloc (csf_offsets_by_block, "csf_offsets_by_block", "run_scf_iterations")
+        call dalloc (eigenvalue_offsets_by_block, "eigenvalue_offsets_by_block", "run_scf_iterations")
+        call dalloc (mixing_offsets_by_block, "mixing_offsets_by_block", "run_scf_iterations")
 
 
         return

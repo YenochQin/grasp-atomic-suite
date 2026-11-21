@@ -24,7 +24,7 @@ contains
 
         call make_directory (directory_path(1:path_length), directory_status)
         if (directory_status/=0) then
-            print*, " sys_mkdir error message = ", trim(mkdir_error_message)
+            print*, " create_mpi_directory error message = ", trim(mkdir_error_message)
         end if
         return
     end subroutine create_mpi_directory

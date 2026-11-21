@@ -73,7 +73,7 @@ contains
                 mpi_process_count/= file_mpi_process_count) then
                 write (stderr_unit, *) csf_count, file_csf_count, active_csf_cutoffs(1), file_csf_cutoff, mpi_rank, file_mpi_rank, &
                     mpi_process_count, file_mpi_process_count, "check"
-                stop "genmat:1"
+                stop "assemble_ci_matrix:1"
             end if
 
             do i = mpi_rank + 1, csf_count, mpi_process_count

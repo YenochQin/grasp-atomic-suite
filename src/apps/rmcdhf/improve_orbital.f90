@@ -124,7 +124,7 @@ contains
                     call calculate_lagrange_multipliers (extended_optimal_level)
                     cycle
                 else
-                    if (mpi_rank == 0) write (*, '(/,/," ****** Error in SUBROUTINE IMPROV ******"/,&
+                    if (mpi_rank == 0) write (*, '(/,/," ****** Error in SUBROUTINE improve_orbital ******"/,&
                         &" Convergence not obtained"/)')
                     !CALL TIMER (0)
                     error stop

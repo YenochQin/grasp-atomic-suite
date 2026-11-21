@@ -96,9 +96,9 @@ contains
         !
         !   Deallocate storage so that LODCSL can restart correctly
         !
-        call dalloc (csf_subshell_occupations, "IQA", "LDCSL1")
-        call dalloc (csf_subshell_quantum_codes, "JQSA", "LDCSL1")
-        call dalloc (csf_coupling_quantum_codes, "JCUPA", "LDCSL1")
+        call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "load_initial_transition_basis")
+        call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "load_initial_transition_basis")
+        call dalloc (csf_coupling_quantum_codes, "csf_coupling_quantum_codes", "load_initial_transition_basis")
         !
 
 

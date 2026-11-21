@@ -46,7 +46,7 @@ contains
                     bra_shell_codes,bra_shell_values,ket_shell_codes,ket_shell_values,aw_matrix_element)
                 return
             else
-                print*, "ERROR in AWP1"
+                print*, "ERROR in evaluate_jj_aw"
                 stop
             end if
         else if(ket_shell_codes(3) > 9) then

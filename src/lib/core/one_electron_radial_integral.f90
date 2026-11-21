@@ -30,7 +30,7 @@ contains
         integer :: radial_index
         real(real64) :: derivative_term, small_component_mass_term, kappa_term, nuclear_potential_term
         if (orbital_kappa(bra_orbital) /= orbital_kappa(ket_orbital)) then
-            write (*, '("RINTI: Attempt to calculate I(",1i2,1a2,",",1i2,1a2,")")') &
+            write (*, '("integrate_one_electron_radial: Attempt to calculate I(",1i2,1a2,",",1i2,1a2,")")') &
                 orbital_principal_n(bra_orbital), orbital_symmetry_labels(bra_orbital), &
                 & orbital_principal_n(ket_orbital), orbital_symmetry_labels(ket_orbital)
             stop

@@ -513,7 +513,7 @@ contains
                 coefficient_value = zero
             end if
         else
-            stop "coefLSjj: program stop A."
+            stop "ls_jj_recoupling_coefficient: program stop A."
         end if
         coefficient_value = factor * coefficient_value
     end function ls_jj_recoupling_coefficient
@@ -676,7 +676,7 @@ contains
                     end if
                 end do
             case default
-                stop "coefLSjjs: program stop A."
+                stop "lookup_ls_jj_subshell_coefficient: program stop A."
             end select
         else if (lshell == 2) then
             select case(n)
@@ -785,7 +785,7 @@ contains
                     end if
                 end do
             case default
-                stop "coefLSjjs: program stop B."
+                stop "lookup_ls_jj_subshell_coefficient: program stop B."
             end select
         else if (lshell == 3) then
             select case(n)
@@ -867,10 +867,10 @@ contains
                     end if
                 end do
             case default
-                stop "coefLSjjs: program stop C."
+                stop "lookup_ls_jj_subshell_coefficient: program stop C."
             end select
         else
-            stop "coefLSjjs: program stop D."
+            stop "lookup_ls_jj_subshell_coefficient: program stop D."
         end if
     end function lookup_ls_jj_subshell_coefficient
     !
@@ -1012,7 +1012,7 @@ contains
                         else if(seniority == 4) then
                             w = 2
                         else
-                            stop "getchLS_lbl(): program stop 1S."
+                            stop "format_ls_csf_label(): program stop 1S."
                         end if
                     else if(tl == 4) then
                         ! 1D
@@ -1021,7 +1021,7 @@ contains
                         else if(seniority == 4) then
                             w = 2
                         else
-                            stop "getchLS_lbl(): program stop 1D."
+                            stop "format_ls_csf_label(): program stop 1D."
                         end if
                     else if(tl == 8) then
                         ! 1G
@@ -1030,7 +1030,7 @@ contains
                         else if(seniority == 4) then
                             w = 2
                         else
-                            stop "getchLS_lbl(): program stop 1G."
+                            stop "format_ls_csf_label(): program stop 1G."
                         end if
                     else
                         w = 0
@@ -1045,7 +1045,7 @@ contains
                         else if(seniority == 5) then
                             w = 3
                         else
-                            stop "getchLS_lbl(): program stop 2D."
+                            stop "format_ls_csf_label(): program stop 2D."
                         end if
                     else if(tl == 6) then
                         ! 2F
@@ -1054,7 +1054,7 @@ contains
                         else if(seniority == 5) then
                             w = 2
                         else
-                            stop "getchLS_lbl(): program stop 2F."
+                            stop "format_ls_csf_label(): program stop 2F."
                         end if
                     else if(tl == 8) then
                         ! 2G
@@ -1063,7 +1063,7 @@ contains
                         else if(seniority == 5) then
                             w = 2
                         else
-                            stop "getchLS_lbl(): program stop 2G."
+                            stop "format_ls_csf_label(): program stop 2G."
                         end if
                     else
                         w = 0
@@ -1076,7 +1076,7 @@ contains
                         else if(seniority == 4) then
                             w = 2
                         else
-                            stop "getchLS_lbl(): program stop 3P."
+                            stop "format_ls_csf_label(): program stop 3P."
                         end if
                     else if(tl == 6) then
                         ! 3F
@@ -1085,7 +1085,7 @@ contains
                         else if(seniority == 4) then
                             w = 2
                         else
-                            stop "getchLS_lbl(): program stop 3F."
+                            stop "format_ls_csf_label(): program stop 3F."
                         end if
                     else
                         w = 0
@@ -1341,7 +1341,7 @@ contains
                     ls(j)%subshell_two_s        = term_ls_g2(i)%subshell_two_s
                 end do
             case default
-                stop  "gettermLS(): program stop A."
+                stop  "enumerate_ls_subshell_terms(): program stop A."
             end select
         case (5)
             select case (n)
@@ -1362,7 +1362,7 @@ contains
                     ls(j)%subshell_two_s        = term_ls_h2(i)%subshell_two_s
                 end do
             case default
-                stop  "gettermLS(): program stop B."
+                stop  "enumerate_ls_subshell_terms(): program stop B."
             end select
         case (6)
             select case (n)
@@ -1383,7 +1383,7 @@ contains
                     ls(j)%subshell_two_s        = term_ls_i2(i)%subshell_two_s
                 end do
             case default
-                stop  "gettermLS(): program stop C."
+                stop  "enumerate_ls_subshell_terms(): program stop C."
             end select
         case (7)
             select case (n)
@@ -1404,7 +1404,7 @@ contains
                     ls(j)%subshell_two_s        = term_ls_k2(i)%subshell_two_s
                 end do
             case default
-                stop  "gettermLS(): program stop D."
+                stop  "enumerate_ls_subshell_terms(): program stop D."
             end select
         case (8)
             select case (n)
@@ -1425,7 +1425,7 @@ contains
                     ls(j)%subshell_two_s        = term_ls_l2(i)%subshell_two_s
                 end do
             case default
-                stop  "gettermLS(): program stop E."
+                stop  "enumerate_ls_subshell_terms(): program stop E."
             end select
         case (9)
             select case (n)
@@ -1446,10 +1446,10 @@ contains
                     ls(j)%subshell_two_s        = term_ls_m2(i)%subshell_two_s
                 end do
             case default
-                stop  "gettermLS(): program stop F."
+                stop  "enumerate_ls_subshell_terms(): program stop F."
             end select
         case default
-            stop  "gettermLS(): program stop G."
+            stop  "enumerate_ls_subshell_terms(): program stop G."
         end select
         number = j
     end subroutine enumerate_ls_subshell_terms
@@ -2102,7 +2102,7 @@ contains
                 print *, " "
                 if (level > 1   .and.   dabs(wb) > 1.0001_real64) then
                     print *, "level, wb = ",level,wb
-                    stop "JJ2LSJ(): program stop A."
+                    stop "run_ls_coupling_conversion(): program stop A."
                 end if
                 nocsf_min = 5
                 do j = 1,5
@@ -2120,7 +2120,7 @@ contains
                     !CYC-2023 end
                     asf_set_ls%asf(level)%parity = "+"
                 else
-                    stop "JJ2LSJ: program stop D."
+                    stop "run_ls_coupling_conversion: program stop D."
                 end if
                 asf_set_ls%asf(level)%two_j = csf_total_j_code(iw(1)+first_csf_index-1) - 1
                 call format_half_integer(asf_set_ls%asf(level)%two_j,string_cnum,string_l)
@@ -2182,7 +2182,7 @@ contains
                 max_comp(level) = iw(1)
                 sum_nocsf_min = sum_nocsf_min + nocsf_min
                 if (nocsf_min <= 0) then
-                    stop "JJ2LSJ(): program stop C."
+                    stop "run_ls_coupling_conversion(): program stop C."
                 end if
                 call profile_emit("candidate_select",phase_start,symmetry_block_index,level,nocsf_min)
                 phase_start=profile_time()
@@ -2350,7 +2350,7 @@ contains
         !GG      IF(counter > 8) THEN
         if(counter > 18) then
             print*, counter
-            stop "prCSFLS: A"
+            stop "pack_ls_csf_label: A"
         end if
         do i = 1,counter
             couple(i)(1:3) = string_ls(i)(1:3)
@@ -2838,7 +2838,7 @@ contains
             icsf_ls = icsf_ls + 1
             !
             if(icsf_ls  >  asf_set_ls%csf_set_ls%ls_csf_count) then
-                stop "setLS_add_quantum_numbers(): program stop A."
+                stop "add_ls_quantum_numbers(): program stop A."
             end if
             !
             asf_set_ls%csf_set_ls%csf(icsf_ls)%two_j = j
@@ -2894,7 +2894,7 @@ contains
             !-----------------------------------------------
             if(isubc>(asf_set_ls%csf_set_ls%shell_count) .or. isubc<1) then
                 print *, "isubc = ", isubc
-                stop "setLS_job_count(): program stop A."
+                stop "count_ls_basis_jobs(): program stop A."
             end if
             !
             if(isubc<=asf_set_ls%csf_set_ls%shell_count) then
@@ -3048,7 +3048,7 @@ contains
         number_plus =asf_set_ls%csf_set_ls%parent(shell_number)%parent_plus
         if (number_minus+1 /= number_plus .and.  &
             number_minus*number_plus  /= 0) then
-            stop "traLSjj(): program stop A."
+            stop "ls_jj_csf_overlap(): program stop A."
         end if
         !
         if (number_minus == 0) then
@@ -3303,10 +3303,10 @@ contains
         allocate(iprgg(lev_no))
         !
         rewind(lsj_label_unit,iostat=io_status)
-        if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: rewind labels")
+        if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"assign_unique_lsj_labels: rewind labels")
         read (lsj_label_unit, "(1A53)", iostat=io_status) record
-        if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: label header")
-        if (len_trim(record) == 0) call fail_input_io(0,lsj_label_unit,"uniquelsj: empty label header")
+        if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"assign_unique_lsj_labels: label header")
+        if (len_trim(record) == 0) call fail_input_io(0,lsj_label_unit,"assign_unique_lsj_labels: empty label header")
         write(unique_label_unit, "(1A53)") record
         !
         new_j = 0
@@ -3319,34 +3319,35 @@ contains
                 if(num_lev > lev_no) then
                     print*, "Please extand the arrays. Now we have Lev_No=",   &
                         lev_no
-                    call fail_input_io(0,lsj_label_unit,"uniquelsj: level capacity exceeded")
+                    call fail_input_io(0,lsj_label_unit,"assign_unique_lsj_labels: level capacity exceeded")
                 end if
                 read(lsj_label_unit,"(A)",iostat=io_status) input_record
-                if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: level record")
-                if (len_trim(input_record) < 50) call fail_input_io(0,lsj_label_unit,"uniquelsj: short level record")
+                if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"assign_unique_lsj_labels: level record")
+                if (len_trim(input_record) < 50) call fail_input_io(0,lsj_label_unit,"assign_unique_lsj_labels: short level record")
                 read(input_record,"(A3,A5,5X,A1,8X,F16.9,5X,F7.3)",iostat=io_status)str_no(num_lev), &
                     str_j(num_lev),str_p(num_lev),energy(num_lev),pro(num_lev)
-                if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: level fields")
+                if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"assign_unique_lsj_labels: level fields")
                 if (.not. ieee_is_finite(energy(num_lev)) .or. .not. ieee_is_finite(pro(num_lev))) &
-                    call fail_input_io(0,lsj_label_unit,"uniquelsj: nonfinite level fields")
+                    call fail_input_io(0,lsj_label_unit,"assign_unique_lsj_labels: nonfinite level fields")
                 inum = 0
                 do
                     inum = inum + 1
                     if(inum > vec_no) then
                         print*, "Please extand the arrays. Now we have Vec_No=", &
                             vec_no
-                        call fail_input_io(0,lsj_label_unit,"uniquelsj: component capacity exceeded")
+                        call fail_input_io(0,lsj_label_unit,"assign_unique_lsj_labels: component capacity exceeded")
                     end if
                     read(lsj_label_unit,"(A)",iostat=io_status) input_record
                     if (io_status == iostat_end) then
                         mas_max(num_lev) = inum - 1
                         exit
                     end if
-                    if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: component record")
+                    if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"assign_unique_lsj_labels: component record")
                     str = input_record(1:7)
                     if(str /= "       ") then
                         backspace(lsj_label_unit,iostat=io_status)
-                        if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: next level backspace")
+                        if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit, &
+                            "assign_unique_lsj_labels: next level backspace")
                         mas_max(num_lev) = inum - 1
                         exit
                     else if (len_trim(input_record) == 0) then
@@ -3354,19 +3355,22 @@ contains
                         new_j = 0
                         exit
                     end if
-                    if (len_trim(input_record) < 37) call fail_input_io(0,lsj_label_unit,"uniquelsj: short component record")
+                    if (len_trim(input_record) < 37) call fail_input_io(0,lsj_label_unit, &
+                        "assign_unique_lsj_labels: short component record")
                     read(input_record,"(A7,F12.8,3X,F11.8,3X,A)",iostat=io_status)str, &
                         mix(inum,num_lev),comp(inum,num_lev),coupling(inum,num_lev)
-                    if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"uniquelsj: component fields")
+                    if (io_status /= 0) call fail_input_io(io_status,lsj_label_unit,"assign_unique_lsj_labels: component fields")
                     if (.not. ieee_is_finite(mix(inum,num_lev)) .or. .not. ieee_is_finite(comp(inum,num_lev))) &
-                        call fail_input_io(0,lsj_label_unit,"uniquelsj: nonfinite component")
-                    if (comp(inum,num_lev) < 0.0_real64) call fail_input_io(0,lsj_label_unit,"uniquelsj: negative component weight")
+                        call fail_input_io(0,lsj_label_unit,"assign_unique_lsj_labels: nonfinite component")
+                    if (comp(inum,num_lev) < 0.0_real64) call fail_input_io(0,lsj_label_unit, &
+                        "assign_unique_lsj_labels: negative component weight")
                 end do
                 if (io_status == iostat_end .or. new_j == 0) exit
             end do
             do i1 = 1, num_lev
-                if (mas_max(i1) < 1) call fail_input_io(0,lsj_label_unit,"uniquelsj: level without components")
-                if (comp(1,i1) <= 0.0_real64) call fail_input_io(0,lsj_label_unit,"uniquelsj: nonpositive leading weight")
+                if (mas_max(i1) < 1) call fail_input_io(0,lsj_label_unit,"assign_unique_lsj_labels: level without components")
+                if (comp(1,i1) <= 0.0_real64) call fail_input_io(0,lsj_label_unit, &
+                    "assign_unique_lsj_labels: nonpositive leading weight")
             end do
             !
             call profile_emit("unique_read",phase_start,items=num_lev)
@@ -3390,7 +3394,7 @@ contains
                         max_comp = comp(1,i2)
                     end if
                 end do
-                if (lev_opt == 0) call fail_input_io(0,lsj_label_unit,"uniquelsj: no positive remaining component")
+                if (lev_opt == 0) call fail_input_io(0,lsj_label_unit,"assign_unique_lsj_labels: no positive remaining component")
                 num_opt = num_opt + 1
                 icount(lev_opt) = 0
                 ipr = 1
@@ -3402,7 +3406,7 @@ contains
                         if(trim(opt_coupling(i3))==trim(coupling(ipr,lev_opt)))then
                             ipr = ipr + 1
                             if(ipr > mas_max(lev_opt)) then
-                                call fail_input_io(0,lsj_label_unit,"uniquelsj: no unused component label")
+                                call fail_input_io(0,lsj_label_unit,"assign_unique_lsj_labels: no unused component label")
                             end if
                             i3 = 1
                         else
@@ -3416,7 +3420,7 @@ contains
                     print*,                                                   &
                         "The program is not able perform the identification for", &
                         " level = ",lev_opt
-                    call fail_input_io(0,lsj_label_unit,"uniquelsj: no unique identification")
+                    call fail_input_io(0,lsj_label_unit,"assign_unique_lsj_labels: no unique identification")
                 end if
                 if(ipr == 1) then
                     opt_coupling(num_opt) = coupling(ipr,lev_opt)

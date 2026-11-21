@@ -57,14 +57,14 @@ contains
 
         read (mcp_temporary_units(30)) mcp_channel_label, file_block_index
         if (symmetry_block_index /= file_block_index) then
-            write (stderr_unit, *) "setsda: nb = ", symmetry_block_index, ".NE. mb (=", file_block_index, ")"
+            write (stderr_unit, *) "write_mcp_sparsity: nb = ", symmetry_block_index, ".NE. mb (=", file_block_index, ")"
             stop
         end if
         !
         !   Allocate storage for IENDC(0:NCF)
         !
-        call alloc (column_end_positions, 0,  csf_count,"IENDC","SETSDA"  )
-        call alloc (row_indices, nonzero_element_count, "IROW", "SETSDA" )
+        call alloc (column_end_positions, 0,  csf_count,"column_end_positions","write_mcp_sparsity"  )
+        call alloc (row_indices, nonzero_element_count, "row_indices", "write_mcp_sparsity" )
         !
         !   Analyse data on file 30; set up IENDC and IROW
         ! In multiprocessor environment, iendc of each node will have the
@@ -103,8 +103,8 @@ contains
         !
         !   Deallocate storage
         !
-        call dalloc (column_end_positions, "IENDC", "SETSDA")
-        call dalloc (row_indices, "IROW", "SETSDA")
+        call dalloc (column_end_positions, "column_end_positions", "write_mcp_sparsity")
+        call dalloc (row_indices, "row_indices", "write_mcp_sparsity")
         !
         call write_coefficient_callback (print_details, nonzero_element_count, csf_count)
         return

@@ -96,7 +96,7 @@ contains
         !
         ! But first of all, iccutblk() is needed in both cases
         !
-        call alloc (csf_cutoff_by_block, symmetry_block_count, "ICCUTBLK", "SETRES")
+        call alloc (csf_cutoff_by_block, symmetry_block_count, "csf_cutoff_by_block", "connect_ci_restart_file")
 
         if (is_restart) then
             !        ...Check the signature of the file

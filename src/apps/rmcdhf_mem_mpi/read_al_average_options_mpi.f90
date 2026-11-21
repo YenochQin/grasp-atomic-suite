@@ -53,7 +53,7 @@ contains
             write (stderr_unit, *) "ncf=", csf_count
         end if
 
-        call alloc (level_average_weights, csf_count, "WT", "GETALDmpi")
+        call alloc (level_average_weights, csf_count, "level_average_weights", "read_al_average_options_mpi")
 
         if (mpi_rank == 0) call read_al_level_weights (csf_count, level_average_weights)
 

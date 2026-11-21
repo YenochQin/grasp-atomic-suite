@@ -37,11 +37,11 @@ contains
             if (csf_index>=1 .and. csf_index<=csf_count) then
                 csf_intermediate_coupling = csf_coupling_quantum_codes(coupling_index,csf_index)
             else
-                write (stderr_unit, *) "JCUP: Argument ICSF is out of range."
+                write (stderr_unit, *) "csf_intermediate_coupling: Argument csf_index is out of range."
                 stop
             end if
         else
-            write (stderr_unit, *) "JCUP: Argument LOC is out of range."
+            write (stderr_unit, *) "csf_intermediate_coupling: Argument coupling index is out of range."
             stop
         end if
     end function csf_intermediate_coupling
@@ -56,7 +56,7 @@ contains
             if (csf_parity_code > 127) csf_parity_code = csf_parity_code - 256
             csf_parity_code = sign(1,csf_parity_code)
         else
-            write (stderr_unit, *) "ISPAR: Argument ICSF is out of range."
+            write (stderr_unit, *) "csf_parity_code: Argument csf_index is out of range."
             write (stderr_unit, *) "ICSF =",csf_index," NCF =",csf_count
             stop
         end if

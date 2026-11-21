@@ -46,10 +46,10 @@ contains
         !
         write (stderr_unit, *) "(E)AL type calculation; H(DC) will not be ", &
             "diagonalised;"
-        write (stderr_unit, *) "getald ..."
+        write (stderr_unit, *) "read_al_average_options ..."
         write (stderr_unit, *) "ncf=", csf_count
 
-        call alloc (level_average_weights, csf_count, "WT", "GETALD")
+        call alloc (level_average_weights, csf_count, "level_average_weights", "read_al_average_options")
 
         call read_al_level_weights (csf_count, level_average_weights)
 

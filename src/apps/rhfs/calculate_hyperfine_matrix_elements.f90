@@ -99,9 +99,12 @@ contains
         !
         !   Allocate storage for local arrays
         !
-        call alloc (reduced_hyperfine_elements, 5, active_level_count*active_level_count, "HFC", "HFS")
-        call alloc (reduced_lande_g_elements, active_level_count*active_level_count, "GJC", "HFS")
-        call alloc (reduced_lande_correction_elements, active_level_count*active_level_count, "DGLC", "HFS")
+        call alloc (reduced_hyperfine_elements, 5, active_level_count*active_level_count, "reduced_hyperfine_elements", &
+            "calculate_hyperfine_matrix_elements")
+        call alloc (reduced_lande_g_elements, active_level_count*active_level_count, "reduced_lande_g_elements", &
+            "calculate_hyperfine_matrix_elements")
+        call alloc (reduced_lande_correction_elements, active_level_count*active_level_count, "reduced_lande_correction_elements", &
+            "calculate_hyperfine_matrix_elements")
         !
         !   Initialise
         !
@@ -571,7 +574,7 @@ contains
             end do
         end do
         !
-        call dalloc (reduced_hyperfine_elements, "HFC", "HFS")
+        call dalloc (reduced_hyperfine_elements, "reduced_hyperfine_elements", "calculate_hyperfine_matrix_elements")
         return
         !
         return

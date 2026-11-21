@@ -169,31 +169,31 @@ program rci_main
         !
         !   Append a summary of the inputs to the  .sum  file
         !
-        write (output_unit, *) "Calling STRSUM..."
+        write (output_unit, *) "Calling write_input_summary..."
         call write_input_summary
         !
         !   Set up the table of logarithms of factorials
         !
-        write (output_unit, *) "Calling FACTT..."
+        write (output_unit, *) "Calling initialize_log_factorial_table..."
         call initialize_log_factorial_table
         !
         !   Calculate all the needed Rk integrals
         !
-        write (output_unit, *) "Calling GENINTRK..."
+        write (output_unit, *) "Calling tabulate_slater_integrals..."
         call tabulate_slater_integrals (mpi_rank, mpi_process_count, ndum, max_orbital_two_j)
         !
         !   If transverse interaction comput Breit integrals of type 1 and 2
         !
         if (include_transverse_interaction) then
-            print *, "Calling GENINTBREIT1..."
+            print *, "Calling tabulate_breit_integrals_1..."
             call tabulate_breit_integrals_1 (mpi_rank, mpi_process_count, ndum, max_orbital_two_j)
-            print *, "Calling GENINTBREIT2..."
+            print *, "Calling tabulate_breit_integrals_2..."
             call tabulate_breit_integrals_2 (mpi_rank, mpi_process_count, ndum, max_orbital_two_j)
         end if
         !
         !   Proceed with the CI calculation
         !
-        write (output_unit, *) "Calling MATRIX..."
+        write (output_unit, *) "Calling solve_hamiltonian_blocks..."
 
         call solve_hamiltonian_blocks (core_subshell_count, max_orbital_two_j)
 

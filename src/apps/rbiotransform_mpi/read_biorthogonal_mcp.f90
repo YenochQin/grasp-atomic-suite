@@ -156,8 +156,8 @@ contains
             !
             !   Allocate memory for use in CITRAG
             !
-            call alloc (transfer_power_workspace, csf_count*active_level_count, "scr", "MCPIN")
-            call alloc (transformed_ci_workspace, csf_count*active_level_count, "CIOUT", "MCPIN")
+            call alloc (transfer_power_workspace, csf_count*active_level_count, "transfer_power_workspace", "read_biorthogonal_mcp")
+            call alloc (transformed_ci_workspace, csf_count*active_level_count, "transformed_ci_workspace", "read_biorthogonal_mcp")
             !
             !   if data available on file read the datafile. Else sort the
             !   MCP data into inegral based lists.
@@ -185,11 +185,11 @@ contains
                 !   since the data is sorted, allocate less
                 !   memory than is done in qqsort.
                 !
-                call alloc (mcp_bra_csf_indices,mcp_coefficient_count, "JANN", "MCPIN")
-                call alloc (mcp_ket_csf_indices,mcp_coefficient_count, "JBNN", "MCPIN")
-                call alloc (mcp_packed_orbital_pairs,mcp_integral_count, "INTGRL", "MCPIN")
-                call alloc (mcp_coefficient_values,mcp_coefficient_count, "CNN", "MCPIN")
-                call alloc (mcp_coefficient_end_offsets,mcp_integral_count, "INTPTR", "MCPIN")
+                call alloc (mcp_bra_csf_indices,mcp_coefficient_count, "mcp_bra_csf_indices", "read_biorthogonal_mcp")
+                call alloc (mcp_ket_csf_indices,mcp_coefficient_count, "mcp_ket_csf_indices", "read_biorthogonal_mcp")
+                call alloc (mcp_packed_orbital_pairs,mcp_integral_count, "mcp_packed_orbital_pairs", "read_biorthogonal_mcp")
+                call alloc (mcp_coefficient_values,mcp_coefficient_count, "mcp_coefficient_values", "read_biorthogonal_mcp")
+                call alloc (mcp_coefficient_end_offsets,mcp_integral_count, "mcp_coefficient_end_offsets", "read_biorthogonal_mcp")
 
                 do i = 1,mcp_integral_count
                     read(biorthogonal_angular_unit) mcp_packed_orbital_pairs(i),mcp_coefficient_end_offsets(i)
@@ -216,16 +216,16 @@ contains
                 !
                 !   Deallocate storage for this kappa.
                 !
-                call dalloc (mcp_bra_csf_indices, "JANN", "MCPIN")
-                call dalloc (mcp_ket_csf_indices, "JBNN", "MCPIN")
-                call dalloc (mcp_packed_orbital_pairs, "INTGRL", "MCPIN")
-                call dalloc (mcp_coefficient_values, "CNN", "MCPIN")
-                call dalloc (mcp_coefficient_end_offsets, "INTPRT", "MCPIN")
+                call dalloc (mcp_bra_csf_indices, "mcp_bra_csf_indices", "read_biorthogonal_mcp")
+                call dalloc (mcp_ket_csf_indices, "mcp_ket_csf_indices", "read_biorthogonal_mcp")
+                call dalloc (mcp_packed_orbital_pairs, "mcp_packed_orbital_pairs", "read_biorthogonal_mcp")
+                call dalloc (mcp_coefficient_values, "mcp_coefficient_values", "read_biorthogonal_mcp")
+                call dalloc (mcp_coefficient_end_offsets, "mcp_coefficient_end_offsets", "read_biorthogonal_mcp")
 
             end do
 
-            call dalloc (transfer_power_workspace, "SCR", "MCPIN")
-            call dalloc (transformed_ci_workspace, "CIOUT", "MCPIN")
+            call dalloc (transfer_power_workspace, "transfer_power_workspace", "read_biorthogonal_mcp")
+            call dalloc (transformed_ci_workspace, "transformed_ci_workspace", "read_biorthogonal_mcp")
             !
             !   Write the rotated CI vectors on file
             !
@@ -253,11 +253,11 @@ contains
                     active_level_count)
             end if !myid=0
 
-            call dalloc (shifted_eigenvalues, "EVAL", "MCPIN")
-            call dalloc (csf_mixing_coefficients, "EVEC", "MCPIN")
-            call dalloc (active_level_indices, "IVEC", "MCPIN")
-            call dalloc (level_two_j_plus_one, "IATJPO", "MCPIN")
-            call dalloc (level_parity_signs, "IASPAR", "MCPIN")
+            call dalloc (shifted_eigenvalues, "shifted_eigenvalues", "read_biorthogonal_mcp")
+            call dalloc (csf_mixing_coefficients, "csf_mixing_coefficients", "read_biorthogonal_mcp")
+            call dalloc (active_level_indices, "active_level_indices", "read_biorthogonal_mcp")
+            call dalloc (level_two_j_plus_one, "level_two_j_plus_one", "read_biorthogonal_mcp")
+            call dalloc (level_parity_signs, "level_parity_signs", "read_biorthogonal_mcp")
         end do
         close (biorthogonal_angular_unit)
         !

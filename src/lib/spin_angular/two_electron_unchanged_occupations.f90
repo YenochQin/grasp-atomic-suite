@@ -370,7 +370,7 @@ contains
     contains
         subroutine report_rank_limit()
             call ensure_debug_output()
-            write(angular_debug_unit,'(5x,"ERRO IN EL1  PMGG RAGG")')
+            write(angular_debug_unit,'(5x,"ERRO IN accumulate_two_electron_unchanged_occupations  PMGG RAGG")')
             stop
         end subroutine report_rank_limit
     end subroutine accumulate_two_electron_unchanged_occupations

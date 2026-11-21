@@ -87,11 +87,11 @@ contains
         ! Allocate memory for old format data
         !***********************************************************************
 
-        call alloc (shifted_eigenvalues, nvectot, "EVAL", "GETMIXBLOCK")
-        call alloc (csf_mixing_coefficients, total_csf_count*nvectot, "EVEC", "GETMIXBLOCK")
-        call alloc (active_level_indices, nvectot, "IVEC", "GETMIXBLOCK")
-        call alloc (level_two_j_plus_one, nvectot, "IATJPO", "GETMIXBLOCK")
-        call alloc (level_parity_signs, nvectot, "IASPAR", "GETMIXBLOCK")
+        call alloc (shifted_eigenvalues, nvectot, "shifted_eigenvalues", "read_mixing_blocks")
+        call alloc (csf_mixing_coefficients, total_csf_count*nvectot, "csf_mixing_coefficients", "read_mixing_blocks")
+        call alloc (active_level_indices, nvectot, "active_level_indices", "read_mixing_blocks")
+        call alloc (level_two_j_plus_one, nvectot, "level_two_j_plus_one", "read_mixing_blocks")
+        call alloc (level_parity_signs, nvectot, "level_parity_signs", "read_mixing_blocks")
 
         !***********************************************************************
         ! Initialize mixing coefficients to zero; others are fine

@@ -54,11 +54,11 @@ contains
         !   Write out the basic dimensions of the electron cloud
         !
         write (summary_output_unit, *)
-        call format_integer_with_context (electron_count, record, lenth, "strsum.nelec")
+        call format_integer_with_context (electron_count, record, lenth, "write_input_summary: electron_count")
         write (summary_output_unit, *) "There are "//record(1:lenth)//" electrons in the cloud"
-        call format_integer_with_context (csf_count, record, lenth, "strsum.ncf")
+        call format_integer_with_context (csf_count, record, lenth, "write_input_summary: csf_count")
         write (summary_output_unit, *) " in "//record(1:lenth)//" relativistic CSFs"
-        call format_integer_with_context (orbital_count, record, lenth, "strsum.nw")
+        call format_integer_with_context (orbital_count, record, lenth, "write_input_summary: orbital_count")
         write (summary_output_unit, *) " based on "//record(1:lenth)//" relativistic subshells."
         !
         !   If the CSFs are not treated uniformly, write out an
@@ -68,7 +68,7 @@ contains
             write (summary_output_unit, *)
             do symmetry_block_index = 1, symmetry_block_count
                 iccut = csf_cutoff_by_block(symmetry_block_index)
-                call format_integer_with_context (iccut, record, lenth, "strsum.icccut")
+                call format_integer_with_context (iccut, record, lenth, "write_input_summary: iccut")
                 write (summary_output_unit, *) " CSFs 1--"//record(1:lenth)//" constitute"//&
                     " the zero-order space;  nb = ", symmetry_block_index, " ncf = ", csf_counts_by_block(symmetry_block_index)
             end do
@@ -88,7 +88,8 @@ contains
             write (summary_output_unit, *) " Fermi nucleus:"
             write (summary_output_unit, '("  c =",1p,1d19.12," Bohr radii,"/,"  a =",1d19.12," Bohr radii;")') &
                 nuclear_model_parameters(1), nuclear_model_parameters(2)
-            call format_integer_with_context (first_grid_index_beyond_fermi_c, record, lenth, "strsum.nnuc")
+            call format_integer_with_context (first_grid_index_beyond_fermi_c, record, lenth, &
+                "write_input_summary: first_grid_index_beyond_fermi")
             write (summary_output_unit, *) " there are "//record(1:lenth)//&
                 " tabulation points in the nucleus."
         else
@@ -155,16 +156,18 @@ contains
         !
         write (summary_output_unit, *)
         if (active_level_count == 1) then
-            call format_integer_with_context (active_level_indices(1), record, lenth, "strsum.ivec(1)")
+            call format_integer_with_context (active_level_indices(1), record, lenth, &
+                "write_input_summary: active_level_indices(1)")
             write (summary_output_unit, *) "Level "//record(1:lenth)//" will be computed."
         else
-            call format_integer_with_context (active_level_count, record, lenth, "strsum.nvec")
+            call format_integer_with_context (active_level_count, record, lenth, "write_input_summary: active_level_count")
             write (summary_output_unit, *) record(1:lenth)//" levels will be computed;"
             record(1:20) = " their indices are: "
             iend = 20
             do i = 1, active_level_count
                 ibeg = iend + 1
-                call format_integer_with_context (active_level_indices(i), clevel, lenth, "strsum.ivec(i)")
+                call format_integer_with_context (active_level_indices(i), clevel, lenth, &
+                    "write_input_summary: active_level_indices(i)")
                 if (i /= active_level_count) then
                     iend = ibeg + lenth + 1
                     record(ibeg:iend) = clevel(1:lenth)//", "

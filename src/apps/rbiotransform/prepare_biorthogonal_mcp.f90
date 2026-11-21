@@ -41,7 +41,7 @@ contains
         !-----------------------------------------------
         !
         write (output_unit, *)
-        write (output_unit, *) "GENMCP: Execution begins for ", name
+        write (output_unit, *) "prepare_biorthogonal_mcp: Execution begins for ", name
         !
         !   Open, check, load data from, and close the  csl  file
         !

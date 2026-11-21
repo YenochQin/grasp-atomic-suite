@@ -133,8 +133,9 @@ contains
                 !
                 if (breit_integral_counts(3) > breit_integral_capacities(3)) then
                     new_integral_capacity = breit_integral_capacities(3)+breit_integral_capacities(3)/2
-                    call ralloc (breit_integral_indices_3,new_integral_capacity,"INDTP3", "BRINT3")
-                    call ralloc (breit_integral_values_3,new_integral_capacity,"VALTP3", "BRINT3")
+                    call ralloc (breit_integral_indices_3,new_integral_capacity,"breit_integral_indices_3", &
+                        "breit_radial_integral_3")
+                    call ralloc (breit_integral_values_3,new_integral_capacity,"breit_integral_values_3", "breit_radial_integral_3")
                     breit_integral_capacities(3)= new_integral_capacity
                 end if
                 do i = breit_integral_counts(3),table_position+2,-1
@@ -170,8 +171,8 @@ contains
             !
             !   Store the integral and its value
             !
-            call alloc (breit_integral_indices_3,breit_integral_capacities(3),"INDTP3", "BRINT3")
-            call alloc (breit_integral_values_3,breit_integral_capacities(3),"VALTP3", "BRINT3")
+            call alloc (breit_integral_indices_3,breit_integral_capacities(3),"breit_integral_indices_3", "breit_radial_integral_3")
+            call alloc (breit_integral_values_3,breit_integral_capacities(3),"breit_integral_values_3", "breit_radial_integral_3")
             breit_integral_indices_3(1) = packed_integral_index
             breit_integral_values_3(1) = radial_integral_value
             !

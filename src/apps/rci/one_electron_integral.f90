@@ -132,8 +132,8 @@ contains
                 !
                 if (coulomb_integral_count > coulomb_integral_capacity) then
                     new_integral_capacity = coulomb_integral_capacity+coulomb_integral_capacity/2
-                    call ralloc (coulomb_integral_indices,new_integral_capacity,"INDOEI","IABINT" )
-                    call ralloc (coulomb_integral_values,new_integral_capacity,"VALOEI","IABINT")
+                    call ralloc (coulomb_integral_indices,new_integral_capacity,"coulomb_integral_indices","one_electron_integral" )
+                    call ralloc (coulomb_integral_values,new_integral_capacity,"coulomb_integral_values","one_electron_integral")
                     coulomb_integral_capacity = new_integral_capacity
                 end if
                 !
@@ -159,8 +159,8 @@ contains
             !   NDCOEA stores the array dimension
             !
             coulomb_integral_capacity = 2
-            call alloc (coulomb_integral_indices,coulomb_integral_capacity,"INDOEI","IABINT" )
-            call alloc (coulomb_integral_values,coulomb_integral_capacity,"VALOEI","IABINT")
+            call alloc (coulomb_integral_indices,coulomb_integral_capacity,"coulomb_integral_indices","one_electron_integral" )
+            call alloc (coulomb_integral_values,coulomb_integral_capacity,"coulomb_integral_values","one_electron_integral")
             !
             !   Compute the integral's value
             !

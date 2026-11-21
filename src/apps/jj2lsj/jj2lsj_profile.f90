@@ -24,7 +24,7 @@ contains
         if (status == 0) enabled = trim(setting) == "1"
         if (.not. enabled) return
         call system_clock(count_rate=rate)
-        if (rate <= 0) error stop "jj2lsj: wall clock unavailable"
+        if (rate <= 0) error stop "profile_start: wall clock unavailable"
         open(newunit=stream, file="jj2lsj_omp.profile.csv", status="replace", action="write", iostat=status)
         if (status /= 0) then
             write(error_unit,*) "Cannot write jj2lsj_omp.profile.csv"
@@ -79,10 +79,10 @@ contains
         if (.not. enabled) return
         started=profile_time()
         flush(unit,iostat=status)
-        if (status/=0) error stop "jj2lsj: output flush failed"
+        if (status/=0) error stop "profile_file_size: output flush failed"
         call profile_emit("output_flush",started)
         inquire(unit=unit,size=bytes,iostat=status)
-        if (status/=0 .or. bytes<0) error stop "jj2lsj: output size unavailable"
+        if (status/=0 .or. bytes<0) error stop "profile_file_size: output size unavailable"
         write(stream,'(A,3(",",I0),",",F18.9)') phase,0,0,bytes,0.0_real64
     end subroutine profile_file_size
 

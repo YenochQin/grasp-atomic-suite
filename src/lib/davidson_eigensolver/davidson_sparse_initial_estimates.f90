@@ -85,7 +85,7 @@ contains
             computed_pair_count, initial_eigenvalues, initial_block_vectors, estimate_matrix_order, &
             lapack_real_work, lapack_integer_work, failed_vector_indices, lapack_status)
         status_code = -abs(lapack_status)
-        if (status_code /= 0) write (output_unit, *) "iniest ierr =", status_code
+        if (status_code /= 0) write (output_unit, *) "estimate_davidson_sparse_eigenpairs ierr =", status_code
 
         ! Scatter the small eigenvectors into zero-filled full-space columns.
         call initialize_real_vector (full_matrix_order*initial_vector_count, 0.0_real64, initial_estimates, 1)

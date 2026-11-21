@@ -36,7 +36,7 @@ contains
             two_bra_chain_j=bra_intermediate_couplings(coupled_shell_count)-1
             two_ket_chain_j=ket_intermediate_couplings(coupled_shell_count)-1
         else
-            print*, "ERROR in RECOP00"
+            print*, "ERROR in select_one_electron_tensor_recoupling"
             stop
         end if
 

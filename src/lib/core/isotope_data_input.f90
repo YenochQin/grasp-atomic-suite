@@ -17,7 +17,7 @@ contains
         integer :: isotope_input_unit
         character (len = *), intent(in) :: isotope_file_path
         character(len=3), parameter  :: requested_status = "OLD"
-        character(len=6), parameter  :: routine_name = "SETISO"
+        character(len=*), parameter  :: routine_name = "read_isotope_data"
         character(len=9), parameter  :: record_format = "FORMATTED"
         character(len=14), parameter :: expected_file_header = "Atomic number:"
         integer           :: path_length, open_status, read_status

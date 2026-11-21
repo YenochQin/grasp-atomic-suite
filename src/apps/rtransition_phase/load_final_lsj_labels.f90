@@ -47,10 +47,10 @@ contains
                 close (lsj_label_input_unit)
                 stop
             else
-                call alloc (lev_pos_2,  nvectotf,"Lev_POS_2",  "LDLBL2")
-                call alloc (lev_j_2,    nvectotf,"Lev_J_2",    "LDLBL2")
-                call alloc (lev_par_2,  nvectotf,"Lev_Par_2",  "LDLBL2")
-                call alloc (rlev_ener_2,nvectotf,"RLev_ENER_2","LDLBL2")
+                call alloc (lev_pos_2,  nvectotf,"Lev_POS_2",  "load_final_lsj_labels")
+                call alloc (lev_j_2,    nvectotf,"Lev_J_2",    "load_final_lsj_labels")
+                call alloc (lev_par_2,  nvectotf,"Lev_Par_2",  "load_final_lsj_labels")
+                call alloc (rlev_ener_2,nvectotf,"RLev_ENER_2","load_final_lsj_labels")
                 !CPJ        CALL ALLOC (string_CSF2,NVECTOTF,'string_CSF2','LDLBL2')
                 allocate(string_csf2(nvectotf))
                 !

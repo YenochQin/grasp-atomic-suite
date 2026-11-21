@@ -114,8 +114,10 @@ contains
 
 
                 if (itwice==1 .and. lagrange_multiplier_count>0) then
-                    call alloc (lagrange_multiplier_values, lagrange_multiplier_count, "ECV", "SETLAGmpi")
-                    call alloc (lagrange_orbital_pair_labels, lagrange_multiplier_count, "IECC", "SETLAGmpi")
+                    call alloc (lagrange_multiplier_values, lagrange_multiplier_count, "lagrange_multiplier_values", &
+                        "calculate_lagrange_multipliers_mpi")
+                    call alloc (lagrange_orbital_pair_labels, lagrange_multiplier_count, "lagrange_orbital_pair_labels", &
+                        "calculate_lagrange_multipliers_mpi")
                 else
                     exit
                 end if

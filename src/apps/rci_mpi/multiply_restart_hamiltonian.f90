@@ -56,7 +56,7 @@ contains
         !     !...It is set in matrix and used in maneig, spodmv
         !
         !-----------------------------------------------------------------------
-        write (output_unit, *) "Calling spodmv..."
+        write (output_unit, *) "Calling multiply_restart_hamiltonian..."
         csf_count = n
 
         !   Initialise the result matrix; note that this is specific to the
@@ -69,7 +69,7 @@ contains
 
         read (restart_matrix_unit) file_csf_count, file_first_order_cutoff, file_mpi_rank, file_mpi_process_count
         if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) stop &
-            "spodmv: ncf read wrong"
+            "multiply_restart_hamiltonian: restart file CSF count mismatch"
 
 
         do stored_column_index = mpi_rank + 1, n, mpi_process_count

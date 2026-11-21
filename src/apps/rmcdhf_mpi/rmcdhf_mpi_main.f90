@@ -141,7 +141,7 @@ program rmcdhf_mpi_main
     call connect_mcp_files (closed_core_subshell_count, maximum_input_symmetry_blocks, block_labels, files%mcp)
     if(mpi_rank == 0) csf_descriptor_path = trim(serial_io_directory)//"/"//files%descriptors
     call load_csf_basis_data_mpi (csf_descriptor_path, core_subshell_count, block_labels)
-    if (closed_core_subshell_count /= core_subshell_count) error stop "rscfmpivu: ncore"
+    if (closed_core_subshell_count /= core_subshell_count) error stop "rmcdhf_mpi_main: closed-core subshell count mismatch"
 
     !=======================================================================
     !  Gather all remaining information and perform some setup. This

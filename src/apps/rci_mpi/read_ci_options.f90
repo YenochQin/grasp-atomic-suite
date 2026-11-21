@@ -66,7 +66,7 @@ contains
         ! Data loaded are: EMN,Z,/NPAR/,/NSMDAT/ where /.../ means whole
         ! common block.
         !
-        print *, "Calling SETISO ..."
+        print *, "Calling read_isotope_data ..."
         call read_mpi_isotope_data (isotope_file_path)
         !
         ! The speed of light, if non-default then spread from node-0

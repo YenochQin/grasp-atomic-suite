@@ -73,7 +73,7 @@ contains
         character  :: block_labels(*)*8
 
         ! Local constants
-        character(len=6), parameter :: routine_name = "GETSCD"
+        character(len=*), parameter :: routine_name = "read_scf_options"
 
         ! Local declarations
         integer :: np_status
@@ -221,11 +221,11 @@ contains
             end if
         end if
 
-        write (stderr_unit, *) "Enter the maximum number of SCF cycles:"
+        write (stderr_unit, *) "Enter the maximum number of read_scf_options cycles:"
         read (*, *) maximum_scf_iterations
 
         if (nondefault_options_flag==0) then
-            write(calculation_log_unit,*) maximum_scf_iterations,"! Number of SCF cycles"
+            write(calculation_log_unit,*) maximum_scf_iterations,"! Number of read_scf_options cycles"
         end if
         !
         !   Allow the user to modify other defaults

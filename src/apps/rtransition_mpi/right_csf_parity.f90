@@ -35,7 +35,7 @@ contains
             if (right_csf_parity > 127) right_csf_parity = right_csf_parity - 256
             right_csf_parity = sign(1,right_csf_parity)
         else
-            write (output_unit, *) "ISPARR: Argument ICSF is out of range."
+            write (output_unit, *) "right_csf_parity: Argument csf_index is out of range."
             stop
         end if
         !

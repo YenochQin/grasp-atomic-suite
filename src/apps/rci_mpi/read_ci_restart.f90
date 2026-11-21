@@ -103,8 +103,8 @@ contains
         !
         !   Allocate storage for the radial wavefunction arrays
         !
-        call alloc (radial_large_components, max_radial_points,orbital_count, "PF", "LODMIX")
-        call alloc (radial_small_components, max_radial_points,orbital_count, "QF", "LODMIX")
+        call alloc (radial_large_components, max_radial_points,orbital_count, "radial_large_components", "read_ci_restart")
+        call alloc (radial_small_components, max_radial_points,orbital_count, "radial_small_components", "read_ci_restart")
         !
         !   Read the orbital wavefunctions and the associated arrays
         !

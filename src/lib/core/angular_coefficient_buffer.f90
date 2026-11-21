@@ -22,18 +22,20 @@ contains
         select case (buffer_operation)
         case (1)
             angular_buffer_capacity = 10
-            call alloc (angular_coefficient_labels, 6,angular_buffer_capacity, "LABEL", "ALCBUF")
-            call alloc (angular_coefficients, angular_buffer_capacity, "COEFF", "ALCBUF")
+            call alloc (angular_coefficient_labels, 6,angular_buffer_capacity, "angular_coefficient_labels", &
+                "manage_angular_coefficient_buffer")
+            call alloc (angular_coefficients, angular_buffer_capacity, "angular_coefficients", "manage_angular_coefficient_buffer")
         case (2)
             new_buffer_capacity = angular_buffer_capacity + angular_buffer_capacity
-            call ralloc(angular_coefficient_labels,6,new_buffer_capacity, "LABEL", "ALCBUF")
-            call ralloc(angular_coefficients,new_buffer_capacity, "COEFF", "ALCBUF")
+            call ralloc(angular_coefficient_labels,6,new_buffer_capacity, "angular_coefficient_labels", &
+                "manage_angular_coefficient_buffer")
+            call ralloc(angular_coefficients,new_buffer_capacity, "angular_coefficients", "manage_angular_coefficient_buffer")
             angular_buffer_capacity = new_buffer_capacity
         case (3)
-            call dalloc(angular_coefficient_labels, "LABEL", "ALCBUF")
-            call dalloc(angular_coefficients, "COEFF", "ALCBUF")
+            call dalloc(angular_coefficient_labels, "angular_coefficient_labels", "manage_angular_coefficient_buffer")
+            call dalloc(angular_coefficients, "angular_coefficients", "manage_angular_coefficient_buffer")
         case default
-            write (output_unit, *) "ALCBUF: Invalid argument MODE = ", buffer_operation
+            write (output_unit, *) "manage_angular_coefficient_buffer: Invalid buffer_operation = ", buffer_operation
             stop
         end select
         return

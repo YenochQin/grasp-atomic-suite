@@ -120,12 +120,17 @@ contains
         sort_capacity_per_channel = sort_buffer_capacity/(2+max_coulomb_multipole_rank)
         sort_buffer_capacity = sort_capacity_per_channel*(2+max_coulomb_multipole_rank)
         !GG      PRINT*, "The program alloc Memory for sorting:",IGGMAX
-        call alloc(two_electron_counts_by_rank, 0, max_coulomb_multipole_rank, "LLISTV", "MCP")
-        call alloc (mark, max_coulomb_multipole_rank + 1,"MARK", "MCP")
-        call alloc (channel_coefficients,sort_capacity_per_channel,max_coulomb_multipole_rank+2,"TCOEFF","MCP")
-        call alloc (channel_csf_columns,sort_capacity_per_channel,max_coulomb_multipole_rank+2,"TICLMN","MCP")
-        call alloc (channel_matrix_positions,sort_capacity_per_channel,max_coulomb_multipole_rank+2,"TINDEX","MCP")
-        call alloc (channel_packed_orbital_labels,sort_capacity_per_channel,max_coulomb_multipole_rank+2,"TLABEL","MCP")
+        call alloc(two_electron_counts_by_rank, 0, max_coulomb_multipole_rank, "two_electron_counts_by_rank", &
+            "compute_mcp_angular_coefficients")
+        call alloc (mark, max_coulomb_multipole_rank + 1,"MARK", "compute_mcp_angular_coefficients")
+        call alloc (channel_coefficients,sort_capacity_per_channel,max_coulomb_multipole_rank+2,"channel_coefficients", &
+            "compute_mcp_angular_coefficients")
+        call alloc (channel_csf_columns,sort_capacity_per_channel,max_coulomb_multipole_rank+2,"channel_csf_columns", &
+            "compute_mcp_angular_coefficients")
+        call alloc (channel_matrix_positions,sort_capacity_per_channel,max_coulomb_multipole_rank+2,"channel_matrix_positions", &
+            "compute_mcp_angular_coefficients")
+        call alloc (channel_packed_orbital_labels,sort_capacity_per_channel,max_coulomb_multipole_rank+2, &
+            "channel_packed_orbital_labels","compute_mcp_angular_coefficients")
         markt = 0
         mark = 0
         ! GG end
@@ -161,7 +166,7 @@ contains
         !
         if (ldbpa(2) .or. ldbpa(3)) then
             call ensure_debug_output()
-            write (angular_debug_unit,'(/"From MCP:")')
+            write (angular_debug_unit,'(/"From compute_mcp_angular_coefficients:")')
         end if
         !
         !   JA and JB respectively refer to the initial and final states
@@ -206,15 +211,17 @@ contains
                                     sort_buffer_capacity = requested_sort_capacity
                                     sort_capacity_per_channel = sort_buffer_capacity/(2+max_coulomb_multipole_rank)
                                     call ralloc                                    &
-                                        (channel_coefficients,sort_capacity_per_channel,max_coulomb_multipole_rank+2,"TCOEFF","MCP")
+                                        (channel_coefficients,sort_capacity_per_channel,max_coulomb_multipole_rank+2, &
+                                            "channel_coefficients","compute_mcp_angular_coefficients")
                                     call ralloc                                    &
-                                        (channel_csf_columns,sort_capacity_per_channel,max_coulomb_multipole_rank+2,"TICLMN","MCP")
+                                        (channel_csf_columns,sort_capacity_per_channel,max_coulomb_multipole_rank+2, &
+                                            "channel_csf_columns","compute_mcp_angular_coefficients")
                                     call ralloc                                    &
                                         (channel_matrix_positions,sort_capacity_per_channel,max_coulomb_multipole_rank+2, &
-                                        & "TINDEX","MCP")
+                                        & "channel_matrix_positions","compute_mcp_angular_coefficients")
                                     call ralloc                                    &
                                         (channel_packed_orbital_labels,sort_capacity_per_channel,max_coulomb_multipole_rank+2, &
-                                        & "TLABEL","MCP")
+                                        & "channel_packed_orbital_labels","compute_mcp_angular_coefficients")
                                     channel_csf_columns(one_electron_coefficient_count,1) = csf_index
                                     channel_matrix_positions(one_electron_coefficient_count,1) = matrix_element_position
                                     channel_packed_orbital_labels(one_electron_coefficient_count,1) = packed_orbital_label
@@ -308,16 +315,16 @@ contains
                                         sort_capacity_per_channel = sort_buffer_capacity/(2+max_coulomb_multipole_rank)
                                         call ralloc                                    &
                                             (channel_coefficients,sort_capacity_per_channel,max_coulomb_multipole_rank+2, &
-                                            & "TCOEFF","MCP")
+                                            & "channel_coefficients","compute_mcp_angular_coefficients")
                                         call ralloc                                    &
                                             (channel_csf_columns,sort_capacity_per_channel,max_coulomb_multipole_rank+2, &
-                                            & "TICLMN","MCP")
+                                            & "channel_csf_columns","compute_mcp_angular_coefficients")
                                         call ralloc                                    &
                                             (channel_matrix_positions,sort_capacity_per_channel,max_coulomb_multipole_rank+2, &
-                                            & "TINDEX","MCP")
+                                            & "channel_matrix_positions","compute_mcp_angular_coefficients")
                                         call ralloc                                    &
                                             (channel_packed_orbital_labels,sort_capacity_per_channel,max_coulomb_multipole_rank+2, &
-                                            & "TLABEL","MCP")
+                                            & "channel_packed_orbital_labels","compute_mcp_angular_coefficients")
                                         channel_csf_columns(two_electron_counts_by_rank(multipole_rank),multipole_rank+2) = &
                                             & csf_index
                                         channel_matrix_positions(two_electron_counts_by_rank(multipole_rank),multipole_rank+2) = &
@@ -386,9 +393,9 @@ contains
         !
         !   Deallocate storage that is no longer required
         !
-        call dalloc (csf_subshell_occupations, "IQA", "MCP")
-        call dalloc (csf_subshell_quantum_codes, "JQSA", "MCP")
-        call dalloc (csf_coupling_quantum_codes, "JCUPA", "MCP")
+        call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "compute_mcp_angular_coefficients")
+        call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "compute_mcp_angular_coefficients")
+        call dalloc (csf_coupling_quantum_codes, "csf_coupling_quantum_codes", "compute_mcp_angular_coefficients")
         call manage_angular_coefficient_buffer (3)
         call record_stage("csf_and_pair_buffer_release", symmetry_block_index, stage_start_count)
         !
@@ -455,12 +462,12 @@ contains
             if (nondefault_options_flag /= 0 .and. mpi_rank == 0)               &
                 write (summary_output_unit,*) " k = ", multipole_rank, ": ", distinct_radial_integral_count, " Slater integrals;"
         end do
-        call dalloc (mark, "MARK","MCP")
-        call dalloc (channel_coefficients,"TCOEFF","MCP")
-        call dalloc (channel_csf_columns,"TICLMN","MCP")
-        call dalloc (channel_matrix_positions,"TINDEX","MCP")
-        call dalloc (channel_packed_orbital_labels,"TLABLE","MCP")
-        call dalloc(two_electron_counts_by_rank, "LLISTV", "MCP")
+        call dalloc (mark, "MARK","compute_mcp_angular_coefficients")
+        call dalloc (channel_coefficients,"channel_coefficients","compute_mcp_angular_coefficients")
+        call dalloc (channel_csf_columns,"channel_csf_columns","compute_mcp_angular_coefficients")
+        call dalloc (channel_matrix_positions,"channel_matrix_positions","compute_mcp_angular_coefficients")
+        call dalloc (channel_packed_orbital_labels,"channel_packed_orbital_labels","compute_mcp_angular_coefficients")
+        call dalloc(two_electron_counts_by_rank, "two_electron_counts_by_rank", "compute_mcp_angular_coefficients")
         return
     end subroutine compute_mcp_angular_coefficients
 end module compute_mcp_angular_coefficients_interface

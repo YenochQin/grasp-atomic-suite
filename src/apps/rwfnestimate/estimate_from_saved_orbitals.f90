@@ -87,9 +87,9 @@ contains
                     cycle
                 found = .true.
                 orbital_energy_parameters(orbital_index) = saved_orbital_energy
-                call alloc (saved_large_component, saved_grid_point_count, "PA", "FRMFRW")
-                call alloc (saved_small_component, saved_grid_point_count, "QA", "FRMFRW")
-                call alloc (saved_radial_grid, saved_grid_point_count, "RA", "FRMFRW")
+                call alloc (saved_large_component, saved_grid_point_count, "saved_large_component", "estimate_from_saved_orbitals")
+                call alloc (saved_small_component, saved_grid_point_count, "saved_small_component", "estimate_from_saved_orbitals")
+                call alloc (saved_radial_grid, saved_grid_point_count, "saved_radial_grid", "estimate_from_saved_orbitals")
                 read (wavefunction_input_unit) orbital_origin_parameters(orbital_index), &
                     & (saved_large_component(saved_grid_index),saved_grid_index=1,saved_grid_point_count), &
                     & (saved_small_component(saved_grid_index),saved_grid_index=1,saved_grid_point_count)
@@ -102,9 +102,9 @@ contains
                         orbital_principal_n(orbital_index), orbital_symmetry_labels(orbital_index), &
                         & orbital_energy_parameters(orbital_index), radial_norm
                 end if
-                call dalloc (saved_large_component, "PA", "FRMFRW")
-                call dalloc (saved_small_component, "QA", "FRMFRW")
-                call dalloc (saved_radial_grid, "RA", "FRMFRW")
+                call dalloc (saved_large_component, "saved_large_component", "estimate_from_saved_orbitals")
+                call dalloc (saved_small_component, "saved_small_component", "estimate_from_saved_orbitals")
+                call dalloc (saved_radial_grid, "saved_radial_grid", "estimate_from_saved_orbitals")
                 file_path_length = len_trim(file_path)
                 orbital_initialized(orbital_index) = .true.
                 orbital_source_description(orbital_index) = file_path(1:3)

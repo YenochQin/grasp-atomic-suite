@@ -9,7 +9,7 @@ import shutil
 import tempfile
 
 from check_upstream import main as verify
-from check_upstream import APP_MODULES_SNAPSHOT, APP_SYMBOLS_SNAPSHOT, suite_source_path
+from check_upstream import APP_MODULES_SNAPSHOT, APP_SYMBOLS_SNAPSHOT, DIAGNOSTIC_LABELS_SNAPSHOT, suite_source_path
 
 
 def main() -> None:
@@ -47,6 +47,7 @@ def main() -> None:
                          "docs/reference/rmcdhf_app_symbols_snapshot.json",
                          "docs/reference/rmcdhf_app_source_style_snapshot.json",
                          "docs/reference/rmcdhf_app_modules_snapshot.json",
+                         DIAGNOSTIC_LABELS_SNAPSHOT,
                          "docs/reference/rmcdhf_grasp_mpi_naming_snapshot.json",
                          "docs/reference/rmcdhf_grasp_shared_naming_snapshot.json",
                          "docs/reference/rmcdhf_davidson_naming_snapshot.json",
@@ -76,7 +77,12 @@ def main() -> None:
                          "docs/reference/rmcdhf_use_only_orb_label_snapshot.json"):
             target = work / relative
             original = target.read_bytes()
-            target.write_bytes(original + b"\n")
+            if relative == DIAGNOSTIC_LABELS_SNAPSHOT:
+                snapshot = json.loads(original)
+                next(iter(snapshot["files"].values()))["after_suite_sha256"] = "0" * 64
+                target.write_text(json.dumps(snapshot))
+            else:
+                target.write_bytes(original + b"\n")
             try:
                 verify(work)
             except AssertionError:

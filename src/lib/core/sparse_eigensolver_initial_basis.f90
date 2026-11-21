@@ -34,7 +34,8 @@ contains
 
         ! Convert the leading sparse block to LAPACK upper-triangle packed storage.
         submatrix_order = min(maximum_submatrix_order,csf_count)
-        call alloc (packed_submatrix, (submatrix_order*(submatrix_order + 1))/2, "AP", "INIEST2")
+        call alloc (packed_submatrix, (submatrix_order*(submatrix_order + 1))/2, "packed_submatrix", &
+            "estimate_sparse_initial_basis")
         call initialize_real_vector ((submatrix_order*(submatrix_order + 1))/2, 0.0_real64, packed_submatrix, 1)
 
         previous_sparse_column_end = 0
@@ -46,11 +47,11 @@ contains
             previous_sparse_column_end = column_end_offsets(column_index)
         end do
 
-        call alloc(eigenvalues, submatrix_order, "EIGVAL", "INIEST2")
-        call alloc (eigenvectors, submatrix_order*requested_eigenvector_count, "VEC", "INIEST2")
-        call alloc (real_workspace, 8*submatrix_order, "WORK", "INIEST2")
-        call alloc (integer_workspace, 8*submatrix_order, "IWORK", "INIEST2")
-        call alloc (failed_eigenvector_indices, submatrix_order, "IFAIL", "INIEST2")
+        call alloc(eigenvalues, submatrix_order, "eigenvalues", "estimate_sparse_initial_basis")
+        call alloc (eigenvectors, submatrix_order*requested_eigenvector_count, "eigenvectors", "estimate_sparse_initial_basis")
+        call alloc (real_workspace, 8*submatrix_order, "real_workspace", "estimate_sparse_initial_basis")
+        call alloc (integer_workspace, 8*submatrix_order, "integer_workspace", "estimate_sparse_initial_basis")
+        call alloc (failed_eigenvector_indices, submatrix_order, "failed_eigenvector_indices", "estimate_sparse_initial_basis")
 
         call dspevx ("Vectors also", "In a range", "Upper triangular", submatrix_order, packed_submatrix, &
             -1.0_real64, -1.0_real64, 1, requested_eigenvector_count, 0.0_real64, found_eigenvector_count, eigenvalues, &
@@ -68,12 +69,12 @@ contains
         call dcopy (requested_eigenvector_count, eigenvalues, 1, &
             & start_vectors_and_eigenvalues(requested_eigenvector_count*csf_count+1), 1)
 
-        call dalloc (packed_submatrix, "AP", "INIEST2")
-        call dalloc (eigenvalues, "EIGVAL", "INIEST2")
-        call dalloc (eigenvectors, "VEC", "INIEST2")
-        call dalloc (real_workspace, "WORK", "INIEST2")
-        call dalloc (integer_workspace, "IWORK", "INIEST2")
-        call dalloc (failed_eigenvector_indices, "IFAIL", "INIEST2")
+        call dalloc (packed_submatrix, "packed_submatrix", "estimate_sparse_initial_basis")
+        call dalloc (eigenvalues, "eigenvalues", "estimate_sparse_initial_basis")
+        call dalloc (eigenvectors, "eigenvectors", "estimate_sparse_initial_basis")
+        call dalloc (real_workspace, "real_workspace", "estimate_sparse_initial_basis")
+        call dalloc (integer_workspace, "integer_workspace", "estimate_sparse_initial_basis")
+        call dalloc (failed_eigenvector_indices, "failed_eigenvector_indices", "estimate_sparse_initial_basis")
 
         return
     end subroutine estimate_sparse_initial_basis

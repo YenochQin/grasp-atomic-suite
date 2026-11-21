@@ -40,11 +40,15 @@ contains
             !   Read the initial state mixing file
             !
             read (initial_mixing_unit) ib, initial_csf_count, initial_level_count, iatjp, iaspa
-            call alloc (initial_shifted_eigenvalues, initial_level_count, "EVALII", "READMIX")
-            call alloc (initial_csf_mixing_coefficients, initial_csf_count*initial_level_count, "EVECII", "READMIX")
-            call alloc (initial_level_indices, initial_level_count,"IVECII", "READMIX" )
-            call alloc (initial_level_two_j_plus_one, initial_level_count, "IATJPOII", "READMIX")
-            call alloc (initial_level_parity_signs, initial_level_count, "ISPARII", "READMIX")
+            call alloc (initial_shifted_eigenvalues, initial_level_count, "initial_shifted_eigenvalues", &
+                "read_transition_mixing_coefficients")
+            call alloc (initial_csf_mixing_coefficients, initial_csf_count*initial_level_count, "initial_csf_mixing_coefficients", &
+                "read_transition_mixing_coefficients")
+            call alloc (initial_level_indices, initial_level_count,"initial_level_indices", "read_transition_mixing_coefficients" )
+            call alloc (initial_level_two_j_plus_one, initial_level_count, "initial_level_two_j_plus_one", &
+                "read_transition_mixing_coefficients")
+            call alloc (initial_level_parity_signs, initial_level_count, "initial_level_parity_signs", &
+                "read_transition_mixing_coefficients")
             read (initial_mixing_unit) (initial_level_indices(i),i=1,initial_level_count)
             initial_level_two_j_plus_one(:initial_level_count) = iatjp
             initial_level_parity_signs(:initial_level_count) = iaspa
@@ -61,11 +65,15 @@ contains
             !
 
             read (final_mixing_unit) ib, final_csf_count, final_level_count, iatjp, iaspa
-            call alloc (final_shifted_eigenvalues, final_level_count, "EVALFF", "READMIX")
-            call alloc (final_csf_mixing_coefficients, final_csf_count*final_level_count, "EVECFF", "READMIX")
-            call alloc (final_level_indices, final_level_count,"IVECFF", "READMIX" )
-            call alloc (final_level_two_j_plus_one, final_level_count, "IATJPOFF", "READMIX")
-            call alloc (final_level_parity_signs, final_level_count, "ISPARFF", "READMIX")
+            call alloc (final_shifted_eigenvalues, final_level_count, "final_shifted_eigenvalues", &
+                "read_transition_mixing_coefficients")
+            call alloc (final_csf_mixing_coefficients, final_csf_count*final_level_count, "final_csf_mixing_coefficients", &
+                "read_transition_mixing_coefficients")
+            call alloc (final_level_indices, final_level_count,"final_level_indices", "read_transition_mixing_coefficients" )
+            call alloc (final_level_two_j_plus_one, final_level_count, "final_level_two_j_plus_one", &
+                "read_transition_mixing_coefficients")
+            call alloc (final_level_parity_signs, final_level_count, "final_level_parity_signs", &
+                "read_transition_mixing_coefficients")
             read (final_mixing_unit) (final_level_indices(i),i=1,final_level_count)
             final_level_two_j_plus_one(:final_level_count) = iatjp
             final_level_parity_signs(:final_level_count) = iaspa

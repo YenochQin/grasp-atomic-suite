@@ -21,7 +21,7 @@ contains
         logical, intent(in) :: print_details
 
         ! Local constants
-        character(len=9), parameter :: routine_name ="outsdampi"
+        character(len=*), parameter :: routine_name ="write_mcp_sparsity_summary_mpi"
 
         ! Local declarations
         integer :: nnonz_a

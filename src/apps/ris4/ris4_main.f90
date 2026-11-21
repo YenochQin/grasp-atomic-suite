@@ -57,7 +57,7 @@ program ris4_main
     cutoff = 1.0e-10_real64
     !
     write (stderr_unit, *)
-    write (stderr_unit, *) "RIS: Execution begins ..."
+    write (stderr_unit, *) "ris4_main: Execution begins ..."
     !      CALL STARTTIME (ncount1, 'RIS')
 
     write (stderr_unit, *)
@@ -144,7 +144,7 @@ program ris4_main
     !
     write (stderr_unit, *)
     !      CALL STOPTIME (ncount1, 'RIS')
-    write (stderr_unit, *) "RIS: Execution complete."
+    write (stderr_unit, *) "ris4_main: Execution complete."
     !
     stop
 end  program ris4_main

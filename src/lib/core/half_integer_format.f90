@@ -39,7 +39,7 @@ contains
             text_length = log10(dble(numerator_to_print)) + 1
         end if
         if (text_length > len(angular_momentum_text)) then
-            write (output_unit, *) "CONVRT_DOUBLE: Length of CNUM inadeuate."
+            write (output_unit, *) "format_half_integer: number_text is too short."
             error stop
         else
             if (text_length <= 9) then
@@ -51,7 +51,7 @@ contains
             end if
             if(mod(twice_angular_momentum,2) /= 0) then
                 if (text_length+2 > len(angular_momentum_text)) then
-                    write (output_unit, *) "CONVRT_DOUBLE: Length of CNUM inadeuate."
+                    write (output_unit, *) "format_half_integer: number_text is too short."
                     error stop
                 else
                     angular_momentum_text(1:text_length+2) = angular_momentum_text(1:text_length)//"/2"

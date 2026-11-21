@@ -42,7 +42,7 @@ contains
                 & ket_shell_2,2,interaction_type)
         else
             call ensure_debug_output()
-            write(angular_debug_unit,'(5x,"ERRO IN EL5 ")')
+            write(angular_debug_unit,'(5x,"ERRO IN accumulate_four_shell_transfers ")')
             stop
         end if
         return

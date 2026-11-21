@@ -46,13 +46,13 @@ contains
             !
             !   Allocate storage for arrays
             !
-            call alloc (first_coefficient_indices, label_capacity, "IBEG", "ALCLLA")
-            call alloc (node_integral_labels, label_capacity, "ILAB", "ALCLLA")
-            call alloc (parent_nodes, label_capacity, "ILAST", "ALCLLA")
-            call alloc (left_child_nodes, label_capacity, "ILEFT", "ALCLLA")
-            call alloc (coefficient_end_offsets, label_capacity, "IPTCSF", "ALCLLA")
-            call alloc (right_child_nodes, label_capacity, "IRIGHT", "ALCLLA")
-            call alloc (sorted_integral_labels, label_capacity, "LBLINT", "ALCLLA")
+            call alloc (first_coefficient_indices, label_capacity, "first_coefficient_indices", "resize_transition_label_arrays")
+            call alloc (node_integral_labels, label_capacity, "node_integral_labels", "resize_transition_label_arrays")
+            call alloc (parent_nodes, label_capacity, "parent_nodes", "resize_transition_label_arrays")
+            call alloc (left_child_nodes, label_capacity, "left_child_nodes", "resize_transition_label_arrays")
+            call alloc (coefficient_end_offsets, label_capacity, "coefficient_end_offsets", "resize_transition_label_arrays")
+            call alloc (right_child_nodes, label_capacity, "right_child_nodes", "resize_transition_label_arrays")
+            call alloc (sorted_integral_labels, label_capacity, "sorted_integral_labels", "resize_transition_label_arrays")
         !
         case (2)
             !
@@ -60,13 +60,13 @@ contains
             !
             new_capacity = 2*label_capacity
             !
-            call ralloc (first_coefficient_indices, new_capacity, "IBEG", "ALCLLA")
-            call ralloc (node_integral_labels, new_capacity, "ILAB", "ALCLLA")
-            call ralloc (parent_nodes, new_capacity, "ILAST", "ALCLLA")
-            call ralloc (left_child_nodes, new_capacity, "ILEFT", "ALCLLA")
-            call ralloc (coefficient_end_offsets, new_capacity, "IPTCSF", "ALCLLA")
-            call ralloc (right_child_nodes, new_capacity, "IRIGHT", "ALCLLA")
-            call ralloc (sorted_integral_labels, new_capacity, "LBLINT", "ALCLLA")
+            call ralloc (first_coefficient_indices, new_capacity, "first_coefficient_indices", "resize_transition_label_arrays")
+            call ralloc (node_integral_labels, new_capacity, "node_integral_labels", "resize_transition_label_arrays")
+            call ralloc (parent_nodes, new_capacity, "parent_nodes", "resize_transition_label_arrays")
+            call ralloc (left_child_nodes, new_capacity, "left_child_nodes", "resize_transition_label_arrays")
+            call ralloc (coefficient_end_offsets, new_capacity, "coefficient_end_offsets", "resize_transition_label_arrays")
+            call ralloc (right_child_nodes, new_capacity, "right_child_nodes", "resize_transition_label_arrays")
+            call ralloc (sorted_integral_labels, new_capacity, "sorted_integral_labels", "resize_transition_label_arrays")
             !
             label_capacity = new_capacity
         !
@@ -74,17 +74,17 @@ contains
             !
             !   Deallocate the storage for the arrays
             !
-            call dalloc (first_coefficient_indices, "IBEG", "ALCLLA")
-            call dalloc (node_integral_labels, "ILAB", "ALCLLA")
-            call dalloc (parent_nodes, "ILAST", "ALCLLA")
-            call dalloc (left_child_nodes, "ILEFT", "ALCLLA")
-            call dalloc (coefficient_end_offsets, "IPTCSF", "ALCLLA")
-            call dalloc (right_child_nodes, "IRIGHT", "ALCLLA")
-            call dalloc (sorted_integral_labels, "LBLINT", "ALCLLA")
+            call dalloc (first_coefficient_indices, "first_coefficient_indices", "resize_transition_label_arrays")
+            call dalloc (node_integral_labels, "node_integral_labels", "resize_transition_label_arrays")
+            call dalloc (parent_nodes, "parent_nodes", "resize_transition_label_arrays")
+            call dalloc (left_child_nodes, "left_child_nodes", "resize_transition_label_arrays")
+            call dalloc (coefficient_end_offsets, "coefficient_end_offsets", "resize_transition_label_arrays")
+            call dalloc (right_child_nodes, "right_child_nodes", "resize_transition_label_arrays")
+            call dalloc (sorted_integral_labels, "sorted_integral_labels", "resize_transition_label_arrays")
         !
         case default
             !
-            write (output_unit, *) "ALCLLA: Invalid argument IMODE = ", resize_mode
+            write (output_unit, *) "resize_transition_label_arrays: Invalid resize_mode = ", resize_mode
             stop
             !
         end select

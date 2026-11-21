@@ -136,8 +136,10 @@ contains
                 !
                 if (vacuum_polarization_integral_count > vacuum_polarization_integral_capacity) then
                     new_integral_capacity = vacuum_polarization_integral_capacity+vacuum_polarization_integral_capacity/2
-                    call ralloc (vacuum_polarization_integral_indices,new_integral_capacity,"INDOEI", "VPINT")
-                    call ralloc (vacuum_polarization_integral_values,new_integral_capacity,"VALOEI", "VPINT")
+                    call ralloc (vacuum_polarization_integral_indices,new_integral_capacity, &
+                        "vacuum_polarization_integral_indices", "calculate_vacuum_polarization_integral")
+                    call ralloc (vacuum_polarization_integral_values,new_integral_capacity,"vacuum_polarization_integral_values", &
+                        "calculate_vacuum_polarization_integral")
                     vacuum_polarization_integral_capacity = new_integral_capacity
                 end if
                 !
@@ -163,8 +165,10 @@ contains
             !   NDVPA stores the array dimension
             !
             vacuum_polarization_integral_capacity = 2
-            call alloc (vacuum_polarization_integral_indices,vacuum_polarization_integral_capacity,"INDOEI", "VPINT")
-            call alloc (vacuum_polarization_integral_values,vacuum_polarization_integral_capacity,"VALOEI", "VPINT")
+            call alloc (vacuum_polarization_integral_indices,vacuum_polarization_integral_capacity, &
+                "vacuum_polarization_integral_indices", "calculate_vacuum_polarization_integral")
+            call alloc (vacuum_polarization_integral_values,vacuum_polarization_integral_capacity, &
+                "vacuum_polarization_integral_values", "calculate_vacuum_polarization_integral")
             !
             !   Compute the integral's value
             !

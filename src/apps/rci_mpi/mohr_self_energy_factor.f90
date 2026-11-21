@@ -87,7 +87,7 @@ contains
                 call interpolate_aitken (tabulated_nuclear_charges, factors_1s, tabulated_charge_count, nuclear_charge, &
                     & interpolated_factor, interpolation_tolerance)
             else
-                write (*, '("MOHR:")')
+                write (*, '("mohr_self_energy_factor:")')
                 write (*, '(" Principal quantum number, ",i12,", kappa, ",1i3,".")') principal_n, kappa
                 stop
             end if
@@ -103,12 +103,12 @@ contains
                 call interpolate_aitken (tabulated_nuclear_charges, factors_2p_three_halves, tabulated_charge_count, &
                     & nuclear_charge, interpolated_factor, interpolation_tolerance)
             case default
-                write (*, '("MOHR:")')
+                write (*, '("mohr_self_energy_factor:")')
                 write (*, '(" Principal quantum number, ",i12,", kappa, ",1i3,".")') principal_n, kappa
                 stop
             end select
         else
-            write (*, '("MOHR:")')
+            write (*, '("mohr_self_energy_factor:")')
             write (*, '(" Principal quantum number, ",1i2,", Should be either 1 or 2.")') principal_n
             stop
         end if

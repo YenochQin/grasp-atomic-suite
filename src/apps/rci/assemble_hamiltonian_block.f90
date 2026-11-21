@@ -107,7 +107,7 @@ contains
             itype, iia
         real(real64) :: elemnt, precoeff, tcoeff, vcoeff, contr
         !-----------------------------------------------------------------------
-        print *, "Calling setham ..."
+        print *, "Calling assemble_hamiltonian_block ..."
         !cjb
         !cjb  CUTOFF = 1.0D-12
         cutoff = 1.0e-12_real64
@@ -132,8 +132,8 @@ contains
         call manage_angular_coefficient_buffer (1)
 
         !     ...Locals
-        call alloc (hamiltonian_values, csf_count, "EMT","SETHAM" )
-        call alloc (matrix_partner_indices, csf_count, "IROW", "SETHAM")
+        call alloc (hamiltonian_values, csf_count, "hamiltonian_values","assemble_hamiltonian_block" )
+        call alloc (matrix_partner_indices, csf_count, "matrix_partner_indices", "assemble_hamiltonian_block")
         !
         inc1 = 1
         inc2 = 1
@@ -417,8 +417,8 @@ contains
         call manage_angular_coefficient_buffer (3)
 
         !     ...Locals
-        call dalloc (hamiltonian_values, "EMT", "SETHAM")
-        call dalloc (matrix_partner_indices, "IROW", "SETHAM")
+        call dalloc (hamiltonian_values, "hamiltonian_values", "assemble_hamiltonian_block")
+        call dalloc (matrix_partner_indices, "matrix_partner_indices", "assemble_hamiltonian_block")
 
         !  Fill the common block /setham_to_genmat2/ for use in genmat2
 

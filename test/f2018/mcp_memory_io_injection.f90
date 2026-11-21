@@ -73,7 +73,7 @@ contains
         character(*), intent(in) :: var, caller
         allocate(p(n))
         p = 0
-        if (var == "COEFF_32") call rewrite_input()
+        if (var == "COEFF_32" .or. var == "angular_contribution_coefficients_mcp_32") call rewrite_input()
     end subroutine fixture_alloc_r
     subroutine fixture_alloc_rl(p, n, var, caller)
         use, intrinsic :: iso_fortran_env, only: real64, int64
@@ -82,6 +82,6 @@ contains
         character(*), intent(in) :: var, caller
         allocate(p(n))
         p = 0
-        if (var == "COEFF_32") call rewrite_input()
+        if (var == "COEFF_32" .or. var == "angular_contribution_coefficients_mcp_32") call rewrite_input()
     end subroutine fixture_alloc_rl
 end module array_memory_management

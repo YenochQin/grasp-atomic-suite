@@ -129,7 +129,7 @@ contains
 
             !        ...Obtain ivec() from iccmin()
             if (active_level_count > 0) then
-                call alloc (active_level_indices, active_level_count, "IVEC", "MATRIX")
+                call alloc (active_level_indices, active_level_count, "active_level_indices", "solve_hamiltonian_blocks")
                 do level_index = 1, active_level_count
                     active_level_indices(level_index) = requested_level_indices(level_index+selected_level_offset)
                 end do
@@ -141,8 +141,8 @@ contains
             !        ... both allocation and deallocation are placed here.
             call allocate_descriptor_arrays(csf_count,csf_subshell_occupations, &
                 csf_subshell_quantum_codes,csf_coupling_quantum_codes)
-            call alloc (csf_self_energies,csf_count,"SLF_EN", "MATRIX")
-            call alloc (orbital_occupation_weights, orbital_count,"UCF", "MATRIX")
+            call alloc (csf_self_energies,csf_count,"csf_self_energies", "solve_hamiltonian_blocks")
+            call alloc (orbital_occupation_weights, orbital_count,"orbital_occupation_weights", "solve_hamiltonian_blocks")
             do csf_index=1,csf_count
                 csf_self_energies(csf_index) = 0.0
             end do
@@ -198,8 +198,10 @@ contains
                 !   Allocate and deallocate memory for the mixing coefficients
                 !   from the prerun
                 !
-                if (prerun_stage==1) call alloc (previous_csf_mixing_coefficients,csf_count*active_level_count, "EVEC1", "MATRIX")
-                if (prerun_stage==2) call dalloc (previous_csf_mixing_coefficients, "EVEC1", "MATRIX")
+                if (prerun_stage==1) call alloc (previous_csf_mixing_coefficients,csf_count*active_level_count, &
+                    "previous_csf_mixing_coefficients", "solve_hamiltonian_blocks")
+                if (prerun_stage==2) call dalloc (previous_csf_mixing_coefficients, "previous_csf_mixing_coefficients", &
+                    "solve_hamiltonian_blocks")
 
                 ! Since maneig needs both nelmnt and nelmnt_a, # of non-zero
                 ! matrix elements computed by current node and the total #
@@ -264,7 +266,7 @@ contains
                 !
                 if (.not.estimate_self_energy) then
                     if (mpi_rank == 0)            print *, "Entering QED ..."
-                    call alloc (corrected_level_energies,active_level_count,"ETOT", "MATRIX")
+                    call alloc (corrected_level_energies,active_level_count,"corrected_level_energies", "solve_hamiltonian_blocks")
                     if (mpi_rank == 0) then
                         write (summary_output_unit,*)
                         write (summary_output_unit,*) " Self Energy Corrections: "
@@ -306,23 +308,23 @@ contains
                             active_level_count,energy_difference_mode)
                         ! zou       CALL ENGOUT (EAV+elsto,ETOT,IiATJPO,iIASPAR,IVEC,NVEC,MODE)
                     end if
-                    call dalloc (corrected_level_energies, "ETOT", "MATRIX")
+                    call dalloc (corrected_level_energies, "corrected_level_energies", "solve_hamiltonian_blocks")
                 end if
 
                 !        ...Locals
-                call dalloc (active_level_indices, "IVEC", "MATRIX")
+                call dalloc (active_level_indices, "active_level_indices", "solve_hamiltonian_blocks")
                 !        ...Allocated in maneig
-                call dalloc (shifted_eigenvalues, "EVAL", "MATRIX")
-                call dalloc (csf_mixing_coefficients, "EVEC", "MATRIX")
+                call dalloc (shifted_eigenvalues, "shifted_eigenvalues", "solve_hamiltonian_blocks")
+                call dalloc (csf_mixing_coefficients, "csf_mixing_coefficients", "solve_hamiltonian_blocks")
 
             end if
 
             !        ...Locals
-            call dalloc (csf_subshell_occupations, "IQA", "MATRIX")
-            call dalloc (csf_subshell_quantum_codes, "JQSA", "MATRIX")
-            call dalloc (csf_coupling_quantum_codes, "JCUPA", "MATRIX")
-            call dalloc (csf_self_energies, "SLF_EN", "MATRIX")
-            call dalloc (orbital_occupation_weights, "UCF", "MATRIX")
+            call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "solve_hamiltonian_blocks")
+            call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "solve_hamiltonian_blocks")
+            call dalloc (csf_coupling_quantum_codes, "csf_coupling_quantum_codes", "solve_hamiltonian_blocks")
+            call dalloc (csf_self_energies, "csf_self_energies", "solve_hamiltonian_blocks")
+            call dalloc (orbital_occupation_weights, "orbital_occupation_weights", "solve_hamiltonian_blocks")
 
         end do
         !
@@ -330,22 +332,22 @@ contains
         !
         close (restart_matrix_unit)
         !     ...Clean up
-        call dalloc (csf_counts_by_block, "NCFBLK", "MATRIX")
-        call dalloc (eigenvector_counts_by_block, "NEVBLK", "MATRIX")
-        call dalloc (highest_selected_level_by_block, "NCMAXBLK", "MATRIX")
-        call dalloc (csf_cutoff_by_block, "ICUTTBLK", "MATRIX")
-        call dalloc (requested_level_indices, "ICCMIN", "MATRIX") ! allocated in items as pnccmin
+        call dalloc (csf_counts_by_block, "csf_counts_by_block", "solve_hamiltonian_blocks")
+        call dalloc (eigenvector_counts_by_block, "eigenvector_counts_by_block", "solve_hamiltonian_blocks")
+        call dalloc (highest_selected_level_by_block, "highest_selected_level_by_block", "solve_hamiltonian_blocks")
+        call dalloc (csf_cutoff_by_block, "csf_cutoff_by_block", "solve_hamiltonian_blocks")
+        call dalloc (requested_level_indices, "requested_level_indices", "solve_hamiltonian_blocks") ! allocated in items as pnccmin
 
-        call dalloc (local_slater_integral_values, "VALTEIRK", "MATRIX") ! allocated in genintrk
-        call dalloc (local_slater_integral_indices, "INDTEIRK", "MATRIX") ! allocated in genintrk
+        call dalloc (local_slater_integral_values, "local_slater_integral_values", "solve_hamiltonian_blocks") ! allocated in genintrk
+        call dalloc (local_slater_integral_indices, "local_slater_integral_indices", "solve_hamiltonian_blocks") ! allocated in genintrk
         !
         !   Deallocate storage for the integral lists from the
         !   Dirac-Coulomb operator; the storage was allocated
         !   in IABINT and RKINTC
         !
         if (coulomb_integral_count > 0) then
-            call dalloc (coulomb_integral_indices, "INDOEI", "MATRIX")
-            call dalloc (coulomb_integral_values, "VALOEI", "MATRIX")
+            call dalloc (coulomb_integral_indices, "coulomb_integral_indices", "solve_hamiltonian_blocks")
+            call dalloc (coulomb_integral_values, "coulomb_integral_values", "solve_hamiltonian_blocks")
         end if
         !
         !   Deallocate storage for the integral lists from the
@@ -354,28 +356,28 @@ contains
         !
         if (include_transverse_interaction) then
             if (breit_integral_counts(1) > 0) then
-                call dalloc (breit_integral_indices_1, "INDTP1", "MATRIX")
-                call dalloc (breit_integral_values_1, "VALTP1", "MATRIX")
+                call dalloc (breit_integral_indices_1, "breit_integral_indices_1", "solve_hamiltonian_blocks")
+                call dalloc (breit_integral_values_1, "breit_integral_values_1", "solve_hamiltonian_blocks")
             end if
             if (breit_integral_counts(2) > 0) then
-                call dalloc (breit_integral_indices_2, "INDTP2", "MATRIX")
-                call dalloc (breit_integral_values_2, "VALTP2", "MATRIX")
+                call dalloc (breit_integral_indices_2, "breit_integral_indices_2", "solve_hamiltonian_blocks")
+                call dalloc (breit_integral_values_2, "breit_integral_values_2", "solve_hamiltonian_blocks")
             end if
             if (breit_integral_counts(3) > 0) then
-                call dalloc (breit_integral_indices_3, "INDTP3", "MATRIX")
-                call dalloc (breit_integral_values_3, "VALTP3", "MATRIX")
+                call dalloc (breit_integral_indices_3, "breit_integral_indices_3", "solve_hamiltonian_blocks")
+                call dalloc (breit_integral_values_3, "breit_integral_values_3", "solve_hamiltonian_blocks")
             end if
             if (breit_integral_counts(4) > 0) then
-                call dalloc (breit_integral_indices_4, "INDTP4", "MATRIX")
-                call dalloc (breit_integral_values_4, "VALTP4", "MATRIX")
+                call dalloc (breit_integral_indices_4, "breit_integral_indices_4", "solve_hamiltonian_blocks")
+                call dalloc (breit_integral_values_4, "breit_integral_values_4", "solve_hamiltonian_blocks")
             end if
             if (breit_integral_counts(5) > 0) then
-                call dalloc (breit_integral_indices_5, "INDTP5", "MATRIX")
-                call dalloc (breit_integral_values_5, "VALTP5", "MATRIX")
+                call dalloc (breit_integral_indices_5, "breit_integral_indices_5", "solve_hamiltonian_blocks")
+                call dalloc (breit_integral_values_5, "breit_integral_values_5", "solve_hamiltonian_blocks")
             end if
             if (breit_integral_counts(6) > 0) then
-                call dalloc (breit_integral_indices_6, "INDTP6", "MATRIX")
-                call dalloc (breit_integral_values_6, "VALTP6", "MATRIX")
+                call dalloc (breit_integral_indices_6, "breit_integral_indices_6", "solve_hamiltonian_blocks")
+                call dalloc (breit_integral_values_6, "breit_integral_values_6", "solve_hamiltonian_blocks")
             end if
         end if
         !
@@ -384,14 +386,14 @@ contains
         !
         if (include_normal_mass_shift) then
             if (kinetic_integral_count > 0) then
-                call dalloc (kinetic_integral_indices, "INDKEI", "MATRIX")
-                call dalloc (kinetic_integral_values, "VALKEI", "MATRIX")
+                call dalloc (kinetic_integral_indices, "kinetic_integral_indices", "solve_hamiltonian_blocks")
+                call dalloc (kinetic_integral_values, "kinetic_integral_values", "solve_hamiltonian_blocks")
             end if
         end if
         if (include_specific_mass_shift) then
             if (vinti_integral_count > 0) then
-                call dalloc (vinti_integral_indices, "INDTEI", "MATRIX")
-                call dalloc (vinti_integral_values, "VALTIE", "MATRIX")
+                call dalloc (vinti_integral_indices, "vinti_integral_indices", "solve_hamiltonian_blocks")
+                call dalloc (vinti_integral_values, "vinti_integral_values", "solve_hamiltonian_blocks")
             end if
         end if
         !
@@ -400,13 +402,14 @@ contains
         !
         if (include_vacuum_polarization) then
             if (vacuum_polarization_integral_count > 0) then
-                call dalloc (vacuum_polarization_integral_indices, "INDVPI", "MATRIX")
-                call dalloc (vacuum_polarization_integral_values, "VALVPI", "MATRIX")
+                call dalloc (vacuum_polarization_integral_indices, "vacuum_polarization_integral_indices", &
+                    "solve_hamiltonian_blocks")
+                call dalloc (vacuum_polarization_integral_values, "vacuum_polarization_integral_values", "solve_hamiltonian_blocks")
             end if
         end if
 
-        call dalloc (radial_large_components, "PF", "MATRIX") ! lodrwf or lodres
-        call dalloc (radial_small_components, "QF", "MATRIX") ! lodrwf or lodres
+        call dalloc (radial_large_components, "radial_large_components", "solve_hamiltonian_blocks") ! lodrwf or lodres
+        call dalloc (radial_small_components, "radial_small_components", "solve_hamiltonian_blocks") ! lodrwf or lodres
 
         return
 

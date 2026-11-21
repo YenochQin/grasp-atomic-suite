@@ -64,9 +64,10 @@ contains
         left_csf_count = csf_count
         left_orbital_count = orbital_count
         !
-        call alloc (left_occupations, max_orbitals, csf_count, "IQAR", "LDCSL1" )
-        call alloc (left_subshell_quantum_codes,max_orbitals,3,csf_count, "JQSAR", "LDCSL1")
-        call alloc (left_coupling_codes,max_orbitals, csf_count, "JCUPAR", "LDCSL1")
+        call alloc (left_occupations, max_orbitals, csf_count, "left_occupations", "load_initial_transition_basis" )
+        call alloc (left_subshell_quantum_codes,max_orbitals,3,csf_count, "left_subshell_quantum_codes", &
+            "load_initial_transition_basis")
+        call alloc (left_coupling_codes,max_orbitals, csf_count, "left_coupling_codes", "load_initial_transition_basis")
         !
         do i = 1,csf_count
             do j = 1,max_orbitals
@@ -93,9 +94,9 @@ contains
         !
         !   Deallocate storage so that LODCSL can restart correctly
         !
-        call dalloc (csf_subshell_occupations, "IQA", "LDCSL1")
-        call dalloc (csf_subshell_quantum_codes, "JQSA", "LDCSL1")
-        call dalloc (csf_coupling_quantum_codes, "JCUPA", "LDCSL1")
+        call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "load_initial_transition_basis")
+        call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "load_initial_transition_basis")
+        call dalloc (csf_coupling_quantum_codes, "csf_coupling_quantum_codes", "load_initial_transition_basis")
         !
 
 

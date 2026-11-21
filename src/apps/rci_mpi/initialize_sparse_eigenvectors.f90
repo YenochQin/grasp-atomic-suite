@@ -49,19 +49,19 @@ contains
         !-----------------------------------------------------------------------
         ns = min (nmax, csf_count)
 
-        call alloc (ap, (ns*(ns+1))/2, "AP", "INIESTSD")
+        call alloc (ap, (ns*(ns+1))/2, "AP", "initialize_sparse_eigenvectors")
         !GG      CALL alloc (ap_buffer, (NS*(NS+1))/2, 'AP', 'INIESTSD')
         call initialize_real_vector ((ns*(ns+1))/2, 0.0_real64, ap, 1)
 
         !**** separate upper left block of size NS*NS
 
-        call alloc (hmx, csf_count, "HMX", "INIESTSD")
-        call alloc (irow, csf_count, "IROW", "INIESTSD")
+        call alloc (hmx, csf_count, "HMX", "initialize_sparse_eigenvectors")
+        call alloc (irow, csf_count, "IROW", "initialize_sparse_eigenvectors")
         read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
         !      IF (myid .EQ. 0) PRINT *, 'iniestsd ...........'
         if (csf_count /= file_csf_count .or.  mpi_rank /= file_mpi_rank                      &
             .or. file_mpi_process_count /= mpi_process_count)                        &
-            stop "iniestsd: ncf read wrong"
+            stop "initialize_sparse_eigenvectors: restart file CSF count mismatch"
 
         !          if UPLO = 'U', AP(i + (j-1)*j/2) = A(i,j) for 1<=i<=j;
         !          if UPLO = 'L', AP(i + (j-1)*(2*n-j)/2) = A(i,j) for j<=i<=n.
@@ -93,14 +93,14 @@ contains
         !   READ (restart_matrix_unit)
         !ENDDO
 
-        call dalloc (hmx,"HMX", "INIESTSD")
-        call dalloc (irow, "HMX", "INIESTSD")
+        call dalloc (hmx,"HMX", "initialize_sparse_eigenvectors")
+        call dalloc (irow, "irow", "initialize_sparse_eigenvectors")
 
-        call alloc (eigval,ns,"EIGVAL","INIESTSD")
-        call alloc (vec,ns*initial_vector_count,"VEC","INIESTSD")
-        call alloc (real_workspace,8*ns,"WORK","INIESTSD")
-        call alloc (integer_workspace,5*ns,"IWORK","INIESTSD" )
-        call alloc (ifail,ns, "IFAIL","INIESTSD" )
+        call alloc (eigval,ns,"EIGVAL","initialize_sparse_eigenvectors")
+        call alloc (vec,ns*initial_vector_count,"VEC","initialize_sparse_eigenvectors")
+        call alloc (real_workspace,8*ns,"real_workspace","initialize_sparse_eigenvectors")
+        call alloc (integer_workspace,5*ns,"integer_workspace","initialize_sparse_eigenvectors" )
+        call alloc (ifail,ns, "IFAIL","initialize_sparse_eigenvectors" )
 
         !      CALL DSPEVX ('Vectors also','In a range','Upper triangular',     &
         !                NS,AP,-1.0D0,-1.0D0,1,NIV,0.d0,                        &
@@ -122,12 +122,12 @@ contains
         end do
         call dcopy (initial_vector_count, eigval,1,basis(initial_vector_count*csf_count+1),1)
 
-        call dalloc (ap, "AP", "INIESTSD")
-        call dalloc (eigval,"EIGVAL", "INIESTSD")
-        call dalloc (vec, "VEC", "INIESTSD")
-        call dalloc (real_workspace, "WORK", "INIESTSD")
-        call dalloc (integer_workspace, "IWORK", "INIESTSD")
-        call dalloc (ifail, "IFAIL", "INIESTSD")
+        call dalloc (ap, "AP", "initialize_sparse_eigenvectors")
+        call dalloc (eigval,"EIGVAL", "initialize_sparse_eigenvectors")
+        call dalloc (vec, "VEC", "initialize_sparse_eigenvectors")
+        call dalloc (real_workspace, "real_workspace", "initialize_sparse_eigenvectors")
+        call dalloc (integer_workspace, "integer_workspace", "initialize_sparse_eigenvectors")
+        call dalloc (ifail, "IFAIL", "initialize_sparse_eigenvectors")
 
         return
     end subroutine initialize_sparse_eigenvectors

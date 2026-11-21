@@ -98,7 +98,7 @@ contains
     contains
         subroutine report_invalid_shell_transfer()
             call ensure_debug_output()
-            write(angular_debug_unit,'(5x,"ERRO IN EL3  PMGG RAGG")')
+            write(angular_debug_unit,'(5x,"ERRO IN accumulate_two_electron_single_transfer  PMGG RAGG")')
             stop
         end subroutine report_invalid_shell_transfer
     end subroutine accumulate_two_electron_single_transfer

@@ -123,7 +123,12 @@ def main() -> None:
                     directory / "isodata")
     log = run(bindir / "rwfnestimate", directory, "y\n2\n*\n")
     assert "RWFNESTIMATE: Execution complete." in log
-    for error in ("Unable to compute", "SETPOT: Join", "TAIL: Grid", "could not be decoded"):
+    for error in (
+        "Unable to compute",
+        "calculate_radial_dirac_coefficients: Join",
+        "integrate_radial_tail: Grid",
+        "could not be decoded",
+    ):
         assert error not in log, log
     summary = validate(directory / "rwfn.inp", expected, z)
     (directory / "results.json").write_text(json.dumps(summary, indent=2) + "\n")

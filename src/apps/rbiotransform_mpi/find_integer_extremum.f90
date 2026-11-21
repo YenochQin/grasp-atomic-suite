@@ -38,15 +38,15 @@ contains
         else if (imxmn == 2) then
             ival = min0(minval(ivec(2:nel)),ival)
         else
-            write (output_unit, *) " Stop in IFNMNX "
+            write (output_unit, *) " Stop in find_integer_extremum "
             write (output_unit, *) " Improper calue of IMXMN ", imxmn
-            stop "IFNMNX"
+            stop "find_integer_extremum"
         end if
         !
         find_integer_extremum = ival
         !
         ntest = 0
-        if (ntest /= 0) write (output_unit, *) " Value returned from IFNMNX", find_integer_extremum
+        if (ntest /= 0) write (output_unit, *) " Value returned from find_integer_extremum", find_integer_extremum
         !
         return
     end function find_integer_extremum

@@ -36,8 +36,10 @@ contains
             & original_norm_squared
         real(real64), pointer :: file_large_component(:), file_small_component(:), file_radial_grid(:)
         write (output_unit, *) "Loading Radial WaveFunction File ..."
-        call alloc(radial_large_components, max_radial_points, orbital_count, "PF", "LODRWF")
-        call alloc(radial_small_components, max_radial_points, orbital_count, "QF", "LODRWF")
+        call alloc(radial_large_components, max_radial_points, orbital_count, "radial_large_components", &
+            "read_radial_wavefunction_records")
+        call alloc(radial_small_components, max_radial_points, orbital_count, "radial_small_components", &
+            "read_radial_wavefunction_records")
 
         charge_times_alpha_squared = nuclear_charge/speed_of_light_au
         charge_times_alpha_squared = charge_times_alpha_squared*charge_times_alpha_squared
@@ -53,7 +55,7 @@ contains
                 if (kappa_squared >= charge_times_alpha_squared) then
                     orbital_origin_exponents(orbital_index) = sqrt(kappa_squared - charge_times_alpha_squared)
                 else
-                    stop "lodrwf: Inappropriate gamma"
+                    stop "read_radial_wavefunction_records: Inappropriate gamma"
                 end if
             end if
         end do
@@ -66,9 +68,9 @@ contains
         do
             read (wavefunction_input_unit, iostat=read_status) file_principal_n, file_kappa, file_energy_parameter, file_grid_size
             if (read_status /= 0) exit
-            call alloc (file_large_component,file_grid_size, "PA", "LODRWF")
-            call alloc (file_small_component,file_grid_size, "QA", "LODRWF")
-            call alloc (file_radial_grid,file_grid_size, "RA", "LODRWF")
+            call alloc (file_large_component,file_grid_size, "file_large_component", "read_radial_wavefunction_records")
+            call alloc (file_small_component,file_grid_size, "file_small_component", "read_radial_wavefunction_records")
+            call alloc (file_radial_grid,file_grid_size, "file_radial_grid", "read_radial_wavefunction_records")
 
             ! The binary format stores the coefficient and both components together, then radii separately.
             read (wavefunction_input_unit) file_origin_coefficient, (file_large_component(radial_index),radial_index=1, &
@@ -92,9 +94,9 @@ contains
                 end if
                 loaded_orbital_count = loaded_orbital_count + 1
             end do
-            call dalloc (file_large_component, "PA", "LODRWF" )
-            call dalloc (file_small_component, "QA", "LODRWF")
-            call dalloc (file_radial_grid, "RA", "LODRWF")
+            call dalloc (file_large_component, "file_large_component", "read_radial_wavefunction_records" )
+            call dalloc (file_small_component, "file_small_component", "read_radial_wavefunction_records")
+            call dalloc (file_radial_grid, "file_radial_grid", "read_radial_wavefunction_records")
         end do
         if (rmcdhf_debug_flags(3)) then
             call ensure_debug_output()

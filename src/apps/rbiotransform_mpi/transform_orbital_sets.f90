@@ -211,7 +211,7 @@ contains
         !. Check length of scratch
         !
         if (workspace_size <= next_workspace_index - 1) then
-            write (output_unit,*)" BIOTR1 in trouble ! "
+            write (output_unit,*)" transform_orbital_sets in trouble ! "
             write (output_unit,*)" Increase dimension of scratch before call to BIOTR1"
             write (output_unit,*)" Current and required length (LSCR,KFREE-1)", workspace_size, &
                 next_workspace_index - 1

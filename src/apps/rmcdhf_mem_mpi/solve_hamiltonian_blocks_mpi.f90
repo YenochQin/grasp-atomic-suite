@@ -83,7 +83,7 @@ contains
         !   Save previous estimate of eigenvectors
 
         if (.not.first) then
-            call alloc (cmvl, mixing_coefficient_storage_size, "CMVL", "MATRIXmpi")
+            call alloc (cmvl, mixing_coefficient_storage_size, "CMVL", "solve_hamiltonian_blocks_mpi")
             call dcopy (mixing_coefficient_storage_size, csf_mixing_coefficients, 1, cmvl, 1)
         end if
 
@@ -119,9 +119,10 @@ contains
             nelmntgg = imax2_30(symmetry_block_index) - imin2_30(symmetry_block_index)
             stored_matrix_element_count = int(nelmntgg,kind=int64)
             csf_count = imax1_30(symmetry_block_index) - imin1_30(symmetry_block_index)
-            call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "MATRIXmpi")
-            call alloc (hamiltonian_values, stored_matrix_element_count, "EMT", "MATRIXmpi")
-            call alloc (stored_segment_end_offsets, 0, csf_count, "IENDC", "MATRIXMPI" )
+            call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", &
+                "solve_hamiltonian_blocks_mpi")
+            call alloc (hamiltonian_values, stored_matrix_element_count, "hamiltonian_values", "solve_hamiltonian_blocks_mpi")
+            call alloc (stored_segment_end_offsets, 0, csf_count, "stored_segment_end_offsets", "solve_hamiltonian_blocks_mpi" )
 
             !                                                ! may not be necessary if iendc is ALWAYS used
             !GG         IENDC(:NCF) = 0                        ! the way it is assigned here.
@@ -152,8 +153,8 @@ contains
                     end do
                 end do
 
-                call dalloc (stored_segment_end_offsets, "IENDC", "MATRIXmpi")
-                call dalloc (matrix_partner_indices, "IROW", "MATRIXmpi")
+                call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "solve_hamiltonian_blocks_mpi")
+                call dalloc (matrix_partner_indices, "matrix_partner_indices", "solve_hamiltonian_blocks_mpi")
 
                 cycle
 
@@ -293,9 +294,9 @@ contains
                     )
             end if
 
-            call dalloc (hamiltonian_values, "EMT", "MATRIXmpi")
-            call dalloc (stored_segment_end_offsets, "IENDC", "MATRIXmpi")
-            call dalloc (matrix_partner_indices, "IROW", "MATRIXmpi")
+            call dalloc (hamiltonian_values, "hamiltonian_values", "solve_hamiltonian_blocks_mpi")
+            call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "solve_hamiltonian_blocks_mpi")
+            call dalloc (matrix_partner_indices, "matrix_partner_indices", "solve_hamiltonian_blocks_mpi")
 
             !----------------------
         end do
@@ -304,7 +305,7 @@ contains
         !   Deallocate the temporary storage
         !
         if (.not.first) then
-            call dalloc (cmvl, "CMVL", "MATRIXmpi")
+            call dalloc (cmvl, "CMVL", "solve_hamiltonian_blocks_mpi")
         else
             first = .false.
         end if

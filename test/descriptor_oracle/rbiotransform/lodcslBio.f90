@@ -125,22 +125,22 @@
 !
       if(igg == 1) then
          ncfd = 1000
-         call alloc (csf_subshell_occupations,  max_orbitals,  ncfd, "IQA",   "LODCSL")
-         call alloc (csf_subshell_quantum_codes, max_orbitals,3,ncfd, "JQSA",  "LODCSL")
-         call alloc (csf_coupling_quantum_codes,max_orbitals,  ncfd, "JCUPA", "LODCSL")
+         call alloc (csf_subshell_occupations,  max_orbitals,  ncfd, "csf_subshell_occupations",   "lodcslbio")
+         call alloc (csf_subshell_quantum_codes, max_orbitals,3,ncfd, "csf_subshell_quantum_codes",  "lodcslbio")
+         call alloc (csf_coupling_quantum_codes,max_orbitals,  ncfd, "csf_coupling_quantum_codes", "lodcslbio")
       else if(igg == 2) then
          ncfd = 1000 + csf_count
-         call ralloc (csf_subshell_occupations,  max_orbitals,  ncfd, "IQA",   "LODCSL")
-         call ralloc (csf_subshell_quantum_codes, max_orbitals,3,ncfd, "JQSA",  "LODCSL")
-         call ralloc (csf_coupling_quantum_codes,max_orbitals,  ncfd, "JCUPA", "LODCSL")
+         call ralloc (csf_subshell_occupations,  max_orbitals,  ncfd, "csf_subshell_occupations",   "lodcslbio")
+         call ralloc (csf_subshell_quantum_codes, max_orbitals,3,ncfd, "csf_subshell_quantum_codes",  "lodcslbio")
+         call ralloc (csf_coupling_quantum_codes,max_orbitals,  ncfd, "csf_coupling_quantum_codes", "lodcslbio")
       else if(igg == 3) then
-         call dalloc (csf_subshell_occupations,   "IQA",   "LODCSL")
-         call dalloc (csf_subshell_quantum_codes,  "JQSA",  "LODCSL")
-         call dalloc (csf_coupling_quantum_codes, "JCUPA", "LODCSL")
+         call dalloc (csf_subshell_occupations,   "csf_subshell_occupations",   "lodcslbio")
+         call dalloc (csf_subshell_quantum_codes,  "csf_subshell_quantum_codes",  "lodcslbio")
+         call dalloc (csf_coupling_quantum_codes, "csf_coupling_quantum_codes", "lodcslbio")
          ncfd = 1000
-         call alloc (csf_subshell_occupations,  max_orbitals,  ncfd, "IQA",   "LODCSL")
-         call alloc (csf_subshell_quantum_codes, max_orbitals,3,ncfd, "JQSA",  "LODCSL")
-         call alloc (csf_coupling_quantum_codes,max_orbitals,  ncfd, "JCUPA", "LODCSL")
+         call alloc (csf_subshell_occupations,  max_orbitals,  ncfd, "csf_subshell_occupations",   "lodcslbio")
+         call alloc (csf_subshell_quantum_codes, max_orbitals,3,ncfd, "csf_subshell_quantum_codes",  "lodcslbio")
+         call alloc (csf_coupling_quantum_codes,max_orbitals,  ncfd, "csf_coupling_quantum_codes", "lodcslbio")
       end if
 
 !
@@ -241,9 +241,9 @@
 !        where NCF is incremented
          if (csf_count > ncfd) then
             newsiz = ncfd + ncfd/2
-            call ralloc (csf_subshell_occupations,  max_orbitals,  newsiz, "IQA",   "LODCSL")
-            call ralloc (csf_subshell_quantum_codes, max_orbitals,3,newsiz, "JQSA",  "LODCSL")
-            call ralloc (csf_coupling_quantum_codes,max_orbitals,  newsiz, "JCUPA", "LODCSL")
+            call ralloc (csf_subshell_occupations,  max_orbitals,  newsiz, "csf_subshell_occupations",   "lodcslbio")
+            call ralloc (csf_subshell_quantum_codes, max_orbitals,3,newsiz, "csf_subshell_quantum_codes",  "lodcslbio")
+            call ralloc (csf_coupling_quantum_codes,max_orbitals,  newsiz, "csf_coupling_quantum_codes", "lodcslbio")
             ncfd = newsiz
          end if
 !

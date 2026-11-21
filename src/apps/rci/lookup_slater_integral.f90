@@ -66,7 +66,7 @@ contains
 
         if (packed_integral_index<local_slater_integral_indices(search_lower_index) .or. &
             packed_integral_index>local_slater_integral_indices(search_upper_index)) then
-            write (*, *) "Something wrong in rkintc"
+            write (*, *) "Something wrong in lookup_slater_integral"
             stop
         end if
         !
@@ -90,7 +90,7 @@ contains
             table_position = search_lower_index
         else
             write (*, *) multipole_rank, orbital_a, orbital_b, orbital_c, orbital_d, packed_integral_index
-            write (*, *) "Rkintc Integral not found"
+            write (*, *) "lookup_slater_integral Integral not found"
             stop
         end if
         !

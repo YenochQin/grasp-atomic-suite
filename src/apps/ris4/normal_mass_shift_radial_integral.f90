@@ -62,7 +62,7 @@ contains
         !   Stop if orbitals J and K have different kappa values
         !
         if (kap1 /= kap2) then
-            write (*,'("RINTI_NMS: Attempt to calculate I(",1i2,1a2,",",1i2,1a2,")")') &
+            write (*,'("normal_mass_shift_radial_integral: Attempt to calculate I(",1i2,1a2,",",1i2,1a2,")")') &
                 orbital_principal_n(first_orbital),orbital_symmetry_labels(first_orbital),orbital_principal_n(second_orbital), &
                 & orbital_symmetry_labels(second_orbital)
             stop

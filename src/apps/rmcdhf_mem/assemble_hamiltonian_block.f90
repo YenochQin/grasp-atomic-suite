@@ -46,7 +46,7 @@ contains
         integer(int64) :: total_contribution_count(20), total_secondary_contribution_count(20)
 
         ! Local constants
-        character(len=6), parameter :: routine_name = "SETHAM"
+        character(len=*), parameter :: routine_name = "assemble_hamiltonian_block"
 
         ! Local declarations
         integer :: block_csf_offset, orbital_index, csf_index, itmp, diagonal_element_index, km, k, k0, ib, first_orbital_two_j, &
@@ -219,8 +219,8 @@ contains
         !=======================================================================
 
         ndim = 1
-        call alloc (coeff, ndim, "COEFF", "SETHAM" )
-        call alloc (indx, ndim, "INDX", "SETHAM")
+        call alloc (coeff, ndim, "COEFF", "assemble_hamiltonian_block" )
+        call alloc (indx, ndim, "INDX", "assemble_hamiltonian_block")
 
         !=======================================================================
         !   Loop over non-zero labels which have non-zero elements
@@ -241,11 +241,11 @@ contains
             ! Read column index, sparse matrix index, and coefficient
             ! for all contributions from this integral.
             if (contribution_count > ndim) then
-                call dalloc (coeff, "COEFF", "SETHAM")
-                call dalloc (indx, "INDX", "SETHAM")
+                call dalloc (coeff, "COEFF", "assemble_hamiltonian_block")
+                call dalloc (indx, "INDX", "assemble_hamiltonian_block")
                 ndim = contribution_count
-                call alloc (coeff, ndim, "COEFF", "SETHAM")
-                call alloc (indx, ndim, "INDX", "SETHAM")
+                call alloc (coeff, ndim, "COEFF", "assemble_hamiltonian_block")
+                call alloc (indx, ndim, "INDX", "assemble_hamiltonian_block")
             end if
             call read_mcp_structure_into_memory(31,total_contribution_count(1),contribution_count,file_csf_column)
             total_contribution_count(1) = total_contribution_count(1) + contribution_count
@@ -294,11 +294,11 @@ contains
                 ! Read column index, sparse matrix index, and coefficient
                 ! for all contributions from this integral.
                 if (contribution_count > ndim) then
-                    call dalloc (coeff, "COEFF", "SETHAM")
-                    call dalloc (indx, "INDX", "SETHAM")
+                    call dalloc (coeff, "COEFF", "assemble_hamiltonian_block")
+                    call dalloc (indx, "INDX", "assemble_hamiltonian_block")
                     ndim = contribution_count
-                    call alloc (coeff, ndim, "COEFF", "SETHAM")
-                    call alloc (indx, ndim, "INDX", "SETHAM")
+                    call alloc (coeff, ndim, "COEFF", "assemble_hamiltonian_block")
+                    call alloc (indx, ndim, "INDX", "assemble_hamiltonian_block")
                 end if
                 call read_mcp_structure_into_memory(mcp_channel, total_contribution_count(mcp_channel-30), &
                     contribution_count, file_csf_column)
@@ -327,8 +327,8 @@ contains
         !   Deallocate local storage
         !=======================================================================
 
-        call dalloc (coeff, "COEFF", "SETHAM")
-        call dalloc (indx, "INDX", "SETHAM")
+        call dalloc (coeff, "COEFF", "assemble_hamiltonian_block")
+        call dalloc (indx, "INDX", "assemble_hamiltonian_block")
 
         return
     end subroutine assemble_hamiltonian_block

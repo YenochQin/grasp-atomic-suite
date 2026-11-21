@@ -52,18 +52,18 @@ contains
         !   Write out the basic dimensions of the electron cloud
         !
         write (summary_output_unit, *)
-        call format_integer_with_context (electron_count, record, lenth, "strsum.nelec")
+        call format_integer_with_context (electron_count, record, lenth, "write_input_summary: electron_count")
         write (summary_output_unit, *) "There are "//record(1:lenth)//" electrons in the cloud"
-        call format_integer_with_context (csf_count, record, lenth, "strsum.ncf")
+        call format_integer_with_context (csf_count, record, lenth, "write_input_summary: csf_count")
         write (summary_output_unit, *) " in "//record(1:lenth)//" relativistic CSFs"
-        call format_integer_with_context (orbital_count, record, lenth, "strsum.nw")
+        call format_integer_with_context (orbital_count, record, lenth, "write_input_summary: orbital_count")
         write (summary_output_unit, *) " based on "//record(1:lenth)//" relativistic subshells."
         !
         !   If the CSFs are not treated uniformly, write out an
         !   informative message
         !
         if (use_first_order_csf_perturbation) then
-            call format_integer_with_context (iccut, record, lenth, "strsum.icccut")
+            call format_integer_with_context (iccut, record, lenth, "write_input_summary: iccut")
             write (summary_output_unit, *) " CSFs 1--"//record(1:lenth)//" constitute"//   &
                 " the zero-order space;"
         end if
@@ -76,7 +76,8 @@ contains
             write (summary_output_unit, *) " Fermi nucleus:"
             write (summary_output_unit, '("  c =",1p,1d19.12," Bohr radii,"/"  a =",1d19.12," Bohr radii;")') &
                 nuclear_model_parameters(1), nuclear_model_parameters(2)
-            call format_integer_with_context (first_grid_index_beyond_fermi_c, record, lenth, "strsum.nnuc")
+            call format_integer_with_context (first_grid_index_beyond_fermi_c, record, lenth, &
+                "write_input_summary: first_grid_index_beyond_fermi")
             write (summary_output_unit, *) " there are "//record(1:lenth)//&
                 " tabulation points in the nucleus."
         else

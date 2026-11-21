@@ -77,8 +77,10 @@ contains
         !   radial wavefunction arrays; initialise these and all
         !   associated arrays
         !
-        call alloc (radial_large_components,max_radial_points,orbital_count,"PF", "GENRWF")
-        call alloc (radial_small_components,max_radial_points,orbital_count,"QF", "GENRWF")
+        call alloc (radial_large_components,max_radial_points,orbital_count,"radial_large_components", &
+            "generate_initial_radial_wavefunctions")
+        call alloc (radial_small_components,max_radial_points,orbital_count,"radial_small_components", &
+            "generate_initial_radial_wavefunctions")
 
         con = nuclear_charge/speed_of_light_au
         con = con*con
@@ -97,7 +99,7 @@ contains
                 if (fkk >= con) then
                     orbital_origin_exponents(j) = sqrt(fkk - con)
                 else
-                    write (stderr_unit, *) "LODRWF: Imaginary gamma parameter ", "for ", &
+                    write (stderr_unit, *) "generate_initial_radial_wavefunctions: Imaginary gamma parameter ", "for ", &
                         orbital_principal_n(j), orbital_symmetry_labels(j), " orbital;"
                     write (stderr_unit, *) "the point model for the nucleus ", &
                         "is inappropriate for Z > ", speed_of_light_au, "."

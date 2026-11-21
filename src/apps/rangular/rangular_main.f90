@@ -156,9 +156,9 @@ program rangular_main
         end if
         !*** Load current CSL block. Memories de-allocated in mcp ***
         stage_start_count = stage_clock()
-        call alloc (csf_subshell_occupations, max_orbitals, csf_count, "IQA", "GENMCP")
-        call alloc (csf_subshell_quantum_codes, max_orbitals,3,csf_count, "JQSA", "GENMCP")
-        call alloc (csf_coupling_quantum_codes, max_orbitals, csf_count, "JCUPA", "GENMCP")
+        call alloc (csf_subshell_occupations, max_orbitals, csf_count, "csf_subshell_occupations", "rangular_main")
+        call alloc (csf_subshell_quantum_codes, max_orbitals,3,csf_count, "csf_subshell_quantum_codes", "rangular_main")
+        call alloc (csf_coupling_quantum_codes, max_orbitals, csf_count, "csf_coupling_quantum_codes", "rangular_main")
         call record_stage("csf_allocation", symmetry_block_index, stage_start_count)
         !
         stage_start_count = stage_clock()

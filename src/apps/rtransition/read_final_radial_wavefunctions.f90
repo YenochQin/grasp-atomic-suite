@@ -53,8 +53,10 @@ contains
         !
         !   Allocate storage to orbital arrays
         !
-        call alloc (final_radial_large_components, max_radial_points, final_orbital_count, "PFFF", "LODRWFF")
-        call alloc (final_radial_small_components, max_radial_points, final_orbital_count, "QFFF", "LODRWFF")
+        call alloc (final_radial_large_components, max_radial_points, final_orbital_count, "final_radial_large_components", &
+            "read_final_radial_wavefunctions")
+        call alloc (final_radial_small_components, max_radial_points, final_orbital_count, "final_radial_small_components", &
+            "read_final_radial_wavefunctions")
         !
         !   Setup: (1) Orbital arrays to zero
         !          (2) Array E to -1 (no orbitals estimated)
@@ -77,7 +79,7 @@ contains
                 if (fkk >= con) then
                     final_orbital_origin_exponents(j) = sqrt(fkk - con)
                 else
-                    write (output_unit, *) "LODRWF: Imaginary gamma parameter"
+                    write (output_unit, *) "read_final_radial_wavefunctions: Imaginary gamma parameter"
                     write (output_unit, *) " for ", final_orbital_principal_n(j), final_orbital_symmetry_labels(j), " orbital; the"
                     write (output_unit, *) " point model for the nucleus"
                     write (output_unit, *) " is inappropriate for Z > ", speed_of_light_au, "."
@@ -99,9 +101,9 @@ contains
         do
             read (wavefunction_input_unit, iostat=io_status) npyff, nakyff, eyff, myff
             if (io_status /= 0) exit
-            call alloc (pa, myff, "PA", "LODRWFF" )
-            call alloc (qa, myff, "QA", "LODRWFF" )
-            call alloc (ra, myff, "RA", "LODRWFF" )
+            call alloc (pa, myff, "PA", "read_final_radial_wavefunctions" )
+            call alloc (qa, myff, "QA", "read_final_radial_wavefunctions" )
+            call alloc (ra, myff, "RA", "read_final_radial_wavefunctions" )
             read (wavefunction_input_unit) pzy, (pa(i),i=1,myff), (qa(i),i=1,myff)
             read (wavefunction_input_unit) (ra(i),i=1,myff)
 
@@ -118,15 +120,15 @@ contains
                 end do
                 nwin = nwin + 1
             end do
-            call dalloc (pa, "PA", "LODRWFF")
-            call dalloc (qa, "QA", "LODRWFF")
-            call dalloc (ra, "RA", "LODRWFF")
+            call dalloc (pa, "PA", "read_final_radial_wavefunctions")
+            call dalloc (qa, "QA", "read_final_radial_wavefunctions")
+            call dalloc (ra, "RA", "read_final_radial_wavefunctions")
         end do
         !
         !   Stop with an error message if all orbitals are not known
         !
         if (nwin < final_orbital_count) then
-            write (output_unit, *) "LODRWF: All required orbitals not"
+            write (output_unit, *) "read_final_radial_wavefunctions: All required orbitals not"
             write (output_unit, *) " found."
             stop
         end if

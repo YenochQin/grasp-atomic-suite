@@ -77,7 +77,7 @@ contains
         !
         if (rmcdhf_debug_flags(6)) then
             call ensure_debug_output()
-            write (angular_debug_unit, '(/,"VINTI: V (",1i2,1a2,",",1i2,1a2,") = ",1p,d19.12)') &
+            write (angular_debug_unit, '(/,"vinti_radial_integral: V (",1i2,1a2,",",1i2,1a2,") = ",1p,d19.12)') &
                 orbital_principal_n(first_orbital), orbital_symmetry_labels(first_orbital), orbital_principal_n(second_orbital), &
                 & orbital_symmetry_labels(second_orbital), vinti_radial_integral
         end if

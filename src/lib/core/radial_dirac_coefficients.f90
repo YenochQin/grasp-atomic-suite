@@ -50,7 +50,7 @@ contains
             searching_for_match = .false.
         end do
         if (matching_grid_index == 0) then
-            write (stderr_unit, *) "SETPOT: Join set to max_radial_points/2 = ", max_radial_points/2
+            write (stderr_unit, *) "calculate_radial_dirac_coefficients: Join set to max_radial_points/2 = ", max_radial_points/2
             matching_grid_index = max_radial_points/2
         end if
         return

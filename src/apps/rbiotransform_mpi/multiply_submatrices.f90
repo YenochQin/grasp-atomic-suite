@@ -55,7 +55,7 @@ contains
         trace_level = 0
         if (trace_level /= 0) then
             write (output_unit, *)
-            write (output_unit, *) " A AND B MATRIX FROM MATML4 "
+            write (output_unit, *) " A AND B MATRIX FROM multiply_submatrices "
             write (output_unit, *)
             call write_matrix (left_matrix, left_row_count, left_column_count, left_row_count, left_column_count)
             call write_matrix (right_matrix, right_row_count, right_column_count, right_row_count, right_column_count)
@@ -102,7 +102,7 @@ contains
         !
         if (trace_level /= 0) then
             write (output_unit, *)
-            write (output_unit, *) " C MATRIX FROM MATML4 "
+            write (output_unit, *) " C MATRIX FROM multiply_submatrices "
             write (output_unit, *)
             call write_matrix (product_matrix, product_row_count, product_column_count, product_row_count, product_column_count)
         end if

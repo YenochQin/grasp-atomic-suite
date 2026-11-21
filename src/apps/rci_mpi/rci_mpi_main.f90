@@ -189,7 +189,7 @@ program rci_mpi_main
         !=======================================================================
         !   Proceed with the CI calculation
         !=======================================================================
-        write (output_unit, *) "Calling MATRIX..."
+        write (output_unit, *) "Calling solve_hamiltonian_blocks..."
 
         call solve_hamiltonian_blocks (core_subshell_count, max_orbital_two_j)
 

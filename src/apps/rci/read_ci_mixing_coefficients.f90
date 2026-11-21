@@ -42,8 +42,9 @@ contains
         !    ncmin, iccmin(1:ncmin) -- via items (memories allocated there)
         ! Thus we let node-0 do it and then broadcast here
 
-        call alloc (highest_selected_level_by_block, symmetry_block_count, "NCMAXBLK", "LODMIX")
-        call alloc (eigenvector_counts_by_block, symmetry_block_count, "NEVBLK", "LODMIX")
+        call alloc (highest_selected_level_by_block, symmetry_block_count, "highest_selected_level_by_block", &
+            "read_ci_mixing_coefficients")
+        call alloc (eigenvector_counts_by_block, symmetry_block_count, "eigenvector_counts_by_block", "read_ci_mixing_coefficients")
 
         !      print *, ' LODMIX: change lodstate arg-list - see rscf2/getold.f90 '
         !      stop
@@ -55,7 +56,7 @@ contains
         !    idxblk() is the block number of an eigenstate
         !    nvecsiz  is the total size of the eigenvector array
         !
-        call alloc (level_block_indices, selected_level_count, "IDXBLK", "LODMIX")
+        call alloc (level_block_indices, selected_level_count, "level_block_indices", "read_ci_mixing_coefficients")
         total_csf_count = 0
         noffset = 0
         vector_size = 0
@@ -68,7 +69,7 @@ contains
             vector_size = vector_size + csf_counts_by_block(symmetry_block_index) * eigenvector_counts_by_block( &
                 & symmetry_block_index)
         end do
-        if (noffset /= selected_level_count) stop "lodmix: ncmin trouble"
+        if (noffset /= selected_level_count) stop "read_ci_mixing_coefficients: selected level count mismatch"
         !
         !   Write header data to the  .mix  file
         !

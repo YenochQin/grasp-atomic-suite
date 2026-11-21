@@ -131,10 +131,10 @@ contains
         !   Allocate and fill in auxiliary arrays
         !=======================================================================
 
-        call alloc (csf_offsets_by_block, symmetry_block_count, "NCFPAST", "SCFmpi")
-        call alloc (eigenvalue_offsets_by_block, symmetry_block_count, "NCMINPAST", "SCFmpi")
-        call alloc (mixing_offsets_by_block, symmetry_block_count, "NEVECPAST", "SCFmpi")
-        call alloc (mean_energy_by_block, symmetry_block_count, "EAVBLK", "SCFmpi")
+        call alloc (csf_offsets_by_block, symmetry_block_count, "csf_offsets_by_block", "run_scf_iterations_mpi")
+        call alloc (eigenvalue_offsets_by_block, symmetry_block_count, "eigenvalue_offsets_by_block", "run_scf_iterations_mpi")
+        call alloc (mixing_offsets_by_block, symmetry_block_count, "mixing_offsets_by_block", "run_scf_iterations_mpi")
+        call alloc (mean_energy_by_block, symmetry_block_count, "mean_energy_by_block", "run_scf_iterations_mpi")
 
         csf_offsets_by_block(1) = 0
         eigenvalue_offsets_by_block(1) = 0
@@ -154,10 +154,11 @@ contains
             & eigenvector_counts_by_block(symmetry_block_count)*csf_counts_by_block(symmetry_block_count)
 
         if (extended_optimal_level) then
-            call alloc (shifted_eigenvalues, selected_level_count, "EVAL", "SCFmpi")
-            call alloc (csf_mixing_coefficients, mixing_coefficient_storage_size, "EVEC", "SCFmpi")
-            call alloc (level_two_j_plus_one, selected_level_count, "IATJPO", "SCFmpi")
-            call alloc (level_parity_signs, selected_level_count, "IASPAR", "SCFmpi")
+            call alloc (shifted_eigenvalues, selected_level_count, "shifted_eigenvalues", "run_scf_iterations_mpi")
+            call alloc (csf_mixing_coefficients, mixing_coefficient_storage_size, "csf_mixing_coefficients", &
+                "run_scf_iterations_mpi")
+            call alloc (level_two_j_plus_one, selected_level_count, "level_two_j_plus_one", "run_scf_iterations_mpi")
+            call alloc (level_parity_signs, selected_level_count, "level_parity_signs", "run_scf_iterations_mpi")
         end if
 
         !=======================================================================
@@ -170,12 +171,14 @@ contains
         !      NYDIM = 0
         !      NYDIM = 0
         !AK    Must initialize DA,XA,YA,... here since MPI routines rely on their existence in all processes
-        call alloc (direct_orbital_indices, direct_coefficient_capacity, "NDA","SCFmpi")
-        call alloc (direct_coefficients, direct_coefficient_capacity, "DA","SCFmpi")
-        call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, "NXA","SCFmpi")
-        call alloc (exchange_coefficients, exchange_coefficient_capacity, "XA","SCFmpi")
-        call alloc (y_potential_coefficient_labels, y_potential_coefficient_capacity, "NYA","SCFmpi")
-        call alloc (y_potential_coefficients, y_potential_coefficient_capacity, "YA","SCFmpi")
+        call alloc (direct_orbital_indices, direct_coefficient_capacity, "direct_orbital_indices","run_scf_iterations_mpi")
+        call alloc (direct_coefficients, direct_coefficient_capacity, "direct_coefficients","run_scf_iterations_mpi")
+        call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, "exchange_coefficient_labels", &
+            "run_scf_iterations_mpi")
+        call alloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients","run_scf_iterations_mpi")
+        call alloc (y_potential_coefficient_labels, y_potential_coefficient_capacity, "y_potential_coefficient_labels", &
+            "run_scf_iterations_mpi")
+        call alloc (y_potential_coefficients, y_potential_coefficient_capacity, "y_potential_coefficients","run_scf_iterations_mpi")
 
         !     This call should only be made AFTER the call to newco
         !     CALL setlag (EOL)
@@ -296,46 +299,46 @@ contains
         !
         !   Deallocate storage
         !
-        call dalloc (level_average_weights, "WT", "SCFmpi")                       !Either getold or getald
+        call dalloc (level_average_weights, "level_average_weights", "run_scf_iterations_mpi")                       !Either getold or getald
 
         if (lagrange_multiplier_count > 0) then
-            call dalloc (lagrange_orbital_pair_labels, "IECC", "SCFmpi")
-            call dalloc (lagrange_multiplier_values, "ECV", "SCFmpi")
-            call dalloc (csf_subshell_occupations, "IQA", "SCFmpi")
+            call dalloc (lagrange_orbital_pair_labels, "lagrange_orbital_pair_labels", "run_scf_iterations_mpi")
+            call dalloc (lagrange_multiplier_values, "lagrange_multiplier_values", "run_scf_iterations_mpi")
+            call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "run_scf_iterations_mpi")
         end if
 
         if (direct_coefficient_capacity > 0) then
-            call dalloc (direct_coefficients, "DA", "SCFmpi")
-            call dalloc (direct_orbital_indices, "NDA", "SCFmpi")
+            call dalloc (direct_coefficients, "direct_coefficients", "run_scf_iterations_mpi")
+            call dalloc (direct_orbital_indices, "direct_orbital_indices", "run_scf_iterations_mpi")
             direct_coefficient_capacity = 0
         end if
 
         if (exchange_coefficient_capacity > 0) then
-            call dalloc (exchange_coefficients, "XA", "SCFmpi")
-            call dalloc (exchange_coefficient_labels, "NXA", "SCFmpi")
+            call dalloc (exchange_coefficients, "exchange_coefficients", "run_scf_iterations_mpi")
+            call dalloc (exchange_coefficient_labels, "exchange_coefficient_labels", "run_scf_iterations_mpi")
             exchange_coefficient_capacity = 0
         end if
 
         if (y_potential_coefficient_capacity > 0) then
-            call dalloc (y_potential_coefficients, "YA", "SCFmpi")
-            call dalloc (y_potential_coefficient_labels, "NYA", "SCFmpi")
+            call dalloc (y_potential_coefficients, "y_potential_coefficients", "run_scf_iterations_mpi")
+            call dalloc (y_potential_coefficient_labels, "y_potential_coefficient_labels", "run_scf_iterations_mpi")
             y_potential_coefficient_capacity = 0
         end if
 
         if (extended_optimal_level) then
-            call dalloc (shifted_eigenvalues, "EVAL", "SCFmpi")
-            call dalloc (csf_mixing_coefficients, "EvEC", "SCFmpi")
-            call dalloc (level_two_j_plus_one, "IATJPO", "SCFmpi")
-            call dalloc (level_parity_signs, "IASPAR", "SCFmpi")
-            call dalloc (highest_selected_level_by_block, "NCMAXBLK", "SCFmpi") ! getold.f
-            call dalloc (mean_energy_by_block, "EAVBLK", "SCFmpi")     ! getold.f
-            call dalloc (level_block_indices, "IDXBLK", "SCFmpi")     ! Allocated in getold.f
-            call dalloc (requested_level_indices, "ICCMIN", "SCFmpi")       ! Allocated in items.f<-getold.f
+            call dalloc (shifted_eigenvalues, "shifted_eigenvalues", "run_scf_iterations_mpi")
+            call dalloc (csf_mixing_coefficients, "csf_mixing_coefficients", "run_scf_iterations_mpi")
+            call dalloc (level_two_j_plus_one, "level_two_j_plus_one", "run_scf_iterations_mpi")
+            call dalloc (level_parity_signs, "level_parity_signs", "run_scf_iterations_mpi")
+            call dalloc (highest_selected_level_by_block, "highest_selected_level_by_block", "run_scf_iterations_mpi") ! getold.f
+            call dalloc (mean_energy_by_block, "mean_energy_by_block", "run_scf_iterations_mpi")     ! getold.f
+            call dalloc (level_block_indices, "level_block_indices", "run_scf_iterations_mpi")     ! Allocated in getold.f
+            call dalloc (requested_level_indices, "requested_level_indices", "run_scf_iterations_mpi")       ! Allocated in items.f<-getold.f
         end if
         !
-        call dalloc (csf_offsets_by_block, "NCFPAST", "SCFmpi")
-        call dalloc (eigenvalue_offsets_by_block, "NCMINPAST", "SCFmpi")
-        call dalloc (mixing_offsets_by_block, "NEVECPAST", "SCFmpi")
+        call dalloc (csf_offsets_by_block, "csf_offsets_by_block", "run_scf_iterations_mpi")
+        call dalloc (eigenvalue_offsets_by_block, "eigenvalue_offsets_by_block", "run_scf_iterations_mpi")
+        call dalloc (mixing_offsets_by_block, "mixing_offsets_by_block", "run_scf_iterations_mpi")
 
 
         return

@@ -52,8 +52,9 @@ contains
         !    nevblk(), ncmaxblk()
         !    ncmin, iccmin(1:ncmin) -- via items (memories allocated there)
 
-        call alloc (highest_selected_level_by_block, symmetry_block_count, "NCMAXBLK", "GETOLD")
-        call alloc (eigenvector_counts_by_block, symmetry_block_count, "NEVBLK", "GETOLD" )
+        call alloc (highest_selected_level_by_block, symmetry_block_count, "highest_selected_level_by_block", &
+            "read_eol_average_options")
+        call alloc (eigenvector_counts_by_block, symmetry_block_count, "eigenvector_counts_by_block", "read_eol_average_options" )
 
         !cjb  ncmaxblk & nevblk initialised in lodstate
         !     NEVBLK = 0
@@ -67,13 +68,13 @@ contains
         !
         !   Allocate the storage for and set the weights
         !
-        call alloc (requested_level_weights, selected_level_count, "WEIGHT", "GETOLD")
+        call alloc (requested_level_weights, selected_level_count, "requested_level_weights", "read_eol_average_options")
 
         call read_eol_level_weights (nondefault_options_flag, selected_level_count, requested_level_weights)
         !
         !   Eigenvector damping
         !
-        call alloc (mixing_damping_factors, selected_level_count, "CDAMP", "GETOLD")
+        call alloc (mixing_damping_factors, selected_level_count, "mixing_damping_factors", "read_eol_average_options")
         !
         mixing_damping_factors(:selected_level_count) = 0.0_real64
         !
@@ -145,12 +146,12 @@ contains
         !   Make the allocation for the auxiliary vector required
         !   by SUBROUTINE NEWCO
         !
-        call alloc (level_average_weights, selected_level_count, "RWTDUM", "GETOLD")
+        call alloc (level_average_weights, selected_level_count, "level_average_weights", "read_eol_average_options")
         !
         !   Place the block numbers of the all ncmin eigenstate(wanted)
         !   in array idxblk
         !
-        call alloc (level_block_indices, selected_level_count, "IDXBLK", "GETOLD")
+        call alloc (level_block_indices, selected_level_count, "level_block_indices", "read_eol_average_options")
         noffset = 0
         do symmetry_block_index = 1, symmetry_block_count
             do level_index = 1, eigenvector_counts_by_block(symmetry_block_index)
@@ -158,7 +159,7 @@ contains
             end do
             noffset = noffset + eigenvector_counts_by_block(symmetry_block_index)
         end do
-        if (noffset /= selected_level_count) error stop "getold: ncmin trouble"
+        if (noffset /= selected_level_count) error stop "read_eol_average_options: selected level count mismatch"
 
         return
     end subroutine read_eol_average_options

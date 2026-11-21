@@ -32,11 +32,11 @@ contains
             if (csf_index>=1 .and. csf_index<=left_csf_count) then
                 right_csf_intermediate_coupling = left_coupling_codes(loc,csf_index)
             else
-                write (output_unit, *) "JCUPR: Argument ICSF is out of range."
+                write (output_unit, *) "right_csf_intermediate_coupling: Argument csf_index is out of range."
                 stop
             end if
         else
-            write (output_unit, *) "JCUPR: Argument LOC is out of range."
+            write (output_unit, *) "right_csf_intermediate_coupling: Argument coupling index is out of range."
             stop
         end if
         !

@@ -8,7 +8,7 @@ def main(binary: Path) -> None:
     for scenario in ("regular", "left", "short", "zero", "single", "single_node", "legacy", "empty"):
         result = subprocess.run([str(binary.resolve()), scenario], capture_output=True, text=True, timeout=10)
         if scenario == "empty":
-            if result.returncode == 0 or "INTERP: empty table" not in result.stderr:
+            if result.returncode == 0 or "interpolate_aitken: empty table" not in result.stderr:
                 raise RuntimeError(f"Wrong empty-table failure: {result.stdout}\n{result.stderr}")
         elif result.returncode or f"PASS interpolation {scenario}" not in result.stdout:
             raise RuntimeError(f"{scenario}: exit={result.returncode}\n{result.stdout}\n{result.stderr}")

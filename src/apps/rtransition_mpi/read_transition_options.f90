@@ -106,7 +106,7 @@ contains
                     else if (cunits(1:4) == "Kays") then
                         transition_option_flags(5) = .true.
                     else
-                        write (output_unit, *) "GETOSD: Unable to interpret string;"
+                        write (output_unit, *) "read_transition_options: Unable to interpret string;"
                         write (output_unit, *) " reenter ..."
                         cycle
                     end if

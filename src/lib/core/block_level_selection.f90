@@ -51,7 +51,8 @@ contains
 
                     previous_selection_count = selected_level_count
                     call parse_level_selection (selected_level_count, block_csf_count, selection_input, parse_status)
-                    if (selected_level_count == 0) call dalloc (requested_level_indices, "ICCMIN", "LODSTATE" )
+                    if (selected_level_count == 0) call dalloc (requested_level_indices, "requested_level_indices", &
+                        "read_block_level_selection" )
                     if (parse_status >= 0) exit
                 end do
                 eigenvector_counts_by_block(block_index) = selected_level_count - previous_selection_count

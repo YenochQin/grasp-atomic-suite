@@ -55,7 +55,7 @@ contains
         end do
 
         if (max_orbital_two_j > maximum_coulomb_multipole_rank) then
-            stop "genintrk: KMAX too small"
+            stop "tabulate_slater_integrals: maximum multipole rank is too small"
         end if
         !
         !   Make the RK integrals: IA <= IB, IA <= IC, IA <= ID, IB <= ID
@@ -90,8 +90,8 @@ contains
             !     Allocate memory for integral book keeping
             !
             if (gen) exit
-            call alloc (local_slater_integral_indices,n,"INDTEIRK", "GENINTRK")
-            call alloc (local_slater_integral_values,n,"VALTEIRK", "GENINTRK")
+            call alloc (local_slater_integral_indices,n,"local_slater_integral_indices", "tabulate_slater_integrals")
+            call alloc (local_slater_integral_values,n,"local_slater_integral_values", "tabulate_slater_integrals")
 
             ! Initialization is necessary in the mpi version
 

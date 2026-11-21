@@ -53,7 +53,7 @@ contains
         !
         if (rmcdhf_debug_flags(9)) then
             call ensure_debug_output()
-            write (angular_debug_unit,'(/"VPINTF: V (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)') &
+            write (angular_debug_unit,'(/"vacuum_polarization_integral: V (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)') &
                 orbital_principal_n(first_orbital),orbital_symmetry_labels(first_orbital),orbital_principal_n(second_orbital), &
                 & orbital_symmetry_labels(second_orbital),vacuum_polarization_integral
         end if

@@ -49,10 +49,10 @@ contains
 
 ! node-0 does exactly the same as the serial code does
 
-      call alloc (csf_counts_by_block, nblkin + 1, "NCFBLK", "CSLH")
+      call alloc (csf_counts_by_block, nblkin + 1, "csf_counts_by_block", "CSLH")
 
       call setcsll (csf_input_unit, name, nblkin, symmetry_block_count, csf_counts_by_block, csf_count, idblk)
-      call ralloc (csf_counts_by_block, symmetry_block_count + 1, "NCFBLK", "CSLH")
+      call ralloc (csf_counts_by_block, symmetry_block_count + 1, "csf_counts_by_block", "CSLH")
       rewind (csf_input_unit)
       read (csf_input_unit, *)
       !..Load header of <name> file

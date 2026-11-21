@@ -64,7 +64,7 @@ contains
                 if (.not.(beta*(radial_grid(radial_index)-rjp) > qem)) cycle
                 mtp = radial_index
             else
-                write (*, '("TAIL: Grid may be of insufficient extent")')
+                write (*, '("integrate_radial_tail: Grid may be of insufficient extent")')
                 mtp = nm4
             end if
             exit

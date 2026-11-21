@@ -233,9 +233,9 @@ contains
         !   Deallocate storage that is no longer required. This was
         !   allocated in lodcsl.
         !
-        call dalloc (csf_subshell_occupations, "IQA", "MCPOUT")
-        call dalloc (csf_subshell_quantum_codes, "JQSA", "MCPOUT")
-        call dalloc (csf_coupling_quantum_codes, "JCUPA", "MCPOUT")
+        call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "write_biorthogonal_mcp")
+        call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "write_biorthogonal_mcp")
+        call dalloc (csf_coupling_quantum_codes, "csf_coupling_quantum_codes", "write_biorthogonal_mcp")
         return
     end subroutine write_biorthogonal_mcp
 end module write_biorthogonal_mcp_interface

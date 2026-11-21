@@ -40,7 +40,7 @@ contains
                     ket_shell_values,w_matrix_element)
                 return
             else
-                print*, "ERROR in  WJ1"
+                print*, "ERROR in  evaluate_jj_w"
                 stop
             end if
         else if(ket_shell_codes(3) > 9) then

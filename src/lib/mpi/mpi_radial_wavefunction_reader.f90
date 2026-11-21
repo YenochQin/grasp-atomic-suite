@@ -36,8 +36,10 @@ contains
         real(real64) :: squared_charge_to_light_speed_ratio, kappa_squared
         real(real64) :: file_energy_parameter, file_origin_coefficient, original_norm_squared
         real(real64), pointer :: file_large_component(:), file_small_component(:), file_radial_grid(:)
-        call alloc(radial_large_components, max_radial_points, orbital_count, "PF", "LODRWFMPI")
-        call alloc(radial_small_components, max_radial_points, orbital_count, "QF", "LODRWFMPI")
+        call alloc(radial_large_components, max_radial_points, orbital_count, "radial_large_components", &
+            "read_mpi_radial_wavefunction_records")
+        call alloc(radial_small_components, max_radial_points, orbital_count, "radial_small_components", &
+            "read_mpi_radial_wavefunction_records")
 
         ! Prepare the point-nucleus origin exponent. Finite nuclei use the absolute value of kappa.
         squared_charge_to_light_speed_ratio = nuclear_charge / speed_of_light_au
@@ -82,9 +84,9 @@ contains
             call mpi_bcast (file_energy_parameter,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
             if (read_status /= 0) exit
 
-            call alloc (file_large_component,file_grid_size, "PA", "LODRWFMPI")
-            call alloc (file_small_component,file_grid_size, "QA", "LODRWFMPI")
-            call alloc (file_radial_grid,file_grid_size, "RA", "LODRWFMPI")
+            call alloc (file_large_component,file_grid_size, "file_large_component", "read_mpi_radial_wavefunction_records")
+            call alloc (file_small_component,file_grid_size, "file_small_component", "read_mpi_radial_wavefunction_records")
+            call alloc (file_radial_grid,file_grid_size, "file_radial_grid", "read_mpi_radial_wavefunction_records")
 
             if (mpi_rank == 0) then
                 read (wavefunction_input_unit) file_origin_coefficient, (file_large_component(radial_index), radial_index = 1, &
@@ -119,9 +121,9 @@ contains
                 loaded_orbital_count = loaded_orbital_count + 1
             end do
 
-            call dalloc (file_large_component, "PA", "LODRWFMPI")
-            call dalloc (file_small_component, "QA", "LODRWFMPI")
-            call dalloc (file_radial_grid, "RA", "LODRWFMPI")
+            call dalloc (file_large_component, "file_large_component", "read_mpi_radial_wavefunction_records")
+            call dalloc (file_small_component, "file_small_component", "read_mpi_radial_wavefunction_records")
+            call dalloc (file_radial_grid, "file_radial_grid", "read_mpi_radial_wavefunction_records")
         end do
         if (rmcdhf_debug_flags(3) .and. mpi_rank == 0) then
             call ensure_debug_output()

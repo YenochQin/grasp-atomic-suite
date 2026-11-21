@@ -56,9 +56,9 @@ contains
         do iblk = 1, nblock
             read (original_mixing_unit) ib, ncf, nvec, iatjp, iaspa
             write (copied_mixing_unit) ib, ncf, nvec, iatjp, iaspa
-            call alloc (eval, nvec, "EVAL", "CPMIX")
-            call alloc (evec, ncf*nvec, "EVEC", "CPMIX")
-            call alloc (ivec, nvec, "IVEC", "CPMIX")
+            call alloc (eval, nvec, "EVAL", "prepare_transition_mixing_coefficients")
+            call alloc (evec, ncf*nvec, "EVEC", "prepare_transition_mixing_coefficients")
+            call alloc (ivec, nvec, "IVEC", "prepare_transition_mixing_coefficients")
             read (original_mixing_unit) (ivec(i),i=1,nvec)
             read (original_mixing_unit) hamiltonian_energy_shift, (eval(i),i=1,nvec)
             read (original_mixing_unit) ((evec(i + (j - 1)*ncf),i=1,ncf),j=1,nvec)
@@ -66,9 +66,9 @@ contains
             write (copied_mixing_unit) (ivec(i),i=1,nvec)
             write (copied_mixing_unit) hamiltonian_energy_shift, (eval(i),i=1,nvec)
             write (copied_mixing_unit) ((evec(i + (j - 1)*ncf),i=1,ncf),j=1,nvec)
-            call dalloc (eval, "EVAL", "CPMIX")
-            call dalloc (evec, "EVEC", "CPMIX")
-            call dalloc (ivec, "IVEC", "CPMIX")
+            call dalloc (eval, "EVAL", "prepare_transition_mixing_coefficients")
+            call dalloc (evec, "EVEC", "prepare_transition_mixing_coefficients")
+            call dalloc (ivec, "IVEC", "prepare_transition_mixing_coefficients")
         end do
         name(2) = name(1)
         close(original_mixing_unit)

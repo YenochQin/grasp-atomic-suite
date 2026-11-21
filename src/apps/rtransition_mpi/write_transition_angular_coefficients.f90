@@ -100,8 +100,8 @@ contains
                 !   Allocate storage to buffer arrays
                 !
                 nlabel = 32
-                call alloc (label, nlabel, "LABEL", "MCTOUT")
-                call alloc (coeff, nlabel, "COEFF", "MCTOUT")
+                call alloc (label, nlabel, "LABEL", "write_transition_angular_coefficients")
+                call alloc (coeff, nlabel, "COEFF", "write_transition_angular_coefficients")
 
                 if (initial_block_index == 1) then
                     first_initial_csf_index = 1
@@ -146,8 +146,8 @@ contains
                                     ncr = ncr + 1
                                     if (ncr > nlabel) then
                                         newsiz = 2*nlabel
-                                        call ralloc (label,  newsiz, "LABEL", "MCTOUT")
-                                        call ralloc (coeff,  newsiz, "COEFF", "MCTOUT")
+                                        call ralloc (label,  newsiz, "LABEL", "write_transition_angular_coefficients")
+                                        call ralloc (coeff,  newsiz, "COEFF", "write_transition_angular_coefficients")
                                         nlabel = newsiz
                                     end if
                                     label(ncr) = orbital_index*orbital_index_radix + orbital_index
@@ -158,8 +158,8 @@ contains
                                     ncr = ncr + 1
                                     if (ncr > nlabel) then
                                         newsiz = 2*nlabel
-                                        call ralloc (label,  newsiz, "LABEL", "MCTOUT")
-                                        call ralloc (coeff,  newsiz, "COEFF", "MCTOUT")
+                                        call ralloc (label,  newsiz, "LABEL", "write_transition_angular_coefficients")
+                                        call ralloc (coeff,  newsiz, "COEFF", "write_transition_angular_coefficients")
                                         nlabel = newsiz
                                     end if
                                     label(ncr) = orbital_index*orbital_index_radix + ket_orbital_index
@@ -180,8 +180,8 @@ contains
                 !
                 !   Deallocate storage for buffer arrays
                 !
-                call dalloc (label,  "LABEL", "MCTOUT")
-                call dalloc (coeff,  "COEFF", "MCTOUT")
+                call dalloc (label,  "LABEL", "write_transition_angular_coefficients")
+                call dalloc (coeff,  "COEFF", "write_transition_angular_coefficients")
                 !
                 !            WRITE (*, 301) NMCT, LK, IOPAR
                 !

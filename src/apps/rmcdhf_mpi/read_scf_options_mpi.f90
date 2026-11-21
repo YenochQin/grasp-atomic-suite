@@ -68,7 +68,7 @@ contains
         character  :: block_labels(*)*8
 
         ! Local constants
-        character(len=6), parameter :: routine_name = "GETSCD"
+        character(len=*), parameter :: routine_name = "read_scf_options_mpi"
 
         ! Local declarations
         integer  :: indx(max_orbitals)
@@ -227,10 +227,10 @@ contains
         end if
 
         if(mpi_rank == 0) then
-            write (stderr_unit,*) "Enter the maximum number of SCF cycles:"
+            write (stderr_unit,*) "Enter the maximum number of read_scf_options_mpi cycles:"
             read (*,*) maximum_scf_iterations
             if (nondefault_options_flag==0) then
-                write(calculation_log_unit,*) maximum_scf_iterations,"! Number of SCF cycles"
+                write(calculation_log_unit,*) maximum_scf_iterations,"! Number of read_scf_options_mpi cycles"
             end if
         end if
         call mpi_bcast (maximum_scf_iterations, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)

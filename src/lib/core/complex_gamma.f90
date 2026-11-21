@@ -49,7 +49,7 @@ contains
             if (argument_real <= 0.0_real64) then
                 distance_to_integer = abs(dble(nint(argument_real)) - argument_real)
                 if (distance_to_integer <= machine_precision + machine_precision) then
-                    write (*, '("CGAMMA: Argument (",1p,1d19.12,",",1d19.12,")"," too close to a pole.")') &
+                    write (*, '("complex_gamma_value: Argument (",1p,1d19.12,",",1d19.12,")"," too close to a pole.")') &
                         argument_real, argument_imaginary
                     stop
                 else
@@ -130,7 +130,7 @@ contains
         if (log_gamma_real<=maximum_exp_argument .and. log_gamma_real>=minimum_exp_argument) then
             scale_factor = exp(log_gamma_real)
         else
-            write (*, '("CGAMMA: Argument to exponential function"," (",1p,1d19.12,") out of range.")') log_gamma_real
+            write (*, '("complex_gamma_value: Argument to exponential function"," (",1p,1d19.12,") out of range.")') log_gamma_real
             stop
         end if
         gamma_real = scale_factor*cos(log_gamma_imaginary)

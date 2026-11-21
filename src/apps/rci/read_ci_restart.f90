@@ -53,7 +53,7 @@ contains
         !     POINTER (piccutblk, iccutblk(1))
         !
         !-----------------------------------------------------------------------
-        write (output_unit, *) "Calling lodres ..."
+        write (output_unit, *) "Calling read_ci_restart ..."
         !
         !   Read the basic parameters of the electron cloud; check these
         !   against those deduced from the  .csl file
@@ -62,7 +62,7 @@ contains
 
         if (left_electron_count/=electron_count .or. ncfres/=csf_count .or. nwres/=orbital_count .or. &
             nblockres/=symmetry_block_count&
-            ) stop "lodres: NELEC/NCF/NW does not match"
+            ) stop "read_ci_restart: electron, CSF, or orbital count mismatch"
         !
         !   Read the nuclear parameters
         !
@@ -71,7 +71,7 @@ contains
         read (restart_matrix_unit) radial_point_count, (negative_radius_times_potential(i),i=1,radial_point_count), &
             first_grid_index_beyond_fermi_c
 
-        if (radial_point_count > max_radial_points) stop "lodres: radial point count exceeds max_radial_points"
+        if (radial_point_count > max_radial_points) stop "read_ci_restart: radial point count exceeds max_radial_points"
         !
         !   Read the physical effects specifications
         !   iccutblk() is now an array of length nblock.
@@ -98,8 +98,8 @@ contains
         !
         !   Allocate storage for the radial wavefunction arrays
         !
-        call alloc (radial_large_components, max_radial_points,orbital_count, "PF", "LODMIX")
-        call alloc (radial_small_components, max_radial_points,orbital_count, "QF", "LODMIX")
+        call alloc (radial_large_components, max_radial_points,orbital_count, "radial_large_components", "read_ci_restart")
+        call alloc (radial_small_components, max_radial_points,orbital_count, "radial_small_components", "read_ci_restart")
         !
         !   Read the orbital wavefunctions and the associated arrays
         !

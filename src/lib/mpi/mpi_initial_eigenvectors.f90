@@ -37,7 +37,8 @@ contains
         real(real64) :: lapack_abs_tolerance
 
         submatrix_order = min(submatrix_order_limit,csf_count)
-        call alloc (packed_submatrix, (submatrix_order*(submatrix_order + 1))/2, "AP", "INIESTmpi")
+        call alloc (packed_submatrix, (submatrix_order*(submatrix_order + 1))/2, "packed_submatrix", &
+            "estimate_mpi_initial_eigenvectors")
         call initialize_real_vector ((submatrix_order*(submatrix_order + 1))/2, 0.0_real64, packed_submatrix, 1)
 
         ! Expand the rank-local column segments into LAPACK upper-triangle packed storage.
@@ -54,11 +55,12 @@ contains
         ! Sum the packed contributions so each rank diagonalizes the same submatrix.
         call allreduce_mpi_real_sum (packed_submatrix, (submatrix_order*(submatrix_order+1))/2)
 
-        call alloc(initial_eigenvalues, submatrix_order,     "EIGVAL", "INIESTmpi")
-        call alloc (submatrix_eigenvectors,   submatrix_order*initial_vector_count, "VEC",    "INIESTmpi")
-        call alloc (lapack_real_workspace,  8*submatrix_order,   "WORK",   "INIESTmpi")
-        call alloc (lapack_integer_workspace, 5*submatrix_order,   "IWORK",  "INIESTmpi")
-        call alloc (failed_vector_indices, submatrix_order,     "IFAIL",  "INIESTmpi")
+        call alloc(initial_eigenvalues, submatrix_order,     "initial_eigenvalues", "estimate_mpi_initial_eigenvectors")
+        call alloc (submatrix_eigenvectors,   submatrix_order*initial_vector_count, "submatrix_eigenvectors", &
+            "estimate_mpi_initial_eigenvectors")
+        call alloc (lapack_real_workspace,  8*submatrix_order,   "lapack_real_workspace",   "estimate_mpi_initial_eigenvectors")
+        call alloc (lapack_integer_workspace, 5*submatrix_order,   "lapack_integer_workspace",  "estimate_mpi_initial_eigenvectors")
+        call alloc (failed_vector_indices, submatrix_order,     "failed_vector_indices",  "estimate_mpi_initial_eigenvectors")
 
         lapack_abs_tolerance = 2*dlamch("S")
 
@@ -82,12 +84,12 @@ contains
 
         call dcopy (initial_vector_count, initial_eigenvalues, 1, basis_vectors(initial_vector_count*csf_count+1), 1)
 
-        call dalloc (packed_submatrix,     "AP",     "INIESTmpi")
-        call dalloc (initial_eigenvalues, "EIGVAL", "INIESTmpi")
-        call dalloc (submatrix_eigenvectors,    "VEC",    "INIESTmpi")
-        call dalloc (lapack_real_workspace,   "WORK",   "INIESTmpi")
-        call dalloc (lapack_integer_workspace,  "IWORK",  "INIESTmpi")
-        call dalloc (failed_vector_indices,  "IFAIL",  "INIESTmpi")
+        call dalloc (packed_submatrix,     "packed_submatrix",     "estimate_mpi_initial_eigenvectors")
+        call dalloc (initial_eigenvalues, "initial_eigenvalues", "estimate_mpi_initial_eigenvectors")
+        call dalloc (submatrix_eigenvectors,    "submatrix_eigenvectors",    "estimate_mpi_initial_eigenvectors")
+        call dalloc (lapack_real_workspace,   "lapack_real_workspace",   "estimate_mpi_initial_eigenvectors")
+        call dalloc (lapack_integer_workspace,  "lapack_integer_workspace",  "estimate_mpi_initial_eigenvectors")
+        call dalloc (failed_vector_indices,  "failed_vector_indices",  "estimate_mpi_initial_eigenvectors")
 
         return
     end subroutine estimate_mpi_initial_eigenvectors

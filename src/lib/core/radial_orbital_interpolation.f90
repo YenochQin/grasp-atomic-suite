@@ -46,7 +46,7 @@ contains
         radial_small_components(1,orbital_index) = 0.0_real64
         ! The current grid must reach the end of the input grid.
         if (source_maximum_radius > target_maximum_radius) then
-            write (*, '(/,"INTRPQ: Grid of insufficient extent:"/," Present grid has R(N) = ",1p,1d19.12,&
+            write (*, '(/,"interpolate_radial_orbital: Grid of insufficient extent:"/," Present grid has R(N) = ",1p,1d19.12,&
                 &" Bohr radii"/,"          Require R(N) = ",1d19.12," Bohr radii")') &
                 target_maximum_radius, source_maximum_radius
             print*, "N =",radial_point_count,"MA =",source_grid_size
@@ -146,7 +146,7 @@ contains
         if (rmcdhf_debug_flags(3) .and. unconverged_point_count>0) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,&
-                &"INTRPQ: Interpolation procedure not converged to",1p,1d19.12," for ",1i3," of ",1i3,&
+                &"interpolate_radial_orbital: Interpolation procedure not converged to",1p,1d19.12," for ",1i3," of ",1i3,&
                 &" tabulation points")') working_tolerance, unconverged_point_count, &
                 & last_target_index
         end if

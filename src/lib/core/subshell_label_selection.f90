@@ -72,7 +72,7 @@ contains
                             principal_digit_count = principal_digit_count + 1
                         end do
                         if (principal_digit_count == 0) then
-                            write (stderr_unit, *) "GETRSL: Unable to interpret ", &
+                            write (stderr_unit, *) "parse_selection: Unable to interpret ", &
                                 "the principal quantum number;"
                             return
                         end if
@@ -81,7 +81,7 @@ contains
                         read (input_line(token_start:token_start+principal_digit_count-1), integer_format, &
                             & iostat=read_status) requested_principal_n
                         if (read_status /= 0) then
-                            write (stderr_unit, *) "GETRSL: Unable to interpret ", "string ", &
+                            write (stderr_unit, *) "parse_selection: Unable to interpret ", "string ", &
                                 input_line(token_start:token_end-2), " as a principal quantum number"
                             return
                         end if
@@ -100,7 +100,7 @@ contains
                         else if (requested_spin_suffix == "-") then
                             any_spin_component = .false.
                         else
-                            write (stderr_unit, *) "GETRSL: Unable to interpret ", "string ", &
+                            write (stderr_unit, *) "parse_selection: Unable to interpret ", "string ", &
                                 requested_spin_suffix, " as a spin-orbit component indicator"
                             return
                         end if
@@ -122,7 +122,7 @@ contains
                         if (.not.(principal_n_matches .and. orbital_l_matches .and. spin_component_matches)) cycle
                         do match_index = 1, matched_subshell_count
                             if (matched_orbital_indices(match_index) /= orbital_index) cycle
-                            write (stderr_unit, *) "GETRSL: ", "Repeated subshell in list;"
+                            write (stderr_unit, *) "parse_selection: ", "Repeated subshell in list;"
                             return
                         end do
                         subshell_matched = .true.
@@ -130,7 +130,7 @@ contains
                         matched_orbital_indices(matched_subshell_count) = orbital_index
                     end do
                     if (.not.subshell_matched) then
-                        write (stderr_unit, *) "GETRSL: Subshell not occupied as ", &
+                        write (stderr_unit, *) "parse_selection: Subshell not occupied as ", &
                             " according to CSL  File;"
                         return
                     end if

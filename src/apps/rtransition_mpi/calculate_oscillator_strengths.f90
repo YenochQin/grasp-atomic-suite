@@ -267,15 +267,17 @@ contains
                     !
                     !   Allocate storage
                     !
-                    call alloc (total_babushkin_probabilities, final_level_count, "TOTB", "OSCL")
-                    call alloc (total_coulomb_probabilities, final_level_count, "TOTC", "OSCL")
+                    call alloc (total_babushkin_probabilities, final_level_count, "total_babushkin_probabilities", &
+                        "calculate_oscillator_strengths")
+                    call alloc (total_coulomb_probabilities, final_level_count, "total_coulomb_probabilities", &
+                        "calculate_oscillator_strengths")
                     !
                     level_pair_count = initial_level_count*final_level_count
-                    call alloc (et, level_pair_count, "ET", "OSCL" )
-                    call alloc (et1, level_pair_count, "ET1","OSCL" )
-                    call alloc (ipr, level_pair_count, "IPR", "OSCL" )
-                    call alloc (ipr1, level_pair_count,"IPR1", "OSCL" )
-                    call alloc (next, level_pair_count, "NEXT", "OSCL")
+                    call alloc (et, level_pair_count, "ET", "calculate_oscillator_strengths" )
+                    call alloc (et1, level_pair_count, "ET1","calculate_oscillator_strengths" )
+                    call alloc (ipr, level_pair_count, "IPR", "calculate_oscillator_strengths" )
+                    call alloc (ipr1, level_pair_count,"IPR1", "calculate_oscillator_strengths" )
+                    call alloc (next, level_pair_count, "NEXT", "calculate_oscillator_strengths")
                     !
                     !   Initialization for total decay rate
                     !
@@ -391,39 +393,39 @@ contains
                     !
                     !   Deallocate storage; this is local to OSCL
                     !
-                    call dalloc (total_babushkin_probabilities, "TOTB", "OSCL")
-                    call dalloc (total_coulomb_probabilities, "TOTC", "OSCL")
+                    call dalloc (total_babushkin_probabilities, "total_babushkin_probabilities", "calculate_oscillator_strengths")
+                    call dalloc (total_coulomb_probabilities, "total_coulomb_probabilities", "calculate_oscillator_strengths")
                     !
-                    call dalloc (et, "ET", "OSCL")
-                    call dalloc (et1, "ET!", "OSCL")
-                    call dalloc (ipr, "IPR", "OSCL")
-                    call dalloc (ipr1, "IPR1", "OSCL")
-                    call dalloc (next, "NEXT", "OSCL")
+                    call dalloc (et, "ET", "calculate_oscillator_strengths")
+                    call dalloc (et1, "et1", "calculate_oscillator_strengths")
+                    call dalloc (ipr, "IPR", "calculate_oscillator_strengths")
+                    call dalloc (ipr1, "IPR1", "calculate_oscillator_strengths")
+                    call dalloc (next, "NEXT", "calculate_oscillator_strengths")
                     !
                     !   Deallocate storage; this is allocated in READMIX
                     !
-                    call dalloc (final_shifted_eigenvalues, "EVALFF", "OSCL")
-                    call dalloc (final_csf_mixing_coefficients, "EVECFF", "OSCL")
-                    call dalloc (final_level_indices, "IVECFF", "OSCL")
-                    call dalloc (final_level_two_j_plus_one, "IATJPOFF", "OSCL")
-                    call dalloc (final_level_parity_signs, "IASPARFF", "OSCL")
+                    call dalloc (final_shifted_eigenvalues, "final_shifted_eigenvalues", "calculate_oscillator_strengths")
+                    call dalloc (final_csf_mixing_coefficients, "final_csf_mixing_coefficients", "calculate_oscillator_strengths")
+                    call dalloc (final_level_indices, "final_level_indices", "calculate_oscillator_strengths")
+                    call dalloc (final_level_two_j_plus_one, "final_level_two_j_plus_one", "calculate_oscillator_strengths")
+                    call dalloc (final_level_parity_signs, "final_level_parity_signs", "calculate_oscillator_strengths")
 
                 end do
                 close(final_mixing_unit)
                 !
                 !   Deallocate storage; this is allocated in READMIX
                 !
-                call dalloc (initial_shifted_eigenvalues, "EVALII", "OSCL")
-                call dalloc (initial_csf_mixing_coefficients, "EVECII", "OSCL")
-                call dalloc (initial_level_indices, "IVECII", "OSCL")
-                call dalloc (initial_level_two_j_plus_one, "IATJPOII", "OSCL")
-                call dalloc (initial_level_parity_signs, "IASPARII", "OSCL")
+                call dalloc (initial_shifted_eigenvalues, "initial_shifted_eigenvalues", "calculate_oscillator_strengths")
+                call dalloc (initial_csf_mixing_coefficients, "initial_csf_mixing_coefficients", "calculate_oscillator_strengths")
+                call dalloc (initial_level_indices, "initial_level_indices", "calculate_oscillator_strengths")
+                call dalloc (initial_level_two_j_plus_one, "initial_level_two_j_plus_one", "calculate_oscillator_strengths")
+                call dalloc (initial_level_parity_signs, "initial_level_parity_signs", "calculate_oscillator_strengths")
 
             end do
             close(initial_mixing_unit)
             close(transition_angular_unit)
         end do
-        call dalloc (requested_multipole_codes, "KP", "OSCL")
+        call dalloc (requested_multipole_codes, "requested_multipole_codes", "calculate_oscillator_strengths")
         !
         ! close and delete duplicated mixing file
         if (same_initial_and_final_state) then

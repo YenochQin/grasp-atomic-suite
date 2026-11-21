@@ -87,7 +87,7 @@ contains
         !
         call format_integer (mcp_channel_index, ck, lck)
         if (lck > 2) then
-            write (stderr_unit, *) "sort: nfile > 99; check fullname"
+            write (stderr_unit, *) "sort_mcp_coefficients_in_memory: nfile > 99; check fullname"
             stop
         end if
 
@@ -106,7 +106,7 @@ contains
             !
             !   Allocate storage for all required arrays
             !
-            if (mcp_channel_index == 33) call alloc (nswap, coefficient_count,"NSWAP", "SORTMEM")
+            if (mcp_channel_index == 33) call alloc (nswap, coefficient_count,"NSWAP", "sort_mcp_coefficients_in_memory")
         end if
         !
         !   Sort LABEL into ascending order using the heapsort algorithm;
@@ -300,8 +300,8 @@ contains
         !
         if (print_details) then
             call ensure_debug_output()
-            write (angular_debug_unit, '(/,"From SORT:")')
-            write (output_unit, '(/,"From SORT:")')
+            write (angular_debug_unit, '(/,"From sort_mcp_coefficients_in_memory:")')
+            write (output_unit, '(/,"From sort_mcp_coefficients_in_memory:")')
             if (coefficient_count > 0) then
                 !
                 last = channel_packed_orbital_labels(1,igg)
@@ -361,7 +361,7 @@ contains
         !   Deallocate storage
         !
         if (coefficient_count > 0) then
-            if (mcp_channel_index == 33) call dalloc (nswap, "NSWAP", "SORTMEM")
+            if (mcp_channel_index == 33) call dalloc (nswap, "NSWAP", "sort_mcp_coefficients_in_memory")
         end if
 
 

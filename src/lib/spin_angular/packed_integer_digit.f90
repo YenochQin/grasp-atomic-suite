@@ -24,7 +24,7 @@ contains
         else if(digit_position == 5) then
             digit_value=mod(packed_value/(radix*radix*radix*radix),radix)
         else
-            write(output_unit,"(A)") " ERROR IN JTHN "
+            write(output_unit,"(A)") " ERROR IN extract_packed_integer_digit "
             stop
         end if
         return

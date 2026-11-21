@@ -44,7 +44,7 @@ contains
 
         ns = min (nmax, csf_count)
 
-        call alloc (ap, ns*(ns+1)/2, "AP", "INIESTDM")
+        call alloc (ap, ns*(ns+1)/2, "AP", "initialize_dense_eigenvectors")
         call initialize_real_vector (ns*(ns+1)/2, 0.0_real64, ap, 1)
 
         !  Get the upper left sub-matrix
@@ -53,11 +53,11 @@ contains
             ap(i) = hmx(i)
         end do
 
-        call alloc (eigval,   ns, "EIGVAL", "INIESTDM")
-        call alloc (vec,   ns*initial_vector_count, "VEC", "INIESTDM")
-        call alloc (real_workspace,  8*ns,  "WORK", "INIESTDM")
-        call alloc (integer_workspace, 5*ns,  "IWORK", "INIESTDM")
-        call alloc (ifail,     ns,  "IFAIL", "INIESTDM")
+        call alloc (eigval,   ns, "EIGVAL", "initialize_dense_eigenvectors")
+        call alloc (vec,   ns*initial_vector_count, "VEC", "initialize_dense_eigenvectors")
+        call alloc (real_workspace,  8*ns,  "real_workspace", "initialize_dense_eigenvectors")
+        call alloc (integer_workspace, 5*ns,  "integer_workspace", "initialize_dense_eigenvectors")
+        call alloc (ifail,     ns,  "IFAIL", "initialize_dense_eigenvectors")
 
         call dspevx ("Vectors also","In a range","Upper triangular",      &
             &          ns,ap,-1.0_real64,-1.0_real64,1,initial_vector_count,0.0_real64,                               &
@@ -76,12 +76,12 @@ contains
 
         call dcopy (initial_vector_count, eigval, 1, basis(initial_vector_count*csf_count+1), 1)
 
-        call dalloc (ap, "AP", "INIESTDM")
-        call dalloc (eigval, "EIGVAL", "INIESTDM")
-        call dalloc (vec, "VEC", "INIESTDM")
-        call dalloc (real_workspace, "WORK", "INIESTDM")
-        call dalloc (integer_workspace, "IWORK", "INIESTDM")
-        call dalloc (ifail, "IFAIL", "INIESTDM")
+        call dalloc (ap, "AP", "initialize_dense_eigenvectors")
+        call dalloc (eigval, "EIGVAL", "initialize_dense_eigenvectors")
+        call dalloc (vec, "VEC", "initialize_dense_eigenvectors")
+        call dalloc (real_workspace, "real_workspace", "initialize_dense_eigenvectors")
+        call dalloc (integer_workspace, "integer_workspace", "initialize_dense_eigenvectors")
+        call dalloc (ifail, "IFAIL", "initialize_dense_eigenvectors")
 
         return
     end subroutine initialize_dense_eigenvectors

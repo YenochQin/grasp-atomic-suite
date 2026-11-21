@@ -92,9 +92,12 @@ contains
         !
         !   Allocate storage for local arrays
         !
-        call alloc (reduced_hyperfine_elements, 5, active_level_count*active_level_count, "HFC", "HFS_MPI")
-        call alloc (reduced_lande_g_elements, active_level_count*active_level_count, "GJC", "HFS_MPI")
-        call alloc (reduced_lande_correction_elements, active_level_count*active_level_count, "DGLC", "HFS_MPI")
+        call alloc (reduced_hyperfine_elements, 5, active_level_count*active_level_count, "reduced_hyperfine_elements", &
+            "calculate_hyperfine_matrix_elements_mpi")
+        call alloc (reduced_lande_g_elements, active_level_count*active_level_count, "reduced_lande_g_elements", &
+            "calculate_hyperfine_matrix_elements_mpi")
+        call alloc (reduced_lande_correction_elements, active_level_count*active_level_count, "reduced_lande_correction_elements", &
+            "calculate_hyperfine_matrix_elements_mpi")
         !
         !   Initialise
         !
@@ -618,9 +621,10 @@ contains
             end do
             !
         end if
-        call dalloc (reduced_hyperfine_elements, "HFC", "HFS_MPI")
-        call dalloc (reduced_lande_g_elements, "GJC", "HFS_MPI")
-        call dalloc (reduced_lande_correction_elements, "DGJC", "HFS_MPI")
+        call dalloc (reduced_hyperfine_elements, "reduced_hyperfine_elements", "calculate_hyperfine_matrix_elements_mpi")
+        call dalloc (reduced_lande_g_elements, "reduced_lande_g_elements", "calculate_hyperfine_matrix_elements_mpi")
+        call dalloc (reduced_lande_correction_elements, "reduced_lande_correction_elements", &
+            "calculate_hyperfine_matrix_elements_mpi")
         return
         !
         return

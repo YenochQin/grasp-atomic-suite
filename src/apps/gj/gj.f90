@@ -76,14 +76,14 @@ program gj
     call read_mixing_blocks(name, mixing_file_kind)
     call initialize_log_factorial_table
     !
-    call alloc(lande_g_factors, active_level_count, "GJC_DIAG", "GJ")
-    call alloc(lande_g_factor_corrections, active_level_count, "DGJC_DIAG", "GJ")
+    call alloc(lande_g_factors, active_level_count, "lande_g_factors", "GJ")
+    call alloc(lande_g_factor_corrections, active_level_count, "lande_g_factor_corrections", "GJ")
     !
     call compute_gj_only(lande_g_factors, lande_g_factor_corrections)
     call write_lande_g_factors(name, mixing_file_kind, lande_g_factors, lande_g_factor_corrections)
     !
-    call dalloc(lande_g_factors, "GJC_DIAG", "GJ")
-    call dalloc(lande_g_factor_corrections, "DGJC_DIAG", "GJ")
+    call dalloc(lande_g_factors, "lande_g_factors", "GJ")
+    call dalloc(lande_g_factor_corrections, "lande_g_factor_corrections", "GJ")
     !
     write (stderr_unit, *)
     write (stderr_unit, *) "GJ: Execution complete."

@@ -72,26 +72,26 @@ contains
         if (is_restart) then
             !         ...Restart, make sure file exist
             inquire(file=file_path, exist=found)
-            if (.not.found) stop "setres: .res does not exist"
+            if (.not.found) stop "connect_ci_restart_file: .res does not exist"
         end if
         !
         ! Open the .res file
         !
         call open_calculation_file (restart_matrix_unit, file_path, form, status, open_status)
-        if (open_status /= 0) stop "setres: Error openning .res file"
+        if (open_status /= 0) stop "connect_ci_restart_file: Error openning .res file"
         !
         ! If restart, load the contents. Otherwise generate them via getcid
         !
         ! But first of all, iccutblk() is needed in both cases
         !
-        call alloc (csf_cutoff_by_block, symmetry_block_count, "ICCUTBLK", "SETRES")
+        call alloc (csf_cutoff_by_block, symmetry_block_count, "csf_cutoff_by_block", "connect_ci_restart_file")
 
         if (is_restart) then
             !        ...Check the signature of the file
             read (restart_matrix_unit, iostat=io_status) r92res
             if (io_status/=0 .or. r92res/=restitle) then
                 close(restart_matrix_unit)
-                stop "setres: Not RCI92 .res file"
+                stop "connect_ci_restart_file: Not RCI92 .res file"
             end if
 
             !         ...Read and check restart information

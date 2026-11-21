@@ -90,7 +90,7 @@ contains
         !
         trace_level = 0
         if (trace_level /= 0) then
-            write (output_unit, *) " U and L from Ulla "
+            write (output_unit, *) " U and L from combine_upper_lower_factors "
             call write_matrix (upper_factor, matrix_order, matrix_order, matrix_order, matrix_order)
             call write_matrix (lower_factor, matrix_order, matrix_order, matrix_order, matrix_order)
         end if

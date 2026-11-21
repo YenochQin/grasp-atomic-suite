@@ -155,7 +155,7 @@ contains
             !      ENDIF
             !AK      Consolidate NDA and DA from all nodes
             if (mpi_process_count>1) then
-                call alloc(ndcof_buffer,mpi_process_count,"ndcof_buffer","IMPROVmpi")
+                call alloc(ndcof_buffer,mpi_process_count,"ndcof_buffer","improve_orbital_mpi")
                 call mpi_gather(direct_coefficient_count, 1, i_mpi, ndcof_buffer,            &
                     1, i_mpi, 0, mpi_comm_world, mpi_error_code)
                 call mpi_bcast (ndcof_buffer, mpi_process_count, i_mpi, 0,           &
@@ -166,12 +166,12 @@ contains
                 end do
                 if (ndcof_max>0) then
                     ntot = ndcof_max*mpi_process_count
-                    call alloc(nda_buffer,ntot,"nda_buffer","IMPROVmpi")
+                    call alloc(nda_buffer,ntot,"nda_buffer","improve_orbital_mpi")
                     call mpi_gather(direct_orbital_indices, ndcof_max, i_mpi, nda_buffer,     &
                         ndcof_max, i_mpi, 0, mpi_comm_world, mpi_error_code)
                     call mpi_bcast (nda_buffer, ntot, i_mpi, 0,            &
                         mpi_comm_world, mpi_error_code)
-                    call alloc(da_buffer, ntot, "da_buffer","IMPROVmpi")
+                    call alloc(da_buffer, ntot, "da_buffer","improve_orbital_mpi")
                     call mpi_gather(direct_coefficients, ndcof_max, mpi_double_precision,   &
                         da_buffer, ndcof_max, mpi_double_precision, 0,       &
                         mpi_comm_world, mpi_error_code)
@@ -196,11 +196,13 @@ contains
                                     if (direct_coefficient_capacity > 0) then
                                         direct_coefficient_capacity = 2*direct_coefficient_capacity
                                         !GG                           CALL alcsca (PNTNDA, PNTRDA, NDDIM, 2)
-                                        call ralloc(direct_orbital_indices,direct_coefficient_capacity,"NDA","IMPROVmpi")
+                                        call ralloc(direct_orbital_indices,direct_coefficient_capacity,"direct_orbital_indices", &
+                                            "improve_orbital_mpi")
                                     else
                                         direct_coefficient_capacity = 64
                                         !GG                           CALL alcsca (PNTNDA, PNTRDA, NDDIM, 1)
-                                        call alloc(direct_orbital_indices,direct_coefficient_capacity,"NDA","IMPROVmpi")
+                                        call alloc(direct_orbital_indices,direct_coefficient_capacity,"direct_orbital_indices", &
+                                            "improve_orbital_mpi")
                                     end if
                                 end do
                                 direct_orbital_indices(i_last) = nda_buffer(ind_buf)
@@ -209,10 +211,10 @@ contains
                         end do
                     end do
                     direct_coefficient_count = ndcof_max
-                    call dalloc(nda_buffer,"nda_buffer","IMPROVmpi")
-                    call dalloc(da_buffer,"da_buffer","IMPROVMPI")
+                    call dalloc(nda_buffer,"nda_buffer","improve_orbital_mpi")
+                    call dalloc(da_buffer,"da_buffer","improve_orbital_mpi")
                 end if
-                call dalloc(ndcof_buffer,"ndcof_buffer","IMPROVmpi")
+                call dalloc(ndcof_buffer,"ndcof_buffer","improve_orbital_mpi")
             end if
 
             call solve_radial_orbital (orbital_index, solve_failed, orbital_sign_reversal_count, matching_grid_index, &
@@ -238,7 +240,7 @@ contains
                     call calculate_lagrange_multipliers_mpi (extended_optimal_level)
                     cycle
                 else
-                    if (mpi_rank == 0) write (*, '(/,/," ****** Error in SUBROUTINE IMPROV ******"/,&
+                    if (mpi_rank == 0) write (*, '(/,/," ****** Error in SUBROUTINE improve_orbital_mpi ******"/,&
                         &" Convergence not obtained"/)')
                     !CALL TIMER (0)
                     error stop

@@ -118,7 +118,7 @@ contains
                 indx(i) = indx_50(total_contribution_count+i)
                 coeff(i) = coeff_50(total_contribution_count+i)
             else
-                print*, "Error in read3_mem"
+                print*, "Error in read_mcp_coefficients_into_memory"
                 stop
             end if
         end do

@@ -29,7 +29,7 @@ contains
             open_status = 0
         else
             path_length = len_trim(file_path)
-            write (stderr_unit, *) "OPENFL: Error opening file ", file_path(1:path_length), " as "&
+            write (stderr_unit, *) "open_calculation_file: Error opening file ", file_path(1:path_length), " as "&
                 , requested_status, ";"
             write (stderr_unit, *) "The argument RSTAT=", requested_status, " is not used !"
             open_status = 1

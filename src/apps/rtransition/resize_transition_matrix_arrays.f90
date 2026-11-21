@@ -45,16 +45,16 @@ contains
             !
             !   Allocate storage for arrays
             !
-            call alloc (jja, matrix_element_capacity, "JJA", "ALCNSA")
-            call alloc (jjb, matrix_element_capacity, "JJB", "ALCNSA" )
-            call alloc (hb1, matrix_element_capacity, "HB1", "ALCNSA")
-            call alloc (hb2, matrix_element_capacity, "HB2", "ALCNSA")
-            call alloc (hc1, matrix_element_capacity, "HC1", "ALCNSA")
-            call alloc (hc2, matrix_element_capacity, "HC2", "ALCNSA")
-            call alloc (hm1, matrix_element_capacity, "HM1", "ALCNSA")
-            call alloc (hm2, matrix_element_capacity, "HM2", "ALCNSA")
-            call alloc (lab, matrix_element_capacity, "LAB", "ALCNSA" )
-            call alloc (nptr, matrix_element_capacity, "NPTR", "ALCNSA" )
+            call alloc (jja, matrix_element_capacity, "JJA", "resize_transition_matrix_arrays")
+            call alloc (jjb, matrix_element_capacity, "JJB", "resize_transition_matrix_arrays" )
+            call alloc (hb1, matrix_element_capacity, "HB1", "resize_transition_matrix_arrays")
+            call alloc (hb2, matrix_element_capacity, "HB2", "resize_transition_matrix_arrays")
+            call alloc (hc1, matrix_element_capacity, "HC1", "resize_transition_matrix_arrays")
+            call alloc (hc2, matrix_element_capacity, "HC2", "resize_transition_matrix_arrays")
+            call alloc (hm1, matrix_element_capacity, "HM1", "resize_transition_matrix_arrays")
+            call alloc (hm2, matrix_element_capacity, "HM2", "resize_transition_matrix_arrays")
+            call alloc (lab, matrix_element_capacity, "LAB", "resize_transition_matrix_arrays" )
+            call alloc (nptr, matrix_element_capacity, "NPTR", "resize_transition_matrix_arrays" )
         !
         case (2)
             !
@@ -62,16 +62,16 @@ contains
             !
             new_capacity = 2*matrix_element_capacity
             !
-            call ralloc (jja, new_capacity, "JJA", "ALCNSA")
-            call ralloc (jjb, new_capacity, "JJB", "ALCNSA" )
-            call ralloc (hb1, new_capacity, "HB1", "ALCNSA")
-            call ralloc (hb2, new_capacity, "HB2", "ALCNSA")
-            call ralloc (hc1, new_capacity, "HC1", "ALCNSA")
-            call ralloc (hc2, new_capacity, "HC2", "ALCNSA")
-            call ralloc (hm1, new_capacity, "HM1", "ALCNSA")
-            call ralloc (hm2, new_capacity, "HM2", "ALCNSA")
-            call ralloc (lab, new_capacity, "LAB", "ALCNSA" )
-            call ralloc (nptr, new_capacity, "NPTR", "ALCNSA" )
+            call ralloc (jja, new_capacity, "JJA", "resize_transition_matrix_arrays")
+            call ralloc (jjb, new_capacity, "JJB", "resize_transition_matrix_arrays" )
+            call ralloc (hb1, new_capacity, "HB1", "resize_transition_matrix_arrays")
+            call ralloc (hb2, new_capacity, "HB2", "resize_transition_matrix_arrays")
+            call ralloc (hc1, new_capacity, "HC1", "resize_transition_matrix_arrays")
+            call ralloc (hc2, new_capacity, "HC2", "resize_transition_matrix_arrays")
+            call ralloc (hm1, new_capacity, "HM1", "resize_transition_matrix_arrays")
+            call ralloc (hm2, new_capacity, "HM2", "resize_transition_matrix_arrays")
+            call ralloc (lab, new_capacity, "LAB", "resize_transition_matrix_arrays" )
+            call ralloc (nptr, new_capacity, "NPTR", "resize_transition_matrix_arrays" )
             !
             matrix_element_capacity = new_capacity
         !
@@ -79,20 +79,20 @@ contains
             !
             !   Deallocate the storage for the arrays
             !
-            call dalloc (jja, "JJA", "ALCNSA")
-            call dalloc (jjb, "JJB", "ALCNSA" )
-            call dalloc (hb1, "HB1", "ALCNSA")
-            call dalloc (hb2, "HB2", "ALCNSA")
-            call dalloc (hc1, "HC1", "ALCNSA")
-            call dalloc (hc2, "HC2", "ALCNSA")
-            call dalloc (hm1, "HM1", "ALCNSA")
-            call dalloc (hm2, "HM2", "ALCNSA")
-            call dalloc (lab, "LAB", "ALCNSA" )
-            call dalloc (nptr, "NPTR", "ALCNSA" )
+            call dalloc (jja, "JJA", "resize_transition_matrix_arrays")
+            call dalloc (jjb, "JJB", "resize_transition_matrix_arrays" )
+            call dalloc (hb1, "HB1", "resize_transition_matrix_arrays")
+            call dalloc (hb2, "HB2", "resize_transition_matrix_arrays")
+            call dalloc (hc1, "HC1", "resize_transition_matrix_arrays")
+            call dalloc (hc2, "HC2", "resize_transition_matrix_arrays")
+            call dalloc (hm1, "HM1", "resize_transition_matrix_arrays")
+            call dalloc (hm2, "HM2", "resize_transition_matrix_arrays")
+            call dalloc (lab, "LAB", "resize_transition_matrix_arrays" )
+            call dalloc (nptr, "NPTR", "resize_transition_matrix_arrays" )
         !
         case default
             !
-            write (output_unit, *) "ALCNSA: Invalid argument IMODE = ", resize_mode
+            write (output_unit, *) "resize_transition_matrix_arrays: Invalid resize_mode = ", resize_mode
             stop
             !
         end select

@@ -132,8 +132,9 @@ contains
                 !
                 if (kinetic_integral_count > kinetic_integral_capacity) then
                     new_integral_capacity = kinetic_integral_capacity+kinetic_integral_capacity/2
-                    call ralloc (kinetic_integral_indices,new_integral_capacity,"INDKEI", "KEINT")
-                    call ralloc (kinetic_integral_values,new_integral_capacity,"VALKEI", "KEINT")
+                    call ralloc (kinetic_integral_indices,new_integral_capacity,"kinetic_integral_indices", &
+                        "kinetic_energy_integral")
+                    call ralloc (kinetic_integral_values,new_integral_capacity,"kinetic_integral_values", "kinetic_energy_integral")
                     kinetic_integral_capacity = new_integral_capacity
                 end if
                 !
@@ -159,8 +160,8 @@ contains
             !   NDCOEA stores the array dimension
             !
             kinetic_integral_capacity = 2
-            call alloc (kinetic_integral_indices,kinetic_integral_capacity,"INDKEI","KEINT" )
-            call alloc (kinetic_integral_values,kinetic_integral_capacity,"VALKEI","KEINT")
+            call alloc (kinetic_integral_indices,kinetic_integral_capacity,"kinetic_integral_indices","kinetic_energy_integral" )
+            call alloc (kinetic_integral_values,kinetic_integral_capacity,"kinetic_integral_values","kinetic_energy_integral")
             !
             !   Compute the integral's value
             !

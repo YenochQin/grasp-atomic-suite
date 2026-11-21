@@ -105,7 +105,7 @@ contains
         integer :: avail_ob_mpi, avail_tb_mpi, serial_save_mpi, cache_status
         if (mpi_rank == 0) then
             write(*,*) "-------------------------------"
-            write(*,*) "RIS_CAL_MPI: Execution Begins ..."
+            write(*,*) "calculate_isotope_shifts_mpi: Execution Begins ..."
             write(*,*) "-------------------------------"
         end if
 
@@ -132,15 +132,16 @@ contains
         allocate( density_fit_parameters(6,active_level_count),effective_electron_density(active_level_count), &
             density_fit_residual(active_level_count) )
 
-        call alloc (leading_sms_by_level, active_level_count,"SMSC1", "RIS_CAL_MPI")
-        call alloc (total_sms_by_level, active_level_count,"SMSC2", "RIS_CAL_MPI")
-        call alloc (contact_density_by_level, active_level_count,"DENS1","RIS_CAL_MPI")
-        call alloc (total_nms_by_level, active_level_count,"DENS2","RIS_CAL_MPI")
-        call alloc (radius_by_level, active_level_count,"DENS3","RIS_CAL_MPI")
-        call alloc (radius_squared_by_level, active_level_count,"DENS4","RIS_CAL_MPI")
-        call alloc (inverse_radius_by_level, active_level_count,"DENS5","RIS_CAL_MPI")
-        call alloc (inverse_radius_squared_by_level, active_level_count,"DENS6","RIS_CAL_MPI")
-        call alloc (leading_nms_by_level, active_level_count,"DENS7","RIS_CAL_MPI")
+        call alloc (leading_sms_by_level, active_level_count,"leading_sms_by_level", "calculate_isotope_shifts_mpi")
+        call alloc (total_sms_by_level, active_level_count,"total_sms_by_level", "calculate_isotope_shifts_mpi")
+        call alloc (contact_density_by_level, active_level_count,"contact_density_by_level","calculate_isotope_shifts_mpi")
+        call alloc (total_nms_by_level, active_level_count,"total_nms_by_level","calculate_isotope_shifts_mpi")
+        call alloc (radius_by_level, active_level_count,"radius_by_level","calculate_isotope_shifts_mpi")
+        call alloc (radius_squared_by_level, active_level_count,"radius_squared_by_level","calculate_isotope_shifts_mpi")
+        call alloc (inverse_radius_by_level, active_level_count,"inverse_radius_by_level","calculate_isotope_shifts_mpi")
+        call alloc (inverse_radius_squared_by_level, active_level_count,"inverse_radius_squared_by_level", &
+            "calculate_isotope_shifts_mpi")
+        call alloc (leading_nms_by_level, active_level_count,"leading_nms_by_level","calculate_isotope_shifts_mpi")
 
         call begin_run_timer (start_clock_count, "RIS_CAL_MPI")
 
@@ -455,19 +456,19 @@ contains
             end if
         end if
 
-        call dalloc (leading_sms_by_level,"SMSC1","RIS_CAL_MPI")
-        call dalloc (total_sms_by_level,"SMSC2","RIS_CAL_MPI")
-        call dalloc (contact_density_by_level,"DENS1","RIS_CAL_MPI")
-        call dalloc (total_nms_by_level,"DENS2","RIS_CAL_MPI")
-        call dalloc (radius_by_level,"DENS3","RIS_CAL_MPI")
-        call dalloc (radius_squared_by_level,"DENS4","RIS_CAL_MPI")
-        call dalloc (inverse_radius_by_level,"DENS5","RIS_CAL_MPI")
-        call dalloc (inverse_radius_squared_by_level,"DENS6","RIS_CAL_MPI")
-        call dalloc (leading_nms_by_level,"DENS7","RIS_CAL_MPI")
+        call dalloc (leading_sms_by_level,"leading_sms_by_level","calculate_isotope_shifts_mpi")
+        call dalloc (total_sms_by_level,"total_sms_by_level","calculate_isotope_shifts_mpi")
+        call dalloc (contact_density_by_level,"contact_density_by_level","calculate_isotope_shifts_mpi")
+        call dalloc (total_nms_by_level,"total_nms_by_level","calculate_isotope_shifts_mpi")
+        call dalloc (radius_by_level,"radius_by_level","calculate_isotope_shifts_mpi")
+        call dalloc (radius_squared_by_level,"radius_squared_by_level","calculate_isotope_shifts_mpi")
+        call dalloc (inverse_radius_by_level,"inverse_radius_by_level","calculate_isotope_shifts_mpi")
+        call dalloc (inverse_radius_squared_by_level,"inverse_radius_squared_by_level","calculate_isotope_shifts_mpi")
+        call dalloc (leading_nms_by_level,"leading_nms_by_level","calculate_isotope_shifts_mpi")
 
         if (mpi_rank == 0) then
             write(*,*) "-------------------------------"
-            write(*,*) "RIS_CAL_MPI: Execution Finished ..."
+            write(*,*) "calculate_isotope_shifts_mpi: Execution Finished ..."
             write(*,*) "-------------------------------"
         end if
         call finish_run_timer (start_clock_count, "RIS_CAL_MPI")

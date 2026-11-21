@@ -51,7 +51,7 @@ contains
         if (k>=0 .and. k<=1) then
             if (x == 0.0_real64) then
                 if (k == 1) then
-                    write (*, '(/,"FUNL: Attempt to calculate function for"/," zero argument and K value of 1")')
+                    write (*, '(/,"fullerton_rinker_l_function: Undefined for x = 0 and k = 1")')
                     stop
                 end if
                 sum = f(1,1)
@@ -86,7 +86,7 @@ contains
             fullerton_rinker_l_function = sum
             return
         end if
-        write (*, '(/,"FUNL: K must be either 0 or 1")')
+        write (*, '(/,"fullerton_rinker_l_function: K must be either 0 or 1")')
         stop
         !
         return

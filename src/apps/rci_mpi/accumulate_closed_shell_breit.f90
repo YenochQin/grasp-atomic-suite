@@ -83,7 +83,7 @@ contains
         const = bra_orbital_occupation*ket_orbital_occupation
         if (ibug2 /= 0) then
             call ensure_debug_output()
-            write (angular_debug_unit, '("BREID: orbitals ",2i3)') bra_orbital_index, ket_orbital_index
+            write (angular_debug_unit, '("accumulate_closed_shell_breit: orbitals ",2i3)') bra_orbital_index, ket_orbital_index
         end if
         !
         !   2.0  Set range of tensor indices
@@ -126,7 +126,7 @@ contains
         !
         if (exchange_integral_type < 0) return
         if (exchange_nu_count > max_radial_order_count) then
-            write (*, '("BREID: Dimension error for NUMAX.")')
+            write (*, '("accumulate_closed_shell_breit: Exchange radial order exceeds capacity.")')
             stop
         end if
         !

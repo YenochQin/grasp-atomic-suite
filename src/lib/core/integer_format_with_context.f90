@@ -34,7 +34,7 @@ contains
             text_length = log10(dble(integer_value)) + 1
         end if
         if (text_length > len(number_text)) then
-            write (stderr_unit, *) "CONVRT: Length of CNUM inadeuate. (from:", caller_name, ")"
+            write (stderr_unit, *) "format_integer_with_context: number_text is too short. (from:", caller_name, ")"
             error stop
         else
             if (text_length <= 9) then

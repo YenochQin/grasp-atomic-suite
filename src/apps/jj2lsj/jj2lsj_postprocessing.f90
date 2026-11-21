@@ -53,7 +53,7 @@ contains
         allocate(ranking%order(n),squares(n),scratch(n))
         ranking%norm=0.0_real64
         do i=1,n
-            if (.not. ieee_is_finite(values(i))) error stop "jj2lsj: nonfinite LS coefficient"
+            if (.not. ieee_is_finite(values(i))) error stop "rank_ls_components: nonfinite LS coefficient"
             squares(i)=values(i)*values(i)
             ! Match the legacy accumulation in original LS order.
             ranking%norm=ranking%norm+squares(i)

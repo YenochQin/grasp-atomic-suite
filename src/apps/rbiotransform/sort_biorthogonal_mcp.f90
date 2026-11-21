@@ -65,11 +65,11 @@ contains
         !   Allocate storage for all required arrays these arrays are then deallocated
         !   in mcp
         !
-        call alloc (mcp_bra_csf_indices,   mcp_coefficient_count, "JANN",   "QQSORT")
-        call alloc (mcp_ket_csf_indices,   mcp_coefficient_count, "JBNN",   "QQSORT")
-        call alloc (mcp_packed_orbital_pairs, mcp_coefficient_count, "INTGRL", "QQSORT")
-        call alloc (mcp_coefficient_values,    mcp_coefficient_count, "CNN",    "QQSORT")
-        call alloc (mcp_coefficient_end_offsets, mcp_coefficient_count, "INTPTR", "QQSORT")
+        call alloc (mcp_bra_csf_indices,   mcp_coefficient_count, "mcp_bra_csf_indices",   "sort_biorthogonal_mcp")
+        call alloc (mcp_ket_csf_indices,   mcp_coefficient_count, "mcp_ket_csf_indices",   "sort_biorthogonal_mcp")
+        call alloc (mcp_packed_orbital_pairs, mcp_coefficient_count, "mcp_packed_orbital_pairs", "sort_biorthogonal_mcp")
+        call alloc (mcp_coefficient_values,    mcp_coefficient_count, "mcp_coefficient_values",    "sort_biorthogonal_mcp")
+        call alloc (mcp_coefficient_end_offsets, mcp_coefficient_count, "mcp_coefficient_end_offsets", "sort_biorthogonal_mcp")
         !
         !   Read arrays into memory from NFILE
         !
@@ -181,11 +181,11 @@ contains
                 write (biorthogonal_angular_unit) mcp_coefficient_values(i), mcp_bra_csf_indices(i), mcp_ket_csf_indices(i)
             end do
         end if
-        call dalloc (mcp_bra_csf_indices,   "JANN",   "QQSORT")
-        call dalloc (mcp_ket_csf_indices,   "JBNN",   "QQSORT")
-        call dalloc (mcp_packed_orbital_pairs, "INTGRL", "QQSORT")
-        call dalloc (mcp_coefficient_values,    "CNN",    "QQSORT")
-        call dalloc (mcp_coefficient_end_offsets, "INTPTR", "QQSORT")
+        call dalloc (mcp_bra_csf_indices,   "mcp_bra_csf_indices",   "sort_biorthogonal_mcp")
+        call dalloc (mcp_ket_csf_indices,   "mcp_ket_csf_indices",   "sort_biorthogonal_mcp")
+        call dalloc (mcp_packed_orbital_pairs, "mcp_packed_orbital_pairs", "sort_biorthogonal_mcp")
+        call dalloc (mcp_coefficient_values,    "mcp_coefficient_values",    "sort_biorthogonal_mcp")
+        call dalloc (mcp_coefficient_end_offsets, "mcp_coefficient_end_offsets", "sort_biorthogonal_mcp")
         !
         !  Has all data been processed? If so close
         !  the file

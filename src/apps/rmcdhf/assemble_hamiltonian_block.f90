@@ -40,7 +40,7 @@ contains
         integer, intent(in) :: mpi_rank, mpi_process_count
 
         ! Local constants
-        character(len=6), parameter :: routine_name = "SETHAM"
+        character(len=*), parameter :: routine_name = "assemble_hamiltonian_block"
 
         ! Local declarations
         integer :: block_csf_offset, orbital_index, csf_index, itmp, diagonal_element_index, km, k, k0, ib, &
@@ -219,8 +219,8 @@ contains
         !=======================================================================
 
         ndim = 1
-        call alloc (coeff, ndim, "COEFF", "SETHAM" )
-        call alloc (indx, ndim, "INDX", "SETHAM")
+        call alloc (coeff, ndim, "COEFF", "assemble_hamiltonian_block" )
+        call alloc (indx, ndim, "INDX", "assemble_hamiltonian_block")
 
         !=======================================================================
         !   Accumulate one-electron terms that require MCP coefficients
@@ -229,11 +229,12 @@ contains
         read (mcp_input_units(31)) mcp_channel_label, file_block_index, file_csf_count, file_coefficient_count
 
         if (file_block_index /= symmetry_block_index) then
-            write (stderr_unit, *) routine_name, ": blk1=", file_block_index, " blk2=", symmetry_block_index
+            write (stderr_unit, *) routine_name, ": file_block_index=", file_block_index, &
+                " symmetry_block_index=", symmetry_block_index
             error stop
         end if
         if (file_csf_count /= csf_count) then
-            write (stderr_unit, *) routine_name, ": ncf1 = ", file_csf_count, " ncf2 = ", csf_count
+            write (stderr_unit, *) routine_name, ": file_csf_count=", file_csf_count, " csf_count=", csf_count
             error stop
         end if
 
@@ -255,11 +256,11 @@ contains
             ! Read column index, sparse matrix index, and coefficient
             ! for all contributions from this integral.
             if (contribution_count > ndim) then
-                call dalloc (coeff, "COEFF", "SETHAM")
-                call dalloc (indx, "INDX", "SETHAM")
+                call dalloc (coeff, "COEFF", "assemble_hamiltonian_block")
+                call dalloc (indx, "INDX", "assemble_hamiltonian_block")
                 ndim = contribution_count
-                call alloc (coeff, ndim, "COEFF", "SETHAM")
-                call alloc (indx, ndim, "INDX", "SETHAM")
+                call alloc (coeff, ndim, "COEFF", "assemble_hamiltonian_block")
+                call alloc (indx, ndim, "INDX", "assemble_hamiltonian_block")
             end if
             read (mcp_input_units(31)) (file_csf_column,indx(i),coeff(i),i=1,contribution_count)
 
@@ -290,11 +291,12 @@ contains
             read (mcp_input_units(mcp_channel)) mcp_channel_label, file_block_index, file_csf_count, file_coefficient_count
 
             if (file_block_index /= symmetry_block_index) then
-                write (stderr_unit, *) routine_name, ": blk3=", file_block_index, " blk4=", symmetry_block_index
+                write (stderr_unit, *) routine_name, ": file_block_index=", file_block_index, &
+                    " symmetry_block_index=", symmetry_block_index
                 error stop
             end if
             if (file_csf_count /= csf_count) then
-                write (stderr_unit, *) routine_name, ": ncf3 = ", file_csf_count, " ncf4 = ", csf_count
+                write (stderr_unit, *) routine_name, ": file_csf_count=", file_csf_count, " csf_count=", csf_count
                 error stop
             end if
 
@@ -321,11 +323,11 @@ contains
                 ! Read column index, sparse matrix index, and coefficient
                 ! for all contributions from this integral.
                 if (contribution_count > ndim) then
-                    call dalloc (coeff, "COEFF", "SETHAM")
-                    call dalloc (indx, "INDX", "SETHAM")
+                    call dalloc (coeff, "COEFF", "assemble_hamiltonian_block")
+                    call dalloc (indx, "INDX", "assemble_hamiltonian_block")
                     ndim = contribution_count
-                    call alloc (coeff, ndim, "COEFF", "SETHAM")
-                    call alloc (indx, ndim, "INDX", "SETHAM")
+                    call alloc (coeff, ndim, "COEFF", "assemble_hamiltonian_block")
+                    call alloc (indx, ndim, "INDX", "assemble_hamiltonian_block")
                 end if
                 read (mcp_input_units(mcp_channel)) (file_csf_column,indx(i),coeff(i),i=1,contribution_count)
 
@@ -351,8 +353,8 @@ contains
         !   Deallocate local storage
         !=======================================================================
 
-        call dalloc (coeff, "COEFF", "SETHAM")
-        call dalloc (indx, "INDX", "SETHAM")
+        call dalloc (coeff, "COEFF", "assemble_hamiltonian_block")
+        call dalloc (indx, "INDX", "assemble_hamiltonian_block")
 
         return
     end subroutine assemble_hamiltonian_block

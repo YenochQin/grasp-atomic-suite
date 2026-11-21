@@ -68,8 +68,8 @@ contains
         !
         !   Deallocate the storage for the radial wavefunctions
         !
-        call dalloc (radial_large_components, "PF", "WRTRWF")
-        call dalloc (radial_small_components, "QF", "WQRTRWF")
+        call dalloc (radial_large_components, "radial_large_components", "write_initial_radial_wavefunctions")
+        call dalloc (radial_small_components, "radial_small_components", "write_initial_radial_wavefunctions")
         !
         return
     end subroutine write_initial_radial_wavefunctions

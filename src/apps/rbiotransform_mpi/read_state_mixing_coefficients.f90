@@ -69,11 +69,12 @@ contains
         write (output_unit, *) "Loading MIXing Coefficients File ..."
         !
         read (mixing_input_unit) nb, csf_count, active_level_count, iatjp, iaspa
-        call alloc (shifted_eigenvalues, active_level_count, "EVAL", "GETMIX")
-        call alloc (csf_mixing_coefficients, csf_count*active_level_count, "EVEC", "GETMIX")
-        call alloc (active_level_indices, active_level_count, "IVEC", "GETMIX")
-        call alloc (level_two_j_plus_one, active_level_count, "IATJPO", "GETMIX")
-        call alloc (level_parity_signs, active_level_count, "IASPAR", "GETMIX")
+        call alloc (shifted_eigenvalues, active_level_count, "shifted_eigenvalues", "read_state_mixing_coefficients")
+        call alloc (csf_mixing_coefficients, csf_count*active_level_count, "csf_mixing_coefficients", &
+            "read_state_mixing_coefficients")
+        call alloc (active_level_indices, active_level_count, "active_level_indices", "read_state_mixing_coefficients")
+        call alloc (level_two_j_plus_one, active_level_count, "level_two_j_plus_one", "read_state_mixing_coefficients")
+        call alloc (level_parity_signs, active_level_count, "level_parity_signs", "read_state_mixing_coefficients")
         !
         !   These arrays are deallocated in mcp
         !

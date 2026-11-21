@@ -38,11 +38,11 @@ contains
         allocate(pi(3*n),stat=error)
         if (error /= 0) then
             irez = 0
-            call dalloc (pr,"PR","allocCheck")
+            call dalloc (pr,"PR","try_allocate_sort_buffers")
             return
         end if
-        call dalloc (pr,"PR","allocCheck")
-        call dalloc (pi,"PI","allocCheck")
+        call dalloc (pr,"PR","try_allocate_sort_buffers")
+        call dalloc (pi,"PI","try_allocate_sort_buffers")
         return
     end subroutine try_allocate_sort_buffers
 end module try_allocate_sort_buffers_interface

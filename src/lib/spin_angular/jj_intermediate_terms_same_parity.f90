@@ -57,7 +57,7 @@ contains
                 last_bra_range_term=last_same_parity_terms_two_j_9(bra_term_lookup_index)
                 last_intermediate_term=last_same_parity_terms_two_j_9(ket_term_lookup_index)
             else
-                print*, "ERROR in ITJJ"
+                print*, "ERROR in select_same_parity_intermediate_terms"
                 stop
             end if
         else

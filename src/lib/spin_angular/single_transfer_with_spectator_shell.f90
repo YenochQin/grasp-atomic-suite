@@ -353,7 +353,7 @@ contains
     contains
         subroutine report_rank_limit()
             call ensure_debug_output()
-            write(angular_debug_unit,'(5x,"ERRO IN EL33  PMGG RAGG")')
+            write(angular_debug_unit,'(5x,"ERRO IN accumulate_single_transfer_with_spectator_shell  PMGG RAGG")')
             stop
         end subroutine report_rank_limit
     end subroutine accumulate_single_transfer_with_spectator_shell

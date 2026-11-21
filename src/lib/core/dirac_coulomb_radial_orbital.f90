@@ -39,31 +39,31 @@ contains
             , denominator_parameter, denominator_product, inverse_series_denominator, effective_n_minus_kappa, scaled_radius, &
             & radius_power, first_radial_series, second_radial_series, radial_envelope, amplitude_cutoff
         if (principal_n <= 0) then
-            write (*, '("DCBSRW:")')
+            write (*, '("evaluate_dirac_coulomb_orbital:")')
             write (*, '(" Principal quantum number is ",1i3)') principal_n
             stop
         end if
         if (kappa == 0) then
-            write (*, '("DCBSRW:")')
+            write (*, '("evaluate_dirac_coulomb_orbital:")')
             write (*, '(" Angular quantum number is 0")')
             stop
         else if (kappa == principal_n) then
-            write (*, '("DCBSRW:")')
+            write (*, '("evaluate_dirac_coulomb_orbital:")')
             write (*, '(" Angular quantum number (",1i3,") is out of range for"," principal quantum number (",1i3,&
                 &")")') kappa, principal_n
             stop
         else if (abs(kappa) > principal_n) then
-            write (*, '("DCBSRW:")')
+            write (*, '("evaluate_dirac_coulomb_orbital:")')
             write (*, '(" Angular quantum number (",1i3,") is out of range for"," principal quantum number (",1i3,&
                 &")")') kappa, principal_n
             stop
         end if
         if (effective_nuclear_charge <= 0.0_real64) then
-            write (*, '("DCBSRW:")')
+            write (*, '("evaluate_dirac_coulomb_orbital:")')
             write (*, '(" Nuclear charge (",3p,1d16.7,") is too small")') effective_nuclear_charge
             stop
         else if (effective_nuclear_charge > speed_of_light_au) then
-            write (*, '("DCBSRW:")')
+            write (*, '("evaluate_dirac_coulomb_orbital:")')
             write (*, '(" Nuclear charge (",3p,1d16.7,") exceeds C (",1d16.7,")")') &
                 effective_nuclear_charge, speed_of_light_au
             stop
@@ -163,7 +163,8 @@ contains
             small_component(last_radial_index) = 0.0_real64
             last_radial_index = last_radial_index - 1
         end do
-        if (last_radial_index == radial_point_count) write (*, '(/,/,/," ***** Warning in SUBROUTINE DCBSRW *****"/,/&
+        if (last_radial_index == radial_point_count) write (*, '(/,/,/, &
+            " ***** Warning in SUBROUTINE evaluate_dirac_coulomb_orbital *****"/,/&
             &," Radial grid of insufficient extent:"/," P(",1i4,") = ",1p,1d10.3,", Exceeds cutoff (",1d10.3,")")') &
             radial_point_count, large_component(radial_point_count), &
             & amplitude_cutoff

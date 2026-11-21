@@ -103,7 +103,8 @@ contains
                 if (radial_integral_order - tensor_rank <= 0) then
                     radial_integral_coefficients(1) = -(kappa_a + kappa_c)*(kappa_d + kappa_b)
                     if (tensor_rank == 0) then
-                        write (*, '("CXK: Illegal value K = 0 -"/,1x,4i3,2x,i3,2x,2i2)') &
+                        write (*, &
+                            '("calculate_breit_radial_integral_coefficients: Invalid tensor_rank = 0 -"/,1x,4i3,2x,i3,2x,2i2)') &
                             orbital_indices(1), orbital_indices(2), orbital_indices(3), orbital_indices(4), &
                             radial_integral_order, radial_integral_case, direct_exchange_code
                         stop
@@ -275,7 +276,7 @@ contains
 
         ! Stop on an illegal combination of orbital indices.
         subroutine stop_invalid_orbital_combination
-            write (*, '("CXK: Type ",i2,"-"/,1x,i2,3x,4i3,2x,2i3,2x,i2)') &
+            write (*, '("calculate_breit_radial_integral_coefficients: Type ",i2,"-"/,1x,i2,3x,4i3,2x,2i3,2x,i2)') &
                 radial_integral_case, orbital_indices(1), orbital_indices(2), orbital_indices(3), orbital_indices(4), &
                 radial_integral_order, tensor_rank, direct_exchange_code
             stop

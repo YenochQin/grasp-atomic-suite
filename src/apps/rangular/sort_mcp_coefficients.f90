@@ -91,7 +91,7 @@ contains
         !
         call format_integer (mcp_channel_index, channel_number_text, channel_number_text_length)
         if (channel_number_text_length > 2) then
-            write (stderr_unit, *) "sort: nfile > 99; check fullname"
+            write (stderr_unit, *) "sort_mcp_coefficients: nfile > 99; check fullname"
             stop
         end if
 
@@ -108,7 +108,7 @@ contains
 
         read (mcp_temporary_units(mcp_channel_index)) mcp_channel_label, file_block_index
         if (symmetry_block_index /= file_block_index) then
-            write (stderr_unit, *) "sort: nb = ", symmetry_block_index, ".NE. mb (=", file_block_index, ")"
+            write (stderr_unit, *) "sort_mcp_coefficients: nb = ", symmetry_block_index, ".NE. mb (=", file_block_index, ")"
             stop
         end if
         !
@@ -118,12 +118,13 @@ contains
             !
             !   Allocate storage for all required arrays
             !
-            call alloc (angular_coefficients, coefficient_count, "COEFF", "SORT")
-            call alloc (csf_column_indices, coefficient_count, "ICLMN", "SORT")
-            call alloc (matrix_element_positions, coefficient_count, "INDEX", "SORT")
-            call alloc (packed_orbital_labels, coefficient_count, "LABEL", "SORT")
+            call alloc (angular_coefficients, coefficient_count, "angular_coefficients", "sort_mcp_coefficients")
+            call alloc (csf_column_indices, coefficient_count, "csf_column_indices", "sort_mcp_coefficients")
+            call alloc (matrix_element_positions, coefficient_count, "matrix_element_positions", "sort_mcp_coefficients")
+            call alloc (packed_orbital_labels, coefficient_count, "packed_orbital_labels", "sort_mcp_coefficients")
 
-            if (mcp_channel_index == 33) call alloc (orbital_swap_counts, coefficient_count,"NSWAP", "SORT"  )
+            if (mcp_channel_index == 33) call alloc (orbital_swap_counts, coefficient_count,"orbital_swap_counts", &
+                "sort_mcp_coefficients"  )
             !
             !   Read arrays into memory from NFILE
             !
@@ -331,8 +332,8 @@ contains
         !
         if (print_details) then
             call ensure_debug_output()
-            write (angular_debug_unit, '(/,"From SORT:")')
-            write (output_unit, '(/,"From SORT:")')
+            write (angular_debug_unit, '(/,"From sort_mcp_coefficients:")')
+            write (output_unit, '(/,"From sort_mcp_coefficients:")')
             if (coefficient_count > 0) then
                 !
                 group_orbital_label = packed_orbital_labels(1)
@@ -390,11 +391,11 @@ contains
         !   Deallocate storage
         !
         if (coefficient_count > 0) then
-            call dalloc (angular_coefficients,"COEFF", "SORT")
-            call dalloc (csf_column_indices, "ICLMN", "SORT")
-            call dalloc (matrix_element_positions, "INDEX", "SORT")
-            call dalloc (packed_orbital_labels, "LABEL", "SORT")
-            if (mcp_channel_index == 33) call dalloc (orbital_swap_counts, "NSWAP", "SORT")
+            call dalloc (angular_coefficients,"angular_coefficients", "sort_mcp_coefficients")
+            call dalloc (csf_column_indices, "csf_column_indices", "sort_mcp_coefficients")
+            call dalloc (matrix_element_positions, "matrix_element_positions", "sort_mcp_coefficients")
+            call dalloc (packed_orbital_labels, "packed_orbital_labels", "sort_mcp_coefficients")
+            if (mcp_channel_index == 33) call dalloc (orbital_swap_counts, "orbital_swap_counts", "sort_mcp_coefficients")
         end if
 
 

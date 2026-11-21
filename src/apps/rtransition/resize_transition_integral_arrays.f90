@@ -46,9 +46,12 @@ contains
             !
             !   Allocate storage for arrays
             !
-            call alloc (transition_bra_csf_indices, integral_capacity, "ISLDR", "ALCNTA" )
-            call alloc (transition_ket_csf_indices, integral_capacity,"ISLDR1", "ALCNTA" )
-            call alloc (transition_angular_coefficients, integral_capacity, "XSLDR", "ALCNTA" )
+            call alloc (transition_bra_csf_indices, integral_capacity, "transition_bra_csf_indices", &
+                "resize_transition_integral_arrays" )
+            call alloc (transition_ket_csf_indices, integral_capacity,"transition_ket_csf_indices", &
+                "resize_transition_integral_arrays" )
+            call alloc (transition_angular_coefficients, integral_capacity, "transition_angular_coefficients", &
+                "resize_transition_integral_arrays" )
         !
         case (2)
             !
@@ -56,9 +59,12 @@ contains
             !
             new_capacity = 2*integral_capacity
             !
-            call ralloc (transition_bra_csf_indices, new_capacity, "ISLDR", "ALCNTA" )
-            call ralloc (transition_ket_csf_indices, new_capacity, "ISLDR1", "ALCNTA" )
-            call ralloc (transition_angular_coefficients, new_capacity, "XSLDR", "ALCNTA" )
+            call ralloc (transition_bra_csf_indices, new_capacity, "transition_bra_csf_indices", &
+                "resize_transition_integral_arrays" )
+            call ralloc (transition_ket_csf_indices, new_capacity, "transition_ket_csf_indices", &
+                "resize_transition_integral_arrays" )
+            call ralloc (transition_angular_coefficients, new_capacity, "transition_angular_coefficients", &
+                "resize_transition_integral_arrays" )
             !
             integral_capacity = new_capacity
         !
@@ -66,13 +72,13 @@ contains
             !
             !   Deallocate the storage for the arrays
             !
-            call dalloc (transition_bra_csf_indices, "ISLDR", "ALCNTA" )
-            call dalloc (transition_ket_csf_indices, "ISLDR1", "ALCNTA" )
-            call dalloc (transition_angular_coefficients,  "XSLDR", "ALCNTA" )
+            call dalloc (transition_bra_csf_indices, "transition_bra_csf_indices", "resize_transition_integral_arrays" )
+            call dalloc (transition_ket_csf_indices, "transition_ket_csf_indices", "resize_transition_integral_arrays" )
+            call dalloc (transition_angular_coefficients,  "transition_angular_coefficients", "resize_transition_integral_arrays" )
         !
         case default
             !
-            write (output_unit, *) "ALCNTA: Invalid argument IMODE = ", resize_mode
+            write (output_unit, *) "resize_transition_integral_arrays: Invalid resize_mode = ", resize_mode
             stop
             !
         end select

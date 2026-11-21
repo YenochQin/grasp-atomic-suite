@@ -37,7 +37,7 @@ contains
         !   Initial allocation for PNTRKP
         !
         ndkp = 1
-        call alloc (requested_multipole_codes, ndkp, "KP", "GETRMP" )
+        call alloc (requested_multipole_codes, ndkp, "requested_multipole_codes", "read_multipole_options" )
         !
         !   Entry message
         !
@@ -66,13 +66,13 @@ contains
                                 lelec = .false.
                                 lmagn = .true.
                             else
-                                write (output_unit, *) "GETRMP: Transitions must be of type"
+                                write (output_unit, *) "read_multipole_options: Transitions must be of type"
                                 write (output_unit, *) " E or type M; reenter ..."
                                 exit
                             end if
                             lenth = iend - istart
                             if (lenth /= 1) then
-                                write (output_unit, *) "GETRMP: Transition multipolarities"
+                                write (output_unit, *) "read_multipole_options: Transition multipolarities"
                                 write (output_unit, *) " must be integers between 1 and 9;"
                                 write (output_unit, *) " reenter ..."
                                 exit
@@ -80,13 +80,14 @@ contains
                             reci = record(iend:iend)
                             read (reci, "(1I1)", iostat=io_status) mult
                             if (io_status /= 0) then
-                                write (output_unit, *) "GETRMP: Unable to decode multipolarity"
+                                write (output_unit, *) "read_multipole_options: Unable to decode multipolarity"
                                 write (output_unit, *) " "//reci//"; reenter ..."
                                 exit
                             end if
                             requested_multipole_count = requested_multipole_count + 1
                             if (requested_multipole_count > ndkp) then
-                                call ralloc (requested_multipole_codes, requested_multipole_count, "KP", "GETRMP" )
+                                call ralloc (requested_multipole_codes, requested_multipole_count, "requested_multipole_codes", &
+                                    "read_multipole_options" )
                                 ndkp = requested_multipole_count
                             end if
                             if (lelec) then
@@ -106,7 +107,8 @@ contains
         !
         !   Trim array to the exact size
         !
-        if (ndkp /= requested_multipole_count) call ralloc (requested_multipole_codes, requested_multipole_count, "KP", "GETRMP")
+        if (ndkp /= requested_multipole_count) call ralloc (requested_multipole_codes, requested_multipole_count, &
+            "requested_multipole_codes", "read_multipole_options")
         !
         !   If M1 or E2 inquire if the transitions are between levels
         !   with different J quantum numbers.

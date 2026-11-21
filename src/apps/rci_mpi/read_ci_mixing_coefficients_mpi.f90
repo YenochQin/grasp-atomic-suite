@@ -44,8 +44,10 @@ contains
         !    ncmin, iccmin(1:ncmin) -- via items (memories allocated there)
         ! Thus we let node-0 do it and then broadcast here
 
-        call alloc (highest_selected_level_by_block, symmetry_block_count, "NCMAXBLK", "LODMIXmpi")
-        call alloc (eigenvector_counts_by_block, symmetry_block_count, "NEVBLK", "LODMIXmpi")
+        call alloc (highest_selected_level_by_block, symmetry_block_count, "highest_selected_level_by_block", &
+            "read_ci_mixing_coefficients_mpi")
+        call alloc (eigenvector_counts_by_block, symmetry_block_count, "eigenvector_counts_by_block", &
+            "read_ci_mixing_coefficients_mpi")
 
         !      print *, ' LODMIX: change lodstate arg-list - see rscf2/getold.f90 '
         !      stop
@@ -61,7 +63,8 @@ contains
 
         if (selected_level_count /= 0) then
             if (mpi_rank /= 0) then   ! lodstate allocated it from node-0
-                call alloc (requested_level_indices, selected_level_count, "ICCMIN", "LODMIXmpi")
+                call alloc (requested_level_indices, selected_level_count, "requested_level_indices", &
+                    "read_ci_mixing_coefficients_mpi")
             end if
 
             call mpi_bcast (requested_level_indices, selected_level_count, mpi_integer4, 0,            &
@@ -74,7 +77,7 @@ contains
         !    idxblk() is the block number of an eigenstate
         !    nvecsiz  is the total size of the eigenvector array
         !
-        call alloc (level_block_indices, selected_level_count, "IDXBLK", "LODMIXmpi")
+        call alloc (level_block_indices, selected_level_count, "level_block_indices", "read_ci_mixing_coefficients_mpi")
         total_csf_count = 0
         noffset = 0
         vector_size = 0
@@ -87,7 +90,7 @@ contains
             vector_size = vector_size + csf_counts_by_block(symmetry_block_index) * eigenvector_counts_by_block( &
                 & symmetry_block_index)
         end do
-        if (noffset /= selected_level_count) stop "lodmixmpi: ncmin trouble"
+        if (noffset /= selected_level_count) stop "read_ci_mixing_coefficients_mpi: selected level count mismatch"
         !
         !   Write header data to the  .mix  file
         !

@@ -59,7 +59,7 @@ contains
                 end do
                 term_index=table_index+300
             else
-                print*, "ERROR in FUNCTION NMTEJJ"
+                print*, "ERROR in FUNCTION lookup_jj_subshell_term"
                 stop
             end if
         else

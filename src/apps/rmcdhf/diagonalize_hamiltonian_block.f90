@@ -106,7 +106,7 @@ contains
             nvect = highest_selected_level_by_block(symmetry_block_index)
             subspace_limit = min(csf_count,2*nvect + 40)
             real_workspace_size = 2*csf_count*subspace_limit + subspace_limit*subspace_limit*2 + 11*subspace_limit + nvect
-            call alloc (real_workspace, real_workspace_size, "WORK", "MANEIG")
+            call alloc (real_workspace, real_workspace_size, "real_workspace", "diagonalize_hamiltonian_block")
 
             !...At most 14 ? restriction removed xhh 98-05-19
             !nvex = MIN (nvect,ncfblk(jblock),14)
@@ -145,7 +145,7 @@ contains
             ! is no need to call dvdson if block size <= n1000
 
             if (csf_count > submatrix_order_limit) then
-                write (*, *) "Calling dvdson!!!", iteration_limit
+                write (*, *) "Calling solve_davidson_eigenpairs!!!", iteration_limit
 
                 ! Call Davidson eigensolver
 
@@ -162,14 +162,14 @@ contains
                 !
                 !   Store the diagonals in a separate array and make it global
                 !
-                call alloc (matrix_diagonal, csf_count, "DIAG", "MANEIG")
+                call alloc (matrix_diagonal, csf_count, "matrix_diagonal", "diagonalize_hamiltonian_block")
 
                 do csf_index = mpi_rank + 1, csf_count, mpi_process_count
                     matrix_diagonal(csf_index) = hamiltonian_values(stored_segment_end_offsets(csf_index))
                 end do
 
-                call alloc (integer_workspace, integer_workspace_size, "IWORK", "MANEIG")
-                call alloc (selected_pair_indices, subspace_limit, "JWORK", "MANEIG")
+                call alloc (integer_workspace, integer_workspace_size, "integer_workspace", "diagonalize_hamiltonian_block")
+                call alloc (selected_pair_indices, subspace_limit, "selected_pair_indices", "diagonalize_hamiltonian_block")
                 call solve_davidson_eigenpairs (multiply_sparse_symmetric_matrix, csf_count, subspace_limit, matrix_diagonal, &
                     & lowest_pair_index, highest_pair_index, &
                     & selected_pair_indices, initial_vector_count, expansion_block_size, &
@@ -177,13 +177,13 @@ contains
                     & real_workspace, real_workspace_size, integer_workspace, integer_workspace_size, &
                     solve_high_end, iteration_count, matrix_vector_product_count, ierr)
 
-                call dalloc (matrix_diagonal, "DIAG", "MANEIG")
-                call dalloc (integer_workspace, "IWORK", "MANEIG")
-                call dalloc (selected_pair_indices, "JWORK", "MANEIG")
+                call dalloc (matrix_diagonal, "matrix_diagonal", "diagonalize_hamiltonian_block")
+                call dalloc (integer_workspace, "integer_workspace", "diagonalize_hamiltonian_block")
+                call dalloc (selected_pair_indices, "selected_pair_indices", "diagonalize_hamiltonian_block")
 
-                write (*, '("DVDSON: ",1i3," loops; ",1i3," matrix-vector multiplies.")') iteration_count, &
+                write (*, '("solve_davidson_eigenpairs: ",1i3," loops; ",1i3," matrix-vector multiplies.")') iteration_count, &
                     & matrix_vector_product_count
-                if (ierr /= 0) write (*, '(" Returned from DVDSON with IERR = ",1i4)') ierr
+                if (ierr /= 0) write (*, '(" Returned from solve_davidson_eigenpairs with IERR = ",1i4)') ierr
             end if
             !
             !   Pick up the eigen pairs and store in EVAL and EVEC
@@ -207,7 +207,7 @@ contains
             !
             !   Deallocate storage
             !
-            call dalloc (real_workspace, "WORK", "MANEIG")
+            call dalloc (real_workspace, "real_workspace", "diagonalize_hamiltonian_block")
         end if
         do jstate = 1, eigenvector_counts_by_block(symmetry_block_index)
             !

@@ -110,7 +110,7 @@ contains
             !GG      lim   = MIN (ncf, 2*nvect + 40)
             !      LIM = MIN(NCF,2*NVECT + 20)
             real_workspace_size = 2*csf_count*subspace_limit + subspace_limit*subspace_limit*2 + 11*subspace_limit + nvect
-            call alloc (real_workspace, real_workspace_size, "WORK", "MANEIGmpi")
+            call alloc (real_workspace, real_workspace_size, "real_workspace", "diagonalize_hamiltonian_block_mpi")
 
             !...At most 14 ? restriction removed xhh 98-05-19
             !nvex = MIN (nvect,ncfblk(jblock),14)
@@ -151,7 +151,7 @@ contains
             ! is no need to call dvdson if block size <= n1000
 
             if (csf_count > submatrix_order_limit) then
-                if (mpi_rank == 0) write (*,*) "Calling dvdson!!!", iteration_limit,nvect
+                if (mpi_rank == 0) write (*,*) "Calling solve_davidson_eigenpairs!!!", iteration_limit,nvect
 
                 ! Call Davidson eigensolver
 
@@ -168,8 +168,8 @@ contains
                 !
                 !   Store the diagonals in a separate array and make it global
                 !
-                call alloc (matrix_diagonal, csf_count, "DIAG", "MANEIGmpi")
-                call alloc (atmp, csf_count, "ATMP", "MANEIGmpi")
+                call alloc (matrix_diagonal, csf_count, "matrix_diagonal", "diagonalize_hamiltonian_block_mpi")
+                call alloc (atmp, csf_count, "ATMP", "diagonalize_hamiltonian_block_mpi")
                 do csf_index = 1, csf_count
                     atmp(csf_index) = 0.0_real64
                     matrix_diagonal(csf_index) = 0.0_real64    ! this one may not be necessary
@@ -181,10 +181,10 @@ contains
                 end do
                 call mpi_allreduce (atmp, matrix_diagonal, csf_count, mpi_double_precision,  &
                     mpi_sum, mpi_comm_world, mpi_error_code)
-                call dalloc(atmp,"ATMP", "MANEIGmpi")
+                call dalloc(atmp,"ATMP", "diagonalize_hamiltonian_block_mpi")
 
-                call alloc (integer_workspace, integer_workspace_size, "IWORK", "MANEIGmpi")
-                call alloc (selected_pair_indices, subspace_limit, "JWORK", "MANEIGmpi")
+                call alloc (integer_workspace, integer_workspace_size, "integer_workspace", "diagonalize_hamiltonian_block_mpi")
+                call alloc (selected_pair_indices, subspace_limit, "selected_pair_indices", "diagonalize_hamiltonian_block_mpi")
                 if (csf_count>1000) then
                     call solve_davidson_eigenpairs (multiply_mpi_sparse_matrix,csf_count,subspace_limit,matrix_diagonal, &
                         & lowest_pair_index,highest_pair_index, &
@@ -193,15 +193,15 @@ contains
                         & real_workspace, real_workspace_size, integer_workspace, integer_workspace_size, &
                         solve_high_end, iteration_count, matrix_vector_product_count, mpi_error_code)
                 end if
-                call dalloc (matrix_diagonal, "DIAG", "MANEIGmpi")
-                call dalloc (integer_workspace, "IWORK", "MANEIGmpi")
-                call dalloc (selected_pair_indices, "JWORK", "MANEIGmpi")
+                call dalloc (matrix_diagonal, "matrix_diagonal", "diagonalize_hamiltonian_block_mpi")
+                call dalloc (integer_workspace, "integer_workspace", "diagonalize_hamiltonian_block_mpi")
+                call dalloc (selected_pair_indices, "selected_pair_indices", "diagonalize_hamiltonian_block_mpi")
 
                 if (mpi_rank == 0) then
-                    write (*,'("DVDSON: ",1i3," loops; ",1i3," matrix-vector multiplies.")') iteration_count, &
+                    write (*,'("solve_davidson_eigenpairs: ",1i3," loops; ",1i3," matrix-vector multiplies.")') iteration_count, &
                         & matrix_vector_product_count
                     if (mpi_error_code /= 0) then
-                        write (*,'(" Returned from DVDSON with IERR = ",1i4)') mpi_error_code
+                        write (*,'(" Returned from solve_davidson_eigenpairs with IERR = ",1i4)') mpi_error_code
                     end if
                 end if
             end if
@@ -227,7 +227,7 @@ contains
             !
             !   Deallocate storage
             !
-            call dalloc (real_workspace, "WORK", "MANEIGmpi")
+            call dalloc (real_workspace, "real_workspace", "diagonalize_hamiltonian_block_mpi")
         end if
         do jstate = 1, eigenvector_counts_by_block(symmetry_block_index)
             !

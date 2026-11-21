@@ -28,7 +28,7 @@ contains
                 unoffset_term_index=term_index-300
                 packed_term_code=packed_term_codes_two_j_9(unoffset_term_index)
             else
-                print*, "ERROR in RUMTJJ"
+                print*, "ERROR in decode_jj_subshell_term"
                 stop
             end if
         else

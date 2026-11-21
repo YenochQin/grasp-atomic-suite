@@ -26,7 +26,7 @@ contains
         do active_shell_position = 1, 4
             if (occupations(active_shell_position)<=0 .or. &
                 & occupations(active_shell_position)>subshell_capacities(active_shell_position)) then
-                write (*, '("LTAB: ",1i3," Electrons in shell ",1i3," with 2j+1 = ",1i3)') &
+                write (*, '("lookup_subshell_parents: ",1i3," Electrons in shell ",1i3," with 2j+1 = ",1i3)') &
                     occupations(active_shell_position), orbital_indices(active_shell_position), &
                     & subshell_capacities(active_shell_position)
                 stop
@@ -42,7 +42,7 @@ contains
                 parent_table_rows(active_shell_position) = 1
             end if
             if (parent_table_rows(active_shell_position) <= nrows) cycle
-            write (*, '("LTAB: Extend COMMON block TERMS")')
+            write (*, '("lookup_subshell_parents: Subshell term table capacity exceeded")')
             stop
         end do
         return

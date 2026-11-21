@@ -118,7 +118,7 @@ contains
         !      PARAMETER (CUTOFF = 1.0D-10)
 
         write(*,*) "-------------------------------"
-        write(*,*) "RIS_CAL: Execution Begins ..."
+        write(*,*) "calculate_isotope_shifts: Execution Begins ..."
         write(*,*) "-------------------------------"
 
         !     Determine point end point NRNUC for density fit
@@ -149,15 +149,15 @@ contains
         !
         !   Allocate storage for local arrays
         !
-        call alloc (leading_sms_by_level, active_level_count,"SMSC1", "RIS_CAL")
-        call alloc (total_sms_by_level, active_level_count,"SMSC2", "RIS_CAL")
-        call alloc (contact_density_by_level,active_level_count,"DENS1","RIS_CAL")
-        call alloc (total_nms_by_level,active_level_count,"DENS2","RIS_CAL")
-        call alloc (radius_by_level,active_level_count,"DENS3","RIS_CAL")
-        call alloc (radius_squared_by_level,active_level_count,"DENS4","RIS_CAL")
-        call alloc (inverse_radius_by_level,active_level_count,"DENS5","RIS_CAL")
-        call alloc (inverse_radius_squared_by_level,active_level_count,"DENS6","RIS_CAL")
-        call alloc (leading_nms_by_level,active_level_count,"DENS7","RIS_CAL")
+        call alloc (leading_sms_by_level, active_level_count,"leading_sms_by_level", "calculate_isotope_shifts")
+        call alloc (total_sms_by_level, active_level_count,"total_sms_by_level", "calculate_isotope_shifts")
+        call alloc (contact_density_by_level,active_level_count,"contact_density_by_level","calculate_isotope_shifts")
+        call alloc (total_nms_by_level,active_level_count,"total_nms_by_level","calculate_isotope_shifts")
+        call alloc (radius_by_level,active_level_count,"radius_by_level","calculate_isotope_shifts")
+        call alloc (radius_squared_by_level,active_level_count,"radius_squared_by_level","calculate_isotope_shifts")
+        call alloc (inverse_radius_by_level,active_level_count,"inverse_radius_by_level","calculate_isotope_shifts")
+        call alloc (inverse_radius_squared_by_level,active_level_count,"inverse_radius_squared_by_level","calculate_isotope_shifts")
+        call alloc (leading_nms_by_level,active_level_count,"leading_nms_by_level","calculate_isotope_shifts")
 
         call begin_run_timer (start_clock_count, "RIS_CAL")
 
@@ -454,18 +454,18 @@ contains
         !
         !   Dealloc
         !
-        call dalloc (leading_sms_by_level,"SMSC1","RIS_CAL")
-        call dalloc (total_sms_by_level,"SMSC2","RIS_CAL")
-        call dalloc (contact_density_by_level,"DENS1","RIS_CAL")
-        call dalloc (total_nms_by_level,"DENS2","RIS_CAL")
-        call dalloc (radius_by_level,"DENS3","RIS_CAL")
-        call dalloc (radius_squared_by_level,"DENS4","RIS_CAL")
-        call dalloc (inverse_radius_by_level,"DENS5","RIS_CAL")
-        call dalloc (inverse_radius_squared_by_level,"DENS6","RIS_CAL")
-        call dalloc (leading_nms_by_level,"DENS7","RIS_CAL")
+        call dalloc (leading_sms_by_level,"leading_sms_by_level","calculate_isotope_shifts")
+        call dalloc (total_sms_by_level,"total_sms_by_level","calculate_isotope_shifts")
+        call dalloc (contact_density_by_level,"contact_density_by_level","calculate_isotope_shifts")
+        call dalloc (total_nms_by_level,"total_nms_by_level","calculate_isotope_shifts")
+        call dalloc (radius_by_level,"radius_by_level","calculate_isotope_shifts")
+        call dalloc (radius_squared_by_level,"radius_squared_by_level","calculate_isotope_shifts")
+        call dalloc (inverse_radius_by_level,"inverse_radius_by_level","calculate_isotope_shifts")
+        call dalloc (inverse_radius_squared_by_level,"inverse_radius_squared_by_level","calculate_isotope_shifts")
+        call dalloc (leading_nms_by_level,"leading_nms_by_level","calculate_isotope_shifts")
 
         write(*,*) "-------------------------------"
-        write(*,*) "RIS_CAL: Execution Finished ..."
+        write(*,*) "calculate_isotope_shifts: Execution Finished ..."
         write(*,*) "-------------------------------"
 
         call finish_run_timer (start_clock_count, "RIS_CAL")

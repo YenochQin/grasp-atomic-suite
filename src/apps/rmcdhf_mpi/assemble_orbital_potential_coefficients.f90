@@ -52,7 +52,7 @@ contains
         logical  :: extended_optimal_level
 
         ! Local constants
-        character(len=6), parameter :: routine_name = "SETCOF"
+        character(len=*), parameter :: routine_name = "assemble_orbital_potential_coefficients"
         real(real64), parameter :: eps = 1.0e-10_real64
 
         ! Local declarations
@@ -101,9 +101,11 @@ contains
         !=======================================================================
 
         coefficient_buffer_size = 1
-        call alloc (channel_coefficients, coefficient_buffer_size, "COEFF", "SETCOF" )
-        call alloc (channel_csf_columns, coefficient_buffer_size, "ICLMN", "SETCOF")
-        call alloc (channel_matrix_positions, coefficient_buffer_size, "INDX", "SETCOF")
+        call alloc (channel_coefficients, coefficient_buffer_size, "channel_coefficients", &
+            "assemble_orbital_potential_coefficients" )
+        call alloc (channel_csf_columns, coefficient_buffer_size, "channel_csf_columns", "assemble_orbital_potential_coefficients")
+        call alloc (channel_matrix_positions, coefficient_buffer_size, "channel_matrix_positions", &
+            "assemble_orbital_potential_coefficients")
 
         direct_coefficient_count = 0
         exchange_coefficient_count = 0
@@ -154,12 +156,16 @@ contains
                 if (y_potential_coefficient_count > y_potential_coefficient_capacity ) then
                     if (y_potential_coefficient_capacity > 0) then
                         y_potential_coefficient_capacity = 2*y_potential_coefficient_capacity
-                        call ralloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, "NYA", "SETCOF")
-                        call ralloc(y_potential_coefficients, y_potential_coefficient_capacity, "YA", "SETCOF")
+                        call ralloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, &
+                            "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
+                        call ralloc(y_potential_coefficients, y_potential_coefficient_capacity, "y_potential_coefficients", &
+                            "assemble_orbital_potential_coefficients")
                     else
                         y_potential_coefficient_capacity = 64
-                        call alloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, "NYA", "SETCOF")
-                        call alloc(y_potential_coefficients, y_potential_coefficient_capacity, "YA", "SETCOF")
+                        call alloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, &
+                            "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
+                        call alloc(y_potential_coefficients, y_potential_coefficient_capacity, "y_potential_coefficients", &
+                            "assemble_orbital_potential_coefficients")
                     end if
                 end if
                 y_potential_coefficients(y_potential_coefficient_count) = ykab
@@ -210,12 +216,16 @@ contains
                 if (exchange_coefficient_count > exchange_coefficient_capacity) then
                     if (exchange_coefficient_capacity > 0) then
                         exchange_coefficient_capacity = 2*exchange_coefficient_capacity
-                        call ralloc (exchange_coefficients, exchange_coefficient_capacity, "XA", "SETCOF")
-                        call ralloc (exchange_coefficient_labels, exchange_coefficient_capacity, "NXA", "SETCOF")
+                        call ralloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
+                            "assemble_orbital_potential_coefficients")
+                        call ralloc (exchange_coefficient_labels, exchange_coefficient_capacity, "exchange_coefficient_labels", &
+                            "assemble_orbital_potential_coefficients")
                     else
                         exchange_coefficient_capacity = 64
-                        call alloc (exchange_coefficients, exchange_coefficient_capacity, "XA", "SETCOF")
-                        call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, "NXA", "SETCOF")
+                        call alloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
+                            "assemble_orbital_potential_coefficients")
+                        call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, "exchange_coefficient_labels", &
+                            "assemble_orbital_potential_coefficients")
                     end if
                 end if
                 exchange_coefficients(exchange_coefficient_count) = xkab
@@ -232,22 +242,23 @@ contains
 
         do nfile = 30, 32 + max_mcp_file_multipole_rank
             rewind (mcp_input_units(nfile), iostat=io_status)
-            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), "MCP setcof rewind")
+            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
+                "MCP assemble_orbital_potential_coefficients rewind")
             if (nfile /= 30) then
                 do i = 1, 3
                     read (mcp_input_units(nfile), iostat=io_status)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
-                        "MCP setcof skip header or payload")
+                        "MCP assemble_orbital_potential_coefficients skip header or payload")
                     cycle
                 end do
             else
                 do i = 1, 3
                     read (mcp_input_units(nfile), iostat=io_status)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
-                        "MCP setcof skip header or payload")
+                        "MCP assemble_orbital_potential_coefficients skip header or payload")
                     read (mcp_input_units(nfile), iostat=io_status)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
-                        "MCP setcof skip header or payload")
+                        "MCP assemble_orbital_potential_coefficients skip header or payload")
                 end do
             end if
         end do
@@ -261,26 +272,33 @@ contains
 
             !*** Read in IROW from file mcp.30 ***
             read (mcp_input_units(30), iostat=io_status) mcp_channel_label, jblockt, csf_count
-            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setcof block or channel header")
+            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
+                "MCP assemble_orbital_potential_coefficients block or channel header")
             if (jblockt /= jblock) then
-                write (stderr_unit, *) routine_name, "1: jblockt .NE. jblock"
-                call fail_input_io_mpi(0, mcp_input_units(30), "MCP setcof inconsistent block header")
+                write (stderr_unit, *) routine_name, " branch 1: block index mismatch"
+                call fail_input_io_mpi(0, mcp_input_units(30), &
+                    "MCP assemble_orbital_potential_coefficients inconsistent block header")
             end if
             read (mcp_input_units(30), iostat=io_status) channel_record_count
-            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setcof sparse element count")
+            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
+                "MCP assemble_orbital_potential_coefficients sparse element count")
             stored_matrix_element_count = int(channel_record_count,kind=int64)
-            call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "SETCOF")
+            call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", &
+                "assemble_orbital_potential_coefficients")
             read (mcp_input_units(30), iostat=io_status) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), &
                 (matrix_partner_indices(i),i=1, &
                 & stored_matrix_element_count)
-            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setcof sparse indices")
+            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
+                "MCP assemble_orbital_potential_coefficients sparse indices")
 
             !*** Block info file mcp.31 ***
             read (mcp_input_units(31), iostat=io_status) mcp_channel_label, jblockt, csf_count, coefficient_count
-            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(31), "MCP setcof block or channel header")
+            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(31), &
+                "MCP assemble_orbital_potential_coefficients block or channel header")
             if (jblockt /= jblock) then
-                write (stderr_unit, *) routine_name, "2: jblockt .NE. jblock"
-                call fail_input_io_mpi(0, mcp_input_units(31), "MCP setcof inconsistent block header")
+                write (stderr_unit, *) routine_name, " branch 2: block index mismatch"
+                call fail_input_io_mpi(0, mcp_input_units(31), &
+                    "MCP assemble_orbital_potential_coefficients inconsistent block header")
             end if
 
             !*** Loop over labels having non-zero coefficients
@@ -288,12 +306,13 @@ contains
 
             do
                 read (mcp_input_units(31), iostat=io_status) lab, contribution_count
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(31), "MCP setcof label/count")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(31), &
+                    "MCP assemble_orbital_potential_coefficients label/count")
 
                 ! 0, 0 marks the end of a block. This is the normal exit
 
                 if (lab==0 .and. contribution_count==0) then
-                    call dalloc (matrix_partner_indices, "IROW", "SETCOF")
+                    call dalloc (matrix_partner_indices, "matrix_partner_indices", "assemble_orbital_potential_coefficients")
                     exit                              ! Actually to next block
                 end if
 
@@ -306,18 +325,22 @@ contains
 
                 if (ia/=orbital_index .and. partner_orbital_index/=orbital_index) then
                     read (mcp_input_units(31), iostat=io_status)                         ! No contributions from this integral; skip
-                    if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(31), "MCP setcof skip header or payload")
+                    if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(31), &
+                        "MCP assemble_orbital_potential_coefficients skip header or payload")
                     cycle                             ! to next label
                 end if
 
                 if (contribution_count > coefficient_buffer_size) then
-                    call dalloc (channel_coefficients, "COEFF", "SETCOF")
-                    call dalloc (channel_csf_columns, "ICLMN", "SETCOF")
-                    call dalloc (channel_matrix_positions, "INDX", "SETCOF")
+                    call dalloc (channel_coefficients, "channel_coefficients", "assemble_orbital_potential_coefficients")
+                    call dalloc (channel_csf_columns, "channel_csf_columns", "assemble_orbital_potential_coefficients")
+                    call dalloc (channel_matrix_positions, "channel_matrix_positions", "assemble_orbital_potential_coefficients")
                     coefficient_buffer_size = contribution_count
-                    call alloc (channel_coefficients, coefficient_buffer_size, "COEFF", "SETCOF" )
-                    call alloc (channel_csf_columns, coefficient_buffer_size, "ICLMN", "SETCOF")
-                    call alloc (channel_matrix_positions, coefficient_buffer_size, "INDX", "SETCOF")
+                    call alloc (channel_coefficients, coefficient_buffer_size, "channel_coefficients", &
+                        "assemble_orbital_potential_coefficients" )
+                    call alloc (channel_csf_columns, coefficient_buffer_size, "channel_csf_columns", &
+                        "assemble_orbital_potential_coefficients")
+                    call alloc (channel_matrix_positions, coefficient_buffer_size, "channel_matrix_positions", &
+                        "assemble_orbital_potential_coefficients")
                 end if
 
                 ! Read the column index, the sparse matrix index, and the
@@ -325,7 +348,8 @@ contains
 
                 read (mcp_input_units(31), iostat=io_status) (channel_csf_columns(i),channel_matrix_positions(i), &
                     & channel_coefficients(i),i=1,contribution_count)
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(31), "MCP setcof coefficient payload")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(31), &
+                    "MCP assemble_orbital_potential_coefficients coefficient payload")
 
                 ! Add up all the contributions from this integral;
                 ! off-diagonal contributions have double the weight
@@ -369,12 +393,16 @@ contains
                 if (direct_coefficient_count > direct_coefficient_capacity) then
                     if (direct_coefficient_capacity > 0) then
                         direct_coefficient_capacity = 2*direct_coefficient_capacity
-                        call ralloc (direct_coefficients, direct_coefficient_capacity, "DA", "SETCOF")
-                        call ralloc (direct_orbital_indices, direct_coefficient_capacity, "NDA", "SETCOF")
+                        call ralloc (direct_coefficients, direct_coefficient_capacity, "direct_coefficients", &
+                            "assemble_orbital_potential_coefficients")
+                        call ralloc (direct_orbital_indices, direct_coefficient_capacity, "direct_orbital_indices", &
+                            "assemble_orbital_potential_coefficients")
                     else
                         direct_coefficient_capacity = 64
-                        call alloc (direct_coefficients, direct_coefficient_capacity, "DA", "SETCOF")
-                        call alloc (direct_orbital_indices, direct_coefficient_capacity, "NDA", "SETCOF")
+                        call alloc (direct_coefficients, direct_coefficient_capacity, "direct_coefficients", &
+                            "assemble_orbital_potential_coefficients")
+                        call alloc (direct_orbital_indices, direct_coefficient_capacity, "direct_orbital_indices", &
+                            "assemble_orbital_potential_coefficients")
                     end if
                 end if
                 direct_coefficients(direct_coefficient_count) = sum                      ! print*, DA(NDCOF), ndcof, myid, 'myid'
@@ -393,10 +421,12 @@ contains
             !         ...Re-position file mcp.30
 
             rewind (mcp_input_units(30), iostat=io_status)
-            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setcof rewind")
+            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
+                "MCP assemble_orbital_potential_coefficients rewind")
             do i = 1, 6
                 read (mcp_input_units(30), iostat=io_status)
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setcof skip header or payload")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
+                    "MCP assemble_orbital_potential_coefficients skip header or payload")
             end do
 
             !=======================================================================
@@ -406,25 +436,32 @@ contains
             do jblock = 1, symmetry_block_count
                 !           ...Read in IROW from file mcp.30
                 read (mcp_input_units(30), iostat=io_status) mcp_channel_label, jblockt, csf_count
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setcof block or channel header")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
+                    "MCP assemble_orbital_potential_coefficients block or channel header")
                 if (jblockt /= jblock) then
-                    write (stderr_unit, *) routine_name, ":3 jblockt .NE. jblock"
-                    call fail_input_io_mpi(0, mcp_input_units(30), "MCP setcof inconsistent block header")
+                    write (stderr_unit, *) routine_name, " branch 3: block index mismatch"
+                    call fail_input_io_mpi(0, mcp_input_units(30), &
+                        "MCP assemble_orbital_potential_coefficients inconsistent block header")
                 end if
                 read (mcp_input_units(30), iostat=io_status) channel_record_count
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setcof sparse element count")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
+                    "MCP assemble_orbital_potential_coefficients sparse element count")
                 stored_matrix_element_count = int(channel_record_count,kind=int64)
-                call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "SETCOF")
+                call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", &
+                    "assemble_orbital_potential_coefficients")
                 read (mcp_input_units(30), iostat=io_status) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), &
                     (matrix_partner_indices(i),i=1, &
                     & stored_matrix_element_count)
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setcof sparse indices")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
+                    "MCP assemble_orbital_potential_coefficients sparse indices")
 
                 read (mcp_input_units(nfile), iostat=io_status) mcp_channel_label, jblockt, csf_count, coefficient_count
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), "MCP setcof block or channel header")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
+                    "MCP assemble_orbital_potential_coefficients block or channel header")
                 if (jblockt /= jblock) then
-                    write (stderr_unit, *) routine_name, ":4 jblockt .NE. jblock"
-                    call fail_input_io_mpi(0, mcp_input_units(nfile), "MCP setcof inconsistent block header")
+                    write (stderr_unit, *) routine_name, " branch 4: block index mismatch"
+                    call fail_input_io_mpi(0, mcp_input_units(nfile), &
+                        "MCP assemble_orbital_potential_coefficients inconsistent block header")
                 end if
 
                 multipole_rank = nfile - 32                       ! multipolarity of the integral
@@ -434,10 +471,11 @@ contains
                 !=======================================================================
                 do
                     read (mcp_input_units(nfile), iostat=io_status) lab, contribution_count
-                    if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), "MCP setcof label/count")
+                    if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
+                        "MCP assemble_orbital_potential_coefficients label/count")
                     !
                     if (lab==0 .and. contribution_count==0) then
-                        call dalloc (matrix_partner_indices, "IROW", "SETCOF")
+                        call dalloc (matrix_partner_indices, "matrix_partner_indices", "assemble_orbital_potential_coefficients")
                         exit
                     end if
                     !***                       k
@@ -456,27 +494,32 @@ contains
                     if (irank == 0) then
                         read (mcp_input_units(nfile), iostat=io_status)
                         if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
-                            & "MCP setcof skip header or payload")
+                            & "MCP assemble_orbital_potential_coefficients skip header or payload")
                         cycle
                     end if
 
                     !*** At least one subshell index matches; allocate storage
                     !*** for reading in the rest of this block
                     if (contribution_count > coefficient_buffer_size) then
-                        call dalloc (channel_coefficients, "COEFF", "SETCOF")
-                        call dalloc (channel_csf_columns, "ICLMN", "SETCOF")
-                        call dalloc (channel_matrix_positions, "INDX", "SETCOF")
+                        call dalloc (channel_coefficients, "channel_coefficients", "assemble_orbital_potential_coefficients")
+                        call dalloc (channel_csf_columns, "channel_csf_columns", "assemble_orbital_potential_coefficients")
+                        call dalloc (channel_matrix_positions, "channel_matrix_positions", &
+                            "assemble_orbital_potential_coefficients")
                         coefficient_buffer_size = contribution_count
-                        call alloc (channel_coefficients, coefficient_buffer_size, "COEFF", "SETCOF")
-                        call alloc (channel_csf_columns, coefficient_buffer_size, "ICLMN", "SETCOF")
-                        call alloc (channel_matrix_positions, coefficient_buffer_size, "INDX", "SETCOF")
+                        call alloc (channel_coefficients, coefficient_buffer_size, "channel_coefficients", &
+                            "assemble_orbital_potential_coefficients")
+                        call alloc (channel_csf_columns, coefficient_buffer_size, "channel_csf_columns", &
+                            "assemble_orbital_potential_coefficients")
+                        call alloc (channel_matrix_positions, coefficient_buffer_size, "channel_matrix_positions", &
+                            "assemble_orbital_potential_coefficients")
                     end if
 
                     !*** Read column index, sparse matrix index, and
                     !*** coefficient for all contributions from this integral
                     read (mcp_input_units(nfile), iostat=io_status) (channel_csf_columns(i),channel_matrix_positions(i), &
                         & channel_coefficients(i),i=1,contribution_count)
-                    if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), "MCP setcof coefficient payload")
+                    if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
+                        "MCP assemble_orbital_potential_coefficients coefficient payload")
 
                     !*** Add up all the contributions from this integral;
                     !*** off-diagonal contributions have double the weight
@@ -533,12 +576,16 @@ contains
                         if (exchange_coefficient_count > exchange_coefficient_capacity) then
                             if (exchange_coefficient_capacity > 0) then
                                 exchange_coefficient_capacity = 2*exchange_coefficient_capacity
-                                call ralloc (exchange_coefficients, exchange_coefficient_capacity, "XA", "SETCOF")
-                                call ralloc (exchange_coefficient_labels, exchange_coefficient_capacity, "NXA", "SETCOF")
+                                call ralloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
+                                    "assemble_orbital_potential_coefficients")
+                                call ralloc (exchange_coefficient_labels, exchange_coefficient_capacity, &
+                                    "exchange_coefficient_labels", "assemble_orbital_potential_coefficients")
                             else
                                 exchange_coefficient_capacity = 64
-                                call alloc (exchange_coefficients, exchange_coefficient_capacity, "XA", "SETCOF")
-                                call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, "NXA", "SETCOF")
+                                call alloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
+                                    "assemble_orbital_potential_coefficients")
+                                call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, &
+                                    "exchange_coefficient_labels", "assemble_orbital_potential_coefficients")
                             end if
                         end if
                         exchange_coefficients(exchange_coefficient_count) = sum
@@ -591,12 +638,16 @@ contains
                             if (y_potential_coefficient_count > y_potential_coefficient_capacity) then
                                 if (y_potential_coefficient_capacity > 0) then
                                     y_potential_coefficient_capacity = 2*y_potential_coefficient_capacity
-                                    call ralloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, "NYA", "SETCOF")
-                                    call ralloc(y_potential_coefficients, y_potential_coefficient_capacity, "YA", "SETCOF")
+                                    call ralloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, &
+                                        "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
+                                    call ralloc(y_potential_coefficients, y_potential_coefficient_capacity, &
+                                        "y_potential_coefficients", "assemble_orbital_potential_coefficients")
                                 else
                                     y_potential_coefficient_capacity = 64
-                                    call alloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, "NYA", "SETCOF 2b")
-                                    call alloc(y_potential_coefficients, y_potential_coefficient_capacity, "YA", "SETCOF")
+                                    call alloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, &
+                                        "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients 2b")
+                                    call alloc(y_potential_coefficients, y_potential_coefficient_capacity, &
+                                        "y_potential_coefficients", "assemble_orbital_potential_coefficients")
                                 end if
                             end if
                             y_potential_coefficients(y_potential_coefficient_count) = sum + sum
@@ -634,12 +685,16 @@ contains
                             if (exchange_coefficient_count > exchange_coefficient_capacity) then
                                 if (exchange_coefficient_capacity > 0) then
                                     exchange_coefficient_capacity = 2*exchange_coefficient_capacity
-                                    call ralloc (exchange_coefficients, exchange_coefficient_capacity, "XA", "SETCOF")
-                                    call ralloc (exchange_coefficient_labels, exchange_coefficient_capacity, "NXA", "SETCOF")
+                                    call ralloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
+                                        "assemble_orbital_potential_coefficients")
+                                    call ralloc (exchange_coefficient_labels, exchange_coefficient_capacity, &
+                                        "exchange_coefficient_labels", "assemble_orbital_potential_coefficients")
                                 else
                                     exchange_coefficient_capacity = 64
-                                    call alloc (exchange_coefficients, exchange_coefficient_capacity, "XA", "SETCOF")
-                                    call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, "NXA", "SETCOF")
+                                    call alloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
+                                        "assemble_orbital_potential_coefficients")
+                                    call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, &
+                                        "exchange_coefficient_labels", "assemble_orbital_potential_coefficients")
                                 end if
                             end if
                             exchange_coefficients(exchange_coefficient_count) = sum + sum
@@ -687,12 +742,16 @@ contains
                             if (y_potential_coefficient_count > y_potential_coefficient_capacity) then
                                 if (y_potential_coefficient_capacity > 0) then
                                     y_potential_coefficient_capacity = 2*y_potential_coefficient_capacity
-                                    call ralloc (y_potential_coefficient_labels, y_potential_coefficient_capacity, "NYA", "SETCOF")
-                                    call ralloc (y_potential_coefficients, y_potential_coefficient_capacity, "YA", "SETCOF")
+                                    call ralloc (y_potential_coefficient_labels, y_potential_coefficient_capacity, &
+                                        "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
+                                    call ralloc (y_potential_coefficients, y_potential_coefficient_capacity, &
+                                        "y_potential_coefficients", "assemble_orbital_potential_coefficients")
                                 else
                                     y_potential_coefficient_capacity = 64
-                                    call alloc (y_potential_coefficient_labels, y_potential_coefficient_capacity, "NYA", "SETCOF")
-                                    call alloc (y_potential_coefficients, y_potential_coefficient_capacity, "YA", "SETCOF")
+                                    call alloc (y_potential_coefficient_labels, y_potential_coefficient_capacity, &
+                                        "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
+                                    call alloc (y_potential_coefficients, y_potential_coefficient_capacity, &
+                                        "y_potential_coefficients", "assemble_orbital_potential_coefficients")
                                 end if
                             end if
                             y_potential_coefficients(y_potential_coefficient_count) = sum + sum
@@ -715,12 +774,16 @@ contains
                         if (exchange_coefficient_count > exchange_coefficient_capacity) then
                             if (exchange_coefficient_capacity > 0) then
                                 exchange_coefficient_capacity = 2*exchange_coefficient_capacity
-                                call ralloc (exchange_coefficients, exchange_coefficient_capacity, "XA", "SETCOF")
-                                call ralloc (exchange_coefficient_labels, exchange_coefficient_capacity, "NXA", "SETCOF")
+                                call ralloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
+                                    "assemble_orbital_potential_coefficients")
+                                call ralloc (exchange_coefficient_labels, exchange_coefficient_capacity, &
+                                    "exchange_coefficient_labels", "assemble_orbital_potential_coefficients")
                             else
                                 exchange_coefficient_capacity = 64
-                                call alloc (exchange_coefficients, exchange_coefficient_capacity, "XA", "SETCOF")
-                                call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, "NXA", "SETCOF")
+                                call alloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
+                                    "assemble_orbital_potential_coefficients")
+                                call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, &
+                                    "exchange_coefficient_labels", "assemble_orbital_potential_coefficients")
                             end if
                         end if
                         exchange_coefficients(exchange_coefficient_count) = sum
@@ -752,12 +815,16 @@ contains
                         if (y_potential_coefficient_count > y_potential_coefficient_capacity) then
                             if (y_potential_coefficient_capacity > 0) then
                                 y_potential_coefficient_capacity = 2*y_potential_coefficient_capacity
-                                call ralloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, "NYA", "SETCOF")
-                                call ralloc(y_potential_coefficients, y_potential_coefficient_capacity, "YA", "SETCOF")
+                                call ralloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, &
+                                    "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
+                                call ralloc(y_potential_coefficients, y_potential_coefficient_capacity, &
+                                    "y_potential_coefficients", "assemble_orbital_potential_coefficients")
                             else
                                 y_potential_coefficient_capacity = 64
-                                call alloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, "NYA", "SETCOF 4b")
-                                call alloc(y_potential_coefficients, y_potential_coefficient_capacity, "YA", "SETCOF")
+                                call alloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, &
+                                    "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients 4b")
+                                call alloc(y_potential_coefficients, y_potential_coefficient_capacity, "y_potential_coefficients", &
+                                    "assemble_orbital_potential_coefficients")
                             end if
                         end if
                         y_potential_coefficients(y_potential_coefficient_count) = 4.0_real64*sum
@@ -772,9 +839,9 @@ contains
         !=======================================================================
         !   Deallocate storage for arrays local to this routine
         !=======================================================================
-        call dalloc (channel_coefficients, "COEFF", "SETCOF")
-        call dalloc (channel_csf_columns, "ICLMN", "SETCOF")
-        call dalloc (channel_matrix_positions, "INDX", "SETCOF")
+        call dalloc (channel_coefficients, "channel_coefficients", "assemble_orbital_potential_coefficients")
+        call dalloc (channel_csf_columns, "channel_csf_columns", "assemble_orbital_potential_coefficients")
+        call dalloc (channel_matrix_positions, "channel_matrix_positions", "assemble_orbital_potential_coefficients")
 
         return
     end subroutine assemble_orbital_potential_coefficients

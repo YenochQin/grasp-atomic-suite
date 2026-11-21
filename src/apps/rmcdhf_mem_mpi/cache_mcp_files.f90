@@ -58,19 +58,21 @@ contains
             if(mcp_channel == 30) then
                 !*** Read in IROW from file mcp.30 ***
                 read (mcp_input_units(30), iostat=io_status) mcp_channel_label, file_block_index, block_csf_count
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setmcp_mem block or channel header")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
+                    "MCP cache_mcp_files block or channel header")
                 if (file_block_index /= symmetry_block_index) then
-                    write (stderr_unit, *) "setmcp_mem", "1: jblockt .NE. jblock"
-                    call fail_input_io_mpi(0, mcp_input_units(mcp_channel), "MCP setmcp_mem invalid block or channel")
+                    write (stderr_unit, *) "cache_mcp_files", " branch 1: block index mismatch"
+                    call fail_input_io_mpi(0, mcp_input_units(mcp_channel), "MCP cache_mcp_files invalid block or channel")
                 end if
                 read (mcp_input_units(30), iostat=io_status) file_matrix_element_count
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setmcp_mem sparse element count")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
+                    "MCP cache_mcp_files sparse element count")
                 stored_matrix_element_count = int(file_matrix_element_count,kind=int64)
                 if(symmetry_block_index == 1) then
-                    call alloc (imin1_30,block_count,"IMIN1_30","setmcp_mem")
-                    call alloc (imin2_30,block_count,"IMIN2_30","setmcp_mem")
-                    call alloc (imax1_30,block_count,"IMAX1_30","setmcp_mem")
-                    call alloc (imax2_30,block_count,"IMAX2_30","setmcp_mem")
+                    call alloc (imin1_30,block_count,"IMIN1_30","cache_mcp_files")
+                    call alloc (imin2_30,block_count,"IMIN2_30","cache_mcp_files")
+                    call alloc (imax1_30,block_count,"IMAX1_30","cache_mcp_files")
+                    call alloc (imax2_30,block_count,"IMAX2_30","cache_mcp_files")
                     imin1_30(symmetry_block_index) = 0
                     imax1_30(symmetry_block_index) = block_csf_count
                     imin2_30(symmetry_block_index) = 0
@@ -84,15 +86,15 @@ contains
                 read (mcp_input_units(30), iostat=io_status) (discarded_column_end,i=mpi_rank + &
                     & 1,block_csf_count,mpi_process_count), &
                     (discarded_row_index,i=1,stored_matrix_element_count)
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setmcp_mem sparse indices")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP cache_mcp_files sparse indices")
             else
                 read (mcp_input_units(mcp_channel), iostat=io_status) mcp_channel_label, file_block_index, file_csf_count, &
                     & file_coefficient_count
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem block or channel header")
+                    & "MCP cache_mcp_files block or channel header")
                 if (file_block_index /= symmetry_block_index) then
-                    write (stderr_unit, *) "setmcp_mem", ":2 jblockt .NE. jblock"
-                    call fail_input_io_mpi(0, mcp_input_units(mcp_channel), "MCP setmcp_mem invalid block or channel")
+                    write (stderr_unit, *) "cache_mcp_files", " branch 2: block index mismatch"
+                    call fail_input_io_mpi(0, mcp_input_units(mcp_channel), "MCP cache_mcp_files invalid block or channel")
                 end if
 
                 total_secondary_contribution_count = total_secondary_contribution_count + 1
@@ -110,7 +112,7 @@ contains
                     total_secondary_contribution_count = total_secondary_contribution_count + 1
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_dumm, ncontr_dumm
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem count-pass label/count")
+                        & "MCP cache_mcp_files count-pass label/count")
                 end do
             end if
         end do
@@ -132,171 +134,174 @@ contains
                 "Free  memory on computer:",sysmemf," Gb"
             if(mpi_rank == 0) write(*,"(A1)") ""
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.30:"
-            call alloc (iendc_30,imax1_30(block_count),"IENDC_30","setmcp_mem")
-            call alloc (irow_30, imax2_30(block_count),"IROW_30", "setmcp_mem")
+            call alloc (iendc_30,imax1_30(block_count),"IENDC_30","cache_mcp_files")
+            call alloc (irow_30, imax2_30(block_count),"IROW_30", "cache_mcp_files")
         else if(mcp_channel == 31) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.31:"
-            call alloc (lab_31,   total_secondary_contribution_count,"LAB_31",   "setmcp_mem")
-            call alloc (ncontr_31,total_secondary_contribution_count,"NCONTR_31","setmcp_mem")
-            call alloc (iclmn_31, total_contribution_count, "ICLMN_31", "setmcp_mem")
-            call alloc (indx_31,  total_contribution_count, "INDX_31",  "setmcp_mem")
-            call alloc (coeff_31, total_contribution_count, "COEFF_31", "setmcp_mem")
+            call alloc (lab_31,   total_secondary_contribution_count,"LAB_31",   "cache_mcp_files")
+            call alloc (ncontr_31,total_secondary_contribution_count,"NCONTR_31","cache_mcp_files")
+            call alloc (iclmn_31, total_contribution_count, "ICLMN_31", "cache_mcp_files")
+            call alloc (indx_31,  total_contribution_count, "INDX_31",  "cache_mcp_files")
+            call alloc (coeff_31, total_contribution_count, "COEFF_31", "cache_mcp_files")
         else if(mcp_channel == 32) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.32:"
-            call alloc (lab_32,   total_secondary_contribution_count,"LAB_32",   "setmcp_mem")
-            call alloc (ncontr_32,total_secondary_contribution_count,"NCONTR_32","setmcp_mem")
-            call alloc (iclmn_32, total_contribution_count, "ICLMN_32", "setmcp_mem")
-            call alloc (indx_32,  total_contribution_count, "INDX_32",  "setmcp_mem")
-            call alloc (coeff_32, total_contribution_count, "COEFF_32", "setmcp_mem")
+            call alloc (lab_32,   total_secondary_contribution_count,"LAB_32",   "cache_mcp_files")
+            call alloc (ncontr_32,total_secondary_contribution_count,"NCONTR_32","cache_mcp_files")
+            call alloc (iclmn_32, total_contribution_count, "ICLMN_32", "cache_mcp_files")
+            call alloc (indx_32,  total_contribution_count, "INDX_32",  "cache_mcp_files")
+            call alloc (coeff_32, total_contribution_count, "COEFF_32", "cache_mcp_files")
         else if(mcp_channel == 33) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.33:"
-            call alloc (lab_33,   total_secondary_contribution_count,"LAB_33",   "setmcp_mem")
-            call alloc (ncontr_33,total_secondary_contribution_count,"NCONTR_33","setmcp_mem")
-            call alloc (iclmn_33, total_contribution_count, "ICLMN_33", "setmcp_mem")
-            call alloc (indx_33,  total_contribution_count, "INDX_33",  "setmcp_mem")
-            call alloc (coeff_33, total_contribution_count, "COEFF_33", "setmcp_mem")
+            call alloc (lab_33,   total_secondary_contribution_count,"LAB_33",   "cache_mcp_files")
+            call alloc (ncontr_33,total_secondary_contribution_count,"NCONTR_33","cache_mcp_files")
+            call alloc (iclmn_33, total_contribution_count, "ICLMN_33", "cache_mcp_files")
+            call alloc (indx_33,  total_contribution_count, "INDX_33",  "cache_mcp_files")
+            call alloc (coeff_33, total_contribution_count, "COEFF_33", "cache_mcp_files")
         else if(mcp_channel == 34) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.34:"
-            call alloc (lab_34,   total_secondary_contribution_count,"LAB_34",   "setmcp_mem")
-            call alloc (ncontr_34,total_secondary_contribution_count,"NCONTR_34","setmcp_mem")
-            call alloc (iclmn_34, total_contribution_count, "ICLMN_34", "setmcp_mem")
-            call alloc (indx_34,  total_contribution_count, "INDX_34",  "setmcp_mem")
-            call alloc (coeff_34, total_contribution_count, "COEFF_34", "setmcp_mem")
+            call alloc (lab_34,   total_secondary_contribution_count,"LAB_34",   "cache_mcp_files")
+            call alloc (ncontr_34,total_secondary_contribution_count,"NCONTR_34","cache_mcp_files")
+            call alloc (iclmn_34, total_contribution_count, "ICLMN_34", "cache_mcp_files")
+            call alloc (indx_34,  total_contribution_count, "INDX_34",  "cache_mcp_files")
+            call alloc (coeff_34, total_contribution_count, "COEFF_34", "cache_mcp_files")
         else if(mcp_channel == 35) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.35:"
-            call alloc (lab_35,   total_secondary_contribution_count,"LAB_35",   "setmcp_mem")
-            call alloc (ncontr_35,total_secondary_contribution_count,"NCONTR_35","setmcp_mem")
-            call alloc (iclmn_35, total_contribution_count, "ICLMN_35", "setmcp_mem")
-            call alloc (indx_35,  total_contribution_count, "INDX_35",  "setmcp_mem")
-            call alloc (coeff_35, total_contribution_count, "COEFF_35", "setmcp_mem")
+            call alloc (lab_35,   total_secondary_contribution_count,"LAB_35",   "cache_mcp_files")
+            call alloc (ncontr_35,total_secondary_contribution_count,"NCONTR_35","cache_mcp_files")
+            call alloc (iclmn_35, total_contribution_count, "ICLMN_35", "cache_mcp_files")
+            call alloc (indx_35,  total_contribution_count, "INDX_35",  "cache_mcp_files")
+            call alloc (coeff_35, total_contribution_count, "COEFF_35", "cache_mcp_files")
         else if(mcp_channel == 36) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.36:"
-            call alloc (lab_36,   total_secondary_contribution_count,"LAB_36",   "setmcp_mem")
-            call alloc (ncontr_36,total_secondary_contribution_count,"NCONTR_36","setmcp_mem")
-            call alloc (iclmn_36, total_contribution_count, "ICLMN_36", "setmcp_mem")
-            call alloc (indx_36,  total_contribution_count, "INDX_36",  "setmcp_mem")
-            call alloc (coeff_36, total_contribution_count, "COEFF_36", "setmcp_mem")
+            call alloc (lab_36,   total_secondary_contribution_count,"LAB_36",   "cache_mcp_files")
+            call alloc (ncontr_36,total_secondary_contribution_count,"NCONTR_36","cache_mcp_files")
+            call alloc (iclmn_36, total_contribution_count, "ICLMN_36", "cache_mcp_files")
+            call alloc (indx_36,  total_contribution_count, "INDX_36",  "cache_mcp_files")
+            call alloc (coeff_36, total_contribution_count, "COEFF_36", "cache_mcp_files")
         else if(mcp_channel == 37) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.37:"
-            call alloc (lab_37,   total_secondary_contribution_count,"LAB_37",   "setmcp_mem")
-            call alloc (ncontr_37,total_secondary_contribution_count,"NCONTR_37","setmcp_mem")
-            call alloc (iclmn_37, total_contribution_count, "ICLMN_37", "setmcp_mem")
-            call alloc (indx_37,  total_contribution_count, "INDX_37",  "setmcp_mem")
-            call alloc (coeff_37, total_contribution_count, "COEFF_37", "setmcp_mem")
+            call alloc (lab_37,   total_secondary_contribution_count,"LAB_37",   "cache_mcp_files")
+            call alloc (ncontr_37,total_secondary_contribution_count,"NCONTR_37","cache_mcp_files")
+            call alloc (iclmn_37, total_contribution_count, "ICLMN_37", "cache_mcp_files")
+            call alloc (indx_37,  total_contribution_count, "INDX_37",  "cache_mcp_files")
+            call alloc (coeff_37, total_contribution_count, "COEFF_37", "cache_mcp_files")
         else if(mcp_channel == 38) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.38:"
-            call alloc (lab_38,   total_secondary_contribution_count,"LAB_38",   "setmcp_mem")
-            call alloc (ncontr_38,total_secondary_contribution_count,"NCONTR_38","setmcp_mem")
-            call alloc (iclmn_38, total_contribution_count, "ICLMN_38", "setmcp_mem")
-            call alloc (indx_38,  total_contribution_count, "INDX_38",  "setmcp_mem")
-            call alloc (coeff_38, total_contribution_count, "COEFF_38", "setmcp_mem")
+            call alloc (lab_38,   total_secondary_contribution_count,"LAB_38",   "cache_mcp_files")
+            call alloc (ncontr_38,total_secondary_contribution_count,"NCONTR_38","cache_mcp_files")
+            call alloc (iclmn_38, total_contribution_count, "ICLMN_38", "cache_mcp_files")
+            call alloc (indx_38,  total_contribution_count, "INDX_38",  "cache_mcp_files")
+            call alloc (coeff_38, total_contribution_count, "COEFF_38", "cache_mcp_files")
         else if(mcp_channel == 39) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.39:"
-            call alloc (lab_39,   total_secondary_contribution_count,"LAB_39",   "setmcp_mem")
-            call alloc (ncontr_39,total_secondary_contribution_count,"NCONTR_39","setmcp_mem")
-            call alloc (iclmn_39, total_contribution_count, "ICLMN_39", "setmcp_mem")
-            call alloc (indx_39,  total_contribution_count, "INDX_39",  "setmcp_mem")
-            call alloc (coeff_39, total_contribution_count, "COEFF_39", "setmcp_mem")
+            call alloc (lab_39,   total_secondary_contribution_count,"LAB_39",   "cache_mcp_files")
+            call alloc (ncontr_39,total_secondary_contribution_count,"NCONTR_39","cache_mcp_files")
+            call alloc (iclmn_39, total_contribution_count, "ICLMN_39", "cache_mcp_files")
+            call alloc (indx_39,  total_contribution_count, "INDX_39",  "cache_mcp_files")
+            call alloc (coeff_39, total_contribution_count, "COEFF_39", "cache_mcp_files")
         else if(mcp_channel == 40) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.40:"
-            call alloc (lab_40,   total_secondary_contribution_count,"LAB_40",   "setmcp_mem")
-            call alloc (ncontr_40,total_secondary_contribution_count,"NCONTR_40","setmcp_mem")
-            call alloc (iclmn_40, total_contribution_count, "ICLMN_40", "setmcp_mem")
-            call alloc (indx_40,  total_contribution_count, "INDX_40",  "setmcp_mem")
-            call alloc (coeff_40, total_contribution_count, "COEFF_40", "setmcp_mem")
+            call alloc (lab_40,   total_secondary_contribution_count,"LAB_40",   "cache_mcp_files")
+            call alloc (ncontr_40,total_secondary_contribution_count,"NCONTR_40","cache_mcp_files")
+            call alloc (iclmn_40, total_contribution_count, "ICLMN_40", "cache_mcp_files")
+            call alloc (indx_40,  total_contribution_count, "INDX_40",  "cache_mcp_files")
+            call alloc (coeff_40, total_contribution_count, "COEFF_40", "cache_mcp_files")
         else if(mcp_channel == 41) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.41:"
-            call alloc (lab_41,   total_secondary_contribution_count,"LAB_41",   "setmcp_mem")
-            call alloc (ncontr_41,total_secondary_contribution_count,"NCONTR_41","setmcp_mem")
-            call alloc (iclmn_41, total_contribution_count, "ICLMN_41", "setmcp_mem")
-            call alloc (indx_41,  total_contribution_count, "INDX_41",  "setmcp_mem")
-            call alloc (coeff_41, total_contribution_count, "COEFF_41", "setmcp_mem")
+            call alloc (lab_41,   total_secondary_contribution_count,"LAB_41",   "cache_mcp_files")
+            call alloc (ncontr_41,total_secondary_contribution_count,"NCONTR_41","cache_mcp_files")
+            call alloc (iclmn_41, total_contribution_count, "ICLMN_41", "cache_mcp_files")
+            call alloc (indx_41,  total_contribution_count, "INDX_41",  "cache_mcp_files")
+            call alloc (coeff_41, total_contribution_count, "COEFF_41", "cache_mcp_files")
         else if(mcp_channel == 42) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.42:"
-            call alloc (lab_42,   total_secondary_contribution_count,"LAB_42",   "setmcp_mem")
-            call alloc (ncontr_42,total_secondary_contribution_count,"NCONTR_42","setmcp_mem")
-            call alloc (iclmn_42, total_contribution_count, "ICLMN_42", "setmcp_mem")
-            call alloc (indx_42,  total_contribution_count, "INDX_42",  "setmcp_mem")
-            call alloc (coeff_42, total_contribution_count, "COEFF_42", "setmcp_mem")
+            call alloc (lab_42,   total_secondary_contribution_count,"LAB_42",   "cache_mcp_files")
+            call alloc (ncontr_42,total_secondary_contribution_count,"NCONTR_42","cache_mcp_files")
+            call alloc (iclmn_42, total_contribution_count, "ICLMN_42", "cache_mcp_files")
+            call alloc (indx_42,  total_contribution_count, "INDX_42",  "cache_mcp_files")
+            call alloc (coeff_42, total_contribution_count, "COEFF_42", "cache_mcp_files")
         else if(mcp_channel == 43) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.43:"
-            call alloc (lab_43,   total_secondary_contribution_count,"LAB_43",   "setmcp_mem")
-            call alloc (ncontr_43,total_secondary_contribution_count,"NCONTR_43","setmcp_mem")
-            call alloc (iclmn_43, total_contribution_count, "ICLMN_43", "setmcp_mem")
-            call alloc (indx_43,  total_contribution_count, "INDX_43",  "setmcp_mem")
-            call alloc (coeff_43, total_contribution_count, "COEFF_43", "setmcp_mem")
+            call alloc (lab_43,   total_secondary_contribution_count,"LAB_43",   "cache_mcp_files")
+            call alloc (ncontr_43,total_secondary_contribution_count,"NCONTR_43","cache_mcp_files")
+            call alloc (iclmn_43, total_contribution_count, "ICLMN_43", "cache_mcp_files")
+            call alloc (indx_43,  total_contribution_count, "INDX_43",  "cache_mcp_files")
+            call alloc (coeff_43, total_contribution_count, "COEFF_43", "cache_mcp_files")
         else if(mcp_channel == 44) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.44:"
-            call alloc (lab_44,   total_secondary_contribution_count,"LAB_44",   "setmcp_mem")
-            call alloc (ncontr_44,total_secondary_contribution_count,"NCONTR_44","setmcp_mem")
-            call alloc (iclmn_44, total_contribution_count, "ICLMN_44", "setmcp_mem")
-            call alloc (indx_44,  total_contribution_count, "INDX_44",  "setmcp_mem")
-            call alloc (coeff_44, total_contribution_count, "COEFF_44", "setmcp_mem")
+            call alloc (lab_44,   total_secondary_contribution_count,"LAB_44",   "cache_mcp_files")
+            call alloc (ncontr_44,total_secondary_contribution_count,"NCONTR_44","cache_mcp_files")
+            call alloc (iclmn_44, total_contribution_count, "ICLMN_44", "cache_mcp_files")
+            call alloc (indx_44,  total_contribution_count, "INDX_44",  "cache_mcp_files")
+            call alloc (coeff_44, total_contribution_count, "COEFF_44", "cache_mcp_files")
         else if(mcp_channel == 45) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.45:"
-            call alloc (lab_45,   total_secondary_contribution_count,"LAB_45",   "setmcp_mem")
-            call alloc (ncontr_45,total_secondary_contribution_count,"NCONTR_45","setmcp_mem")
-            call alloc (iclmn_45, total_contribution_count, "ICLMN_45", "setmcp_mem")
-            call alloc (indx_45,  total_contribution_count, "INDX_45",  "setmcp_mem")
-            call alloc (coeff_45, total_contribution_count, "COEFF_45", "setmcp_mem")
+            call alloc (lab_45,   total_secondary_contribution_count,"LAB_45",   "cache_mcp_files")
+            call alloc (ncontr_45,total_secondary_contribution_count,"NCONTR_45","cache_mcp_files")
+            call alloc (iclmn_45, total_contribution_count, "ICLMN_45", "cache_mcp_files")
+            call alloc (indx_45,  total_contribution_count, "INDX_45",  "cache_mcp_files")
+            call alloc (coeff_45, total_contribution_count, "COEFF_45", "cache_mcp_files")
         else if(mcp_channel == 46) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.46:"
-            call alloc (lab_46,   total_secondary_contribution_count,"LAB_46",   "setmcp_mem")
-            call alloc (ncontr_46,total_secondary_contribution_count,"NCONTR_46","setmcp_mem")
-            call alloc (iclmn_46, total_contribution_count, "ICLMN_46", "setmcp_mem")
-            call alloc (indx_46,  total_contribution_count, "INDX_46",  "setmcp_mem")
-            call alloc (coeff_46, total_contribution_count, "COEFF_46", "setmcp_mem")
+            call alloc (lab_46,   total_secondary_contribution_count,"LAB_46",   "cache_mcp_files")
+            call alloc (ncontr_46,total_secondary_contribution_count,"NCONTR_46","cache_mcp_files")
+            call alloc (iclmn_46, total_contribution_count, "ICLMN_46", "cache_mcp_files")
+            call alloc (indx_46,  total_contribution_count, "INDX_46",  "cache_mcp_files")
+            call alloc (coeff_46, total_contribution_count, "COEFF_46", "cache_mcp_files")
         else if(mcp_channel == 47) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.47:"
-            call alloc (lab_47,   total_secondary_contribution_count,"LAB_47",   "setmcp_mem")
-            call alloc (ncontr_47,total_secondary_contribution_count,"NCONTR_47","setmcp_mem")
-            call alloc (iclmn_47, total_contribution_count, "ICLMN_47", "setmcp_mem")
-            call alloc (indx_47,  total_contribution_count, "INDX_47",  "setmcp_mem")
-            call alloc (coeff_47, total_contribution_count, "COEFF_47", "setmcp_mem")
+            call alloc (lab_47,   total_secondary_contribution_count,"LAB_47",   "cache_mcp_files")
+            call alloc (ncontr_47,total_secondary_contribution_count,"NCONTR_47","cache_mcp_files")
+            call alloc (iclmn_47, total_contribution_count, "ICLMN_47", "cache_mcp_files")
+            call alloc (indx_47,  total_contribution_count, "INDX_47",  "cache_mcp_files")
+            call alloc (coeff_47, total_contribution_count, "COEFF_47", "cache_mcp_files")
         else if(mcp_channel == 48) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.48:"
-            call alloc (lab_48,   total_secondary_contribution_count,"LAB_48",   "setmcp_mem")
-            call alloc (ncontr_48,total_secondary_contribution_count,"NCONTR_48","setmcp_mem")
-            call alloc (iclmn_48, total_contribution_count, "ICLMN_48", "setmcp_mem")
-            call alloc (indx_48,  total_contribution_count, "INDX_48",  "setmcp_mem")
-            call alloc (coeff_48, total_contribution_count, "COEFF_48", "setmcp_mem")
+            call alloc (lab_48,   total_secondary_contribution_count,"LAB_48",   "cache_mcp_files")
+            call alloc (ncontr_48,total_secondary_contribution_count,"NCONTR_48","cache_mcp_files")
+            call alloc (iclmn_48, total_contribution_count, "ICLMN_48", "cache_mcp_files")
+            call alloc (indx_48,  total_contribution_count, "INDX_48",  "cache_mcp_files")
+            call alloc (coeff_48, total_contribution_count, "COEFF_48", "cache_mcp_files")
         else if(mcp_channel == 49) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.49:"
-            call alloc (lab_49,   total_secondary_contribution_count,"LAB_49",   "setmcp_mem")
-            call alloc (ncontr_49,total_secondary_contribution_count,"NCONTR_49","setmcp_mem")
-            call alloc (iclmn_49, total_contribution_count, "ICLMN_49", "setmcp_mem")
-            call alloc (indx_49,  total_contribution_count, "INDX_49",  "setmcp_mem")
-            call alloc (coeff_49, total_contribution_count, "COEFF_49", "setmcp_mem")
+            call alloc (lab_49,   total_secondary_contribution_count,"LAB_49",   "cache_mcp_files")
+            call alloc (ncontr_49,total_secondary_contribution_count,"NCONTR_49","cache_mcp_files")
+            call alloc (iclmn_49, total_contribution_count, "ICLMN_49", "cache_mcp_files")
+            call alloc (indx_49,  total_contribution_count, "INDX_49",  "cache_mcp_files")
+            call alloc (coeff_49, total_contribution_count, "COEFF_49", "cache_mcp_files")
         else if(mcp_channel == 50) then
             if(mpi_rank == 0) write(*,"(A27)") "Allocation for mcp.50:"
-            call alloc (lab_50,   total_secondary_contribution_count,"LAB_50",   "setmcp_mem")
-            call alloc (ncontr_50,total_secondary_contribution_count,"NCONTR_50","setmcp_mem")
-            call alloc (iclmn_50, total_contribution_count, "ICLMN_50", "setmcp_mem")
-            call alloc (indx_50,  total_contribution_count, "INDX_50",  "setmcp_mem")
-            call alloc (coeff_50, total_contribution_count, "COEFF_50", "setmcp_mem")
+            call alloc (lab_50,   total_secondary_contribution_count,"LAB_50",   "cache_mcp_files")
+            call alloc (ncontr_50,total_secondary_contribution_count,"NCONTR_50","cache_mcp_files")
+            call alloc (iclmn_50, total_contribution_count, "ICLMN_50", "cache_mcp_files")
+            call alloc (indx_50,  total_contribution_count, "INDX_50",  "cache_mcp_files")
+            call alloc (coeff_50, total_contribution_count, "COEFF_50", "cache_mcp_files")
         else
-            print*, "Error in setmcp_mem"
-            call fail_input_io_mpi(0, mcp_input_units(mcp_channel), "MCP setmcp_mem invalid block or channel")
+            print*, "Error in cache_mcp_files"
+            call fail_input_io_mpi(0, mcp_input_units(mcp_channel), "MCP cache_mcp_files invalid block or channel")
         end if
         rewind (mcp_input_units(mcp_channel), iostat=io_status)
-        if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), "MCP setmcp_mem rewind")
+        if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), "MCP cache_mcp_files rewind")
         if(mcp_channel == 30) then
             read (mcp_input_units(mcp_channel), iostat=io_status)
             if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                "MCP setmcp_mem skip header or payload")
+                "MCP cache_mcp_files skip header or payload")
             read (mcp_input_units(mcp_channel), iostat=io_status)
             if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                "MCP setmcp_mem skip header or payload")
+                "MCP cache_mcp_files skip header or payload")
             read (mcp_input_units(mcp_channel), iostat=io_status)
             if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                "MCP setmcp_mem skip header or payload")
+                "MCP cache_mcp_files skip header or payload")
         end if
         read (mcp_input_units(mcp_channel), iostat=io_status)
-        if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), "MCP setmcp_mem skip header or payload")
+        if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
+            "MCP cache_mcp_files skip header or payload")
         read (mcp_input_units(mcp_channel), iostat=io_status)
-        if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), "MCP setmcp_mem skip header or payload")
+        if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
+            "MCP cache_mcp_files skip header or payload")
         read (mcp_input_units(mcp_channel), iostat=io_status)
-        if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), "MCP setmcp_mem skip header or payload")
+        if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
+            "MCP cache_mcp_files skip header or payload")
         !
         total_contribution_count = 0
         total_secondary_contribution_count = 0
@@ -304,36 +309,38 @@ contains
             if(mcp_channel == 30) then
                 !*** Read in IROW from file mcp.30 ***
                 read (mcp_input_units(30), iostat=io_status) mcp_channel_label, file_block_index, block_csf_count
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setmcp_mem block or channel header")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
+                    "MCP cache_mcp_files block or channel header")
                 if (file_block_index /= symmetry_block_index) then
-                    write (stderr_unit, *) "setmcp_mem", "3: jblockt .NE. jblock"
-                    call fail_input_io_mpi(0, mcp_input_units(mcp_channel), "MCP setmcp_mem invalid block or channel")
+                    write (stderr_unit, *) "cache_mcp_files", " branch 3: block index mismatch"
+                    call fail_input_io_mpi(0, mcp_input_units(mcp_channel), "MCP cache_mcp_files invalid block or channel")
                 end if
             else
                 read (mcp_input_units(mcp_channel), iostat=io_status) mcp_channel_label, file_block_index, file_csf_count, &
                     & file_coefficient_count
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem block or channel header")
+                    & "MCP cache_mcp_files block or channel header")
                 if (file_block_index /= symmetry_block_index) then
-                    write (stderr_unit, *) "setmcp_mem", ":4 jblockt .NE. jblock"
-                    call fail_input_io_mpi(0, mcp_input_units(mcp_channel), "MCP setmcp_mem invalid block or channel")
+                    write (stderr_unit, *) "cache_mcp_files", " branch 4: block index mismatch"
+                    call fail_input_io_mpi(0, mcp_input_units(mcp_channel), "MCP cache_mcp_files invalid block or channel")
                 end if
                 total_secondary_contribution_count = total_secondary_contribution_count + 1
             end if
 
             if(mcp_channel == 30) then
                 read (mcp_input_units(30), iostat=io_status) file_matrix_element_count
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setmcp_mem sparse element count")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
+                    "MCP cache_mcp_files sparse element count")
                 stored_matrix_element_count = int(file_matrix_element_count,kind=int64)
                 read (mcp_input_units(30), iostat=io_status) (iendc_30(i),i=                                  &
                     imin1_30(symmetry_block_index)+mpi_rank+1,imax1_30(symmetry_block_index),mpi_process_count), &
                     (irow_30(i),i=imin2_30(symmetry_block_index)+1,imax2_30(symmetry_block_index))
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP setmcp_mem sparse indices")
+                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), "MCP cache_mcp_files sparse indices")
             else if(mcp_channel == 31) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_31(total_secondary_contribution_count),              &
                     ncontr_31(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_31(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_31(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -349,13 +356,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_31(total_secondary_contribution_count),           &
                         ncontr_31(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 32) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_32(total_secondary_contribution_count),              &
                     ncontr_32(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_32(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_32(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -371,13 +378,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_32(total_secondary_contribution_count),           &
                         ncontr_32(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 33) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_33(total_secondary_contribution_count),              &
                     ncontr_33(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_33(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_33(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -393,13 +400,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_33(total_secondary_contribution_count),           &
                         ncontr_33(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 34) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_34(total_secondary_contribution_count),              &
                     ncontr_34(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_34(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_34(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -415,13 +422,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_34(total_secondary_contribution_count),           &
                         ncontr_34(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 35) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_35(total_secondary_contribution_count),              &
                     ncontr_35(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_35(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_35(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -437,13 +444,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_35(total_secondary_contribution_count),           &
                         ncontr_35(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 36) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_36(total_secondary_contribution_count),              &
                     ncontr_36(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_36(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_36(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -459,13 +466,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_36(total_secondary_contribution_count),           &
                         ncontr_36(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 37) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_37(total_secondary_contribution_count),              &
                     ncontr_37(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_37(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_37(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -481,13 +488,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_37(total_secondary_contribution_count),           &
                         ncontr_37(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 38) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_38(total_secondary_contribution_count),              &
                     ncontr_38(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_38(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_38(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -503,13 +510,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_38(total_secondary_contribution_count),           &
                         ncontr_38(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 39) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_39(total_secondary_contribution_count),              &
                     ncontr_39(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_39(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_39(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -525,13 +532,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_39(total_secondary_contribution_count),           &
                         ncontr_39(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 40) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_40(total_secondary_contribution_count),              &
                     ncontr_40(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_40(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_40(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -547,13 +554,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_40(total_secondary_contribution_count),           &
                         ncontr_40(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 41) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_41(total_secondary_contribution_count),              &
                     ncontr_41(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_41(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_41(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -569,13 +576,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_41(total_secondary_contribution_count),           &
                         ncontr_41(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 42) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_42(total_secondary_contribution_count),              &
                     ncontr_42(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_42(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_42(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -591,13 +598,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_42(total_secondary_contribution_count),           &
                         ncontr_42(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 43) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_43(total_secondary_contribution_count),              &
                     ncontr_43(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_43(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_43(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -613,13 +620,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_43(total_secondary_contribution_count),           &
                         ncontr_43(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 44) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_44(total_secondary_contribution_count),              &
                     ncontr_44(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_44(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_44(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -635,13 +642,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_44(total_secondary_contribution_count),           &
                         ncontr_44(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 45) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_45(total_secondary_contribution_count),              &
                     ncontr_45(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_45(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_45(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -657,13 +664,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_45(total_secondary_contribution_count),           &
                         ncontr_45(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 46) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_46(total_secondary_contribution_count),              &
                     ncontr_46(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_46(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_46(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -679,13 +686,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_46(total_secondary_contribution_count),           &
                         ncontr_46(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 47) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_47(total_secondary_contribution_count),              &
                     ncontr_47(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_47(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_47(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -701,13 +708,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_47(total_secondary_contribution_count),           &
                         ncontr_47(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 48) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_48(total_secondary_contribution_count),              &
                     ncontr_48(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_48(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_48(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -723,13 +730,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_48(total_secondary_contribution_count),           &
                         ncontr_48(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 49) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_49(total_secondary_contribution_count),              &
                     ncontr_49(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_49(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_49(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -745,13 +752,13 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_49(total_secondary_contribution_count),           &
                         ncontr_49(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else if(mcp_channel == 50) then
                 read (mcp_input_units(mcp_channel), iostat=io_status) lab_50(total_secondary_contribution_count),              &
                     ncontr_50(total_secondary_contribution_count)
                 if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                    & "MCP setmcp_mem load-pass label/count")
+                    & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_50(total_secondary_contribution_count) /= 0 .or.                    &
                     ncontr_50(total_secondary_contribution_count) /= 0)
                     !*** Read column index, sparse matrix index, and
@@ -767,11 +774,11 @@ contains
                     read (mcp_input_units(mcp_channel), iostat=io_status) lab_50(total_secondary_contribution_count),           &
                         ncontr_50(total_secondary_contribution_count)
                     if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(mcp_channel), &
-                        & "MCP setmcp_mem load-pass label/count")
+                        & "MCP cache_mcp_files load-pass label/count")
                 end do
             else
-                print*, "Error in setmcp_mem"
-                call fail_input_io_mpi(0, mcp_input_units(mcp_channel), "MCP setmcp_mem invalid block or channel")
+                print*, "Error in cache_mcp_files"
+                call fail_input_io_mpi(0, mcp_input_units(mcp_channel), "MCP cache_mcp_files invalid block or channel")
             end if
 
         end do

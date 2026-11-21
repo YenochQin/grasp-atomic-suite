@@ -81,7 +81,7 @@ contains
         !   Save previous estimate of eigenvectors
 
         if (.not.first) then
-            call alloc (cmvl, mixing_coefficient_storage_size, "CMVL", "MATRIXmpi")
+            call alloc (cmvl, mixing_coefficient_storage_size, "CMVL", "solve_hamiltonian_blocks_mpi")
             call dcopy (mixing_coefficient_storage_size, csf_mixing_coefficients, 1, cmvl, 1)
         end if
 
@@ -131,12 +131,13 @@ contains
 
             read (mcp_input_units(30)) mcp_channel_label, file_block_index, csf_count
             if (file_block_index/=symmetry_block_index .or. csf_count/=csf_counts_by_block(symmetry_block_index)) error stop &
-                "MATRIXMPI: jblockt .NE. jblock .OR. ncf1 .NE. ncf2"
+                "solve_hamiltonian_blocks_mpi: block index or CSF count mismatch"
             read (mcp_input_units(30)) nelmntgg
             stored_matrix_element_count = int(nelmntgg,kind=int64)
-            call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "MATRIXmpi")
-            call alloc (hamiltonian_values, stored_matrix_element_count, "EMT", "MATRIXmpi")
-            call alloc (stored_segment_end_offsets, 0, csf_count, "IENDC", "MATRIXMPI" )
+            call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", &
+                "solve_hamiltonian_blocks_mpi")
+            call alloc (hamiltonian_values, stored_matrix_element_count, "hamiltonian_values", "solve_hamiltonian_blocks_mpi")
+            call alloc (stored_segment_end_offsets, 0, csf_count, "stored_segment_end_offsets", "solve_hamiltonian_blocks_mpi" )
 
             !                                                ! may not be necessary if iendc is ALWAYS used
             !GG         IENDC(:NCF) = 0                        ! the way it is assigned here.
@@ -161,8 +162,8 @@ contains
                 do mcp_channel = 31, 32 + max_mcp_file_multipole_rank
                     read (mcp_input_units(mcp_channel)) mcp_channel_label, file_block_index, file_csf_count, file_coefficient_count
                     if (file_block_index /= symmetry_block_index)                  &
-                        error stop "MATRIXmpi: jblockt .NE. jblock"
-                    if (file_csf_count /= csf_count) error stop "MATRIXmpi: ncft .NE. ncf"
+                        error stop "solve_hamiltonian_blocks_mpi: block index mismatch"
+                    if (file_csf_count /= csf_count) error stop "solve_hamiltonian_blocks_mpi: CSF count mismatch"
 
                     read (mcp_input_units(mcp_channel)) lab, contribution_count
                     do while(lab/=0 .or. contribution_count/=0)
@@ -171,8 +172,8 @@ contains
                     end do
                 end do
 
-                call dalloc (stored_segment_end_offsets, "IENDC", "MATRIXmpi")
-                call dalloc (matrix_partner_indices, "IROW", "MATRIXmpi")
+                call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "solve_hamiltonian_blocks_mpi")
+                call dalloc (matrix_partner_indices, "matrix_partner_indices", "solve_hamiltonian_blocks_mpi")
 
                 cycle
 
@@ -311,9 +312,9 @@ contains
                     )
             end if
 
-            call dalloc (hamiltonian_values, "EMT", "MATRIXmpi")
-            call dalloc (stored_segment_end_offsets, "IENDC", "MATRIXmpi")
-            call dalloc (matrix_partner_indices, "IROW", "MATRIXmpi")
+            call dalloc (hamiltonian_values, "hamiltonian_values", "solve_hamiltonian_blocks_mpi")
+            call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "solve_hamiltonian_blocks_mpi")
+            call dalloc (matrix_partner_indices, "matrix_partner_indices", "solve_hamiltonian_blocks_mpi")
 
             !----------------------
         end do
@@ -322,7 +323,7 @@ contains
         !   Deallocate the temporary storage
         !
         if (.not.first) then
-            call dalloc (cmvl, "CMVL", "MATRIXmpi")
+            call dalloc (cmvl, "CMVL", "solve_hamiltonian_blocks_mpi")
         else
             first = .false.
         end if

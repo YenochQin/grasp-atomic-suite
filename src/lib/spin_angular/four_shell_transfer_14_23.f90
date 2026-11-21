@@ -473,7 +473,7 @@ contains
     contains
         subroutine report_rank_limit()
             call ensure_debug_output()
-            write(angular_debug_unit,'(5x,"ERRO IN EL53  PMGG RAGG KRA1=",i100)')rank_table_position
+            write(angular_debug_unit,'(5x,"ERRO IN accumulate_four_shell_transfer_14_23  PMGG RAGG KRA1=",i100)')rank_table_position
             stop
         end subroutine report_rank_limit
     end subroutine accumulate_four_shell_transfer_14_23

@@ -83,7 +83,7 @@ contains
         !   Save previous estimate of eigenvectors
 
         if (.not.first) then
-            call alloc (cmvl, mixing_coefficient_storage_size, "CMVL", "MATRIX")
+            call alloc (cmvl, mixing_coefficient_storage_size, "CMVL", "solve_hamiltonian_blocks")
             call dcopy (mixing_coefficient_storage_size, csf_mixing_coefficients, 1, cmvl, 1)
         end if
 
@@ -133,14 +133,14 @@ contains
 
             read (mcp_input_units(30)) mcp_channel_label, file_block_index, csf_count
             if (file_block_index/=symmetry_block_index .or. csf_count/=csf_counts_by_block(symmetry_block_index)) error stop &
-                "matrx: jblockt .NE. jblock .OR. ncf1 .NE. ncf2"
+                "solve_hamiltonian_blocks: block index or CSF count mismatch"
             read (mcp_input_units(30)) nelmntgg
             stored_matrix_element_count = int(nelmntgg,kind=int64)
-            call alloc (matrix_partner_indices, stored_matrix_element_count, "IROW", "MATRIX")
-            call alloc (hamiltonian_values, stored_matrix_element_count, "EMT", "MATRIX")
+            call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", "solve_hamiltonian_blocks")
+            call alloc (hamiltonian_values, stored_matrix_element_count, "hamiltonian_values", "solve_hamiltonian_blocks")
             !cjb          ALLOC (IENDC, NCF + 1,...)  ->  ALLOC (IENDC, 0, NCF,...)
             !cjb     CALL ALLOC (IENDC, NCF + 1, 'IENDC', 'MATRIX' )
-            call alloc (stored_segment_end_offsets, 0, csf_count, "IENDC", "MATRIX" )
+            call alloc (stored_segment_end_offsets, 0, csf_count, "stored_segment_end_offsets", "solve_hamiltonian_blocks" )
 
             !        ! may not be necessary if iendc is ALWAYS used
             stored_segment_end_offsets(0:csf_count) = 0                        ! the way it is assigned here.
@@ -162,8 +162,8 @@ contains
             if (eigenvector_counts_by_block(symmetry_block_index) == 0) then
                 do mcp_channel = 31, 32 + max_mcp_file_multipole_rank
                     read (mcp_input_units(mcp_channel)) mcp_channel_label, file_block_index, file_csf_count, file_coefficient_count
-                    if (file_block_index /= symmetry_block_index) error stop "matrx: jblockt .NE. jblock"
-                    if (file_csf_count /= csf_count) error stop "matrx: ncft .NE. ncf"
+                    if (file_block_index /= symmetry_block_index) error stop "solve_hamiltonian_blocks: block index mismatch"
+                    if (file_csf_count /= csf_count) error stop "solve_hamiltonian_blocks: CSF count mismatch"
 
                     read (mcp_input_units(mcp_channel)) lab, contribution_count
                     do while(lab/=0 .or. contribution_count/=0)
@@ -172,8 +172,8 @@ contains
                     end do
                 end do
 
-                call dalloc (stored_segment_end_offsets, "IENDC", "MATRIX")
-                call dalloc (matrix_partner_indices, "IROW", "MATRIX")
+                call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "solve_hamiltonian_blocks")
+                call dalloc (matrix_partner_indices, "matrix_partner_indices", "solve_hamiltonian_blocks")
 
                 cycle
 
@@ -317,9 +317,9 @@ contains
                     )
             end if
 
-            call dalloc (hamiltonian_values, "EMT", "MATRIX")
-            call dalloc (stored_segment_end_offsets, "IENDC", "MATRIX")
-            call dalloc (matrix_partner_indices, "IROW", "MATRIX")
+            call dalloc (hamiltonian_values, "hamiltonian_values", "solve_hamiltonian_blocks")
+            call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "solve_hamiltonian_blocks")
+            call dalloc (matrix_partner_indices, "matrix_partner_indices", "solve_hamiltonian_blocks")
 
             !----------------------
         end do
@@ -328,7 +328,7 @@ contains
         !   Deallocate the temporary storage
         !
         if (.not.first) then
-            call dalloc (cmvl, "CMVL", "MATRIX")
+            call dalloc (cmvl, "CMVL", "solve_hamiltonian_blocks")
         else
             first = .false.
         end if

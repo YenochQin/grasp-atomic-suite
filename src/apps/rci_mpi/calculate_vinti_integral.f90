@@ -127,8 +127,8 @@ contains
                 !
                 if (vinti_integral_count > vinti_integral_capacity) then
                     new_integral_capacity = vinti_integral_capacity+vinti_integral_capacity/2
-                    call ralloc (vinti_integral_indices,new_integral_capacity, "INDTEI", "VINT")
-                    call ralloc (vinti_integral_values,new_integral_capacity, "VALTEI", "VINT")
+                    call ralloc (vinti_integral_indices,new_integral_capacity, "vinti_integral_indices", "calculate_vinti_integral")
+                    call ralloc (vinti_integral_values,new_integral_capacity, "vinti_integral_values", "calculate_vinti_integral")
                     vinti_integral_capacity = new_integral_capacity
                 end if
                 !
@@ -154,8 +154,8 @@ contains
             !   NDVIN stores the array dimension
             !
             vinti_integral_capacity = 2
-            call alloc (vinti_integral_indices,vinti_integral_capacity, "INDTEI", "VINT")
-            call alloc (vinti_integral_values,vinti_integral_capacity, "VALTEI", "VINT")
+            call alloc (vinti_integral_indices,vinti_integral_capacity, "vinti_integral_indices", "calculate_vinti_integral")
+            call alloc (vinti_integral_values,vinti_integral_capacity, "vinti_integral_values", "calculate_vinti_integral")
             !
             !   Compute the integral's value
             !

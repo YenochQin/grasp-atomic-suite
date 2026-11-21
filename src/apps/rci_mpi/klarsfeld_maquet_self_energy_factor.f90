@@ -71,7 +71,7 @@ contains
         !   Ensure that the principal quantum number is in range
         !
         if (principal_n<1 .or. principal_n>8) then
-            write (*, '("KLAMAQ:")')
+            write (*, '("klarsfeld_maquet_self_energy_factor:")')
             write (*, '(" Principal quantum number, ",1i2,", should be in the range  1--8.")') principal_n
             stop
         end if
@@ -81,7 +81,7 @@ contains
         if (kappa > 0) then
             l = kappa
         else if (kappa == 0) then
-            write (*, '("KLAMAQ:")')
+            write (*, '("klarsfeld_maquet_self_energy_factor:")')
             write (*, '(" Kappa is  0 .")')
             stop
         else
@@ -91,7 +91,7 @@ contains
         !   Ensure that the azimuthal quantum number is in range
         !
         if (l > principal_n - 1) then
-            write (*, '("KLAMAQ:")')
+            write (*, '("klarsfeld_maquet_self_energy_factor:")')
             write (*, '(" Kappa, ",1i3,", is out of range for n, ",1i2,".")') kappa, principal_n
             stop
         end if

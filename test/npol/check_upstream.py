@@ -16,6 +16,8 @@ import sys
 
 APP_SYMBOLS_SNAPSHOT = Path("docs/reference/rmcdhf_app_symbols_snapshot.json")
 APP_MODULES_SNAPSHOT = Path("docs/reference/rmcdhf_app_modules_snapshot.json")
+SEMANTIC_NAMES_SNAPSHOT = Path("docs/reference/rmcdhf_semantic_names_snapshot.json")
+DIAGNOSTIC_LABELS_SNAPSHOT = Path("docs/reference/rmcdhf_diagnostic_labels_snapshot.json")
 
 
 def suite_source_path(root: Path, upstream_path: str, renamed_paths: dict[str, str]) -> Path:
@@ -454,7 +456,7 @@ def main(root: Path) -> None:
     reviewed_migration |= app_modules["files"]
     expected = {name: record for name, record in expected.items() if name not in merged_interfaces}
 
-    semantic_names = json.loads((root / "docs/reference/rmcdhf_semantic_names_snapshot.json").read_text())
+    semantic_names = json.loads((root / SEMANTIC_NAMES_SNAPSHOT).read_text())
     assert semantic_names["schema_version"] == 1, "Unknown semantic names snapshot schema"
     assert semantic_names["previous_manifest_sha256"] == hashlib.sha256((root / APP_MODULES_SNAPSHOT).read_bytes()).hexdigest(), \
         "App modules snapshot changed; review semantic naming provenance"
@@ -464,6 +466,18 @@ def main(root: Path) -> None:
         assert record["before_suite_sha256"] == previous[name]["after_suite_sha256"], \
             f"Semantic names snapshot has a different predecessor: {name}"
     reviewed_migration |= semantic_names["files"]
+
+    diagnostic_labels = json.loads((root / DIAGNOSTIC_LABELS_SNAPSHOT).read_text())
+    assert diagnostic_labels["schema_version"] == 1, "Unknown diagnostic labels snapshot schema"
+    assert diagnostic_labels["previous_manifest_sha256"] == hashlib.sha256(
+        (root / SEMANTIC_NAMES_SNAPSHOT).read_bytes()
+    ).hexdigest(), "Semantic names snapshot changed; review diagnostic label provenance"
+    previous = reviewed_files | reviewed_migration
+    for name, record in diagnostic_labels["files"].items():
+        assert name in expected and name.endswith(".f90") and name in previous, name
+        assert record["before_suite_sha256"] == previous[name]["after_suite_sha256"], \
+            f"Diagnostic labels snapshot has a different predecessor: {name}"
+    reviewed_migration |= diagnostic_labels["files"]
 
     actual = {
         path

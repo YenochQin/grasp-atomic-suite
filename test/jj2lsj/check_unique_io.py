@@ -84,8 +84,8 @@ def main() -> None:
             (work / "input.lbl").write_text(body)
             result = subprocess.run([executable], cwd=work, capture_output=True, timeout=30)
             assert result.returncode != 0, (name, "invalid input accepted")
-            assert b"uniquelsj:" in result.stderr, (name, result.stderr)
-    print(f"uniquelsj: {len(valid)} normal and {len(invalid)} malformed complete-workspace cases passed")
+            assert b"assign_unique_lsj_labels:" in result.stderr, (name, result.stderr)
+    print(f"assign_unique_lsj_labels: {len(valid)} normal and {len(invalid)} malformed complete-workspace cases passed")
 
 
 if __name__ == "__main__":

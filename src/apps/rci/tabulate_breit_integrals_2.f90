@@ -64,7 +64,7 @@ contains
         end do
 
         if (max_orbital_two_j > maximum_breit_multipole_rank) then
-            stop "genintbreit2: KMAX too small"
+            stop "tabulate_breit_integrals_2: maximum multipole rank is too small"
         end if
         !
         !   Make the breit integrals. Note that there are no symmetry relations that
@@ -97,8 +97,8 @@ contains
             !     Allocate memory for integral book keeping
             !
             if (gen) exit
-            call alloc (breit_integral_indices_2,nb,"INDT2","genintbreit2")
-            call alloc (breit_integral_values_2,nb,"VALT2","genintbreit2")
+            call alloc (breit_integral_indices_2,nb,"breit_integral_indices_2","tabulate_breit_integrals_2")
+            call alloc (breit_integral_values_2,nb,"breit_integral_values_2","tabulate_breit_integrals_2")
 
             ! Initialization is necessary in the mpi version
 

@@ -29,7 +29,7 @@ subroutine write_ci_eigenvectors
     !   Determine which eigenvectors are to be printed out
     !
     nvex = active_level_count
-    call alloc (iloc,active_level_count,"ILOC", "EVCOUT")
+    call alloc (iloc,active_level_count,"ILOC", "write_ci_eigenvectors")
     do i = 1,active_level_count
         iloc(i) = active_level_indices(i)
     end do
@@ -75,7 +75,7 @@ subroutine write_ci_eigenvectors
     !
     !   Deallocate storage for ILOC
     !
-    call dalloc (iloc, "ILOC", "EVCOUT")
+    call dalloc (iloc, "ILOC", "write_ci_eigenvectors")
     !
     return
     !

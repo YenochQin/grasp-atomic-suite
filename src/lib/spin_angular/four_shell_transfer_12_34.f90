@@ -495,7 +495,7 @@ contains
     contains
         subroutine report_rank_limit()
             call ensure_debug_output()
-            write(angular_debug_unit,'(5x,"ERRO IN EL51  PMGG RAGG")')
+            write(angular_debug_unit,'(5x,"ERRO IN accumulate_four_shell_transfer_12_34  PMGG RAGG")')
             stop
         end subroutine report_rank_limit
     end subroutine accumulate_four_shell_transfer_12_34

@@ -32,7 +32,7 @@ contains
             if (right_csf_two_j_plus_one > 127) right_csf_two_j_plus_one = 256 - right_csf_two_j_plus_one
             right_csf_two_j_plus_one = iabs (right_csf_two_j_plus_one)
         else
-            write (output_unit, *) "ITJPOR: Argument ICSF is out of range."
+            write (output_unit, *) "right_csf_two_j_plus_one: Argument csf_index is out of range."
             stop
         end if
         !

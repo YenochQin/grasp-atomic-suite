@@ -43,7 +43,7 @@ contains
 
         k = index(name," ")
         call open_calculation_file (mixing_output_unit, name(1:k-1)//ci_mixing_suffix, form, status, open_status)
-        if (open_status /= 0) stop "setmix: Error when opening .cimix file"
+        if (open_status /= 0) stop "open_mixing_output: Error when opening .cimix file"
 
         write (mixing_output_unit) "G92MIX"
 

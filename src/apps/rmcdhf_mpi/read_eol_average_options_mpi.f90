@@ -54,8 +54,10 @@ contains
         !    nevblk(), ncmaxblk()
         !    ncmin, iccmin(1:ncmin) -- via items (memories allocated there)
 
-        call alloc (highest_selected_level_by_block, symmetry_block_count, "NCMAXBLK", "GETOLDmpi")
-        call alloc (eigenvector_counts_by_block, symmetry_block_count, "NEVBLK", "GETOLDmpi" )
+        call alloc (highest_selected_level_by_block, symmetry_block_count, "highest_selected_level_by_block", &
+            "read_eol_average_options_mpi")
+        call alloc (eigenvector_counts_by_block, symmetry_block_count, "eigenvector_counts_by_block", &
+            "read_eol_average_options_mpi" )
 
         !cjb  ncmaxblk & nevblk initialised in lodstate
         !     NEVBLK = 0
@@ -79,7 +81,8 @@ contains
         if (selected_level_count /= 0) then
             if (mpi_rank /=  0) then   ! lodstate allocated it from node-0
                 !GG            CALL alloc (pccmin, ncmin, 'PCCMIN', 'GETOLD')
-                call alloc (requested_level_indices, selected_level_count, "ICCMIN", "GETOLDmpi")
+                call alloc (requested_level_indices, selected_level_count, "requested_level_indices", &
+                    "read_eol_average_options_mpi")
             end if
 
             call mpi_bcast (requested_level_indices(1), selected_level_count, mpi_integer, 0,         &
@@ -89,7 +92,7 @@ contains
         !
         !   Allocate the storage for and set the weights
         !
-        call alloc (requested_level_weights, selected_level_count, "WEIGHT", "GETOLDmpi")
+        call alloc (requested_level_weights, selected_level_count, "requested_level_weights", "read_eol_average_options_mpi")
 
         if (mpi_rank == 0) then
             call read_eol_level_weights (nondefault_options_flag, selected_level_count, requested_level_weights)
@@ -99,7 +102,7 @@ contains
         !
         !   Eigenvector damping
         !
-        call alloc (mixing_damping_factors, selected_level_count, "CDAMP", "GETOLDmpi")
+        call alloc (mixing_damping_factors, selected_level_count, "mixing_damping_factors", "read_eol_average_options_mpi")
         !
         mixing_damping_factors(:selected_level_count) = 0.0_real64
         !
@@ -186,12 +189,12 @@ contains
         !   Make the allocation for the auxiliary vector required
         !   by SUBROUTINE NEWCO
         !
-        call alloc (level_average_weights, selected_level_count, "RWTDUM", "GETOLDmpi")
+        call alloc (level_average_weights, selected_level_count, "level_average_weights", "read_eol_average_options_mpi")
         !
         !   Place the block numbers of the all ncmin eigenstate(wanted)
         !   in array idxblk
         !
-        call alloc (level_block_indices, selected_level_count, "IDXBLK", "GETOLDmpi")
+        call alloc (level_block_indices, selected_level_count, "level_block_indices", "read_eol_average_options_mpi")
         noffset = 0
         do symmetry_block_index = 1, symmetry_block_count
             do level_index = 1, eigenvector_counts_by_block(symmetry_block_index)
@@ -199,7 +202,7 @@ contains
             end do
             noffset = noffset + eigenvector_counts_by_block(symmetry_block_index)
         end do
-        if (noffset /= selected_level_count) error stop "getold: ncmin trouble"
+        if (noffset /= selected_level_count) error stop "read_eol_average_options_mpi: selected level count mismatch"
 
         return
     end subroutine read_eol_average_options_mpi
