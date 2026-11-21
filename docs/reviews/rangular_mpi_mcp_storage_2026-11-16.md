@@ -136,7 +136,7 @@ V 的标签把规范化后的四轨道号以 KEYORB 为基数打包。k 在文�
 批量写临时记录可将主数据从 28 降到接近 20 字节/贡献，约少 28.6%，还减少 I/O 调用；
 但这是修改临时读写接口后的理论收益，尚未实现或测量。
 大模型可考虑有界缓冲与分段外排序；只改最终输出容器不会消除此瓶颈。
-依据：[SETTMP](../../src/apps/rangular_mpi/open_temporary_mcp_channel.f90)、
+依据：[SETTMP](../../src/apps/rangular_mpi/open_temporary_mcp_channels.f90)、
 [MCPMPI](../../src/apps/rangular_mpi/compute_mcp_angular_coefficients_mpi.f90)、[SORT](../../src/apps/rangular_mpi/sort_mcp_coefficients.f90)。
 
 ## 4. 本轮已有文件测量

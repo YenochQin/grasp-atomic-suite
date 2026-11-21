@@ -51,16 +51,17 @@ contains
         logical , intent(out) :: solve_failed
 
         ! Local declarations
-        integer :: mxk, npiorb, nkiorb, nakabs, nliorb, nnp, nrel, kount, jp, &
+        integer :: max_matching_iterations, npiorb, nkiorb, nakabs, nliorb, nnp, nrel, kount, jp, &
             radial_equation_type, nstrt, i, npc
         real(real64) :: epslon, csq, alpha, fkabs, fkap2, zalpha, gamma, ebym, &
-            emin, emax, dele, eest, small_component_origin_coefficient, pfjpo, qfjpo, pfjpi, qfjpi, ratio, first_oscillation_sign, &
-            dnorm, dmsmch, dnfac
+            emin, emax, orbital_energy_correction, trial_orbital_energy_parameter, small_component_origin_coefficient, pfjpo, &
+                & qfjpo, pfjpi, qfjpi, ratio, first_oscillation_sign, &
+            dnorm, small_component_matching_residual, dnfac
 
         ! Initial values
         !-----------------------------------------------
         !
-        data mxk/ 75/
+        data max_matching_iterations/ 75/
         !
         !   A solution is deemed continuous when the relative mismatch in the
         !   small component is within EPSLON
@@ -114,7 +115,7 @@ contains
             emax = csq + csq
         end if
         !
-        dele = 0.0_real64
+        orbital_energy_correction = 0.0_real64
         !
         !   Initialize
         !
@@ -125,16 +126,16 @@ contains
         !
         do
             kount = kount + 1
-            if (kount > mxk) then
+            if (kount > max_matching_iterations) then
                 solve_failed = .true.
                 return
             end if
             !
             !   Generate estimate of eigenvalue for this iteration
             !
-            eest = orbital_energy_parameters(orbital_index) + dele
-            if (eest>emin .and. eest<emax) then
-                orbital_energy_parameters(orbital_index) = eest
+            trial_orbital_energy_parameter = orbital_energy_parameters(orbital_index) + orbital_energy_correction
+            if (trial_orbital_energy_parameter>emin .and. trial_orbital_energy_parameter<emax) then
+                orbital_energy_parameters(orbital_index) = trial_orbital_energy_parameter
             else
                 orbital_energy_parameters(orbital_index) = 0.5_real64*(emin + emax)
             end if
@@ -199,11 +200,11 @@ contains
             !
             if (npc > nnp) then
                 emin = orbital_energy_parameters(orbital_index)
-                dele = 0.5_real64*(emax - emin)
+                orbital_energy_correction = 0.5_real64*(emax - emin)
                 cycle
             else if (npc < nnp) then
                 emax = orbital_energy_parameters(orbital_index)
-                dele = -0.5_real64*(emax - emin)
+                orbital_energy_correction = -0.5_real64*(emax - emin)
                 cycle
             end if
             !
@@ -225,15 +226,16 @@ contains
             !   correct slope at origin
             !
             qfjpi = qfjpi*ratio
-            dmsmch = qfjpi - qfjpo
-            if (.not.ieee_is_finite(dmsmch) .or. &
+            small_component_matching_residual = qfjpi - qfjpo
+            if (.not.ieee_is_finite(small_component_matching_residual) .or. &
                 .not.ieee_is_finite(qfjpo)) then
                 solve_failed = .true.
                 return
             end if
-            if (abs(dmsmch) > epslon*abs(qfjpo)) then
-                dele = speed_of_light_au*radial_large_components(jp,orbital_index)*dmsmch/dnorm
-                if (.not.ieee_is_finite(dele)) then
+            if (abs(small_component_matching_residual) > epslon*abs(qfjpo)) then
+                orbital_energy_correction = speed_of_light_au*radial_large_components(jp,orbital_index)* &
+                    & small_component_matching_residual/dnorm
+                if (.not.ieee_is_finite(orbital_energy_correction)) then
                     solve_failed = .true.
                     return
                 end if
@@ -243,11 +245,13 @@ contains
                 !   trial inside the updated interval; the next iteration bisects it
                 !   if the proposed correction falls outside the bounds.
                 !
-                if (dele < 0.0_real64) then
-                    emax = max(orbital_energy_parameters(orbital_index), emax*(1.0_real64 - 0.2e00_real64*abs(dele/ &
+                if (orbital_energy_correction < 0.0_real64) then
+                    emax = max(orbital_energy_parameters(orbital_index), emax*(1.0_real64 - 0.2e00_real64* &
+                        & abs(orbital_energy_correction/ &
                         & orbital_energy_parameters(orbital_index))))
                 else
-                    emin = min(orbital_energy_parameters(orbital_index), emin*(1.0_real64 + 0.2e00_real64*abs(dele/ &
+                    emin = min(orbital_energy_parameters(orbital_index), emin*(1.0_real64 + 0.2e00_real64* &
+                        & abs(orbital_energy_correction/ &
                         & orbital_energy_parameters(orbital_index))))
                 end if
                 orbital_origin_parameters(orbital_index) = orbital_origin_parameters(orbital_index)/sqrt(dnorm)

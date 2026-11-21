@@ -281,7 +281,7 @@ pub unsafe extern "C" fn rcsfs_descriptor_read(
         // access to the live Handle for this call.
         let h = unsafe { &mut *handle.cast::<Handle>() };
         let count = rows
-            .checked_mul(h.reader.layout.row_len())
+            .checked_mul(h.reader.layout.descriptor_row_channel_count())
             .ok_or_else(|| anyhow::anyhow!("size overflow"))?;
         ensure!(size >= count, "output buffer too small");
         let mut written = 0;

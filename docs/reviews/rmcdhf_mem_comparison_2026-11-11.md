@@ -54,7 +54,7 @@ MPI 入口按 `'mcp' // idstring` 读取各 rank 的文件，并检查文件中�
 [缓存数组](../../src/apps/rmcdhf_mem/rmcdhf_mcp_memory.f90)、
 [READ2_MEM](../../src/apps/rmcdhf_mem/read_mcp_structure_into_memory.f90)、
 [READ3_MEM](../../src/apps/rmcdhf_mem/read_mcp_coefficients_into_memory.f90)、
-[MPI 入口](../../src/apps/rmcdhf_mem_mpi/rmcdhf_mpi_main.f90)。
+[MPI 入口](../../src/apps/rmcdhf_mem_mpi/rmcdhf_mem_mpi_main.f90)。
 
 ## 拉格朗日乘子轨道对筛选
 

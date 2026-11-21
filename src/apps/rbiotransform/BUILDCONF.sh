@@ -20,10 +20,9 @@ interpolate_final_orbital.f90
 interpolate_initial_orbital.f90
 invert_dense_submatrix.f90
 prepare_biorthogonal_subshells.f90
-lodcslBio.f90 lodcslBio_I.f90
 read_final_radial_wavefunctions.f90
 read_initial_radial_wavefunctions.f90
-print_matrix_symmetry.f90 print_matrix_symmetry_interface.f90
+print_matrix_symmetry.f90
 factor_lower_upper.f90
 fill_vector.f90
 multiply_submatrices.f90

@@ -21,7 +21,7 @@ OBJS= \
 	 \
 	open_summary_file.o \
 	 \
-	open_temporary_mcp_channel.o \
+	open_temporary_mcp_channels.o \
 	 \
 	sort_mcp_coefficients.o \
 	 \

@@ -40,14 +40,14 @@ contains
         integer , intent(in) :: matched_orbital_indices(max_orbitals)
         integer :: matched_subshell_index, orbital_index
         integer, intent(in) :: nradial
-        real(real64) :: effective_nuclear_charge, delz
+        real(real64) :: effective_nuclear_charge, effective_nuclear_charge_shift
         !-----------------------------------------------
         !
         !
-        delz = 0.0_real64
+        effective_nuclear_charge_shift = 0.0_real64
         if (nradial == 4)  then
             write (stderr_unit, *) "Enter increase in Z for correlation orbitals"
-            read  (input_unit, *) delz
+            read  (input_unit, *) effective_nuclear_charge_shift
         end if
         write (stderr_unit, *) "Orbital Z_eff for hydrogenic orbitals"
         do matched_subshell_index = 1, matched_subshell_count
@@ -57,7 +57,7 @@ contains
                 write (stderr_unit, *) "Input new value >"
                 read (input_unit, *) orbital_screening_constants(orbital_index)
             end if
-            effective_nuclear_charge = nuclear_charge - orbital_screening_constants(orbital_index) + delz
+            effective_nuclear_charge = nuclear_charge - orbital_screening_constants(orbital_index) + effective_nuclear_charge_shift
             write (stderr_unit, "(I2,A2,F10.2)") orbital_principal_n(orbital_index), orbital_symmetry_labels(orbital_index), &
                 & effective_nuclear_charge
             !           ...Calculate radial wavefunctions

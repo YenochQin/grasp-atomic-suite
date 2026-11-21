@@ -8,7 +8,7 @@ contains
 
     !***********************************************************************
     !                                                                      *
-    subroutine read_biorthogonal_mcp (name,ik,global_trace_level,inpci)
+    subroutine read_biorthogonal_mcp (name,ik,global_trace_level,mixing_file_kind)
         ! Module dependencies
         use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
         use calculation_file_units, only: mixing_input_unit
@@ -65,7 +65,7 @@ contains
 
         ! Arguments
         character(len=24), intent(in) :: name
-        integer, intent(in) :: ik, global_trace_level, inpci
+        integer, intent(in) :: ik, global_trace_level, mixing_file_kind
 
         ! Local constants
         !   Set the encoding key and its square
@@ -74,7 +74,7 @@ contains
 
         ! Local declarations
         !
-        integer :: nakinv(max_orbitals)
+        integer :: kappa_group_by_orbital(max_orbitals)
         integer :: shell_counts(max_biorthogonal_kappa_groups), inactive_shell_counts(max_biorthogonal_kappa_groups)
         real(real64) :: ci_rotation_matrices(20*max_biorthogonal_kappa_groups*max_biorthogonal_kappa_groups)
         !
@@ -96,7 +96,7 @@ contains
             end do
 
             do i = 1,max_orbitals
-                nakinv(i) = initial_kappa_group_by_orbital(i)
+                kappa_group_by_orbital(i) = initial_kappa_group_by_orbital(i)
             end do
 
             do j = 1,max_biorthogonal_kappa_groups
@@ -123,7 +123,7 @@ contains
             end do
 
             do i = 1,max_orbitals
-                nakinv(i) = final_kappa_group_by_orbital(i)
+                kappa_group_by_orbital(i) = final_kappa_group_by_orbital(i)
             end do
 
             do j = 1,max_biorthogonal_kappa_groups
@@ -148,7 +148,7 @@ contains
             !
             !   Read the CI vectors
             !
-            call read_state_mixing_coefficients(name,inpci,symmetry_block_index)
+            call read_state_mixing_coefficients(name,mixing_file_kind,symmetry_block_index)
             !
             !   Allocate memory for use in CITRAG
             !
@@ -227,7 +227,7 @@ contains
             !
             if(symmetry_block_index==1) then
                 j = index(name," ")
-                if (inpci==0) then
+                if (mixing_file_kind==0) then
                     open (newunit=biorthogonal_mixing_output_unit,file=name(1:j-1)//".cbm",form="UNFORMATTED",  &
                         &    status="UNKNOWN")
                 else

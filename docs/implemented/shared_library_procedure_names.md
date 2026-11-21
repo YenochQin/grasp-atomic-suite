@@ -6,8 +6,19 @@
 `unpacked_value`、`byte_index` 和 `packed_values`。
 
 `radial_node_count` 和 `csf_byte_packing` 直接定义 `count_radial_nodes` 和 `pack_csf_subshell_byte`。
-Davidson 求解入口为 `solve_davidson_eigenpairs`，矩阵–向量回调接口为 `dvd_operator`。
+Davidson 求解入口为 `solve_davidson_eigenpairs`，矩阵–向量回调接口为 `davidson_matrix_vector_operator`。
 双电子角系数入口为 `calculate_two_electron_angular_coefficients`。
+
+2026-11-21 的语义命名检查更新了以下共享接口。外部 Fortran 调用方按新名更新 `USE`
+和过程引用后重新编译。Rust 描述符读库的 C 头文件补齐了形参名称，沿用原 C ABI。
+
+| 原过程或变量名 | 当前名称 |
+| --- | --- |
+| `mpi_runtime::mpix_bytes` | `create_contiguous_mpi_byte_datatype` |
+| `mpi_utilities::mpix_startup` | `start_mpi_application` |
+| `mpi_utilities::mpix_shutdown` | `finish_mpi_application` |
+| `davidson_eigensolver::dvd_operator` | `davidson_matrix_vector_operator` |
+| `debug_output_settings::cutoff` | `matrix_element_screening_cutoff` |
 
 ## 核心库
 

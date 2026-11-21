@@ -47,9 +47,11 @@ contains
         real(real64) :: eps, gauge_correction, tji, tjj, fact, form, fl, flp, dfki, dfkj, &
             upper_order_coulomb_scale, lower_order_coulomb_scale, upper_order_cross_sum_factor, &
                 & upper_order_cross_diff_factor, lower_order_cross_sum_factor, lower_order_cross_diff_factor, value, cjl, &
-                & cip, tarom, esther, &
-            tekel, peres, tamar, enoch, seth, shem, darius, cyrus, daniel, boaz, &
-            esau, aaron, gimel
+                & cip, j_l_integral, j_l_multiplier, &
+            j_l_contribution, i_plus_l_plus_one_integral, i_plus_l_plus_one_contribution, i_plus_l_minus_one_integral, &
+                & i_plus_l_minus_one_contribution, i_minus_l_minus_one_integral, i_minus_l_minus_one_contribution, &
+                    & i_minus_l_plus_one_integral, i_minus_l_plus_one_multiplier, i_minus_l_plus_one_contribution, &
+            i_integral_contribution_sum, debug_reconstructed_sum, debug_reference_negative_value
         !-----------------------------------------------
 
         !
@@ -196,12 +198,13 @@ contains
                     if (rmcdhf_debug_flags(15)) write (angular_debug_unit, '(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)') (ii, &
                         radial_workspace_a(ii),ii=1, &
                         & radial_point_count)
-                    call integrate_radial_grid (tarom)
-                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(/," Integral J(L)  =  ",1p,d28.12)') tarom
-                    esther = -cjl
-                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Factor multiplying this ",1p,d20.12)') esther
-                    tekel = esther*tarom
-                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Resultant contribution  ",1p,d20.12,/)') tekel
+                    call integrate_radial_grid (j_l_integral)
+                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(/," Integral J(L)  =  ",1p,d28.12)') j_l_integral
+                    j_l_multiplier = -cjl
+                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Factor multiplying this ",1p,d20.12)') j_l_multiplier
+                    j_l_contribution = j_l_multiplier*j_l_integral
+                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Resultant contribution  ",1p,d20.12,/)') &
+                        & j_l_contribution
                     !
                     radial_workspace_a(1) = 0.0_real64
                     radial_workspace_a(2:integration_last_index) = &
@@ -210,13 +213,14 @@ contains
                     if (rmcdhf_debug_flags(15)) write (angular_debug_unit, '(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)') (ii, &
                         radial_workspace_a(ii),ii=1, &
                         & radial_point_count)
-                    call integrate_radial_grid (peres)
+                    call integrate_radial_grid (i_plus_l_plus_one_integral)
                     if (rmcdhf_debug_flags(14)) then
-                        write (angular_debug_unit, '(" I + (L+1) integral  = ",1p,d24.12)') peres
+                        write (angular_debug_unit, '(" I + (L+1) integral  = ",1p,d24.12)') i_plus_l_plus_one_integral
                         write (angular_debug_unit, '(" Factor multiplying this ",1p,d20.12)') cip
                     end if
-                    tamar = cip*peres
-                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Resultant contribution  ",1p,d20.12,/)') tamar
+                    i_plus_l_plus_one_contribution = cip*i_plus_l_plus_one_integral
+                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Resultant contribution  ",1p,d20.12,/)') &
+                        & i_plus_l_plus_one_contribution
                     !
                     radial_workspace_a(1) = 0.0_real64
                     radial_workspace_a(2:integration_last_index) = &
@@ -225,13 +229,14 @@ contains
                     if (rmcdhf_debug_flags(15)) write (angular_debug_unit, '(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)') (ii, &
                         radial_workspace_a(ii),ii=1, &
                         & radial_point_count)
-                    call integrate_radial_grid (enoch)
+                    call integrate_radial_grid (i_plus_l_minus_one_integral)
                     if (rmcdhf_debug_flags(14)) then
-                        write (angular_debug_unit, '(" I + (L-1) integral  = ",1p,d24.12)') enoch
+                        write (angular_debug_unit, '(" I + (L-1) integral  = ",1p,d24.12)') i_plus_l_minus_one_integral
                         write (angular_debug_unit, '(" Factor multiplying this ",1p,d20.12)') cip
                     end if
-                    seth = cip*enoch
-                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Resultant contribution  ",1p,d20.12,/)') seth
+                    i_plus_l_minus_one_contribution = cip*i_plus_l_minus_one_integral
+                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Resultant contribution  ",1p,d20.12,/)') &
+                        & i_plus_l_minus_one_contribution
                     !
                     radial_workspace_a(1) = 0.0_real64
                     radial_workspace_a(2:integration_last_index) = transition_spherical_bessel_values(2:integration_last_index, &
@@ -240,13 +245,14 @@ contains
                     if (rmcdhf_debug_flags(15)) write (angular_debug_unit, '(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)') (ii, &
                         radial_workspace_a(ii),ii=1, &
                         & radial_point_count)
-                    call integrate_radial_grid (shem)
+                    call integrate_radial_grid (i_minus_l_minus_one_integral)
                     if (rmcdhf_debug_flags(14)) then
-                        write (angular_debug_unit, '(" I - (L-1) integral  = ",1p,d24.12)') shem
+                        write (angular_debug_unit, '(" I - (L-1) integral  = ",1p,d24.12)') i_minus_l_minus_one_integral
                         write (angular_debug_unit, '(" Factor multiplying this ",1p,d20.12)') fl
                     end if
-                    darius = fl*shem
-                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Resultant contribution  ",1p,d20.12,/)') darius
+                    i_minus_l_minus_one_contribution = fl*i_minus_l_minus_one_integral
+                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Resultant contribution  ",1p,d20.12,/)') &
+                        & i_minus_l_minus_one_contribution
                     !
                     radial_workspace_a(1) = 0.0_real64
                     radial_workspace_a(2:integration_last_index) = -transition_spherical_bessel_values(2:integration_last_index, &
@@ -255,30 +261,40 @@ contains
                     if (rmcdhf_debug_flags(15)) write (angular_debug_unit, '(/,100(1x,7(i3,2x,1p,d11.3,2x),/),/)') (ii, &
                         radial_workspace_a(ii),ii=1, &
                         & radial_point_count)
-                    call integrate_radial_grid (cyrus)
-                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" I - (L+1) integral  = ",1p,d24.12)') cyrus
-                    daniel = flp
-                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Factor multiplying this ",1p,d20.12)') daniel
-                    boaz = daniel*cyrus
-                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Resultant contribution  ",1p,d20.12,/)') boaz
+                    call integrate_radial_grid (i_minus_l_plus_one_integral)
+                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" I - (L+1) integral  = ",1p,d24.12)') &
+                        & i_minus_l_plus_one_integral
+                    i_minus_l_plus_one_multiplier = flp
+                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Factor multiplying this ",1p,d20.12)') &
+                        & i_minus_l_plus_one_multiplier
+                    i_minus_l_plus_one_contribution = i_minus_l_plus_one_multiplier*i_minus_l_plus_one_integral
+                    if (rmcdhf_debug_flags(14)) write (angular_debug_unit, '(" Resultant contribution  ",1p,d20.12,/)') &
+                        & i_minus_l_plus_one_contribution
                     !
-                    esau = tamar + seth + darius + boaz
+                    i_integral_contribution_sum = i_plus_l_plus_one_contribution + i_plus_l_minus_one_contribution + &
+                        & i_minus_l_minus_one_contribution + i_minus_l_plus_one_contribution
                     if (rmcdhf_debug_flags(14)) then
                         write (angular_debug_unit, '(" These last four add up to ",1p,d20.12,&
-                            &"    compared to the first which is ",d20.12)') esau, tekel
+                            &"    compared to the first which is ",d20.12)') i_integral_contribution_sum, j_l_contribution
                     end if
-                    aaron = esau + tekel
-                    gimel = -value
+                    debug_reconstructed_sum = i_integral_contribution_sum + j_l_contribution
+                    debug_reference_negative_value = -value
                     if (rmcdhf_debug_flags(14)) then
-                        write (angular_debug_unit, '(" These all add up to ",1p,d20.12," which should equal ",d20.12)') aaron, gimel
+                        write (angular_debug_unit, '(" These all add up to ",1p,d20.12," which should equal ",d20.12)') &
+                            & debug_reconstructed_sum, debug_reference_negative_value
                         write (angular_debug_unit, '(/,18x,"Integral",11x,"Coefficient",8x,"Contribution")')
-                        write (angular_debug_unit, '(" I + (L+1)",1p,3d20.10)') peres, cip, tamar
-                        write (angular_debug_unit, '(" I + (L-1)",1p,3d20.10)') enoch, cip, seth
-                        write (angular_debug_unit, '(" I - (L-1)",1p,3d20.10)') shem, fl, darius
-                        write (angular_debug_unit, '(" I - (L+1)",1p,3d20.10)') cyrus, daniel, boaz
-                        write (angular_debug_unit, '(54x,16("-"),/,50x,1p,d20.10)') esau
-                        write (angular_debug_unit, '(" J (L)",4x,1p,3d20.10)') tarom, esther, tekel
-                        write (angular_debug_unit, '(54x,16("-"),/," Correct figure",1p,d20.10,15x,d20.10)') gimel, aaron
+                        write (angular_debug_unit, '(" I + (L+1)",1p,3d20.10)') i_plus_l_plus_one_integral, cip, &
+                            & i_plus_l_plus_one_contribution
+                        write (angular_debug_unit, '(" I + (L-1)",1p,3d20.10)') i_plus_l_minus_one_integral, cip, &
+                            & i_plus_l_minus_one_contribution
+                        write (angular_debug_unit, '(" I - (L-1)",1p,3d20.10)') i_minus_l_minus_one_integral, fl, &
+                            & i_minus_l_minus_one_contribution
+                        write (angular_debug_unit, '(" I - (L+1)",1p,3d20.10)') i_minus_l_plus_one_integral, &
+                            & i_minus_l_plus_one_multiplier, i_minus_l_plus_one_contribution
+                        write (angular_debug_unit, '(54x,16("-"),/,50x,1p,d20.10)') i_integral_contribution_sum
+                        write (angular_debug_unit, '(" J (L)",4x,1p,3d20.10)') j_l_integral, j_l_multiplier, j_l_contribution
+                        write (angular_debug_unit, '(54x,16("-"),/," Correct figure",1p,d20.10,15x,d20.10)') &
+                            & debug_reference_negative_value, debug_reconstructed_sum
                     end if
                     !
                 end if

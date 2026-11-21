@@ -8,7 +8,6 @@ csf_density_matrix_element.f90
 direct_angular_coefficient.f90
 exchange_angular_coefficient.f90
 assemble_orbital_potential_coefficients.f90
-lodcsh2GG.f90 lodcsh2GG_I.f90
 load_csf_basis_data.f90
 configure_debug_output.f90
 assemble_hamiltonian_block.f90

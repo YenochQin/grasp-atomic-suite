@@ -169,7 +169,7 @@ def entrypoints(root: Path) -> None:
         assert re.search(r"subroutine\s+" + stem + r"\s*\(" + arguments + r"\)", declaration)
         if not enabled:
             assert "npol" not in declaration and "nuclear_polarization_file_path" not in declaration
-        main = (directory / ("rmcdhf_mpi_main.f90" if mpi else "rmcdhf_main.f90")).read_text().lower()
+        main = (directory / f"{variant}_main.f90").read_text().lower()
         main = re.sub(r"[ \t]*&\n[ \t]*&?[ \t]*", " ", main)
         call_mpi = (
             r"call read_scf_options_mpi\s*\(extended_optimal_level, block_labels, "

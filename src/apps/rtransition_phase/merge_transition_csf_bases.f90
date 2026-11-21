@@ -31,7 +31,7 @@ contains
         !
 
         write (output_unit, *)
-        write (output_unit, *) "MRGCSL: Execution begins ..."
+        write (output_unit, *) "merge_transition_csf_bases: Execution begins ..."
         !
         !   Load the first  .csl  file
         !

@@ -7,8 +7,8 @@ rmcdhf_mcp_memory.f90
 read_mcp_structure_from_memory.f90
 read_mcp_coefficients_from_memory.f90
 load_mcp_records_into_memory.f90
-read_mcp_structure_into_memory.f90 read_mcp_structure_into_memory_interface.f90
-read_mcp_coefficients_into_memory.f90 read_mcp_coefficients_into_memory_interface.f90
+read_mcp_structure_into_memory.f90
+read_mcp_coefficients_into_memory.f90
 query_total_system_memory.f90
 query_available_system_memory.f90
 cache_mcp_files.f90
@@ -53,8 +53,6 @@ orthogonalize_same_kappa_orbitals.f90
 improve_orbital_mpi.f90
 basis_csf_parity.f90
 basis_csf_two_j_plus_one.f90
-lodcslmpiGG.f90 lodcslmpiGG_I.f90
-lodcsh2GG.f90 lodcsh2GG_I.f90
 find_least_consistent_orbital.f90
 update_scf_mixing_mpi.f90
 write_scf_radial_wavefunctions.f90
@@ -70,7 +68,7 @@ diagonalize_hamiltonian_block_mpi.f90
 solve_hamiltonian_blocks_mpi.f90
 run_scf_iterations_mpi.f90
 
-rmcdhf_mpi_main.f90
+rmcdhf_mem_mpi_main.f90
 
 # Note: the interfaces for ,  and
 # were not being linked in the original makefile.

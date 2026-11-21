@@ -24,10 +24,10 @@ contains
         write(*,*) "RDENSITY: Execution complete."
     end subroutine parallel_finish
 
-    subroutine broadcast_options(name, nci, ndef, ordering, status)
+    subroutine broadcast_options(name, mixing_file_kind, nondefault_options_flag, ordering, status)
         ! Arguments
         character(*), intent(inout) :: name
-        integer, intent(inout) :: nci, ndef, ordering, status
+        integer, intent(inout) :: mixing_file_kind, nondefault_options_flag, ordering, status
     end subroutine broadcast_options
 
     subroutine sum_density(matrix)

@@ -23,7 +23,7 @@
 !***********************************************************************
 !***********************************************************************
 !                                                                      *
-program rmcdhf_main
+program rmcdhf_mem_main
     ! Module dependencies
     use calculation_file_units, only: calculation_log_unit
     !                                                                      *
@@ -139,7 +139,7 @@ program rmcdhf_main
 
     call connect_mcp_files (closed_core_subshell_count, maximum_input_symmetry_blocks, block_labels, files%mcp)
     call load_csf_basis_data (files%descriptors, core_subshell_count, block_labels)
-    if (closed_core_subshell_count /= core_subshell_count) stop "rscfvu: ncore"
+    if (closed_core_subshell_count /= core_subshell_count) stop "RMCDHF: closed-core subshell count mismatch"
 
     !=======================================================================
     !  Gather all remaining information and perform some setup. This
@@ -170,4 +170,4 @@ program rmcdhf_main
     call finish_run_timer (start_clock_count, "RMCDHF")
 
     stop
-end program rmcdhf_main
+end program rmcdhf_mem_main

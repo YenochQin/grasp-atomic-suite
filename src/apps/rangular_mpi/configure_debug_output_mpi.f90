@@ -8,7 +8,7 @@ contains
 
     !***********************************************************************
     !                                                                      *
-    subroutine configure_debug_output_mpi (debug, fullname)
+    subroutine configure_debug_output_mpi (debug, file_path)
         ! Module dependencies
         !                                                                      *
         !   This routine calls setdbg to open the  .dbg  file and sets the     *
@@ -28,11 +28,11 @@ contains
 
         ! Arguments
         logical :: debug
-        character(len=*) :: fullname
+        character(len=*) :: file_path
         !-----------------------------------------------
         !
         if (mpi_rank == 0) then
-            call configure_debug_output (debug, fullname)
+            call configure_debug_output (debug, file_path)
         end if
         call mpi_bcast (debug,1,mpi_logical,0,mpi_comm_world,mpi_error_code)
         call mpi_bcast (ldbpa,5,mpi_logical,0,mpi_comm_world,mpi_error_code)

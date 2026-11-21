@@ -72,7 +72,7 @@ contains
             if (csf_total_j_code > 127) csf_total_j_code = 256 - csf_total_j_code
             csf_total_j_code = iabs(csf_total_j_code)
         else
-            write (stderr_unit, *) "ITJPO: Argument ICSF is out of range."
+            write (stderr_unit, *) "csf_total_j_code: CSF index is out of range."
             stop
         end if
     end function csf_total_j_code

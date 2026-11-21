@@ -35,7 +35,7 @@ contains
         !...Translated by Gediminas Gaigalas 11/18/19
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters, only: orbital_index_radix, max_orbitals
-        use debug_output_settings, only: cutoff
+        use debug_output_settings, only: matrix_element_screening_cutoff
         use eigenstate_expansions, only: csf_mixing_coefficients
         use orbital_csf_basis, only: csf_count, max_orbitals, orbital_count, orbital_kappa
         use selected_level_indices, only: active_level_count
@@ -67,7 +67,8 @@ contains
 
         ! Local declarations
         real(real64) :: shell_coefficients(max_orbitals), stored_shell_coefficients(max_orbitals)
-        real(real64) :: contri1vec(nuclear_density_point_count), elemnt1vec(nuclear_density_point_count)
+        real(real64) :: level_density_profile_contribution(nuclear_density_point_count), &
+            & csf_pair_density_profile(nuclear_density_point_count)
         real(real64) :: contact_density_element, total_nms_element, radius_element, radius_squared_element, &
             & inverse_radius_element,     &
             inverse_radius_squared_element, leading_nms_element, contact_density_contribution, total_nms_contribution, &
@@ -124,7 +125,7 @@ contains
                     inverse_radius_element = 0.0_real64
                     inverse_radius_squared_element = 0.0_real64
                     leading_nms_element = 0.0_real64
-                    elemnt1vec(:) = 0.0_real64                                      ! JE ADD
+                    csf_pair_density_profile(:) = 0.0_real64                                      ! JE ADD
                     !
                     !   Call the MCT package to compute T coefficients
                     !
@@ -135,14 +136,15 @@ contains
                         if (orbital_index == ket_orbital_index) then
                             coefficient_count = 0
                             do orbital_index = 1,orbital_count
-                                if (abs (shell_coefficients(orbital_index)) > cutoff) then
+                                if (abs (shell_coefficients(orbital_index)) > matrix_element_screening_cutoff) then
                                     coefficient_count = coefficient_count + 1
                                     stored_shell_coefficients(coefficient_count) = shell_coefficients(orbital_index)
                                     contributing_orbitals(coefficient_count) = orbital_index
                                     contact_density_element = contact_density_element + &
                                         & contact_density_integrals(orbital_index,orbital_index)*shell_coefficients(orbital_index)
                                     do l = 2,nuclear_density_point_count                                    ! JE ADD
-                                        elemnt1vec(l) = elemnt1vec(l)+orbital_density_profiles(orbital_index,orbital_index,l)*& ! JE ADD
+                                        csf_pair_density_profile(l) = csf_pair_density_profile(l)+ &
+                                            & orbital_density_profiles(orbital_index,orbital_index,l)*& ! JE ADD
                                             shell_coefficients(orbital_index)                        ! JE ADD
                                     end do  ! JE ADD
                                     total_nms_element = total_nms_element + total_nms_integrals(orbital_index, &
@@ -167,7 +169,7 @@ contains
                                     & packed_orbital_label
                             end do
                         else
-                            if (abs (shell_coefficients(1)) > cutoff) then
+                            if (abs (shell_coefficients(1)) > matrix_element_screening_cutoff) then
                                 if (orbital_kappa(orbital_index)==orbital_kappa(ket_orbital_index)) then
                                     if (angular_cache_write_mode==1) write(one_body_cache_unit) csf_index,row_csf,1
                                     packed_orbital_label = orbital_index*orbital_index_radix + ket_orbital_index
@@ -176,7 +178,8 @@ contains
                                     contact_density_element = contact_density_element + &
                                         & contact_density_integrals(orbital_index,ket_orbital_index)*shell_coefficients(1)
                                     do l = 2,nuclear_density_point_count                                   ! JE ADD
-                                        elemnt1vec(l) = elemnt1vec(l)+orbital_density_profiles(orbital_index,ket_orbital_index,l)*& ! JE ADD
+                                        csf_pair_density_profile(l) = csf_pair_density_profile(l)+ &
+                                            & orbital_density_profiles(orbital_index,ket_orbital_index,l)*& ! JE ADD
                                             shell_coefficients(1)                         ! JE ADD
                                     end do  ! JE ADD
                                     total_nms_element = total_nms_element + total_nms_integrals(orbital_index, &
@@ -200,8 +203,8 @@ contains
                         contact_density_contribution = csf_mixing_coefficients(csf_index+level_mixing_offset)* &
                             & csf_mixing_coefficients(row_csf+ &
                             & level_mixing_offset)*contact_density_element
-                        contri1vec(:) = csf_mixing_coefficients(csf_index+level_mixing_offset)* &
-                            & csf_mixing_coefficients(row_csf+level_mixing_offset)*elemnt1vec(:)   ! JE ADD
+                        level_density_profile_contribution(:) = csf_mixing_coefficients(csf_index+level_mixing_offset)* &
+                            & csf_mixing_coefficients(row_csf+level_mixing_offset)*csf_pair_density_profile(:)   ! JE ADD
                         total_nms_contribution = csf_mixing_coefficients(csf_index+level_mixing_offset)* &
                             & csf_mixing_coefficients(row_csf+level_mixing_offset)* &
                             & total_nms_element
@@ -220,7 +223,7 @@ contains
                             & leading_nms_element
                         if (row_csf/=csf_index) then
                             contact_density_contribution = 2.0_real64 * contact_density_contribution
-                            contri1vec(:) = 2.0_real64 * contri1vec(:)                  ! JE ADD
+                            level_density_profile_contribution(:) = 2.0_real64 * level_density_profile_contribution(:)                  ! JE ADD
                             total_nms_contribution = 2.0_real64 * total_nms_contribution
                             radius_contribution = 2.0_real64 * radius_contribution
                             radius_squared_contribution = 2.0_real64 * radius_squared_contribution
@@ -230,7 +233,8 @@ contains
                         end if
                         contact_density_by_level(level_index) = contact_density_by_level(level_index) + contact_density_contribution
                         do l = 2,nuclear_density_point_count                                         ! JE ADD
-                            level_density_profiles(level_index,l) = level_density_profiles(level_index,l) + contri1vec(l)           ! JE ADD
+                            level_density_profiles(level_index,l) = level_density_profiles(level_index,l) + &
+                                & level_density_profile_contribution(l)           ! JE ADD
                         end do  ! JE ADD
                         total_nms_by_level(level_index) = total_nms_by_level(level_index) + total_nms_contribution
                         radius_by_level(level_index) = radius_by_level(level_index) + radius_contribution

@@ -26,7 +26,7 @@ add_library(jj2lsj_conversion STATIC
     jj2lsj_profile.f90 jj2lsj_postprocessing.f90
     read_mixing_blocks.f90
     ascii_digit_value.f90  orbital_letter_to_l.f90  pack_ls_subshell_label.f90
-    ls_jj_coefficients_low_j.f90 ls_jj_coefficients_table_2.f90 ls_jj_coefficients_table_3.f90
+    ls_jj_coefficients_low_j.f90 ls_jj_coefficients_f6.f90 ls_jj_coefficients_f7.f90
     jj2lsj_conversion.f90)
 setup_fortran_modules(jj2lsj_conversion)
 target_include_directories(jj2lsj_conversion PRIVATE

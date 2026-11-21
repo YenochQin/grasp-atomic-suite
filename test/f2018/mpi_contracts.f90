@@ -2,7 +2,7 @@ program mpi_contracts
     use mpi_state, only: processor_name, mpi_error_code, mpi_status_buffer, processor_name_length, mpi_rank, &
         mpi_process_count, mpi_abort, mpi_allreduce, mpi_bcast, mpi_character, mpi_comm_world, mpi_double_precision, &
         mpi_finalize, mpi_logical, mpi_success, mpi_sum, mpi_type_free, mpi_type_match_size, mpi_type_size, &
-        mpi_typeclass_integer, mpix_bytes, initialize_mpi_runtime
+        mpi_typeclass_integer, create_contiguous_mpi_byte_datatype, initialize_mpi_runtime
     use, intrinsic :: iso_fortran_env, only: real64, int64
     use, intrinsic :: iso_fortran_env, only: int8
     implicit none (type, external)
@@ -15,7 +15,7 @@ program mpi_contracts
 
     call initialize_mpi_runtime(mpi_rank,mpi_process_count,processor_name,processor_name_length)
     if (processor_name_length <= 0 .or. processor_name_length > len(processor_name)) call MPI_Abort(MPI_COMM_WORLD,1,mpi_error_code)
-    call mpix_bytes(1,byte_type,mpi_error_code)
+    call create_contiguous_mpi_byte_datatype(1,byte_type,mpi_error_code)
     if (mpi_error_code /= MPI_SUCCESS) call MPI_Abort(MPI_COMM_WORLD,2,mpi_error_code)
     call MPI_Type_size(byte_type,width,mpi_error_code)
     if (width /= 1) call MPI_Abort(MPI_COMM_WORLD,3,mpi_error_code)

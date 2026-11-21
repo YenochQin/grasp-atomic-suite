@@ -43,8 +43,6 @@ orthogonalize_same_kappa_orbitals.f90
 improve_orbital_mpi.f90
 basis_csf_parity.f90
 basis_csf_two_j_plus_one.f90
-lodcslmpiGG.f90 lodcslmpiGG_I.f90
-lodcsh2GG.f90 lodcsh2GG_I.f90
 find_least_consistent_orbital.f90
 update_scf_mixing_mpi.f90
 write_scf_radial_wavefunctions.f90

@@ -50,20 +50,20 @@ contains
                 serial_io_directory = startup_directory
                 ! Use MPI_TMP for all ranks when disks is absent. Fall back to /scratch/$USER.
                 if(.not.getenv_allocating("MPI_TMP", scratch_environment_path)) then
-                    print *, " warning041 cpath failed at getenv MPI_TMP, myid = ", mpi_rank
-                    print *, " warning041 cpath will now default to /scratch/USER "
+                    print *, " warning041 cannot read MPI_TMP, rank = ", mpi_rank
+                    print *, " warning041 using /scratch/USER for MPI work directories"
 
                     if(.not.getenv_allocating("USER", user_name)) then
-                        print *, " error061 cpath failed at getenv USER, myid = ", mpi_rank
-                        print *, " error061 cpath fatal error, calling MPI_ABORT"
+                        print *, " error061 cannot read USER for the MPI work directory, rank = ", mpi_rank
+                        print *, " error061 MPI work directory setup failed, calling MPI_ABORT"
                         call mpi_abort(mpi_comm_world, mpi_error_code, mpi_return_code)
                     end if
 
                     scratch_environment_path = "/scratch/"//user_name
                 end if
                 if(len(scratch_environment_path) > scratch_path_capacity) then
-                    print *, " error062 cpath MPI_TMP too long, myid = ", mpi_rank
-                    print *, " error062 cpath fatal error, calling MPI_ABORT"
+                    print *, " error062 MPI_TMP path is too long, rank = ", mpi_rank
+                    print *, " error062 MPI work directory setup failed, calling MPI_ABORT"
                     call mpi_abort(mpi_comm_world, mpi_error_code, mpi_return_code)
                 end if
 
@@ -99,7 +99,7 @@ contains
             end do
         end if
         if (mpi_error_code /= 0) then
-            print *, " error141 cpath failed at sys_mkdir(disk), myid = ", mpi_rank
+            print *, " error141 cannot create MPI scratch directory, rank = ", mpi_rank
         else
             call change_mpi_directory (scratch_path, scratch_path_length, mpi_error_code)
             if (mpi_error_code /= 0) then
@@ -116,7 +116,7 @@ contains
                     if (mpi_error_code==0) exit
                 end do
                 if (mpi_error_code /= 0) then
-                    print *, " error161 cpath failed at sys_chdir(disk); myid = ", mpi_rank
+                    print *, " error161 cannot enter MPI scratch directory, rank = ", mpi_rank
                 end if
             end if
         end if
@@ -128,11 +128,11 @@ contains
             if (mpi_error_code /= 0) then
                 call create_mpi_directory (rank_directory_name, rank_directory_name_width, mpi_error_code)
                 if (mpi_error_code /= 0) then
-                    print *, " error181 cpath failed to make sub-dir " // rank_directory_name
+                    print *, " error181 cannot create MPI rank directory " // rank_directory_name
                 else
                     call change_mpi_directory (rank_directory_name, rank_directory_name_width, mpi_error_code)
                     if (mpi_error_code /= 0) then
-                        print *, " error183 cpath failed to go to sub-dir " // rank_directory_name
+                        print *, " error183 cannot enter MPI rank directory " // rank_directory_name
                     end if
                 end if
             end if
@@ -144,11 +144,11 @@ contains
         call mpi_allreduce (mpi_in_place,directory_status_sum,1, &
             mpi_integer, mpi_sum, mpi_comm_world, mpi_return_code)
         if (directory_status_sum /= 0) then
-            print *, " error201 cpath ierr = ", mpi_error_code, " myid = ", mpi_rank
+            print *, " error201 MPI work directory setup status = ", mpi_error_code, ", rank = ", mpi_rank
             if (mpi_rank == 0) then
-                print *, " error201 cpath directory setup failed, myid = ", mpi_rank
+                print *, " error201 MPI work directory setup failed, rank = ", mpi_rank
             end if
-            call finalize_mpi_runtime (" error in cpath ", mpi_rank)
+            call finalize_mpi_runtime (" MPI work directory setup failed ", mpi_rank)
         end if
 
         rank_scratch_root = scratch_path

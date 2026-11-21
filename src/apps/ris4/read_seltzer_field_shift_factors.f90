@@ -53,7 +53,8 @@ contains
 
         ! Local declarations
         real(real64) :: cached_shell_coefficients(max_orbitals)
-        real(real64) :: contri1vec(nuclear_density_point_count), elemnt1vec(nuclear_density_point_count)
+        real(real64) :: level_density_profile_contribution(nuclear_density_point_count), &
+            & csf_pair_density_profile(nuclear_density_point_count)
         real(real64) :: contact_density_element, total_nms_element, radius_element, radius_squared_element, inverse_radius_element
         real(real64) :: inverse_radius_squared_element, leading_nms_element
         real(real64) :: contact_density_contribution, total_nms_contribution, radius_contribution, &
@@ -93,7 +94,7 @@ contains
                 inverse_radius_element = 0.0_real64
                 inverse_radius_squared_element = 0.0_real64
                 leading_nms_element = 0.0_real64
-                elemnt1vec(:) = 0.0_real64                               ! JE ADD
+                csf_pair_density_profile(:) = 0.0_real64                               ! JE ADD
                 !*        ENDDO
             end if
             do i= 1,coefficient_count
@@ -103,7 +104,7 @@ contains
                 !*           LOC = INDEX(I)
                 contact_density_element = contact_density_element + contact_density_integrals(ia,ib)*cached_shell_coefficients(i)
                 do l = 2,nuclear_density_point_count                                                  ! JE ADD
-                    elemnt1vec(l) = elemnt1vec(l) + orbital_density_profiles(ia,ib,l)*       &     ! JE ADD
+                    csf_pair_density_profile(l) = csf_pair_density_profile(l) + orbital_density_profiles(ia,ib,l)*       &     ! JE ADD
                         cached_shell_coefficients(i)                                               ! JE ADD
                 end do  ! JE ADD
                 total_nms_element = total_nms_element + total_nms_integrals(ia,ib)*cached_shell_coefficients(i)
@@ -127,8 +128,9 @@ contains
                 contact_density_contribution = csf_mixing_coefficients(column_csf+level_mixing_offset)* &
                     & csf_mixing_coefficients(row_csf+level_mixing_offset)* &
                     & contact_density_element
-                contri1vec(:) = csf_mixing_coefficients(column_csf+level_mixing_offset)*csf_mixing_coefficients(row_csf+ &
-                    & level_mixing_offset)*elemnt1vec(:)           ! JE ADD
+                level_density_profile_contribution(:) = csf_mixing_coefficients(column_csf+level_mixing_offset)* &
+                    & csf_mixing_coefficients(row_csf+ &
+                    & level_mixing_offset)*csf_pair_density_profile(:)           ! JE ADD
                 total_nms_contribution = csf_mixing_coefficients(column_csf+level_mixing_offset)* &
                     & csf_mixing_coefficients(row_csf+level_mixing_offset)*total_nms_element
                 radius_contribution = csf_mixing_coefficients(column_csf+level_mixing_offset)* &
@@ -144,7 +146,7 @@ contains
                     & csf_mixing_coefficients(row_csf+level_mixing_offset)*leading_nms_element
                 if (row_csf/=column_csf) then
                     contact_density_contribution = 2.0_real64 * contact_density_contribution
-                    contri1vec(:) = 2.0_real64 * contri1vec(:)                        ! JE ADD
+                    level_density_profile_contribution(:) = 2.0_real64 * level_density_profile_contribution(:)                        ! JE ADD
                     total_nms_contribution = 2.0_real64 * total_nms_contribution
                     radius_contribution = 2.0_real64 * radius_contribution
                     radius_squared_contribution = 2.0_real64 * radius_squared_contribution
@@ -154,7 +156,8 @@ contains
                 end if
                 contact_density_by_level(level_index) = contact_density_by_level(level_index) + contact_density_contribution
                 do l = 2,nuclear_density_point_count                                                  ! JE ADD
-                    level_density_profiles(level_index,l) = level_density_profiles(level_index,l) + contri1vec(l)                  ! JE ADD
+                    level_density_profiles(level_index,l) = level_density_profiles(level_index,l) + &
+                        & level_density_profile_contribution(l)                  ! JE ADD
                 end do  ! JE ADD
                 total_nms_by_level(level_index) = total_nms_by_level(level_index) + total_nms_contribution
                 radius_by_level(level_index) = radius_by_level(level_index) + radius_contribution

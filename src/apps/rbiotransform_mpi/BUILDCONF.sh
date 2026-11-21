@@ -21,10 +21,9 @@ initial_state_radial_integral.f90
 interpolate_final_orbital.f90
 interpolate_initial_orbital.f90
 prepare_biorthogonal_subshells.f90
-lodcslBio.f90 lodcslBio_I.f90
 read_final_radial_wavefunctions.f90
 read_initial_radial_wavefunctions.f90
-print_matrix_symmetry.f90 print_matrix_symmetry_interface.f90
+print_matrix_symmetry.f90
 factor_lower_upper.f90
 fill_vector.f90
 multiply_submatrices.f90
@@ -32,7 +31,7 @@ sort_biorthogonal_mcp.f90
 read_biorthogonal_mcp.f90
 write_biorthogonal_mcp.f90
 build_subshell_transformation_matrix.f90
-write_transformed_radial_wavefunctions.f90 write_transformed_radial_wavefunctions_interface.f90
+write_transformed_radial_wavefunctions.f90
 configure_radial_grid.f90
 scale_vector.f90
 load_biorthogonal_csf_basis_mpi.f90

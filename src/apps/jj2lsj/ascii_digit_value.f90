@@ -21,15 +21,15 @@ contains
 
         ! Local declarations
         integer :: digit_value
-        character :: cdgt(0:9)
+        character :: decimal_digit_characters(0:9)
 
         ! Initial values
         !-----------------------------------------------
         !
-        data cdgt/ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"/
+        data decimal_digit_characters/ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"/
         !
         do digit_value = 0, 9
-            if (digit_character /= cdgt(digit_value)) cycle
+            if (digit_character /= decimal_digit_characters(digit_value)) cycle
             ascii_digit_value = digit_value
             exit
         end do

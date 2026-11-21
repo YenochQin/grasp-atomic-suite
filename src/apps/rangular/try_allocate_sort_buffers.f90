@@ -8,7 +8,7 @@ contains
 
     !***********************************************************************
     !                                                                      *
-    subroutine try_allocate_sort_buffers(n, irez)
+    subroutine try_allocate_sort_buffers(coefficient_capacity_to_probe, allocation_succeeded_flag)
         ! Module dependencies
         !                                                                      *
         !   Written by G. Gaigalas            Last revision: 27 October 2017   *
@@ -21,28 +21,28 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer, intent(in)  :: n
-        integer, intent(out) :: irez
+        integer, intent(in)  :: coefficient_capacity_to_probe
+        integer, intent(out) :: allocation_succeeded_flag
 
         ! Local declarations
-        real(real64), pointer :: pr(:)
-        integer, pointer :: pi(:)
-        integer :: error
+        real(real64), pointer :: coefficient_buffer_probe(:)
+        integer, pointer :: integer_buffer_probe(:)
+        integer :: allocation_status
         !-----------------------------------------------
-        irez = 1
-        allocate(pr(n),stat=error)
-        if (error /= 0) then
-            irez = 0
+        allocation_succeeded_flag = 1
+        allocate(coefficient_buffer_probe(coefficient_capacity_to_probe),stat=allocation_status)
+        if (allocation_status /= 0) then
+            allocation_succeeded_flag = 0
             return
         end if
-        allocate(pi(3*n),stat=error)
-        if (error /= 0) then
-            irez = 0
-            call dalloc (pr,"PR","try_allocate_sort_buffers")
+        allocate(integer_buffer_probe(3*coefficient_capacity_to_probe),stat=allocation_status)
+        if (allocation_status /= 0) then
+            allocation_succeeded_flag = 0
+            call dalloc (coefficient_buffer_probe,"coefficient_buffer_probe","try_allocate_sort_buffers")
             return
         end if
-        call dalloc (pr,"PR","try_allocate_sort_buffers")
-        call dalloc (pi,"PI","try_allocate_sort_buffers")
+        call dalloc (coefficient_buffer_probe,"coefficient_buffer_probe","try_allocate_sort_buffers")
+        call dalloc (integer_buffer_probe,"integer_buffer_probe","try_allocate_sort_buffers")
         return
     end subroutine try_allocate_sort_buffers
 end module try_allocate_sort_buffers_interface

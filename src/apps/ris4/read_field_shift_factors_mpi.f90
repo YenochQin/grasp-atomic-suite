@@ -19,7 +19,7 @@ contains
         !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: orbital_index_radix, max_orbitals
-        use debug_output_settings,          only: cutoff
+        use debug_output_settings,          only: matrix_element_screening_cutoff
         use selected_level_indices, only: active_level_count
         use isotope_shift_options, only: contact_density_by_level, total_nms_by_level, radius_by_level, &
             & radius_squared_by_level, inverse_radius_by_level, inverse_radius_squared_by_level, leading_nms_by_level, &
@@ -79,13 +79,13 @@ contains
             end do
 
             if (rank_owns_record) then
-                if (abs(contact_density_element) <= cutoff .and. &
-                    abs(total_nms_element) <= cutoff .and. &
-                    abs(radius_element) <= cutoff .and. &
-                    abs(radius_squared_element) <= cutoff .and. &
-                    abs(inverse_radius_element) <= cutoff .and. &
-                    abs(inverse_radius_squared_element) <= cutoff .and. &
-                    abs(leading_nms_element) <= cutoff) cycle
+                if (abs(contact_density_element) <= matrix_element_screening_cutoff .and. &
+                    abs(total_nms_element) <= matrix_element_screening_cutoff .and. &
+                    abs(radius_element) <= matrix_element_screening_cutoff .and. &
+                    abs(radius_squared_element) <= matrix_element_screening_cutoff .and. &
+                    abs(inverse_radius_element) <= matrix_element_screening_cutoff .and. &
+                    abs(inverse_radius_squared_element) <= matrix_element_screening_cutoff .and. &
+                    abs(leading_nms_element) <= matrix_element_screening_cutoff) cycle
                 if (row_csf == column_csf) then
                     pair_scale = 1.0_real64
                 else

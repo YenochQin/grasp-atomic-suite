@@ -2,7 +2,7 @@
 module mpi_state
     ! Module dependencies
     use mpi
-    use mpi_runtime, only: initialize_mpi_runtime, mpix_bytes
+    use mpi_runtime, only: initialize_mpi_runtime, create_contiguous_mpi_byte_datatype
     implicit none (type, external)
 
     ! Module state

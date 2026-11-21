@@ -60,11 +60,12 @@ contains
         real(real64), parameter :: eps = 1.0e-10_real64
 
         ! Local declarations
-        integer  :: indexs(4)
+        integer  :: decoded_integral_orbital_indices(4)
         integer :: coefficient_buffer_size, current_orbital_kappa, current_orbital_two_j, packed_orbital_label_offset, &
             packed_orbital_label_stride, partner_orbital_index, multipole_rank, symmetry_block_index, csf_index, &
             partner_orbital_two_j, maximum_multipole_rank, minimum_multipole_rank, nfile, i, jblock, lab, contribution_count, &
-            ia, ic, ithis, irank, iind, il, iorb, iyo1, iyo2, ifound, loc1, loc2, ithis2, indind, channel_record_count
+            ia, ic, ithis, irank, iind, il, iorb, iyo1, iyo2, ifound, loc1, loc2, ithis2, selected_integral_orbital_index, &
+                & channel_record_count
         real(real64) :: current_orbital_weight, sumr, ykab, xkab, sum,  contr
         integer(int64) :: total_contribution_count, total_secondary_contribution_count
         !-----------------------------------------------
@@ -386,16 +387,16 @@ contains
                     end if
                     !***                       k
                     !*** Decode the labels of R (abcd)
-                    indexs(4) = mod(lab,orbital_index_radix)
+                    decoded_integral_orbital_indices(4) = mod(lab,orbital_index_radix)
                     lab = lab/orbital_index_radix
-                    indexs(2) = mod(lab,orbital_index_radix)
+                    decoded_integral_orbital_indices(2) = mod(lab,orbital_index_radix)
                     lab = lab/orbital_index_radix
-                    indexs(3) = mod(lab,orbital_index_radix)
-                    indexs(1) = lab/orbital_index_radix
+                    decoded_integral_orbital_indices(3) = mod(lab,orbital_index_radix)
+                    decoded_integral_orbital_indices(1) = lab/orbital_index_radix
 
                     !*** Determine the number of indices that match
                     irank = 0
-                    irank = irank + count(indexs==orbital_index)
+                    irank = irank + count(decoded_integral_orbital_indices==orbital_index)
 
                     if (irank == 0) then
                         total_contribution_count = total_contribution_count + contribution_count
@@ -442,16 +443,16 @@ contains
                         ithis = -911                      ! initialize to an impossible value
                         ! though not necessary
                         do iind = 1, 4
-                            if (indexs(iind) /= orbital_index) cycle   ! at least one
+                            if (decoded_integral_orbital_indices(iind) /= orbital_index) cycle   ! at least one
                             il = iind + 2
                             if (il > 4) il = il - 4
-                            iorb = indexs(il)
+                            iorb = decoded_integral_orbital_indices(il)
                             il = iind + 1
                             if (il > 4) il = il - 4
-                            iyo1 = indexs(il)
+                            iyo1 = decoded_integral_orbital_indices(il)
                             il = iind + 3
                             if (il > 4) il = il - 4
-                            iyo2 = indexs(il)
+                            iyo2 = decoded_integral_orbital_indices(il)
                             ithis = ((iorb*orbital_index_radix + iyo2)*orbital_index_radix + iyo1)*orbital_index_radix + &
                                 & multipole_rank
                             exit
@@ -498,7 +499,7 @@ contains
 
                         ifound = 0
                         do iind = 1, 4
-                            if (indexs(iind) /= orbital_index) cycle
+                            if (decoded_integral_orbital_indices(iind) /= orbital_index) cycle
                             if (ifound == 0) then
                                 loc1 = iind
                                 ifound = ifound + 1
@@ -515,10 +516,10 @@ contains
                             !*** Find ithis ***
                             il = loc1 + 3
                             if (il > 4) il = il - 4
-                            iyo2 = indexs(il)
+                            iyo2 = decoded_integral_orbital_indices(il)
                             il = loc1 + 1
                             if (il > 4) il = il - 4
-                            iyo1 = indexs(il)
+                            iyo1 = decoded_integral_orbital_indices(il)
                             ithis = (iyo2*orbital_index_radix + iyo1)*orbital_index_radix + multipole_rank
 
                             !*** Check it against the previously recorded ***
@@ -558,13 +559,13 @@ contains
                             !*** Find ithis ***
                             il = loc1 + 2
                             if (il > 4) il = il - 4
-                            iorb = indexs(il)
+                            iorb = decoded_integral_orbital_indices(il)
                             il = loc1 + 1
                             if (il > 4) il = il - 4
-                            iyo1 = indexs(il)
+                            iyo1 = decoded_integral_orbital_indices(il)
                             il = loc1 + 3
                             if (il > 4) il = il - 4
-                            iyo2 = indexs(il)
+                            iyo2 = decoded_integral_orbital_indices(il)
                             ithis = ((iorb*orbital_index_radix + iyo2)*orbital_index_radix + iyo1)*orbital_index_radix + &
                                 & multipole_rank
 
@@ -610,12 +611,12 @@ contains
                         ithis = -911
                         ithis2 = -911
                         do iind = 1, 4
-                            if (indexs(iind) == orbital_index) cycle
-                            indind = indexs(iind)
-                            iyo2 = indind
+                            if (decoded_integral_orbital_indices(iind) == orbital_index) cycle
+                            selected_integral_orbital_index = decoded_integral_orbital_indices(iind)
+                            iyo2 = selected_integral_orbital_index
                             iyo1 = orbital_index
                             ithis = (iyo2*orbital_index_radix + iyo1)*orbital_index_radix + multipole_rank
-                            iorb = indind
+                            iorb = selected_integral_orbital_index
                             iyo1 = orbital_index
                             iyo2 = orbital_index
                             ithis2 = ((iorb*orbital_index_radix + iyo2)*orbital_index_radix + iyo1)*orbital_index_radix + &

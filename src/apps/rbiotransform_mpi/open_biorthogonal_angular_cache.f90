@@ -8,7 +8,7 @@ contains
 
     !***********************************************************************
     !                                                                      *
-    subroutine open_biorthogonal_angular_cache(name, avail, kamax)
+    subroutine open_biorthogonal_angular_cache(name, matching_angular_cache_available, kappa_group_count)
         ! Module dependencies
         use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
         use, intrinsic :: iso_fortran_env, only: output_unit
@@ -23,12 +23,12 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer, intent(in)      :: kamax
-        logical, intent(out)     :: avail
+        integer, intent(in)      :: kappa_group_count
+        logical, intent(out)     :: matching_angular_cache_available
         character, intent(inout) :: name*24
 
         ! Local declarations
-        integer :: j,ncfd,nwd,kamaxd,nprocsd,myidd
+        integer :: j,cached_csf_count,cached_orbital_count,cached_kappa_group_count,cached_mpi_process_count,cached_mpi_rank
         logical :: found
         !-----------------------------------------------
         !
@@ -36,7 +36,7 @@ contains
         inquire(file=name(1:j-1)//".TB", exist=found)
         if (.not.found) then
             write (output_unit, *) " Angular file not available"
-            avail = .false.
+            matching_angular_cache_available = .false.
             return
         else
             !
@@ -45,15 +45,17 @@ contains
             open(newunit=biorthogonal_angular_unit, file=name(1:j-1)//".TB", status="OLD", form=&
                 "UNFORMATTED", position="asis")
             rewind (biorthogonal_angular_unit)
-            read (biorthogonal_angular_unit) ncfd,nwd,kamaxd,nprocsd,myidd
-            if (.not.(ncfd==csf_count .and. nwd==orbital_count .and. kamaxd==kamax     &
-                .and.nprocsd==mpi_process_count.and.myidd==mpi_rank)) then
+            read (biorthogonal_angular_unit) cached_csf_count,cached_orbital_count,cached_kappa_group_count, &
+                & cached_mpi_process_count,cached_mpi_rank
+            if (.not.(cached_csf_count==csf_count .and. cached_orbital_count==orbital_count .and. cached_kappa_group_count== &
+                & kappa_group_count     &
+                .and.cached_mpi_process_count==mpi_process_count.and.cached_mpi_rank==mpi_rank)) then
                 write (output_unit, *) " Angular file not appropriate"
-                avail = .false.
+                matching_angular_cache_available = .false.
                 return
             else
                 write (output_unit, *) " Angular data read from file"
-                avail = .true.
+                matching_angular_cache_available = .true.
             end if
         end if
         return

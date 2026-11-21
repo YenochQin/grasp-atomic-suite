@@ -23,7 +23,7 @@
 !***********************************************************************
 !***********************************************************************
 !                                                                      *
-program rmcdhf_mpi_main
+program rmcdhf_mem_mpi_main
     ! Module dependencies
     use calculation_file_units, only: calculation_log_unit
     !                                                                      *
@@ -143,7 +143,7 @@ program rmcdhf_mpi_main
     call connect_mcp_files (closed_core_subshell_count, maximum_input_symmetry_blocks, block_labels, files%mcp)
     if(mpi_rank == 0) csf_descriptor_path = trim(serial_io_directory)//"/"//files%descriptors
     call load_csf_basis_data_mpi (csf_descriptor_path, core_subshell_count, block_labels)
-    if (closed_core_subshell_count /= core_subshell_count) stop "rmcdhf_mpi_main: closed-core subshell count mismatch"
+    if (closed_core_subshell_count /= core_subshell_count) stop "rmcdhf_mem_mpi_main: closed-core subshell count mismatch"
 
     !=======================================================================
     !  Gather all remaining information and perform some setup. This
@@ -186,4 +186,4 @@ program rmcdhf_mpi_main
     call finalize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length, &
         & start_clock_count, "RMCDHF_MPI")
 
-end program rmcdhf_mpi_main
+end program rmcdhf_mem_mpi_main

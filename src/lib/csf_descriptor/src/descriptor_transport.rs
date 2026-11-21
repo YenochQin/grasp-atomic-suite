@@ -119,21 +119,21 @@ impl DescriptorLayout {
     }
 
     /// Per-subshell feature columns: `channels_per_subshell * subshell_count`.
-    pub fn feature_len(self) -> usize {
+    pub fn subshell_feature_channel_count(self) -> usize {
         self.channels_per_subshell() * self.subshell_count
     }
 
     /// Full row width including global columns (`4M+2`).
-    pub fn row_len(self) -> usize {
-        self.feature_len() + 2
+    pub fn descriptor_row_channel_count(self) -> usize {
+        self.subshell_feature_channel_count() + 2
     }
 
     /// Base offset of the feature block for peel subshell `index` (0-based).
-    pub fn slot(self, index: usize) -> usize {
+    pub fn subshell_channel_start(self, index: usize) -> usize {
         index * self.channels_per_subshell()
     }
 
-    pub fn n_offset(self) -> usize {
+    pub fn occupation_offset(self) -> usize {
         0
     }
 
@@ -154,12 +154,12 @@ impl DescriptorLayout {
 
     /// Index of the total angular momentum global column.
     pub fn total_two_j_index(self) -> Option<usize> {
-        Some(self.feature_len())
+        Some(self.subshell_feature_channel_count())
     }
 
     /// Index of the parity global column.
     pub fn parity_index(self) -> Option<usize> {
-        Some(self.feature_len() + 1)
+        Some(self.subshell_feature_channel_count() + 1)
     }
 
     /// Names of the per-subshell feature columns, in row order.

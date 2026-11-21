@@ -60,7 +60,7 @@ contains
         implicit none (type, external)
 
         ! Local constants
-        real(real64), parameter :: cutoff = 1.0e-10_real64
+        real(real64), parameter :: contribution_magnitude_cutoff = 1.0e-10_real64
 
         ! Local declarations
         integer :: lowest_two_f, highest_two_f, two_f, first_orbital_index, second_orbital_index, tensor_rank, operator_parity, &
@@ -206,7 +206,7 @@ contains
                         if (bra_orbital_index == ket_orbital_index) then
                             if (tensor_rank/=1 .or. csf_j_code_difference/=0) then
                                 do bra_orbital_index = 1, orbital_count
-                                    if (abs(shell_coefficients(bra_orbital_index)) <= cutoff) cycle
+                                    if (abs(shell_coefficients(bra_orbital_index)) <= contribution_magnitude_cutoff) cycle
                                     hyperfine_csf_matrix_element = hyperfine_csf_matrix_element + &
                 & hyperfine_angular_factors(tensor_rank,bra_orbital_index,bra_orbital_index)* &
                 & hyperfine_radial_integrals(tensor_rank,bra_orbital_index,bra_orbital_index)*&
@@ -215,7 +215,7 @@ contains
                                 end do
                             else
                                 do bra_orbital_index = 1, orbital_count
-                                    if (abs(shell_coefficients(bra_orbital_index)) <= cutoff) cycle
+                                    if (abs(shell_coefficients(bra_orbital_index)) <= contribution_magnitude_cutoff) cycle
                                     hyperfine_csf_matrix_element = hyperfine_csf_matrix_element + &
                 & hyperfine_angular_factors(tensor_rank,bra_orbital_index,bra_orbital_index)* &
                 & hyperfine_radial_integrals(tensor_rank,bra_orbital_index,bra_orbital_index)*&
@@ -231,7 +231,7 @@ contains
                                 end do
                             end if
                         else
-                            if (abs(shell_coefficients(1)) > cutoff) then
+                            if (abs(shell_coefficients(1)) > contribution_magnitude_cutoff) then
                                 hyperfine_csf_matrix_element = hyperfine_csf_matrix_element + &
                 & hyperfine_angular_factors(tensor_rank,bra_orbital_index,ket_orbital_index)* &
                 & hyperfine_radial_integrals(tensor_rank,bra_orbital_index,ket_orbital_index)*&
@@ -253,8 +253,9 @@ contains
                     !   Multiply with the configuration expansion coefficients and add the
                     !   contributions from the matrix elements to obtain total contributions
                     !
-                    if (abs(hyperfine_csf_matrix_element) <= cutoff .and. abs(lande_g_csf_matrix_element) <= cutoff .and. &
-                        abs(lande_g_correction_csf_matrix_element) <= cutoff) cycle
+                    if (abs(hyperfine_csf_matrix_element) <= contribution_magnitude_cutoff .and. &
+                        & abs(lande_g_csf_matrix_element) <= contribution_magnitude_cutoff .and. &
+                        abs(lande_g_correction_csf_matrix_element) <= contribution_magnitude_cutoff) cycle
                     do first_level_index = 1, active_level_count
                         first_mixing_offset = (first_level_index - 1)*csf_count
                         first_level_column_amplitude = csf_mixing_coefficients(column_csf_index + first_mixing_offset)
@@ -516,7 +517,8 @@ contains
                         quadrupole_hyperfine_element = recoupling_prefactor*quadrupole_racah_coefficient* &
                 & reduced_hyperfine_elements(3,active_level_count*(first_recoupled_level-1)+second_recoupled_level)* &
                 & reduced_nuclear_quadrupole
-                        if (abs(dipole_hyperfine_element + quadrupole_hyperfine_element) > cutoff*10.0e-5_real64) then
+                        if (abs(dipole_hyperfine_element + quadrupole_hyperfine_element) > &
+                            & contribution_magnitude_cutoff*10.0e-5_real64) then
                             if (wrote_matrix_heading == 0) write (summary_output_unit, '(/,/," Matrix elements:"/,/,&
                                 &" Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"/)')
                             wrote_matrix_heading = 1
@@ -536,7 +538,8 @@ contains
                         quadrupole_hyperfine_element = recoupling_prefactor*quadrupole_racah_coefficient* &
                 & reduced_hyperfine_elements(4,active_level_count*(first_recoupled_level-1)+second_recoupled_level)* &
                 & reduced_nuclear_quadrupole
-                        if (abs(dipole_hyperfine_element + quadrupole_hyperfine_element) > cutoff*10.0e-5_real64) then
+                        if (abs(dipole_hyperfine_element + quadrupole_hyperfine_element) > &
+                            & contribution_magnitude_cutoff*10.0e-5_real64) then
                             if (wrote_matrix_heading == 0) write (summary_output_unit, '(/,/," Matrix elements:"/,/,&
                                 &" Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"/)')
                             wrote_matrix_heading = 1
@@ -555,7 +558,8 @@ contains
                         quadrupole_hyperfine_element = recoupling_prefactor*quadrupole_racah_coefficient* &
                 & reduced_hyperfine_elements(5,active_level_count*(first_recoupled_level-1)+second_recoupled_level)* &
                 & reduced_nuclear_quadrupole
-                        if (abs(dipole_hyperfine_element + quadrupole_hyperfine_element) > cutoff*10.0e-5_real64) then
+                        if (abs(dipole_hyperfine_element + quadrupole_hyperfine_element) > &
+                            & contribution_magnitude_cutoff*10.0e-5_real64) then
                             if (wrote_matrix_heading == 0) write (summary_output_unit, '(/,/," Matrix elements:"/,/,&
                                 &" Level1  J Parity  Level2  J Parity    F ",4x,"Matrix element (a.u.)"/)')
                             wrote_matrix_heading = 1

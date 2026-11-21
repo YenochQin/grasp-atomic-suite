@@ -62,7 +62,7 @@ add_executable(rmcdhf_mem
     improve_orbital.f90
     run_scf_iterations.f90
     write_input_summary.f90
-    rmcdhf_main.f90
+    rmcdhf_mem_main.f90
 )
 target_link_libraries_Fortran(rmcdhf_mem PUBLIC davidson_eigensolver core grasp_shared)
 install(TARGETS rmcdhf_mem DESTINATION bin/)

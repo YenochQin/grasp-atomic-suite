@@ -52,7 +52,7 @@ contains
         use active_symmetry_block, only: active_block_index
         use sparse_symmetric_matvec, only: multiply_sparse_symmetric_matrix
         use sparse_eigensolver_initial_basis, only: estimate_sparse_initial_basis
-        use davidson_eigensolver, only: dvd_operator, solve_davidson_eigenpairs
+        use davidson_eigensolver, only: davidson_matrix_vector_operator, solve_davidson_eigenpairs
 
         ! Procedure interfaces
         use basis_csf_two_j_plus_one_interface, only: basis_csf_two_j_plus_one

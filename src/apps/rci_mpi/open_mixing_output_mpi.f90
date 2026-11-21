@@ -8,7 +8,7 @@ contains
 
     !***********************************************************************
     !                                                                      *
-    subroutine open_mixing_output_mpi(name, idblk)
+    subroutine open_mixing_output_mpi(name, block_labels)
         ! Module dependencies
         use calculation_state_files, only: ci_mixing_suffix
         use calculation_file_units, only: mixing_output_unit
@@ -35,7 +35,7 @@ contains
 
         ! Arguments
         character(len=*) , intent(in) :: name
-        character(len=8) :: idblk(*)
+        character(len=8) :: block_labels(*)
 
         ! Local constants
         character(len=11), parameter :: form = "UNFORMATTED"
@@ -51,7 +51,7 @@ contains
             write (mixing_output_unit) "G92MIX"
         end if
 
-        call read_ci_mixing_coefficients_mpi (idblk)
+        call read_ci_mixing_coefficients_mpi (block_labels)
 
         return
     end subroutine open_mixing_output_mpi

@@ -29,7 +29,6 @@ load_initial_transition_basis.f90
 load_final_transition_basis.f90
 load_initial_lsj_labels.f90
 load_final_lsj_labels.f90
-lodcslm.f90 lodcslm_I.f90
 sort_transition_angular_coefficients.f90
 read_transition_angular_coefficients.f90
 write_transition_angular_coefficients.f90
@@ -39,7 +38,6 @@ read_transition_mixing_coefficients.f90
 write_lsj_transition_probability.f90
 write_transition_probability.f90
 calculate_oscillator_strengths.f90
-setcslm.f90 setcslm_I.f90
 write_input_summary.f90
 check_transition_mixing_coefficients.f90
 rtransition_mpi_main.f90

@@ -1,7 +1,8 @@
 ! Exercise the production memory loader, including its label-count sentinels.
 program mcp_memory_io
     use, intrinsic :: iso_fortran_env, only: real64
-    use rmcdhf_mcp_memory, only: lab_32, ncontr_32, coeff_32, indx_32, iclmn_32
+    use rmcdhf_mcp_memory, only: lab_32, integral_contribution_counts_by_label_mcp_32, angular_contribution_coefficients_mcp_32, &
+        & contribution_sparse_matrix_indices_mcp_32, contribution_csf_column_indices_mcp_32
     use cache_mcp_files_interface, only: cache_mcp_files
     use memory_io_injection, only: mcp_input_units, inject, injected_case, injected_file, injected_rank, injected_ranks, &
        & rewrite_input
@@ -75,12 +76,14 @@ program mcp_memory_io
     if (corrupt) error stop "Corrupt MCP was accepted"
     if (scenario == "empty") then
         if (size(lab_32) /= 1 .or. any(lab_32 /= 0)) error stop "Empty block labels"
-        if (size(coeff_32) /= 0) error stop "Empty block coefficients"
+        if (size(angular_contribution_coefficients_mcp_32) /= 0) error stop "Empty block coefficients"
     else
         if (size(lab_32) /= 2 .or. any(lab_32 /= [42,0])) error stop "MCP labels"
-        if (any(ncontr_32 /= [1,0])) error stop "MCP contribution counts"
-        if (size(coeff_32) /= 1 .or. coeff_32(1) /= 0.25_real64) error stop "MCP coefficient"
-        if (indx_32(1) /= 1 .or. iclmn_32(1) /= 1) error stop "MCP indices"
+        if (any(integral_contribution_counts_by_label_mcp_32 /= [1,0])) error stop "MCP contribution counts"
+        if (size(angular_contribution_coefficients_mcp_32) /= 1 .or. angular_contribution_coefficients_mcp_32(1) /= &
+            & 0.25_real64) error stop "MCP coefficient"
+        if (contribution_sparse_matrix_indices_mcp_32(1) /= 1 .or. &
+            & contribution_csf_column_indices_mcp_32(1) /= 1) error stop "MCP indices"
     end if
     close(mcp_input_units(32), status="delete")
 #ifdef MCP_MPI

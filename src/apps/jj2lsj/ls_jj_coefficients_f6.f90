@@ -1,7 +1,7 @@
 !
 !***********************************************************************
 !                                                                      *
-module ls_jj_coefficients_table_2
+module ls_jj_coefficients_f6
     ! Module dependencies
     !                                                                      *
     !     Set-up the LS-jj transformation coefficients                     *
@@ -7369,4 +7369,4 @@ module ls_jj_coefficients_table_2
         ls_jj_f_6(1:7313) = [ls_jj_f_6_1, ls_jj_f_6_2, ls_jj_f_6_3, ls_jj_f_6_4, &
         ls_jj_f_6_5, ls_jj_f_6_6, ls_jj_f_6_7, ls_jj_f_6_8]
     !
-end module ls_jj_coefficients_table_2
+end module ls_jj_coefficients_f6

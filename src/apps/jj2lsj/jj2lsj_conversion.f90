@@ -106,10 +106,10 @@ module jj2lsj_conversion
     !   D e f i n i t i o n   o f   A S F
     !   i n   L S -   C o u p l i n g
     !-----------------------------------------------
-    type, public :: nl
+    type, public :: nonrelativistic_subshell_label
         ! Components
         integer :: n, l
-    end type nl
+    end type nonrelativistic_subshell_label
 
     ! Derived types
     !
@@ -134,7 +134,7 @@ module jj2lsj_conversion
         integer :: shell_count      ! Number of (nonrelativistic) shells.
         integer :: closed_shell_count        ! Number of (closed) core shells.
         integer :: number_of_electrons
-        type(nl), pointer             :: shell(:) => null()
+        type(nonrelativistic_subshell_label), pointer :: shell(:) => null()
         type(cs_function_ls), pointer :: csf(:) => null()
         type(parent_from_jj), pointer :: parent(:) => null()
     end type csf_basis_ls
@@ -375,10 +375,10 @@ contains
         real(real64) :: wa_transformation
         real(real64) :: ls_amplitudes(max_selected_levels)
         real(real64) :: cumulative_weights(max_selected_levels)
-        integer(int64) :: loc_i8, ncf_i8
+        integer(int64) :: level_mixing_offset, csf_count_int64
         !-----------------------------------------------
         cumulative_weights = zero
-        ncf_i8 = csf_count
+        csf_count_int64 = csf_count
         if(transformation_output_mode == 1) write(transformation_unit) " *   Block Number=",symmetry_block_index
         if(transformation_output_mode == 2) then
             read(transformation_unit) string, stored_block_index
@@ -418,9 +418,9 @@ contains
                         end if
                         do lev = 1,selected_level_count
                             level = levels(symmetry_block_index,lev)
-                            loc_i8 = (level-1)*ncf_i8
+                            level_mixing_offset = (level-1)*csf_count_int64
                             ls_amplitudes(lev) =                                         &
-                                ls_amplitudes(lev)+csf_mixing_coefficients(jj_number+loc_i8)*wa_transformation
+                                ls_amplitudes(lev)+csf_mixing_coefficients(jj_number+level_mixing_offset)*wa_transformation
                         end do
                     end if
                 end do
@@ -440,17 +440,17 @@ contains
     !
     !***********************************************************************
     !                                                                      *
-    recursive function ls_jj_recoupling_coefficient(l_shell,n,w,q,l,s,j,jm_shell,nm,qm,jm,jp_shell,&
-        qp,jp) result(coefficient_value)
+    recursive function ls_jj_recoupling_coefficient(l_shell, subshell_occupation, w, two_ls_quasispin, &
+        & two_ls_term_l, two_ls_term_s, two_ls_term_j, lower_partner_orbital_two_j, lower_j_partner_occupation, &
+        & lower_j_partner_two_quasispin, lower_j_partner_two_term_j, upper_partner_orbital_two_j, &
+        & upper_j_partner_two_quasispin, upper_j_partner_two_term_j) result(coefficient_value)
         ! Module dependencies
         !                                                                      *
         !     Returns the value of the LS-jj transformation matrix for a given *
         !     set of quantum numbers form an array LS_jj_*_*.                  *
         !                                                                      *
         !     Note that all (generalized) angular momentum quantum numbers     *
-        !     except for l must be given as twice the original numbers, i.e.   *
-        !     for the quantum numbers Q, L, S, J, jm_shell, Qm, Jm, jp_shell,  *
-        !     Qp, Jp.                                                          *
+        !     except for l_shell are supplied as twice the physical value.     *
         !                                                                      *
         !     Calls: coefLSjj2, coefLSjjs.                                     *
         !                                                                      *
@@ -462,52 +462,61 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer, intent(in) :: l_shell, n, w, q, l, s, j,            &
-            jm_shell, nm, qm, jm, jp_shell, qp, jp
+        integer, intent(in) :: l_shell, subshell_occupation, w, two_ls_quasispin, two_ls_term_l, two_ls_term_s, two_ls_term_j
+        integer, intent(in) :: lower_partner_orbital_two_j, lower_j_partner_occupation
+        integer, intent(in) :: lower_j_partner_two_quasispin, lower_j_partner_two_term_j
+        integer, intent(in) :: upper_partner_orbital_two_j, upper_j_partner_two_quasispin, upper_j_partner_two_term_j
         real(real64) :: coefficient_value
 
         ! Local declarations
         integer      :: nn, n1, n2, factor
         !-----------------------------------------------
         coefficient_value = zero; factor = one
-        if (jm_shell < jp_shell .or. jm_shell == jp_shell)  then
-            if (l_shell > 0 .and. n > 2*l_shell +1)  then
-                nn = 4*l_shell + 2 - n;   n1 = jm_shell + 1 - nm
-                n2 = jp_shell + 1 - n + nm
-                if (mod(2*l_shell+1-q -((jm_shell+1)/2-qm)         &
-                    -((jp_shell+1)/2-qp),4) /= 0) factor = - factor
+        if (lower_partner_orbital_two_j < upper_partner_orbital_two_j .or. lower_partner_orbital_two_j == &
+            & upper_partner_orbital_two_j)  then
+            if (l_shell > 0 .and. subshell_occupation > 2*l_shell +1)  then
+                nn = 4*l_shell + 2 - subshell_occupation;   n1 = lower_partner_orbital_two_j + 1 - lower_j_partner_occupation
+                n2 = upper_partner_orbital_two_j + 1 - subshell_occupation + lower_j_partner_occupation
+                if (mod(2*l_shell+1-two_ls_quasispin -((lower_partner_orbital_two_j+1)/2-lower_j_partner_two_quasispin)         &
+                    -((upper_partner_orbital_two_j+1)/2-upper_j_partner_two_quasispin),4) /= 0) factor = - factor
             else
-                nn = n;   n1 = nm;   n2 = n - nm
+                nn = subshell_occupation;   n1 = lower_j_partner_occupation;   n2 = subshell_occupation - lower_j_partner_occupation
             end if
             if (nn == 1  .or.  nn == 0)  then
                 if (nn == 0 .and. n1 == 0 .and. n2 == 0) then
                     coefficient_value = one
-                else if (n1 == 1 .and. n2 == 0 .and. j == jm) then
+                else if (n1 == 1 .and. n2 == 0 .and. two_ls_term_j == lower_j_partner_two_term_j) then
                     coefficient_value = one
-                else if (n1 == 0 .and. n2 == 1 .and. j == jp) then
+                else if (n1 == 0 .and. n2 == 1 .and. two_ls_term_j == upper_j_partner_two_term_j) then
                     coefficient_value = one
                 else
                     coefficient_value = zero
                 end if
             else if (nn == 2)  then
-                if (j > jm + jp  .or.  j < abs(jm - jp)) then
+                if (two_ls_term_j > lower_j_partner_two_term_j + upper_j_partner_two_term_j  .or.  two_ls_term_j < &
+                    & abs(lower_j_partner_two_term_j - upper_j_partner_two_term_j)) then
                     coefficient_value = zero
                 else
                     if (n1 == 2 .and. n2 == 0) then
-                        coefficient_value = single_partner_ls_jj_coefficient(l_shell,l,s,j,jm_shell,jm_shell)
+                        coefficient_value = single_partner_ls_jj_coefficient(l_shell,two_ls_term_l,two_ls_term_s,two_ls_term_j, &
+                            & lower_partner_orbital_two_j,lower_partner_orbital_two_j)
                     else if (n1 == 1 .and. n2 == 1) then
-                        coefficient_value = single_partner_ls_jj_coefficient(l_shell,l,s,j,jm_shell,jp_shell)
+                        coefficient_value = single_partner_ls_jj_coefficient(l_shell,two_ls_term_l,two_ls_term_s,two_ls_term_j, &
+                            & lower_partner_orbital_two_j,upper_partner_orbital_two_j)
                     else if (n1 == 0 .and. n2 == 2) then
-                        coefficient_value = single_partner_ls_jj_coefficient(l_shell,l,s,j,jp_shell,jp_shell)
+                        coefficient_value = single_partner_ls_jj_coefficient(l_shell,two_ls_term_l,two_ls_term_s,two_ls_term_j, &
+                            & upper_partner_orbital_two_j,upper_partner_orbital_two_j)
                     end if
                 end if
             else if (l_shell==1 .or. l_shell==2 .or. l_shell==3)  then
-                coefficient_value = lookup_ls_jj_subshell_coefficient(l_shell,nn,w,q,l,s,j,n1,qm,jm,qp,jp)
+                coefficient_value = lookup_ls_jj_subshell_coefficient(l_shell,nn,w,two_ls_quasispin,two_ls_term_l,two_ls_term_s, &
+                    & two_ls_term_j,n1,lower_j_partner_two_quasispin,lower_j_partner_two_term_j,upper_j_partner_two_quasispin, &
+                        & upper_j_partner_two_term_j)
             end if
-        else if (l == 0)  then
-            if (s == j .and. jm_shell == 1 .and. nn == n1)  then
+        else if (two_ls_term_l == 0)  then
+            if (two_ls_term_s == two_ls_term_j .and. lower_partner_orbital_two_j == 1 .and. nn == n1)  then
                 coefficient_value = one
-            else if (s == j .and. jp_shell == 1 .and. nn == n2)  then
+            else if (two_ls_term_s == two_ls_term_j .and. upper_partner_orbital_two_j == 1 .and. nn == n2)  then
                 coefficient_value = one
             else
                 coefficient_value = zero
@@ -577,7 +586,9 @@ contains
     !
     !***********************************************************************
     !                                                                      *
-    recursive function lookup_ls_jj_subshell_coefficient(lshell,n,w,q,l,s,j,nm,qm,jm,qp,jp)  result(coefficient_value)
+    recursive function lookup_ls_jj_subshell_coefficient(lshell,subshell_occupation,w,two_ls_quasispin,two_ls_term_l, &
+        & two_ls_term_s,two_ls_term_j,lower_j_partner_occupation,lower_j_partner_two_quasispin,lower_j_partner_two_term_j, &
+            & upper_j_partner_two_quasispin,upper_j_partner_two_term_j)  result(coefficient_value)
         ! Module dependencies
         !                                                                      *
         !     Returns the value of the LS-jj transformation matrix for a given *
@@ -601,11 +612,11 @@ contains
             & ls_jj_number_d5, ls_jj_number_d6, ls_jj_number_d7, ls_jj_number_d8, ls_jj_number_d9, ls_jj_number_f3, &
             & ls_jj_number_f4, ls_jj_number_f5, ls_jj_number_f6, ls_jj_number_f7, ls_jj_number_p3, ls_jj_number_p4, &
             & ls_jj_number_p5, ls_jj_number_p6, ls_jj_p_3, ls_jj_p_4, ls_jj_p_5, ls_jj_p_6
-        use ls_jj_coefficients_table_2, only: ls_jj_f_6, ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, ls_jj_number_d5, &
+        use ls_jj_coefficients_f6, only: ls_jj_f_6, ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, ls_jj_number_d5, &
             & ls_jj_number_d6, ls_jj_number_d7, ls_jj_number_d8, ls_jj_number_d9, ls_jj_number_f3, ls_jj_number_f4, &
             & ls_jj_number_f5, ls_jj_number_f6, ls_jj_number_f7, ls_jj_number_p3, ls_jj_number_p4, ls_jj_number_p5, &
             & ls_jj_number_p6
-        use ls_jj_coefficients_table_3, only: ls_jj_f_7, ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, ls_jj_number_d5, &
+        use ls_jj_coefficients_f7, only: ls_jj_f_7, ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, ls_jj_number_d5, &
             & ls_jj_number_d6, ls_jj_number_d7, ls_jj_number_d8, ls_jj_number_d9, ls_jj_number_f3, ls_jj_number_f4, &
             & ls_jj_number_f5, ls_jj_number_f6, ls_jj_number_f7, ls_jj_number_p3, ls_jj_number_p4, ls_jj_number_p5, &
             & ls_jj_number_p6
@@ -613,7 +624,9 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer, intent(in) :: lshell, n, w, q, l, s, j, nm, qm, jm, qp, jp
+        integer, intent(in) :: lshell, subshell_occupation, w, two_ls_quasispin, two_ls_term_l, two_ls_term_s, two_ls_term_j, &
+            & lower_j_partner_occupation, lower_j_partner_two_quasispin, lower_j_partner_two_term_j, &
+                & upper_j_partner_two_quasispin, upper_j_partner_two_term_j
         real(real64)        :: coefficient_value
 
         ! Local declarations
@@ -622,15 +635,15 @@ contains
         coefficient_value = zero
         if (lshell == 0) then
         else if (lshell == 1) then
-            select case(n)
+            select case(subshell_occupation)
             case(3)
                 !     Use data from the array LS_jj_p_3
                 do  i = 1,ls_jj_number_p3
-                    if(w  ==ls_jj_p_3(i)%w  .and. q  ==ls_jj_p_3(i)%q  .and. &
-                        l  ==ls_jj_p_3(i)%l  .and. s  ==ls_jj_p_3(i)%s  .and. &
-                        j  ==ls_jj_p_3(i)%j  .and. nm ==ls_jj_p_3(i)%nm .and. &
-                        qm ==ls_jj_p_3(i)%qm .and. jm ==ls_jj_p_3(i)%jm .and. &
-                        qp ==ls_jj_p_3(i)%qp .and. jp ==ls_jj_p_3(i)%jp) then
+                    if(w  ==ls_jj_p_3(i)%w  .and. two_ls_quasispin  ==ls_jj_p_3(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_p_3(i)%l  .and. two_ls_term_s  ==ls_jj_p_3(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_p_3(i)%j  .and. lower_j_partner_occupation ==ls_jj_p_3(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_p_3(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_p_3(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_p_3(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_p_3(i)%jp) then
                         coefficient_value = ls_jj_p_3(i)%factor * &
                             sqrt( one*ls_jj_p_3(i)%nom/ls_jj_p_3(i)%denom )
                         return
@@ -639,11 +652,11 @@ contains
             case(4)
                 !     Use data from the array LS_jj_p_4
                 do  i = 1,ls_jj_number_p4
-                    if(w  ==ls_jj_p_4(i)%w  .and. q  ==ls_jj_p_4(i)%q  .and. &
-                        l  ==ls_jj_p_4(i)%l  .and. s  ==ls_jj_p_4(i)%s  .and. &
-                        j  ==ls_jj_p_4(i)%j  .and. nm ==ls_jj_p_4(i)%nm .and. &
-                        qm ==ls_jj_p_4(i)%qm .and. jm ==ls_jj_p_4(i)%jm .and. &
-                        qp ==ls_jj_p_4(i)%qp .and. jp ==ls_jj_p_4(i)%jp) then
+                    if(w  ==ls_jj_p_4(i)%w  .and. two_ls_quasispin  ==ls_jj_p_4(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_p_4(i)%l  .and. two_ls_term_s  ==ls_jj_p_4(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_p_4(i)%j  .and. lower_j_partner_occupation ==ls_jj_p_4(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_p_4(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_p_4(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_p_4(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_p_4(i)%jp) then
                         coefficient_value = ls_jj_p_4(i)%factor * &
                             sqrt( one*ls_jj_p_4(i)%nom/ls_jj_p_4(i)%denom )
                         return
@@ -652,11 +665,11 @@ contains
             case(5)
                 !     Use data from the array LS_jj_p_5
                 do  i = 1,ls_jj_number_p5
-                    if(w  ==ls_jj_p_5(i)%w  .and. q  ==ls_jj_p_5(i)%q  .and. &
-                        l  ==ls_jj_p_5(i)%l  .and. s  ==ls_jj_p_5(i)%s  .and. &
-                        j  ==ls_jj_p_5(i)%j  .and. nm ==ls_jj_p_5(i)%nm .and. &
-                        qm ==ls_jj_p_5(i)%qm .and. jm ==ls_jj_p_5(i)%jm .and. &
-                        qp ==ls_jj_p_5(i)%qp .and. jp ==ls_jj_p_5(i)%jp) then
+                    if(w  ==ls_jj_p_5(i)%w  .and. two_ls_quasispin  ==ls_jj_p_5(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_p_5(i)%l  .and. two_ls_term_s  ==ls_jj_p_5(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_p_5(i)%j  .and. lower_j_partner_occupation ==ls_jj_p_5(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_p_5(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_p_5(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_p_5(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_p_5(i)%jp) then
                         coefficient_value = ls_jj_p_5(i)%factor * &
                             sqrt( one*ls_jj_p_5(i)%nom/ls_jj_p_5(i)%denom )
                         return
@@ -665,11 +678,11 @@ contains
             case(6)
                 !     Use data from the array LS_jj_p_6
                 do  i = 1,ls_jj_number_p6
-                    if(w  ==ls_jj_p_6(i)%w  .and. q  ==ls_jj_p_6(i)%q  .and. &
-                        l  ==ls_jj_p_6(i)%l  .and. s  ==ls_jj_p_6(i)%s  .and. &
-                        j  ==ls_jj_p_6(i)%j  .and. nm ==ls_jj_p_6(i)%nm .and. &
-                        qm ==ls_jj_p_6(i)%qm .and. jm ==ls_jj_p_6(i)%jm .and. &
-                        qp ==ls_jj_p_6(i)%qp .and. jp ==ls_jj_p_6(i)%jp) then
+                    if(w  ==ls_jj_p_6(i)%w  .and. two_ls_quasispin  ==ls_jj_p_6(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_p_6(i)%l  .and. two_ls_term_s  ==ls_jj_p_6(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_p_6(i)%j  .and. lower_j_partner_occupation ==ls_jj_p_6(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_p_6(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_p_6(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_p_6(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_p_6(i)%jp) then
                         coefficient_value = ls_jj_p_6(i)%factor * &
                             sqrt( one*ls_jj_p_6(i)%nom/ls_jj_p_6(i)%denom )
                         return
@@ -679,15 +692,15 @@ contains
                 stop "lookup_ls_jj_subshell_coefficient: program stop A."
             end select
         else if (lshell == 2) then
-            select case(n)
+            select case(subshell_occupation)
             case(3)
                 !     Use data from the array LS_jj_d_3
                 do  i = 1,ls_jj_number_d3
-                    if(w  ==ls_jj_d_3(i)%w  .and. q  ==ls_jj_d_3(i)%q  .and. &
-                        l  ==ls_jj_d_3(i)%l  .and. s  ==ls_jj_d_3(i)%s  .and. &
-                        j  ==ls_jj_d_3(i)%j  .and. nm ==ls_jj_d_3(i)%nm .and. &
-                        qm ==ls_jj_d_3(i)%qm .and. jm ==ls_jj_d_3(i)%jm .and. &
-                        qp ==ls_jj_d_3(i)%qp .and. jp ==ls_jj_d_3(i)%jp) then
+                    if(w  ==ls_jj_d_3(i)%w  .and. two_ls_quasispin  ==ls_jj_d_3(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_d_3(i)%l  .and. two_ls_term_s  ==ls_jj_d_3(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_d_3(i)%j  .and. lower_j_partner_occupation ==ls_jj_d_3(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_d_3(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_d_3(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_d_3(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_d_3(i)%jp) then
                         coefficient_value = ls_jj_d_3(i)%factor * &
                             sqrt( one*ls_jj_d_3(i)%nom/ls_jj_d_3(i)%denom )
                         return
@@ -696,11 +709,11 @@ contains
             case(4)
                 !     Use data from the array LS_jj_d_4
                 do  i = 1,ls_jj_number_d4
-                    if(w  ==ls_jj_d_4(i)%w  .and. q  ==ls_jj_d_4(i)%q  .and. &
-                        l  ==ls_jj_d_4(i)%l  .and. s  ==ls_jj_d_4(i)%s  .and. &
-                        j  ==ls_jj_d_4(i)%j  .and. nm ==ls_jj_d_4(i)%nm .and. &
-                        qm ==ls_jj_d_4(i)%qm .and. jm ==ls_jj_d_4(i)%jm .and. &
-                        qp ==ls_jj_d_4(i)%qp .and. jp ==ls_jj_d_4(i)%jp) then
+                    if(w  ==ls_jj_d_4(i)%w  .and. two_ls_quasispin  ==ls_jj_d_4(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_d_4(i)%l  .and. two_ls_term_s  ==ls_jj_d_4(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_d_4(i)%j  .and. lower_j_partner_occupation ==ls_jj_d_4(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_d_4(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_d_4(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_d_4(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_d_4(i)%jp) then
                         coefficient_value = ls_jj_d_4(i)%factor * &
                             sqrt( one*ls_jj_d_4(i)%nom/ls_jj_d_4(i)%denom )
                         return
@@ -709,11 +722,11 @@ contains
             case(5)
                 !     Use data from the array LS_jj_d_5
                 do  i = 1,ls_jj_number_d5
-                    if(w  ==ls_jj_d_5(i)%w  .and. q  ==ls_jj_d_5(i)%q  .and. &
-                        l  ==ls_jj_d_5(i)%l  .and. s  ==ls_jj_d_5(i)%s  .and. &
-                        j  ==ls_jj_d_5(i)%j  .and. nm ==ls_jj_d_5(i)%nm .and. &
-                        qm ==ls_jj_d_5(i)%qm .and. jm ==ls_jj_d_5(i)%jm .and. &
-                        qp ==ls_jj_d_5(i)%qp .and. jp ==ls_jj_d_5(i)%jp) then
+                    if(w  ==ls_jj_d_5(i)%w  .and. two_ls_quasispin  ==ls_jj_d_5(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_d_5(i)%l  .and. two_ls_term_s  ==ls_jj_d_5(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_d_5(i)%j  .and. lower_j_partner_occupation ==ls_jj_d_5(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_d_5(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_d_5(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_d_5(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_d_5(i)%jp) then
                         coefficient_value = ls_jj_d_5(i)%factor * &
                             sqrt( one*ls_jj_d_5(i)%nom/ls_jj_d_5(i)%denom )
                         return
@@ -722,11 +735,11 @@ contains
             case(6)
                 !     Use data from the array LS_jj_d_6
                 do  i = 1,ls_jj_number_d6
-                    if(w  ==ls_jj_d_6(i)%w  .and. q  ==ls_jj_d_6(i)%q  .and. &
-                        l  ==ls_jj_d_6(i)%l  .and. s  ==ls_jj_d_6(i)%s  .and. &
-                        j  ==ls_jj_d_6(i)%j  .and. nm ==ls_jj_d_6(i)%nm .and. &
-                        qm ==ls_jj_d_6(i)%qm .and. jm ==ls_jj_d_6(i)%jm .and. &
-                        qp ==ls_jj_d_6(i)%qp .and. jp ==ls_jj_d_6(i)%jp) then
+                    if(w  ==ls_jj_d_6(i)%w  .and. two_ls_quasispin  ==ls_jj_d_6(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_d_6(i)%l  .and. two_ls_term_s  ==ls_jj_d_6(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_d_6(i)%j  .and. lower_j_partner_occupation ==ls_jj_d_6(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_d_6(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_d_6(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_d_6(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_d_6(i)%jp) then
                         coefficient_value = ls_jj_d_6(i)%factor * &
                             sqrt( one*ls_jj_d_6(i)%nom/ls_jj_d_6(i)%denom )
                         return
@@ -735,11 +748,11 @@ contains
             case(7)
                 !     Use data from the array LS_jj_d_7
                 do  i = 1,ls_jj_number_d7
-                    if(w  ==ls_jj_d_7(i)%w  .and. q  ==ls_jj_d_7(i)%q  .and. &
-                        l  ==ls_jj_d_7(i)%l  .and. s  ==ls_jj_d_7(i)%s  .and. &
-                        j  ==ls_jj_d_7(i)%j  .and. nm ==ls_jj_d_7(i)%nm .and. &
-                        qm ==ls_jj_d_7(i)%qm .and. jm ==ls_jj_d_7(i)%jm .and. &
-                        qp ==ls_jj_d_7(i)%qp .and. jp ==ls_jj_d_7(i)%jp) then
+                    if(w  ==ls_jj_d_7(i)%w  .and. two_ls_quasispin  ==ls_jj_d_7(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_d_7(i)%l  .and. two_ls_term_s  ==ls_jj_d_7(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_d_7(i)%j  .and. lower_j_partner_occupation ==ls_jj_d_7(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_d_7(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_d_7(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_d_7(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_d_7(i)%jp) then
                         coefficient_value = ls_jj_d_7(i)%factor * &
                             sqrt( one*ls_jj_d_7(i)%nom/ls_jj_d_7(i)%denom )
                         return
@@ -748,11 +761,11 @@ contains
             case(8)
                 !     Use data from the array LS_jj_d_8
                 do  i = 1,ls_jj_number_d8
-                    if(w  ==ls_jj_d_8(i)%w  .and. q  ==ls_jj_d_8(i)%q  .and. &
-                        l  ==ls_jj_d_8(i)%l  .and. s  ==ls_jj_d_8(i)%s  .and. &
-                        j  ==ls_jj_d_8(i)%j  .and. nm ==ls_jj_d_8(i)%nm .and. &
-                        qm ==ls_jj_d_8(i)%qm .and. jm ==ls_jj_d_8(i)%jm .and. &
-                        qp ==ls_jj_d_8(i)%qp .and. jp ==ls_jj_d_8(i)%jp) then
+                    if(w  ==ls_jj_d_8(i)%w  .and. two_ls_quasispin  ==ls_jj_d_8(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_d_8(i)%l  .and. two_ls_term_s  ==ls_jj_d_8(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_d_8(i)%j  .and. lower_j_partner_occupation ==ls_jj_d_8(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_d_8(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_d_8(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_d_8(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_d_8(i)%jp) then
                         coefficient_value = ls_jj_d_8(i)%factor * &
                             sqrt( one*ls_jj_d_8(i)%nom/ls_jj_d_8(i)%denom )
                         return
@@ -761,11 +774,11 @@ contains
             case(9)
                 !     Use data from the array LS_jj_d_9
                 do  i = 1,ls_jj_number_d9
-                    if(w  ==ls_jj_d_9(i)%w  .and. q  ==ls_jj_d_9(i)%q  .and. &
-                        l  ==ls_jj_d_9(i)%l  .and. s  ==ls_jj_d_9(i)%s  .and. &
-                        j  ==ls_jj_d_9(i)%j  .and. nm ==ls_jj_d_9(i)%nm .and. &
-                        qm ==ls_jj_d_9(i)%qm .and. jm ==ls_jj_d_9(i)%jm .and. &
-                        qp ==ls_jj_d_9(i)%qp .and. jp ==ls_jj_d_9(i)%jp) then
+                    if(w  ==ls_jj_d_9(i)%w  .and. two_ls_quasispin  ==ls_jj_d_9(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_d_9(i)%l  .and. two_ls_term_s  ==ls_jj_d_9(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_d_9(i)%j  .and. lower_j_partner_occupation ==ls_jj_d_9(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_d_9(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_d_9(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_d_9(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_d_9(i)%jp) then
                         coefficient_value = ls_jj_d_9(i)%factor * &
                             sqrt( one*ls_jj_d_9(i)%nom/ls_jj_d_9(i)%denom )
                         return
@@ -774,11 +787,11 @@ contains
             case(10)
                 !     Use data from the array LS_jj_d_10
                 do  i = 1,ls_jj_number_d10
-                    if(w ==ls_jj_d_10(i)%w  .and. q ==ls_jj_d_10(i)%q  .and. &
-                        l ==ls_jj_d_10(i)%l  .and. s ==ls_jj_d_10(i)%s  .and. &
-                        j ==ls_jj_d_10(i)%j  .and. nm==ls_jj_d_10(i)%nm .and. &
-                        qm==ls_jj_d_10(i)%qm .and. jm==ls_jj_d_10(i)%jm .and. &
-                        qp==ls_jj_d_10(i)%qp .and. jp==ls_jj_d_10(i)%jp) then
+                    if(w ==ls_jj_d_10(i)%w  .and. two_ls_quasispin ==ls_jj_d_10(i)%q  .and. &
+                        two_ls_term_l ==ls_jj_d_10(i)%l  .and. two_ls_term_s ==ls_jj_d_10(i)%s  .and. &
+                        two_ls_term_j ==ls_jj_d_10(i)%j  .and. lower_j_partner_occupation==ls_jj_d_10(i)%nm .and. &
+                        lower_j_partner_two_quasispin==ls_jj_d_10(i)%qm .and. lower_j_partner_two_term_j==ls_jj_d_10(i)%jm .and. &
+                        upper_j_partner_two_quasispin==ls_jj_d_10(i)%qp .and. upper_j_partner_two_term_j==ls_jj_d_10(i)%jp) then
                         coefficient_value= ls_jj_d_10(i)%factor * &
                             sqrt( one*ls_jj_d_10(i)%nom/ls_jj_d_10(i)%denom )
                         return
@@ -788,15 +801,15 @@ contains
                 stop "lookup_ls_jj_subshell_coefficient: program stop B."
             end select
         else if (lshell == 3) then
-            select case(n)
+            select case(subshell_occupation)
             case(3)
                 !     Use data from the array LS_jj_f_3
                 do  i = 1,ls_jj_number_f3
-                    if(w  ==ls_jj_f_3(i)%w  .and. q  ==ls_jj_f_3(i)%q  .and. &
-                        l  ==ls_jj_f_3(i)%l  .and. s  ==ls_jj_f_3(i)%s  .and. &
-                        j  ==ls_jj_f_3(i)%j  .and. nm ==ls_jj_f_3(i)%nm .and. &
-                        qm ==ls_jj_f_3(i)%qm .and. jm ==ls_jj_f_3(i)%jm .and. &
-                        qp ==ls_jj_f_3(i)%qp .and. jp ==ls_jj_f_3(i)%jp) then
+                    if(w  ==ls_jj_f_3(i)%w  .and. two_ls_quasispin  ==ls_jj_f_3(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_f_3(i)%l  .and. two_ls_term_s  ==ls_jj_f_3(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_f_3(i)%j  .and. lower_j_partner_occupation ==ls_jj_f_3(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_f_3(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_f_3(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_f_3(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_f_3(i)%jp) then
                         coefficient_value = ls_jj_f_3(i)%factor * &
                             sqrt( one*ls_jj_f_3(i)%nom/ls_jj_f_3(i)%denom )
                         return
@@ -805,11 +818,11 @@ contains
             case(4)
                 !     Use data from the array LS_jj_f_4
                 do  i = 1,ls_jj_number_f4
-                    if(w  ==ls_jj_f_4(i)%w  .and. q  ==ls_jj_f_4(i)%q  .and. &
-                        l  ==ls_jj_f_4(i)%l  .and. s  ==ls_jj_f_4(i)%s  .and. &
-                        j  ==ls_jj_f_4(i)%j  .and. nm ==ls_jj_f_4(i)%nm .and. &
-                        qm ==ls_jj_f_4(i)%qm .and. jm ==ls_jj_f_4(i)%jm .and. &
-                        qp ==ls_jj_f_4(i)%qp .and. jp ==ls_jj_f_4(i)%jp) then
+                    if(w  ==ls_jj_f_4(i)%w  .and. two_ls_quasispin  ==ls_jj_f_4(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_f_4(i)%l  .and. two_ls_term_s  ==ls_jj_f_4(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_f_4(i)%j  .and. lower_j_partner_occupation ==ls_jj_f_4(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_f_4(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_f_4(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_f_4(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_f_4(i)%jp) then
                         coefficient_value = ls_jj_f_4(i)%factor * &
                             sqrt( one*ls_jj_f_4(i)%nom/ls_jj_f_4(i)%denom )
                         return
@@ -818,11 +831,11 @@ contains
             case(5)
                 !     Use data from the array LS_jj_f_5
                 do  i = 1,ls_jj_number_f5
-                    if(w  ==ls_jj_f_5(i)%w  .and. q  ==ls_jj_f_5(i)%q  .and. &
-                        l  ==ls_jj_f_5(i)%l  .and. s  ==ls_jj_f_5(i)%s  .and. &
-                        j  ==ls_jj_f_5(i)%j  .and. nm ==ls_jj_f_5(i)%nm .and. &
-                        qm ==ls_jj_f_5(i)%qm .and. jm ==ls_jj_f_5(i)%jm .and. &
-                        qp ==ls_jj_f_5(i)%qp .and. jp ==ls_jj_f_5(i)%jp) then
+                    if(w  ==ls_jj_f_5(i)%w  .and. two_ls_quasispin  ==ls_jj_f_5(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_f_5(i)%l  .and. two_ls_term_s  ==ls_jj_f_5(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_f_5(i)%j  .and. lower_j_partner_occupation ==ls_jj_f_5(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_f_5(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_f_5(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_f_5(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_f_5(i)%jp) then
                         coefficient_value = ls_jj_f_5(i)%factor * &
                             sqrt( one*ls_jj_f_5(i)%nom/ls_jj_f_5(i)%denom )
                         return
@@ -831,11 +844,11 @@ contains
             case(6)
                 !     Use data from the array LS_jj_f_6
                 do  i = 1,ls_jj_number_f6
-                    if(w  ==ls_jj_f_6(i)%w  .and. q  ==ls_jj_f_6(i)%q  .and. &
-                        l  ==ls_jj_f_6(i)%l  .and. s  ==ls_jj_f_6(i)%s  .and. &
-                        j  ==ls_jj_f_6(i)%j  .and. nm ==ls_jj_f_6(i)%nm .and. &
-                        qm ==ls_jj_f_6(i)%qm .and. jm ==ls_jj_f_6(i)%jm .and. &
-                        qp ==ls_jj_f_6(i)%qp .and. jp ==ls_jj_f_6(i)%jp) then
+                    if(w  ==ls_jj_f_6(i)%w  .and. two_ls_quasispin  ==ls_jj_f_6(i)%q  .and. &
+                        two_ls_term_l  ==ls_jj_f_6(i)%l  .and. two_ls_term_s  ==ls_jj_f_6(i)%s  .and. &
+                        two_ls_term_j  ==ls_jj_f_6(i)%j  .and. lower_j_partner_occupation ==ls_jj_f_6(i)%nm .and. &
+                        lower_j_partner_two_quasispin ==ls_jj_f_6(i)%qm .and. lower_j_partner_two_term_j ==ls_jj_f_6(i)%jm .and. &
+                        upper_j_partner_two_quasispin ==ls_jj_f_6(i)%qp .and. upper_j_partner_two_term_j ==ls_jj_f_6(i)%jp) then
                         coefficient_value = ls_jj_f_6(i)%factor * &
                             sqrt( one*ls_jj_f_6(i)%nom/ls_jj_f_6(i)%denom )
                         return
@@ -845,15 +858,15 @@ contains
                 !     Use data from the array LS_jj_f_7
                 do  i = 1, ls_jj_number_f7, 1
                     if (w == ls_jj_f_7(i)%w) then
-                        if(q == ls_jj_f_7(i)%q) then
-                            if(l == ls_jj_f_7(i)%l) then
-                                if(s == ls_jj_f_7(i)%s) then
-                                    if(j == ls_jj_f_7(i)%j) then
-                                        if(nm == ls_jj_f_7(i)%nm) then
-                                            if(qm == ls_jj_f_7(i)%qm .and. &
-                                                jm == ls_jj_f_7(i)%jm .and. &
-                                                qp == ls_jj_f_7(i)%qp .and. &
-                                                jp == ls_jj_f_7(i)%jp) then
+                        if(two_ls_quasispin == ls_jj_f_7(i)%q) then
+                            if(two_ls_term_l == ls_jj_f_7(i)%l) then
+                                if(two_ls_term_s == ls_jj_f_7(i)%s) then
+                                    if(two_ls_term_j == ls_jj_f_7(i)%j) then
+                                        if(lower_j_partner_occupation == ls_jj_f_7(i)%nm) then
+                                            if(lower_j_partner_two_quasispin == ls_jj_f_7(i)%qm .and. &
+                                                lower_j_partner_two_term_j == ls_jj_f_7(i)%jm .and. &
+                                                upper_j_partner_two_quasispin == ls_jj_f_7(i)%qp .and. &
+                                                upper_j_partner_two_term_j == ls_jj_f_7(i)%jp) then
                                                 coefficient_value = one * ls_jj_f_7(i)%factor  * &
                                                     dsqrt(one*ls_jj_f_7(i)%nom)/ &
                                                     dsqrt(one*ls_jj_f_7(i)%denom )
@@ -1969,13 +1982,13 @@ contains
         real(real64), pointer  :: weights(:), weights2(:)
         integer, pointer  :: retained_csf_mask(:)
         character(len=164) :: string_csf(1:max_selected_levels)
-        integer(int64) :: loc_i8, ncf_i8
+        integer(int64) :: level_mixing_offset, csf_count_int64
         !-----------------------------------------------
         ssms = zero;   g_j = zero;   g_jls = zero;    before_j = 0
         call read_ls_conversion_options(thresh,levels,number_of_levels,write_csf_list,write_j_vectors,unique, &
             transformation_output_mode)
         allocate(retained_csf_mask(csf_count))
-        ncf_i8 = csf_count
+        csf_count_int64 = csf_count
         do  symmetry_block_index = 1, transition_block_count
             if(symmetry_block_index == 1) then
                 first_csf_index = 1
@@ -1991,8 +2004,8 @@ contains
                 sum_absolute_coefficients = zero
                 do  lev = 1, number_of_levels(symmetry_block_index)
                     level = levels(symmetry_block_index,lev)
-                    loc_i8 = (level-1)*ncf_i8
-                    sum_absolute_coefficients = sum_absolute_coefficients + dabs(csf_mixing_coefficients(i+loc_i8))
+                    level_mixing_offset = (level-1)*csf_count_int64
+                    sum_absolute_coefficients = sum_absolute_coefficients + dabs(csf_mixing_coefficients(i+level_mixing_offset))
                 end do
                 if(dabs(sum_absolute_coefficients) >= dabs(coefficient_threshold)) retained_csf_mask(i) = 1
             end do
@@ -2026,7 +2039,7 @@ contains
             allocate (weights2(ncf_ls_jj_max))
             allocate (iw(ncf_ls_jj_max))
             allocate (leading_ls(ncf_ls_jj_max))
-            ncf_i8 = csf_count
+            csf_count_int64 = csf_count
             call profile_emit("workspace",phase_start,symmetry_block_index)
             do  lev = 1, number_of_levels(symmetry_block_index)
                 level = levels(symmetry_block_index,lev)
@@ -2034,8 +2047,8 @@ contains
                 weights = zero;    iw = 0;    wb = zero
                 do  i = first_csf_index, last_csf_index
                     if(retained_csf_mask(i) == 1) then
-                        loc_i8 = (level-1)*ncf_i8
-                        wa = csf_mixing_coefficients(i+loc_i8) * csf_mixing_coefficients(i+loc_i8)
+                        level_mixing_offset = (level-1)*csf_count_int64
+                        wa = csf_mixing_coefficients(i+level_mixing_offset) * csf_mixing_coefficients(i+level_mixing_offset)
                         wb = wb + wa
                         do  j = 1,999
                             if (wa > weights(j)) then
@@ -2601,7 +2614,7 @@ contains
         save  ! Preserve the legacy serial controller workspace.
         integer, intent(in)  :: retained_csf_mask(:)
         integer, intent(in)  :: first_csf_index, last_csf_index
-        type(nl), pointer :: shell_temp(:)
+        type(nonrelativistic_subshell_label), pointer :: shell_temp(:)
         integer, pointer  :: nllsval(:), nljjval(:)
         type(lsj_list)                  :: nonequiv_csfs_jj
         !

@@ -79,7 +79,7 @@ contains
         use initialize_sparse_eigenvectors_interface, only: initialize_sparse_eigenvectors
 
         ! Module dependencies
-        use davidson_eigensolver, only: dvd_operator, solve_davidson_eigenpairs
+        use davidson_eigensolver, only: davidson_matrix_vector_operator, solve_davidson_eigenpairs
         use sparse_eigensolver_initial_basis, only: estimate_sparse_initial_basis
 
         ! Procedure interfaces

@@ -53,7 +53,7 @@ contains
         use active_symmetry_block, only: active_block_index
         use mpi_sparse_matrix_product, only: multiply_mpi_sparse_matrix
         use mpi_initial_eigenvectors, only: estimate_mpi_initial_eigenvectors
-        use davidson_eigensolver, only: dvd_operator, solve_davidson_eigenpairs
+        use davidson_eigensolver, only: davidson_matrix_vector_operator, solve_davidson_eigenpairs
 
         ! Procedure interfaces
         use basis_csf_two_j_plus_one_interface, only: basis_csf_two_j_plus_one

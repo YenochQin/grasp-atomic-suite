@@ -4,12 +4,12 @@ module davidson_eigensolver
     ! Module interface
     private
     public :: solve_davidson_eigenpairs
-    public :: dvd_operator
+    public :: davidson_matrix_vector_operator
 
     ! Procedure interfaces
     ! Apply the original matrix to a block of column vectors.
     abstract interface
-        subroutine dvd_operator(matrix_order, vector_count, input_vectors, output_vectors)
+        subroutine davidson_matrix_vector_operator(matrix_order, vector_count, input_vectors, output_vectors)
             ! Module dependencies
             use, intrinsic :: iso_fortran_env, only: real64
             implicit none (type, external)
@@ -18,7 +18,7 @@ module davidson_eigensolver
             integer, intent(in) :: matrix_order, vector_count
             real(real64), intent(in) :: input_vectors(matrix_order,vector_count)
             real(real64), intent(inout) :: output_vectors(matrix_order,vector_count)
-        end subroutine dvd_operator
+        end subroutine davidson_matrix_vector_operator
     end interface
 contains
 
@@ -36,7 +36,7 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        procedure(dvd_operator) :: matrix_vector_callback
+        procedure(davidson_matrix_vector_operator) :: matrix_vector_callback
         integer, intent(in) :: matrix_order
         integer, intent(in) :: subspace_limit
         integer  :: lowest_pair_index

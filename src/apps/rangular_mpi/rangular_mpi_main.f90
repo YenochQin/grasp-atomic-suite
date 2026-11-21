@@ -64,7 +64,7 @@ program rangular_mpi_main
     use log_factorial_table, only: initialize_log_factorial_table
 
     ! Procedure interfaces
-    use open_temporary_mcp_channel_interface, only: open_temporary_mcp_channel
+    use open_temporary_mcp_channels_interface, only: open_temporary_mcp_channels
 
     ! Module dependencies
     use mpi_utilities, only: initialize_mpi_runtime_with_status
@@ -166,7 +166,7 @@ program rangular_mpi_main
         call record_stage("csf_load_and_broadcast",symmetry_block_index,stage_start_count,int(csf_count,int64), &
             & storage=input_format_name)
         !*** Open tmp.xx files for block nb ***
-        call open_temporary_mcp_channel (symmetry_block_index, max_coulomb_multipole_rank, files%temporary//block_label_text)
+        call open_temporary_mcp_channels (symmetry_block_index, max_coulomb_multipole_rank, files%temporary//block_label_text)
         !*** Generation of MCP coefficients ***
         !cjb  myid, nprocs = NOT args
         !cjb     CALL MCPmpi (NB, RESTRT, MYID, NPROCS, 'mcp' // idstring)

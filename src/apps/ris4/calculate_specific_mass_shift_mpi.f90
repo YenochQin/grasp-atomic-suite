@@ -19,7 +19,7 @@ contains
         !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: orbital_index_radix, max_orbitals
-        use debug_output_settings, only: cutoff
+        use debug_output_settings, only: matrix_element_screening_cutoff
         use selected_level_indices, only: active_level_count
         use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count
         use angular_coefficient_buffer_state, only: angular_coefficient_count, angular_coefficient_labels, angular_coefficients
@@ -94,7 +94,7 @@ contains
                     end do
                     do k = 1,angular_coefficient_count
                         angular_coefficient = angular_coefficients(k)
-                        if (abs (angular_coefficient) > cutoff) then
+                        if (abs (angular_coefficient) > matrix_element_screening_cutoff) then
                             if (angular_coefficient_labels(5,k) == 1) then
                                 orbital_a = angular_coefficient_labels(1,k)
                                 orbital_b = angular_coefficient_labels(2,k)

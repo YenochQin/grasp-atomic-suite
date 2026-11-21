@@ -98,10 +98,6 @@ OBJS= \
 	 \
 	basis_csf_two_j_plus_one.o \
 	 \
-	lodcslmpiGG.o \
-	lodcslmpiGG_I.o \
-	lodcsh2GG.o \
-	lodcsh2GG_I.o \
 	find_least_consistent_orbital.o \
 	 \
 	update_scf_mixing_mpi.o \
@@ -130,7 +126,7 @@ OBJS= \
 	 \
 	run_scf_iterations_mpi.o \
 	 \
-	rmcdhf_mpi_main.o
+	rmcdhf_mem_mpi_main.o
 
 $(EXE): $(OBJS)
 	$(FC_MPI) -o $@ $? $(FC_MPILD) $(LIBS) $(LAPACK_LIBS)

@@ -27,8 +27,6 @@ OBJS= \
 	 \
 	assemble_orbital_potential_coefficients.o \
 	 \
-	lodcsh2GG.o \
-	lodcsh2GG_I.o \
 	load_csf_basis_data.o \
 	 \
 	configure_debug_output.o \
@@ -127,7 +125,7 @@ OBJS= \
 	 \
 	write_input_summary.o \
 	 \
-	rmcdhf_main.o
+	rmcdhf_mem_main.o
 
 $(EXE): $(OBJS)
 	$(FC) -o $@ $? $(FC_LD) $(LIBS) $(LAPACK_LIBS)

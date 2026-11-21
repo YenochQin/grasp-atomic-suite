@@ -34,8 +34,8 @@
   [pack_csf_subshell_byte](../../src/lib/core/csf_byte_packing.f90) 是各自模块的具体过程。
   接口回归覆盖过程指针、过程实参和关键字调用。
 - [mpi_runtime](../../src/lib/mpi/mpi_runtime.f90) 提供无套件状态依赖的
-  `initialize_mpi_runtime`、`mpix_bytes`、`finalize_mpi_runtime`；`mpi_utilities` 保留重导出，避免模块依赖环。
-- `davidson_eigensolver::dvd_operator` 和 `calculate_two_electron_angular_coefficients` 的回调接口仍是契约的一部分；
+  `initialize_mpi_runtime`、`create_contiguous_mpi_byte_datatype`、`finalize_mpi_runtime`；`mpi_utilities` 保留重导出，避免模块依赖环。
+- `davidson_eigensolver::davidson_matrix_vector_operator` 和 `calculate_two_electron_angular_coefficients` 的回调接口仍是契约的一部分；
   测试替身使用相同模块 API，不能通过另一个外部符号替换模块过程。
 - Davidson 求解库的现行模块和关键字形参见[命名对照](davidson_eigensolver_migration.md)。
 - 这次模块化改变 Fortran 链接符号。依赖旧静态库的外部项目需要重新编译和链接，

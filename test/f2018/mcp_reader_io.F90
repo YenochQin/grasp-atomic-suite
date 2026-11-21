@@ -9,7 +9,7 @@ program mcp_reader_io
         y_potential_coefficient_capacity, direct_coefficient_count, direct_coefficients
     use connect_mcp_files_interface, only: connect_mcp_files
 #ifdef MCP_MEM
-    use rmcdhf_mcp_memory, only: lab_31, ncontr_31, coeff_31
+    use rmcdhf_mcp_memory, only: lab_31, integral_contribution_counts_by_label_mcp_31, angular_contribution_coefficients_mcp_31
 #else
     use assemble_orbital_potential_coefficients_interface, only: assemble_orbital_potential_coefficients
 #endif
@@ -128,10 +128,11 @@ program mcp_reader_io
     if (labels(1) /= "  0+    ") error stop "Block labels"
 #ifdef MCP_MEM
     if (scenario=="empty") then
-        if (size(coeff_31)/=0 .or. any(lab_31/=0)) error stop "Empty cached coefficients"
+        if (size(angular_contribution_coefficients_mcp_31)/=0 .or. any(lab_31/=0)) error stop "Empty cached coefficients"
     else
-        if (any(lab_31/=[packed_label,0]) .or. any(ncontr_31/=[1,0])) error stop "Cached labels"
-        if (size(coeff_31)/=1 .or. coeff_31(1)/=0.25_real64) error stop "Cached coefficients"
+        if (any(lab_31/=[packed_label,0]) .or. any(integral_contribution_counts_by_label_mcp_31/=[1,0])) error stop "Cached labels"
+        if (size(angular_contribution_coefficients_mcp_31)/=1 .or. angular_contribution_coefficients_mcp_31(1)/=0.25_real64) &
+            & error stop "Cached coefficients"
     end if
 #else
     if (scenario=="empty") then

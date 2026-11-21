@@ -3,7 +3,7 @@ program rdensity
     ! Module dependencies
     use calculation_state_files, only: orbital_input_path, mixing_input_path, read_state_name, property_state_arguments
     use calculation_input_defaults, only: nondefault_options_flag
-    use debug_output_settings, only: cutoff
+    use debug_output_settings, only: matrix_element_screening_cutoff
     use density_parallel, only: broadcast_options, density_fail, parallel_finish, parallel_start, mpi_rank, mpi_process_count
     use density_calculation, only: calculate_density
     use yes_no_input, only: read_yes_no
@@ -35,7 +35,7 @@ program rdensity
     nondefault_options_flag = 0
     ordering = 2
     status = 0
-    cutoff = 1.0e-10_real64
+    matrix_element_screening_cutoff = 1.0e-10_real64
     interactive = command_argument_count() == 0
     if (mpi_rank == 0) then
         if (interactive) then

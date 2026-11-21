@@ -522,18 +522,18 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer, pointer :: array_pointer(:), pnew(:)
+        integer, pointer :: array_pointer(:), resized_array_pointer(:)
         integer, intent(in) :: lower_bound, upper_bound
         character(len=*), intent(in) :: variable_label, caller_label
 
         ! Local declarations
-        integer :: allocation_status, nold
+        integer :: allocation_status, last_preserved_index
         if (.not.  associated(array_pointer)) then
             write(output_unit,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
                 trim(caller_label),  " not already allocated"
             stop
         else
-            allocate(pnew(lower_bound:upper_bound),stat=allocation_status)
+            allocate(resized_array_pointer(lower_bound:upper_bound),stat=allocation_status)
             if (allocation_status/= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to reallocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
@@ -541,10 +541,10 @@ contains
                     lower_bound, " to ", upper_bound
                 stop
             end if
-            nold = min(size(array_pointer), upper_bound+1) - 1
-            pnew(lower_bound:nold) = array_pointer(lower_bound:nold)
+            last_preserved_index = min(size(array_pointer), upper_bound+1) - 1
+            resized_array_pointer(lower_bound:last_preserved_index) = array_pointer(lower_bound:last_preserved_index)
             deallocate(array_pointer)
-            array_pointer => pnew
+            array_pointer => resized_array_pointer
         end if
     end subroutine ralloc_0i
 
@@ -553,28 +553,28 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer, pointer :: array_pointer(:), pnew(:)
+        integer, pointer :: array_pointer(:), resized_array_pointer(:)
         integer, intent(in) :: element_count
         character(len=*), intent(in) :: variable_label, caller_label
 
         ! Local declarations
-        integer :: allocation_status, nold
+        integer :: allocation_status, preserved_element_count
         if (.not.  associated(array_pointer)) then
             write(output_unit,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
                 trim(caller_label),  " not already allocated"
             stop
         else
-            allocate(pnew(element_count),stat=allocation_status)
+            allocate(resized_array_pointer(element_count),stat=allocation_status)
             if (allocation_status/= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to reallocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
                 write(output_unit, "(T10,A,I15)") "Number of elements requested: ",element_count
                 stop
             end if
-            nold = min(size(array_pointer),element_count)
-            pnew(1:nold) = array_pointer(1:nold)
+            preserved_element_count = min(size(array_pointer),element_count)
+            resized_array_pointer(1:preserved_element_count) = array_pointer(1:preserved_element_count)
             deallocate(array_pointer)
-            array_pointer => pnew
+            array_pointer => resized_array_pointer
         end if
     end subroutine ralloc_1i
 
@@ -582,7 +582,7 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer, pointer :: array_pointer(:, :), pnew(:, :)
+        integer, pointer :: array_pointer(:, :), resized_array_pointer(:, :)
         integer, intent(in) :: first_dimension_size, second_dimension_size
         character(len=*), intent(in) :: variable_label, caller_label
 
@@ -594,7 +594,7 @@ contains
                 trim(caller_label),  " not already allocated"
             stop
         else
-            allocate(pnew(first_dimension_size,second_dimension_size),stat=allocation_status)
+            allocate(resized_array_pointer(first_dimension_size,second_dimension_size),stat=allocation_status)
             if (allocation_status /= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
@@ -603,9 +603,9 @@ contains
             end if
             n1_old = min(size(array_pointer, dim=1),first_dimension_size)
             n2_old = min(size(array_pointer, dim=2),second_dimension_size)
-            pnew(1:n1_old, 1:n2_old) = array_pointer(1:n1_old, 1:n2_old)
+            resized_array_pointer(1:n1_old, 1:n2_old) = array_pointer(1:n1_old, 1:n2_old)
             deallocate(array_pointer)
-            array_pointer => pnew
+            array_pointer => resized_array_pointer
         end if
     end subroutine ralloc_2i
 
@@ -614,7 +614,7 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer, pointer :: array_pointer(:, :, :), pnew(:, :, :)
+        integer, pointer :: array_pointer(:, :, :), resized_array_pointer(:, :, :)
         integer, intent(in) :: first_dimension_size, second_dimension_size, third_dimension_size
         character(len=*), intent(in) :: variable_label, caller_label
 
@@ -626,7 +626,7 @@ contains
                 trim(caller_label),  " not already allocated"
             stop
         else
-            allocate(pnew(first_dimension_size,second_dimension_size,third_dimension_size),stat=allocation_status)
+            allocate(resized_array_pointer(first_dimension_size,second_dimension_size,third_dimension_size),stat=allocation_status)
             if (allocation_status /= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
@@ -637,9 +637,9 @@ contains
             n1_old = min(size(array_pointer, dim=1),first_dimension_size)
             n2_old = min(size(array_pointer, dim=2),second_dimension_size)
             n3_old = min(size(array_pointer, dim=3),third_dimension_size)
-            pnew(1:n1_old, 1:n2_old, 1:n3_old) = array_pointer(1:n1_old, 1:n2_old, 1:n3_old)
+            resized_array_pointer(1:n1_old, 1:n2_old, 1:n3_old) = array_pointer(1:n1_old, 1:n2_old, 1:n3_old)
             deallocate(array_pointer)
-            array_pointer => pnew
+            array_pointer => resized_array_pointer
         end if
     end subroutine ralloc_3i
 
@@ -647,29 +647,29 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        real(real64), pointer :: array_pointer(:), pnew(:)
+        real(real64), pointer :: array_pointer(:), resized_array_pointer(:)
         integer, intent(in) :: element_count
         character(len=*), intent(in) :: variable_label, caller_label
 
         ! Local declarations
-        integer :: allocation_status, nold
+        integer :: allocation_status, preserved_element_count
 
         if (.not. associated(array_pointer)) then
             write(output_unit,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
                 trim(caller_label),  " not already allocated"
             stop
         else
-            allocate(pnew(element_count),stat=allocation_status)
+            allocate(resized_array_pointer(element_count),stat=allocation_status)
             if (allocation_status /= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
                 write(output_unit, "(T10,A,I15)") "Number of elements requested: ",element_count
                 stop
             end if
-            nold = min(size(array_pointer),element_count)
-            pnew(1:nold) = array_pointer(1:nold)
+            preserved_element_count = min(size(array_pointer),element_count)
+            resized_array_pointer(1:preserved_element_count) = array_pointer(1:preserved_element_count)
             deallocate(array_pointer)
-            array_pointer => pnew
+            array_pointer => resized_array_pointer
         end if
     end subroutine ralloc_1r
 
@@ -677,7 +677,7 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        real(real64), pointer :: array_pointer(:, :), pnew(:, :)
+        real(real64), pointer :: array_pointer(:, :), resized_array_pointer(:, :)
         integer, intent(in) :: first_dimension_size, second_dimension_size
         character(len=*), intent(in) :: variable_label, caller_label
 
@@ -689,7 +689,7 @@ contains
                 trim(caller_label),  " not already allocated"
             stop
         else
-            allocate(pnew(first_dimension_size,second_dimension_size),stat=allocation_status)
+            allocate(resized_array_pointer(first_dimension_size,second_dimension_size),stat=allocation_status)
             if (allocation_status /= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
@@ -698,9 +698,9 @@ contains
             end if
             n1_old = min(size(array_pointer, dim=1),first_dimension_size)
             n2_old = min(size(array_pointer, dim=2),second_dimension_size)
-            pnew(1:n1_old, 1:n2_old) = array_pointer(1:n1_old, 1:n2_old)
+            resized_array_pointer(1:n1_old, 1:n2_old) = array_pointer(1:n1_old, 1:n2_old)
             deallocate(array_pointer)
-            array_pointer => pnew
+            array_pointer => resized_array_pointer
         end if
     end subroutine ralloc_2r
 
@@ -708,18 +708,18 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer(int8), pointer :: array_pointer(:), pnew(:)
+        integer(int8), pointer :: array_pointer(:), resized_array_pointer(:)
         integer, intent(in) :: lower_bound, upper_bound
         character(len=*), intent(in) :: variable_label, caller_label
 
         ! Local declarations
-        integer :: allocation_status, nold
+        integer :: allocation_status, last_preserved_index
         if (.not.  associated(array_pointer)) then
             write(output_unit,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
                 trim(caller_label),  " not already allocated"
             stop
         else
-            allocate(pnew(lower_bound:upper_bound),stat=allocation_status)
+            allocate(resized_array_pointer(lower_bound:upper_bound),stat=allocation_status)
             if (allocation_status/= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to reallocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
@@ -727,10 +727,10 @@ contains
                     lower_bound, " to ", upper_bound
                 stop
             end if
-            nold = min(size(array_pointer), upper_bound+1) - 1
-            pnew(lower_bound:nold) = array_pointer(lower_bound:nold)
+            last_preserved_index = min(size(array_pointer), upper_bound+1) - 1
+            resized_array_pointer(lower_bound:last_preserved_index) = array_pointer(lower_bound:last_preserved_index)
             deallocate(array_pointer)
-            array_pointer => pnew
+            array_pointer => resized_array_pointer
         end if
     end subroutine ralloc_0b
 
@@ -738,28 +738,28 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer(int8), pointer :: array_pointer(:), pnew(:)
+        integer(int8), pointer :: array_pointer(:), resized_array_pointer(:)
         integer, intent(in) :: element_count
         character(len=*), intent(in) :: variable_label, caller_label
 
         ! Local declarations
-        integer :: allocation_status, nold
+        integer :: allocation_status, preserved_element_count
         if (.not.  associated(array_pointer)) then
             write(output_unit,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
                 trim(caller_label),  " not already allocated"
             stop
         else
-            allocate(pnew(element_count),stat=allocation_status)
+            allocate(resized_array_pointer(element_count),stat=allocation_status)
             if (allocation_status/= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to reallocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
                 write(output_unit, "(T10,A,I15)") "Number of elements requested: ",element_count
                 stop
             end if
-            nold = min(size(array_pointer),element_count)
-            pnew(1:nold) = array_pointer(1:nold)
+            preserved_element_count = min(size(array_pointer),element_count)
+            resized_array_pointer(1:preserved_element_count) = array_pointer(1:preserved_element_count)
             deallocate(array_pointer)
-            array_pointer => pnew
+            array_pointer => resized_array_pointer
         end if
     end subroutine ralloc_1b
 
@@ -767,7 +767,7 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer(int8), pointer :: array_pointer(:, :), pnew(:, :)
+        integer(int8), pointer :: array_pointer(:, :), resized_array_pointer(:, :)
         integer, intent(in) :: first_dimension_size, second_dimension_size
         character(len=*), intent(in) :: variable_label, caller_label
 
@@ -779,7 +779,7 @@ contains
                 trim(caller_label),  " not already allocated"
             stop
         else
-            allocate(pnew(first_dimension_size,second_dimension_size),stat=allocation_status)
+            allocate(resized_array_pointer(first_dimension_size,second_dimension_size),stat=allocation_status)
             if (allocation_status /= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
@@ -788,9 +788,9 @@ contains
             end if
             n1_old = min(size(array_pointer, dim=1),first_dimension_size)
             n2_old = min(size(array_pointer, dim=2),second_dimension_size)
-            pnew(1:n1_old, 1:n2_old) = array_pointer(1:n1_old, 1:n2_old)
+            resized_array_pointer(1:n1_old, 1:n2_old) = array_pointer(1:n1_old, 1:n2_old)
             deallocate(array_pointer)
-            array_pointer => pnew
+            array_pointer => resized_array_pointer
         end if
     end subroutine ralloc_2b
 
@@ -799,7 +799,7 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer(int8), pointer :: array_pointer(:, :, :), pnew(:, :, :)
+        integer(int8), pointer :: array_pointer(:, :, :), resized_array_pointer(:, :, :)
         integer, intent(in) :: first_dimension_size, second_dimension_size, third_dimension_size
         character(len=*), intent(in) :: variable_label, caller_label
 
@@ -811,7 +811,7 @@ contains
                 trim(caller_label),  " not already allocated"
             stop
         else
-            allocate(pnew(first_dimension_size,second_dimension_size,third_dimension_size),stat=allocation_status)
+            allocate(resized_array_pointer(first_dimension_size,second_dimension_size,third_dimension_size),stat=allocation_status)
             if (allocation_status /= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
@@ -823,10 +823,10 @@ contains
             n2_old = min(size(array_pointer, dim=2),second_dimension_size)
             n3_old = min(size(array_pointer, dim=3),third_dimension_size)
             do i = 1,n2_old
-                pnew(1:n1_old, i, 1:n3_old) = array_pointer(1:n1_old, i, 1:n3_old)
+                resized_array_pointer(1:n1_old, i, 1:n3_old) = array_pointer(1:n1_old, i, 1:n3_old)
             end do
             deallocate(array_pointer)
-            array_pointer => pnew
+            array_pointer => resized_array_pointer
         end if
     end subroutine ralloc_3b
 
@@ -834,29 +834,29 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        character(len=256), pointer :: array_pointer(:), pnew(:)
+        character(len=256), pointer :: array_pointer(:), resized_array_pointer(:)
         integer, intent(in) :: element_count
         character(len=*), intent(in) :: variable_label, caller_label
 
         ! Local declarations
-        integer :: allocation_status, nold
+        integer :: allocation_status, preserved_element_count
 
         if (.not. associated(array_pointer)) then
             write(output_unit,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
                 trim(caller_label),  " not already allocated"
             stop
         else
-            allocate(pnew(element_count),stat=allocation_status)
+            allocate(resized_array_pointer(element_count),stat=allocation_status)
             if (allocation_status /= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to allocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
                 write(output_unit, "(T10,A,I15)") "Number of elements requested: ",element_count
                 stop
             end if
-            nold = min(size(array_pointer),element_count)
-            pnew(1:nold) = array_pointer(1:nold)
+            preserved_element_count = min(size(array_pointer),element_count)
+            resized_array_pointer(1:preserved_element_count) = array_pointer(1:preserved_element_count)
             deallocate(array_pointer)
-            array_pointer => pnew
+            array_pointer => resized_array_pointer
         end if
     end subroutine ralloc_1c
 

@@ -3,7 +3,7 @@ module density_parallel
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: real64
     use mpi, only: mpi_abort, mpi_bcast, mpi_character, mpi_comm_world, mpi_integer
-    use mpi_utilities, only: mpix_startup, mpix_shutdown, reduce_mpi_real_sum_to_root
+    use mpi_utilities, only: start_mpi_application, finish_mpi_application, reduce_mpi_real_sum_to_root
     use mpi_state, only: mpi_rank, mpi_process_count, processor_name, processor_name_length
     implicit none (type, external)
 
@@ -28,25 +28,25 @@ contains
     end subroutine load_density_basis
 
     subroutine parallel_start
-        call mpix_startup(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_count, &
+        call start_mpi_application(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_count, &
             "RDENSITY_MPI", "MPI density and natural orbitals", &
             "isodata, descriptor Parquet/header, name.wfn, name.mix/name.cimix", "name.nw, name.(c)d", .true.)
     end subroutine parallel_start
 
     subroutine parallel_finish
-        call mpix_shutdown(mpi_rank, start_count, "RDENSITY_MPI")
+        call finish_mpi_application(mpi_rank, start_count, "RDENSITY_MPI")
     end subroutine parallel_finish
 
-    subroutine broadcast_options(name, nci, ndef, ordering, status)
+    subroutine broadcast_options(name, mixing_file_kind, nondefault_options_flag, ordering, status)
         ! Arguments
         character(*), intent(inout) :: name
-        integer, intent(inout) :: nci, ndef, ordering, status
+        integer, intent(inout) :: mixing_file_kind, nondefault_options_flag, ordering, status
 
         ! Local declarations
         integer :: mpi_status
         call mpi_bcast(name, len(name), mpi_character, 0, mpi_comm_world, mpi_status)
-        call mpi_bcast(nci, 1, mpi_integer, 0, mpi_comm_world, mpi_status)
-        call mpi_bcast(ndef, 1, mpi_integer, 0, mpi_comm_world, mpi_status)
+        call mpi_bcast(mixing_file_kind, 1, mpi_integer, 0, mpi_comm_world, mpi_status)
+        call mpi_bcast(nondefault_options_flag, 1, mpi_integer, 0, mpi_comm_world, mpi_status)
         call mpi_bcast(ordering, 1, mpi_integer, 0, mpi_comm_world, mpi_status)
         call mpi_bcast(status, 1, mpi_integer, 0, mpi_comm_world, mpi_status)
     end subroutine broadcast_options

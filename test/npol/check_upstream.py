@@ -17,6 +17,7 @@ import sys
 APP_SYMBOLS_SNAPSHOT = Path("docs/reference/rmcdhf_app_symbols_snapshot.json")
 APP_MODULES_SNAPSHOT = Path("docs/reference/rmcdhf_app_modules_snapshot.json")
 SEMANTIC_NAMES_SNAPSHOT = Path("docs/reference/rmcdhf_semantic_names_snapshot.json")
+AUDITED_NAMES_SNAPSHOT = Path("docs/reference/rmcdhf_audited_names_snapshot.json")
 DIAGNOSTIC_LABELS_SNAPSHOT = Path("docs/reference/rmcdhf_diagnostic_labels_snapshot.json")
 
 
@@ -467,11 +468,27 @@ def main(root: Path) -> None:
             f"Semantic names snapshot has a different predecessor: {name}"
     reviewed_migration |= semantic_names["files"]
 
+    audited_names = json.loads((root / AUDITED_NAMES_SNAPSHOT).read_text())
+    assert audited_names["schema_version"] == 1, "Unknown audited names snapshot schema"
+    assert audited_names["previous_manifest_sha256"] == hashlib.sha256((root / SEMANTIC_NAMES_SNAPSHOT).read_bytes()).hexdigest(), \
+        "Semantic names snapshot changed; review audited naming provenance"
+    previous = reviewed_files | reviewed_migration
+    for name, record in audited_names["files"].items():
+        assert name in expected and name in previous, name
+        assert record["before_suite_sha256"] == previous[name]["after_suite_sha256"], \
+            f"Audited names snapshot has a different predecessor: {name}"
+        if "suite_path" in record:
+            former = suite_source_path(root, name, renamed_paths)
+            updated = root / record["suite_path"]
+            assert former.parent == updated.parent and former.suffix == updated.suffix == ".f90", record["suite_path"]
+            renamed_paths[name] = record["suite_path"]
+    reviewed_migration |= audited_names["files"]
+
     diagnostic_labels = json.loads((root / DIAGNOSTIC_LABELS_SNAPSHOT).read_text())
     assert diagnostic_labels["schema_version"] == 1, "Unknown diagnostic labels snapshot schema"
     assert diagnostic_labels["previous_manifest_sha256"] == hashlib.sha256(
-        (root / SEMANTIC_NAMES_SNAPSHOT).read_bytes()
-    ).hexdigest(), "Semantic names snapshot changed; review diagnostic label provenance"
+        (root / AUDITED_NAMES_SNAPSHOT).read_bytes()
+    ).hexdigest(), "Audited names snapshot changed; review diagnostic label provenance"
     previous = reviewed_files | reviewed_migration
     for name, record in diagnostic_labels["files"].items():
         assert name in expected and name.endswith(".f90") and name in previous, name

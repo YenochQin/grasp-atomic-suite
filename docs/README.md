@@ -61,6 +61,7 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
+| [CSF 计算描述符 V3](plans/csf_descriptor_v3_2026-11-21.md) | 待实施。按轨道读取完整角动量码，分别读取总 2J+1 与宇称；覆盖角积分、RCI、RMCDHF 和 MPI 消费路径。 |
 | [variable_renaming_followup_2026-11-16.md](plans/variable_renaming_followup_2026-11-16.md) | 变量语义重命名；第一批 529 项已处理，原有 19,579 项需与当前源码重新对齐；旧 CSF reader 已替换，不恢复退役代码。 |
 | [static_diagnostics_remaining_2026-11-17.md](plans/static_diagnostics_remaining_2026-11-17.md) | 待核定的静态诊断；S1–S4、格式及 USE ONLY 批次已完成；保留接口、状态、I/O、工具覆盖、告警预算及数值验证待办。 |
 | [non_csfg_variable_inventory_2026-11-16.md](plans/non_csfg_variable_inventory_2026-11-16.md) | 明确候选已处理，其余待核实；原始采集基准 caaf3a5；1,880 份 Fortran 文本、20,108 个实体。529 项明确候选已逐项标记（528 改名、pi 保留），其余 19,579 项待核实；原名、原声明行及哈希作为历史快照，当前名称与位置另有 JSON 映射。 |

@@ -1,6 +1,6 @@
 !***********************************************************************
 !                                                                      *
-program rtransition_main
+program rtransition_phase_main
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: output_unit
     !                                                                      *
@@ -155,4 +155,4 @@ program rtransition_main
     call finish_run_timer (start_clock_count, "RTRANSITION")
     !
     stop
-end program rtransition_main
+end program rtransition_phase_main

@@ -19,5 +19,5 @@ The suite builds and installs `fical` as a separate executable. You can
 also compile it directly from the repository root with GNU Fortran 15.
 
 ```fish
-/usr/bin/gfortran-15 -std=f2018 -pedantic-errors -Werror=implicit-interface -Werror=implicit-procedure src/apps/ris4/fical.f90 -o fical
+/usr/bin/gfortran-15 -std=f2018 -pedantic-errors -Werror=implicit-interface -Werror=implicit-procedure src/apps/ris4/isotope_shift_transition_main.f90 -o fical
 ```

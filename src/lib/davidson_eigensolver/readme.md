@@ -1,6 +1,6 @@
 # Davidson 本征求解器
 
-`solve_davidson_eigenpairs` 使用分块 Davidson 迭代，求实对称矩阵 $A$ 谱端的若干本征对。调用方给出 $A$ 的对角元、初始向量，以及对一批列向量执行 $AV$ 的回调 `dvd_operator`。完整矩阵的存储由调用方负责。下列公式按 `2d4c721` 基础上的工作树源码核对（2026-11-20）。[入口源码](davidson_eigensolver.f90)
+`solve_davidson_eigenpairs` 使用分块 Davidson 迭代，求实对称矩阵 $A$ 谱端的若干本征对。调用方给出 $A$ 的对角元、初始向量，以及对一批列向量执行 $AV$ 的回调 `davidson_matrix_vector_operator`。完整矩阵的存储由调用方负责。下列公式按 `2d4c721` 基础上的工作树源码核对（2026-11-20）。[入口源码](davidson_eigensolver.f90)
 
 | 文件 | 过程 | 职责 |
 | --- | --- | --- |

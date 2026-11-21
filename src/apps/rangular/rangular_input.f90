@@ -33,17 +33,17 @@ contains
     end subroutine reject_output_filename
 
     ! Read directly into the caller-owned string, with its complete argument length.
-    subroutine read_argument_text(argument_index, text)
+    subroutine read_argument_text(argument_index, argument_text)
         ! Arguments
         integer, intent(in) :: argument_index
-        character(len=:), allocatable, intent(out) :: text
+        character(len=:), allocatable, intent(out) :: argument_text
 
         ! Local declarations
         integer :: text_length, argument_status
         call get_command_argument(argument_index, length=text_length, status=argument_status)
         if (argument_status /= 0 .or. text_length == 0) error stop "Missing command argument"
-        allocate(character(len=text_length) :: text)
-        call get_command_argument(argument_index, value=text, status=argument_status)
+        allocate(character(len=text_length) :: argument_text)
+        call get_command_argument(argument_index, value=argument_text, status=argument_status)
         if (argument_status /= 0) error stop "Cannot read command argument"
     end subroutine read_argument_text
 

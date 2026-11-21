@@ -62,7 +62,7 @@ add_executable(rmcdhf_mem_mpi
     diagonalize_hamiltonian_block_mpi.f90
     solve_hamiltonian_blocks_mpi.f90
     run_scf_iterations_mpi.f90
-    rmcdhf_mpi_main.f90
+    rmcdhf_mem_mpi_main.f90
 )
 target_link_libraries_Fortran(rmcdhf_mem_mpi PUBLIC davidson_eigensolver grasp_mpi core grasp_shared)
 install(TARGETS rmcdhf_mem_mpi DESTINATION bin/)

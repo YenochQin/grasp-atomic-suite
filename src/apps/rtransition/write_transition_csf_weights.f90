@@ -22,7 +22,7 @@ contains
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: orbital_index_radix
         use biorthogonal_orbital_sets, only: final_csf_count, initial_csf_count
-        use debug_output_settings, only: cutoff, rmcdhf_debug_flags
+        use debug_output_settings, only: matrix_element_screening_cutoff, rmcdhf_debug_flags
         use eigenstate_expansions, only: final_csf_mixing_coefficients, initial_csf_mixing_coefficients
         use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
         use orbital_csf_basis, only: orbital_l, orbital_principal_n, orbital_symmetry_labels
@@ -117,7 +117,7 @@ contains
                         !Rasa -- start
                         if (rmcdhf_debug_flags(18) .and. &
                             & (dabs(coulomb_single_particle_element*coeff*mixing_coefficient_product)          &
-                            .gt. cutoff)) then
+                            .gt. matrix_element_screening_cutoff)) then
                             write (*,'(i5,2x,d12.5,i5,2x,d12.5,2(1x,1i2,1a2),1p,d15.6,1x,d15.6,1x,1a,1x,d15.6)') &
                                 ia, initial_csf_mixing_coefficients(ia+(initial_level_index-1)*initial_csf_count),       &
                                 ib-initial_csf_count, final_csf_mixing_coefficients(ib-initial_csf_count+ &
@@ -135,7 +135,7 @@ contains
                         coulomb_or_magnetic_amplitude = &
                             & coulomb_or_magnetic_amplitude+magnetic_single_particle_element*coeff*mixing_coefficient_product
                         !Rasa -- start
-                        if (rmcdhf_debug_flags(18) .and. (abs(contr) > cutoff)) then
+                        if (rmcdhf_debug_flags(18) .and. (abs(contr) > matrix_element_screening_cutoff)) then
                             write (*,'(i5,2x,d12.5,i5,2x,d12.5,2(1x,1i2,1a2),1p,d15.6,1x,d15.6,1x,1a,1x,d15.6)') &
                                 ia, initial_csf_mixing_coefficients(ia+(initial_level_index-1)*initial_csf_count),       &
                                 ib-initial_csf_count, final_csf_mixing_coefficients(ib-initial_csf_count+ &

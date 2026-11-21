@@ -54,8 +54,6 @@ OBJS= \
 	load_initial_lsj_labels.o \
 	load_final_lsj_labels.o \
 	 \
-	lodcslm.o \
-	lodcslm_I.o \
 	read_transition_angular_coefficients.o \
 	 \
 	sort_transition_angular_coefficients.o \
@@ -74,13 +72,11 @@ OBJS= \
 	 \
 	calculate_oscillator_strengths.o \
 	 \
-	setcslm.o \
-	setcslm_I.o \
 	write_input_summary.o \
 	 \
 	check_transition_mixing_coefficients.o \
 	 \
-	rtransition_main.o
+	rtransition_phase_main.o
 
 $(EXE): $(OBJS)
 	$(FC) -o $@ $? $(FC_LD) $(LIBS) $(LAPACK_LIBS)

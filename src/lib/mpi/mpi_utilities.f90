@@ -1,19 +1,19 @@
 module mpi_utilities
     ! Module dependencies
-    use mpi_runtime, only: initialize_mpi_runtime, mpix_bytes, finalize_mpi_runtime
+    use mpi_runtime, only: initialize_mpi_runtime, create_contiguous_mpi_byte_datatype, finalize_mpi_runtime
     implicit none (type, external)
 
     ! Module interface
     private
     public :: initialize_mpi_runtime
-    public :: mpix_startup
+    public :: start_mpi_application
     public :: initialize_mpi_runtime_with_status
-    public :: mpix_shutdown
+    public :: finish_mpi_application
     public :: finalize_mpi_runtime
     public :: finalize_mpi_runtime_with_status
     public :: print_mpi_message
     public :: check_mpi_checkpoint
-    public :: mpix_bytes
+    public :: create_contiguous_mpi_byte_datatype
     public :: allreduce_mpi_real_sum
     public :: reduce_mpi_real_sum_to_root
     public :: reduce_mpi_real_max_to_root
@@ -21,7 +21,7 @@ module mpi_utilities
 contains
 
     ! Start MPI in the caller's working directory and optionally redirect worker output.
-    subroutine mpix_startup (rank, process_count, processor_name, processor_name_length, start_ticks, &
+    subroutine start_mpi_application (rank, process_count, processor_name, processor_name_length, start_ticks, &
         program_name, description, input_file_description, &
         output_file_description, quiet_workers)
         ! Module dependencies
@@ -63,7 +63,7 @@ contains
         end if
 
         return
-    end subroutine mpix_startup
+    end subroutine start_mpi_application
 
     ! Start MPI, report the participating ranks and set up rank-local working directories.
     subroutine initialize_mpi_runtime_with_status (rank, process_count, processor_name, processor_name_length, start_ticks, &
@@ -143,7 +143,7 @@ contains
     end subroutine initialize_mpi_runtime_with_status
 
     ! Print elapsed time on rank 0 and finalize MPI.
-    subroutine mpix_shutdown (rank, start_ticks, program_name)
+    subroutine finish_mpi_application (rank, start_ticks, program_name)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         use mpi, only: mpi_finalize
@@ -176,7 +176,7 @@ contains
         call mpi_finalize (mpi_return_code)
 
         return
-    end subroutine mpix_shutdown
+    end subroutine finish_mpi_application
 
     ! Collect elapsed time and completion details on rank 0, then synchronize and stop.
     subroutine finalize_mpi_runtime_with_status (rank, process_count, processor_name, processor_name_length, start_ticks, &

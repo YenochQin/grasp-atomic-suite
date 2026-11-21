@@ -37,7 +37,7 @@ contains
         ! Local declarations
         integer :: i, open_status
         !
-        character(len = len (file_path)) :: filnam
+        character(len = len (file_path)) :: output_file_path
         character(len=11) :: form
         character(len=3) :: status
         !
@@ -67,18 +67,18 @@ contains
                 &,                 " GENMCP DeBuG Printout File; "
             write (stderr_unit,*) " enter another file name if this is not "     &
                 &,                 "acceptable; null otherwise:"
-            read (*,"(A)") filnam
+            read (*,"(A)") output_file_path
             !
-            if (len_trim (filnam) == 0) filnam = file_path
+            if (len_trim (output_file_path) == 0) output_file_path = file_path
             !
             do
-                call open_calculation_file (angular_debug_unit, filnam, form, status, open_status)
+                call open_calculation_file (angular_debug_unit, output_file_path, form, status, open_status)
                 if (open_status == 0) exit
                 do
                     write (stderr_unit,*) "Enter a name for the GENMCP DeBuG Printout"&
                         &,                    " file that is to be created:"
-                    read (*,"(A)") filnam
-                    if (len_trim(filnam) /= 0) exit
+                    read (*,"(A)") output_file_path
+                    if (len_trim(output_file_path) /= 0) exit
                 end do
             end do
             !

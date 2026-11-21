@@ -1,4 +1,4 @@
-add_executable(fical fical.f90)
+add_executable(fical isotope_shift_transition_main.f90)
 target_link_libraries_Fortran(fical PRIVATE core)
 install(TARGETS fical DESTINATION bin/)
 

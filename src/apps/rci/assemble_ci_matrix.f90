@@ -48,8 +48,8 @@ contains
         real(real64) :: slf_en(*)
 
         ! Local declarations
-        integer :: iread, io_status, file_csf_count, file_csf_cutoff, file_mpi_rank, file_mpi_process_count, i, &
-            ios2, nelc, ir, irowdum, ipos, row_count, j, icstrt
+        integer :: restart_rows_read, io_status, file_csf_count, file_csf_cutoff, file_mpi_rank, file_mpi_process_count, i, &
+            ios2, nelc, ir, irowdum, ipos, row_count, j, first_unrestored_csf_index
         real(real64) :: stored_closed_shell_breit_shift, dum, eav0
         !-----------------------------------------------
         !
@@ -62,7 +62,7 @@ contains
         ! iread accumulated;
         ! nelmnt, eav, elsto obtained (to be further modified in setham)
 
-        iread = 0                       ! # of rows read, initialization necessary
+        restart_rows_read = 0                       ! # of rows read, initialization necessary
 
         read (restart_matrix_unit, iostat=io_status) file_csf_count, file_csf_cutoff, file_mpi_rank, file_mpi_process_count
         restart_header_status = io_status
@@ -81,7 +81,7 @@ contains
                     irowdum,ir=1,nelc)
                 ! Lower triangle row-mode, diagonal last
                 if (ios2 == 0) then
-                    iread = iread + 1
+                    restart_rows_read = restart_rows_read + 1
                     stored_matrix_element_count = stored_matrix_element_count + nelc
                     hamiltonian_energy_shift = hamiltonian_energy_shift + eav0
                     closed_shell_breit_shift = stored_closed_shell_breit_shift
@@ -89,7 +89,7 @@ contains
                     exit
                 end if
             end do
-            ipos = 7 + orbital_count + orbital_count + iread + 1
+            ipos = 7 + orbital_count + orbital_count + restart_rows_read + 1
         else
             ipos = 7 + orbital_count + orbital_count
         end if
@@ -103,8 +103,8 @@ contains
         ! A more suitable report on all nodes can be done here, but this will
         ! set a synchronization point.
 
-        write (stderr_unit, *) iread, " (total ", row_count, ") rows read from .res"
-        if (mpi_rank == 0) write (summary_output_unit, *) iread, " (total ", row_count, &
+        write (stderr_unit, *) restart_rows_read, " (total ", row_count, ") rows read from .res"
+        if (mpi_rank == 0) write (summary_output_unit, *) restart_rows_read, " (total ", row_count, &
             ") rows read from .res"
 
         ! Position the file for the next record from setham
@@ -118,10 +118,11 @@ contains
 
         if (io_status /= 0) write (restart_matrix_unit) csf_count, active_csf_cutoffs(1), mpi_rank, mpi_process_count
 
-        if (iread < row_count) then
-            icstrt = iread*mpi_process_count + mpi_rank + 1
+        if (restart_rows_read < row_count) then
+            first_unrestored_csf_index = restart_rows_read*mpi_process_count + mpi_rank + 1
             !     ...Generate the rest of the Hamiltonian matrix
-            call assemble_hamiltonian_block (mpi_rank, mpi_process_count, symmetry_block_index, closed_shell_breit_shift, icstrt, &
+            call assemble_hamiltonian_block (mpi_rank, mpi_process_count, symmetry_block_index, closed_shell_breit_shift, &
+                & first_unrestored_csf_index, &
                 & stored_matrix_element_count, inverse_nuclear_mass, &
                 slf_en)
         else

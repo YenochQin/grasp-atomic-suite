@@ -13,7 +13,7 @@ module debug_output_settings
     logical :: ldbpa(5)
     logical :: ldbpg(5)
     logical :: rmcdhf_debug_flags(30)
-    real(real64) :: cutoff  ! Threshold for the matrix-element trace in BIOSCL.
+    real(real64) :: matrix_element_screening_cutoff  ! Magnitude cutoff for matrix elements and their contributions.
 contains
 
     subroutine ensure_debug_output()

@@ -41,7 +41,7 @@ contains
         real(real64), intent(out) :: lande_g_factors(active_level_count), lande_g_factor_corrections(active_level_count)
 
         ! Local constants
-        real(real64), parameter :: cutoff = 1.0e-10_real64
+        real(real64), parameter :: contribution_magnitude_cutoff = 1.0e-10_real64
 
         ! Local declarations
         integer :: first_orbital_index, second_orbital_index, operator_parity, column_csf_index, text_length, row_csf_index, &
@@ -108,7 +108,7 @@ contains
                 !
                 if (bra_orbital_index == ket_orbital_index) then
                     do first_orbital_index = 1, orbital_count
-                        if (abs(shell_coefficients(first_orbital_index)) <= cutoff) cycle
+                        if (abs(shell_coefficients(first_orbital_index)) <= contribution_magnitude_cutoff) cycle
                         lande_g_csf_matrix_element = lande_g_csf_matrix_element + &
                             & lande_g_angular_factors(first_orbital_index,first_orbital_index) &
                             & *lande_g_radial_integrals(first_orbital_index, &
@@ -119,7 +119,7 @@ contains
                             & first_orbital_index)*shell_coefficients(first_orbital_index)
                     end do
                 else
-                    if (abs(shell_coefficients(1)) <= cutoff) cycle
+                    if (abs(shell_coefficients(1)) <= contribution_magnitude_cutoff) cycle
                     lande_g_csf_matrix_element = lande_g_csf_matrix_element + &
                         & lande_g_angular_factors(bra_orbital_index,ket_orbital_index) &
                             & *lande_g_radial_integrals(bra_orbital_index, &
@@ -130,7 +130,8 @@ contains
                         & ket_orbital_index)*shell_coefficients(1)
                 end if
                 !
-                if (abs(lande_g_csf_matrix_element) <= cutoff .and. abs(lande_g_correction_csf_matrix_element) <= cutoff) cycle
+                if (abs(lande_g_csf_matrix_element) <= contribution_magnitude_cutoff .and. &
+                    & abs(lande_g_correction_csf_matrix_element) <= contribution_magnitude_cutoff) cycle
                 !
                 do level_index = 1, active_level_count
                     mixing_offset = (level_index - 1)*csf_count

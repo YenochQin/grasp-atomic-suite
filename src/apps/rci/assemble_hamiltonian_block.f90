@@ -34,7 +34,7 @@ contains
         use coulomb_integral_table, only: coulomb_integral_count
         use hamiltonian_correction_flags, only: use_first_order_csf_perturbation, include_normal_mass_shift, &
             estimate_self_energy, include_specific_mass_shift, include_transverse_interaction, include_vacuum_polarization
-        use debug_output_settings, only: cutoff, angular_coefficient_debug_flag
+        use debug_output_settings, only: matrix_element_screening_cutoff, angular_coefficient_debug_flag
         use atomic_calculation_state, only: nuclear_mass_in_electron_masses
         use eigenstate_expansions, only: hamiltonian_energy_shift
         use csf_block_cutoffs, only: active_csf_cutoffs
@@ -90,7 +90,7 @@ contains
 
         ! Local declarations
         real(real64) :: shell_coefficients(max_orbitals)
-        real(real64) :: tgrl1, tgrl2, radial_integral_value
+        real(real64) :: first_vinti_radial_integral, second_vinti_radial_integral, radial_integral_value
 
         ! Local constants
 
@@ -102,7 +102,8 @@ contains
         !     REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-20
         !cjb CUTOFF = 1.0D-12 below
         !cjb
-        integer :: ipi, csf_index, inc1, inc2, kt, ipt, include_closed_shell_terms, ncoec, nctec, &
+        integer :: ipi, csf_index, inc1, inc2, kt, ipt, include_closed_shell_terms, coulomb_one_body_coefficient_count, &
+            & coulomb_two_body_coefficient_count, &
             i, j, nmcbp, closed_shell_contribution_count, ic, nelc, irstart, ket_csf_index, orbital_index, ket_orbital_index,  &
             itype, iia
         real(real64) :: elemnt, precoeff, tcoeff, vcoeff, contr
@@ -110,7 +111,7 @@ contains
         print *, "Calling assemble_hamiltonian_block ..."
         !cjb
         !cjb  CUTOFF = 1.0D-12
-        cutoff = 1.0e-12_real64
+        matrix_element_screening_cutoff = 1.0e-12_real64
 
         stored_matrix_element_count = initial_stored_element_count
 
@@ -146,9 +147,9 @@ contains
         !
         include_closed_shell_terms = 1
 
-        ncoec = 0
+        coulomb_one_body_coefficient_count = 0
         !
-        nctec   = 0
+        coulomb_two_body_coefficient_count   = 0
 
         if (include_transverse_interaction) then
 
@@ -233,8 +234,8 @@ contains
                             do orbital_index = 1,orbital_count
                                 iia = orbital_index
                                 tcoeff = shell_coefficients(orbital_index)
-                                if (abs (tcoeff) > cutoff) then
-                                    ncoec = ncoec + 1
+                                if (abs (tcoeff) > matrix_element_screening_cutoff) then
+                                    coulomb_one_body_coefficient_count = coulomb_one_body_coefficient_count + 1
                                     call one_electron_integral (iia, iia, radial_integral_value)
                                     !------------------------
                                     elemnt = elemnt + radial_integral_value*tcoeff
@@ -252,8 +253,8 @@ contains
                             end do
                         else
                             tcoeff = shell_coefficients(1)
-                            if (abs (tcoeff) > cutoff) then
-                                ncoec = ncoec + 1
+                            if (abs (tcoeff) > matrix_element_screening_cutoff) then
+                                coulomb_one_body_coefficient_count = coulomb_one_body_coefficient_count + 1
                                 call one_electron_integral (orbital_index, ket_orbital_index, radial_integral_value)
                                 !------------------------
                                 elemnt = elemnt + radial_integral_value*tcoeff
@@ -286,15 +287,16 @@ contains
                     !
                     do i = 1, angular_coefficient_count
                         vcoeff = angular_coefficients(i)
-                        if (abs (vcoeff) > cutoff) then
-                            nctec = nctec + 1
+                        if (abs (vcoeff) > matrix_element_screening_cutoff) then
+                            coulomb_two_body_coefficient_count = coulomb_two_body_coefficient_count + 1
                             if (include_specific_mass_shift) then
                                 if (angular_coefficient_labels(5,i) == 1) then
                                     call calculate_vinti_integral (angular_coefficient_labels(1,i), angular_coefficient_labels(3, &
-                                        & i), tgrl1)
+                                        & i), first_vinti_radial_integral)
                                     call calculate_vinti_integral (angular_coefficient_labels(2,i), angular_coefficient_labels(4, &
-                                        & i), tgrl2)
-                                    elemnt = elemnt - tgrl1*tgrl2*inverse_nuclear_mass*vcoeff
+                                        & i), second_vinti_radial_integral)
+                                    elemnt = elemnt - first_vinti_radial_integral*second_vinti_radial_integral* &
+                                        & inverse_nuclear_mass*vcoeff
                                 end if
                             end if
                             call lookup_slater_integral (angular_coefficient_labels(1,i), angular_coefficient_labels(2,i), &
@@ -321,7 +323,7 @@ contains
                     call calculate_two_electron_angular_coefficients (ic, ket_csf_index, closed_shell_breit_callback, 1, 2)
                     !
                     do i = 1, angular_coefficient_count
-                        if (dabs (angular_coefficients(i)) > cutoff) then
+                        if (dabs (angular_coefficients(i)) > matrix_element_screening_cutoff) then
                             nmcbp = nmcbp + 1
                             itype = abs (angular_coefficient_labels(6,i))
                             if (itype == 1) then
@@ -375,7 +377,7 @@ contains
                 ! Store this element if it is diagonal or its value is greater than
                 ! CUTOFF
                 !
-                if ( (ket_csf_index == ic) .or. (dabs (elemnt) > cutoff) ) then
+                if ( (ket_csf_index == ic) .or. (dabs (elemnt) > matrix_element_screening_cutoff) ) then
                     nelc       = nelc + 1
                     hamiltonian_values(nelc)  = elemnt
                     matrix_partner_indices(nelc) = ket_csf_index
@@ -422,11 +424,11 @@ contains
 
         !  Fill the common block /setham_to_genmat2/ for use in genmat2
 
-        block_matrix_element_cutoff = cutoff
+        block_matrix_element_cutoff = matrix_element_screening_cutoff
         block_coulomb_one_body_integral_count = coulomb_integral_count
-        block_coulomb_one_body_coefficient_count = ncoec
+        block_coulomb_one_body_coefficient_count = coulomb_one_body_coefficient_count
         block_slater_integral_count = rk_local_count(size(local_slater_integral_values), mpi_rank, mpi_process_count)
-        block_coulomb_two_body_coefficient_count = nctec
+        block_coulomb_two_body_coefficient_count = coulomb_two_body_coefficient_count
         block_breit_integral_counts = breit_integral_counts
         block_breit_coefficient_count = nmcbp
         block_breit_core_coefficient_count = closed_shell_contribution_count

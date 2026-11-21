@@ -8,12 +8,12 @@ contains
 
     !***********************************************************************
     !                                                                      *
-    subroutine second_spin_angular_factor (ipar,i1,i2,apart)
+    subroutine second_spin_angular_factor (spin_matrix_element_convention,i1,i2,spin_angular_factor)
         ! Module dependencies
         !                                                                      *
         !   This  routine computes                                             *
-        !   [-kappa_a || sigma^(2) ||kappa_b] if IPAR = 1                      *
-        !   <-kappa_a || sigma^(2) ||kappa_b> if IPAR = 2                      *
+        !   [-kappa_a || sigma^(2) ||kappa_b] for convention 1                      *
+        !   <-kappa_a || sigma^(2) ||kappa_b> for convention 2                      *
         !                                                                      *
         !                                                                      *
         !   Written by  G. Gaigalas                                            *
@@ -27,11 +27,11 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer, intent(in) :: ipar, i1, i2
-        real(real64), intent(out) :: apart
+        integer, intent(in) :: spin_matrix_element_convention, i1, i2
+        real(real64), intent(out) :: spin_angular_factor
 
         ! Local declarations
-        integer :: l1, l2, kap1, kap2, j1, j2, l2_tilda
+        integer :: l1, l2, kap1, kap2, bra_two_j, ket_two_j, l2_tilda
         real(real64) :: rac
         !-----------------------------------------------
         !
@@ -56,25 +56,25 @@ contains
         !
         !   Determine the j quantum numbers and l_2 tilda
         !
-        j1 = iabs(orbital_kappa(i1))*2-1
-        j2 = iabs(orbital_kappa(i2))*2-1
-        l2_tilda = j2 - l2
+        bra_two_j = iabs(orbital_kappa(i1))*2-1
+        ket_two_j = iabs(orbital_kappa(i2))*2-1
+        l2_tilda = ket_two_j - l2
         if (l2_tilda == l1) then
             !
             !   Determine the Racah W coefficients.
             !
-            call evaluate_racah_coefficient (1,j1,1,j2,2*l1,2,rac)
-            if (mod(1+j1+1+j2,4) == 0) rac=-rac
-            apart =  rac*dsqrt(6.0_real64*(j2+1))
+            call evaluate_racah_coefficient (1,bra_two_j,1,ket_two_j,2*l1,2,rac)
+            if (mod(1+bra_two_j+1+ket_two_j,4) == 0) rac=-rac
+            spin_angular_factor =  rac*dsqrt(6.0_real64*(ket_two_j+1))
         else
-            apart = 0.0_real64
+            spin_angular_factor = 0.0_real64
         end if
         !
         !   Determine the phase factori
         !
-        if(mod(2*l1+1+j1+2,4) == 0) apart=-apart
-        if(ipar == 2) then
-            apart = dsqrt(dble(j1+1))*apart
+        if(mod(2*l1+1+bra_two_j+2,4) == 0) spin_angular_factor=-spin_angular_factor
+        if(spin_matrix_element_convention == 2) then
+            spin_angular_factor = dsqrt(dble(bra_two_j+1))*spin_angular_factor
         end if
         return
     end subroutine second_spin_angular_factor

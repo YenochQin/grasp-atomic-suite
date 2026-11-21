@@ -20,7 +20,7 @@ contains
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: max_orbitals
         use array_memory_management, only: alloc, dalloc
-        use debug_output_settings, only: cutoff
+        use debug_output_settings, only: matrix_element_screening_cutoff
         use atomic_calculation_state, only: electron_mass_u, hartree_to_wavenumber_cm, max_radial_points, nuclear_charge, &
             speed_of_light_cm_per_s
         use radial_grid_state, only: radial_grid
@@ -200,7 +200,7 @@ contains
             do orbital_index = 1,orbital_count
                 if (i/=orbital_index) then
                     reduced_rank1_angular_element = reduced_angular_element(orbital_kappa(i),1,orbital_kappa(orbital_index))
-                    if (dabs(reduced_rank1_angular_element) > cutoff) then
+                    if (dabs(reduced_rank1_angular_element) > matrix_element_screening_cutoff) then
                         vinti_integrals  (i,orbital_index) = vinti_radial_integral(i,orbital_index)
                         recoil_corrected_vinti_integrals(i,orbital_index) = vinti_integrals(i, &
                             & orbital_index)                                  &

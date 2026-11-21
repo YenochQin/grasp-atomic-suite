@@ -38,7 +38,7 @@ program gj
     integer :: mixing_file_kind, unused_core_subshell_count
     logical :: prompt_answer
     real(real64), pointer :: lande_g_factors(:), lande_g_factor_corrections(:)
-    character :: name*24
+    character :: state_name*24
     !-----------------------------------------------
     !
     write (stderr_unit, *)
@@ -57,7 +57,7 @@ program gj
         nondefault_options_flag = 1
     end if
     !
-    call read_state_name(name)
+    call read_state_name(state_name)
     !
     write (stderr_unit, *)
     write (stderr_unit, *) "Mixing coefficients from a CI calc.?"
@@ -71,16 +71,16 @@ program gj
     call configure_debug_output
     call initialize_machine_constants
     call initialize_physical_constants
-    call load_angular_csf_basis(name, unused_core_subshell_count)
-    call read_hyperfine_options(name)
-    call read_mixing_blocks(name, mixing_file_kind)
+    call load_angular_csf_basis(state_name, unused_core_subshell_count)
+    call read_hyperfine_options(state_name)
+    call read_mixing_blocks(state_name, mixing_file_kind)
     call initialize_log_factorial_table
     !
     call alloc(lande_g_factors, active_level_count, "lande_g_factors", "GJ")
     call alloc(lande_g_factor_corrections, active_level_count, "lande_g_factor_corrections", "GJ")
     !
     call compute_gj_only(lande_g_factors, lande_g_factor_corrections)
-    call write_lande_g_factors(name, mixing_file_kind, lande_g_factors, lande_g_factor_corrections)
+    call write_lande_g_factors(state_name, mixing_file_kind, lande_g_factors, lande_g_factor_corrections)
     !
     call dalloc(lande_g_factors, "lande_g_factors", "GJ")
     call dalloc(lande_g_factor_corrections, "lande_g_factor_corrections", "GJ")

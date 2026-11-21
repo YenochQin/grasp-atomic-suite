@@ -32,7 +32,7 @@ contains
         !...Translated by Gediminas Gaigalas 11/18/19
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: orbital_index_radix, max_orbitals
-        use debug_output_settings, only: cutoff, ldbpa
+        use debug_output_settings, only: matrix_element_screening_cutoff, ldbpa
         use selected_level_indices, only: active_level_count
         use orbital_csf_basis, only: csf_count, max_orbitals, orbital_principal_n, orbital_symmetry_labels
         use angular_coefficient_buffer_state, only: angular_coefficient_count, angular_coefficient_labels, angular_coefficients
@@ -102,7 +102,7 @@ contains
                     !
                     do i = 1,angular_coefficient_count
                         angular_coefficient = angular_coefficients(i)
-                        if (abs (angular_coefficient) > cutoff) then
+                        if (abs (angular_coefficient) > matrix_element_screening_cutoff) then
                             orbital_a = angular_coefficient_labels(1,i)
                             orbital_b = angular_coefficient_labels(2,i)
                             orbital_c = angular_coefficient_labels(3,i)

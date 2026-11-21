@@ -29,7 +29,7 @@
 | `ovflow.f90` | `ovflow_i` | [`davidson_subspace_restart`](../../src/lib/davidson_eigensolver/davidson_subspace_restart.f90) | 压缩子空间并重启 |
 | `tstsel.f90` | `tstsel_i` | [`davidson_convergence`](../../src/lib/davidson_eigensolver/davidson_convergence.f90) | 检测收敛并排序待处理本征对 |
 
-现行求解入口和矩阵–向量回调分别用 `use davidson_eigensolver, only: solve_davidson_eigenpairs, dvd_operator` 导入。其他过程名见[共享库过程对照](shared_library_procedure_names.md)。
+现行求解入口和矩阵–向量回调分别用 `use davidson_eigensolver, only: solve_davidson_eigenpairs, davidson_matrix_vector_operator` 导入。其他过程名见[共享库过程对照](shared_library_procedure_names.md)。
 外部 Fortran 调用方需要更新 `USE` 和链接名称，使用新的 `.mod` 文件重新编译和链接。
 模块名是 Fortran 链接符号的一部分。
 
@@ -185,7 +185,7 @@ Davidson 迭代、收敛与重启。
 
 对角预条件与矩阵–向量乘法回调。
 
-#### `dvd_operator`
+#### `davidson_matrix_vector_operator`
 
 | 原名 | 迁移后 | 用途 |
 | --- | --- | --- |

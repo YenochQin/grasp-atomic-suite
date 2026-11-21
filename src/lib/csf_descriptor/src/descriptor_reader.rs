@@ -24,7 +24,7 @@ pub struct DescriptorReader {
     block_rows: u64,
 }
 
-fn orbital(label: &str) -> Result<(i32, i32)> {
+fn parse_orbital_label(label: &str) -> Result<(i32, i32)> {
     ensure!(label.is_ascii(), "non-ASCII orbital label");
     let suffix_start = label
         .bytes()
@@ -114,7 +114,7 @@ fn header_orbitals(core: &[&str], peel: &[&str]) -> Result<Vec<(i32, i32)>> {
     let orbitals = core
         .iter()
         .chain(peel)
-        .map(|s| orbital(s))
+        .map(|s| parse_orbital_label(s))
         .collect::<Result<Vec<_>>>()?;
     ensure!(!orbitals.is_empty(), "empty orbital table");
     let unique: std::collections::HashSet<_> = orbitals.iter().copied().collect();
@@ -334,7 +334,7 @@ impl DescriptorReader {
             }
         };
         ensure!(
-            batch.num_columns() == self.layout.row_len(),
+            batch.num_columns() == self.layout.descriptor_row_channel_count(),
             "column count mismatch"
         );
         let columns = batch
@@ -354,7 +354,7 @@ impl DescriptorReader {
             .checked_sub(count as u64)
             .context("too many rows")?;
         let size = count
-            .checked_mul(self.layout.row_len())
+            .checked_mul(self.layout.descriptor_row_channel_count())
             .context("batch size overflow")?;
         output.try_reserve(size)?;
         // Transpose the Arrow column layout into contiguous descriptor rows for Fortran.
@@ -363,7 +363,7 @@ impl DescriptorReader {
                 output.push(column.value(row));
             }
         }
-        for row in output.chunks_exact(self.layout.row_len()) {
+        for row in output.chunks_exact(self.layout.descriptor_row_channel_count()) {
             ensure!(
                 self.block_index < self.block_lengths.len(),
                 "row outside blocks"

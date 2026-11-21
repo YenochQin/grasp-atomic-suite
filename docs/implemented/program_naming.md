@@ -1,5 +1,36 @@
 # 普通程序命名与目录迁移
 
+## 2026-11-21 语义命名审查整改
+
+在 `d9f9787` 的审查基础上，按实际量、编码和计算角色更新了变量、形参和共享状态。
+例如 `csf_two_j_plus_one` 表示 RDENSITY 计算使用的 `2J+1`，
+`decoded_integral_orbital_indices` 表示 RMCDHF 从积分标签解包的四个轨道索引。
+串行和 MPI 的 RMCDHF 轨道势入口现在用同一套形参名称。内存版 MCP 数据区分每项积分的贡献数、
+CSF 列、稀疏矩阵位置及角系数。三个跃迁实现使用各积分及贡献项的名称。
+
+| 旧源码相对路径 | 现行源码相对路径 |
+| --- | --- |
+| `jj2lsj/ls_jj_coefficients_table_2.f90` | [jj2lsj/ls_jj_coefficients_f6.f90](../../src/apps/jj2lsj/ls_jj_coefficients_f6.f90) |
+| `jj2lsj/ls_jj_coefficients_table_3.f90` | [jj2lsj/ls_jj_coefficients_f7.f90](../../src/apps/jj2lsj/ls_jj_coefficients_f7.f90) |
+| `rangular_mpi/open_temporary_mcp_channel.f90` | [rangular_mpi/open_temporary_mcp_channels.f90](../../src/apps/rangular_mpi/open_temporary_mcp_channels.f90) |
+| `ris4/fical.f90` | [ris4/isotope_shift_transition_main.f90](../../src/apps/ris4/isotope_shift_transition_main.f90) |
+| `rmcdhf_mem/rmcdhf_main.f90` | [rmcdhf_mem/rmcdhf_mem_main.f90](../../src/apps/rmcdhf_mem/rmcdhf_mem_main.f90) |
+| `rmcdhf_mem_mpi/rmcdhf_mpi_main.f90` | [rmcdhf_mem_mpi/rmcdhf_mem_mpi_main.f90](../../src/apps/rmcdhf_mem_mpi/rmcdhf_mem_mpi_main.f90) |
+| `rtransition_phase/rtransition_main.f90` | [rtransition_phase/rtransition_phase_main.f90](../../src/apps/rtransition_phase/rtransition_phase_main.f90) |
+
+沿用现行可执行目标和命令，包括 `fical`。`rangular_mpi` 的通道打开过程改为复数
+`open_temporary_mcp_channels`，所在模块为 `open_temporary_mcp_channels_interface`。
+使用 Fortran 关键字实参的调用方以现行形参声明为准。旧构建清单删除已合并或替换的源文件引用，
+CMake 继续作为构建入口。[RMCDHF 来源与改名记录](../reference/rmcdhf_audited_names_snapshot.json)
+
+跃迁工作区的 `jja`、`jjb`、`hb1/2`、`hc1/2`、`hm1/2` 目前只参与分配、扩容和释放。
+本轮保留这些指针的旧名，现行计算路径无法区分它们原先的物理角色。
+
+GNU Fortran 15.3.0 和 Open MPI 5.0.11 下，启用串行程序、MPI 和 jj2lsj OpenMP 的
+Release 与 Check 配置各通过 117 项 CTest。与 `d9f9787` 的 Release 构建用相同夹具对照，
+79 个计算文件或报告输出逐字节一致，覆盖串行和双进程工作流、Coulomb/Breit RCI、RIS4、
+跃迁、JJ2LSJ、FICAL 和 RLEVELS。公开 C 头文件的 8 个 ABI 函数名称和类型与基准一致。
+
 ## 应用源码目录和变量命名
 
 自 2026-11-20 起，suite 的 20 个应用源码目录位于 `src/apps/`。CMake、测试和网格补丁器的

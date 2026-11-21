@@ -39,8 +39,6 @@ OBJS= \
 	 \
 	prepare_biorthogonal_subshells.o \
 	 \
-	lodcslBio.o \
-	lodcslBio_I.o \
 	read_final_radial_wavefunctions.o \
 	 \
 	read_initial_radial_wavefunctions.o \

@@ -23,7 +23,7 @@ transverse_radial_integral.f90
 breit_radial_integral.f90
 lookup_breit_radial_integral.f90
 collect_breit_angular_coefficient.f90
-accumulate_closed_shell_breit.f90 accumulate_closed_shell_breit_interface.f90
+accumulate_closed_shell_breit.f90
 breit_radial_integral_1.f90
 breit_radial_integral_2.f90
 breit_radial_integral_3.f90

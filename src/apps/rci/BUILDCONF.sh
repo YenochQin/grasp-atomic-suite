@@ -28,7 +28,7 @@ fullerton_rinker_l_function.f90
 mohr_self_energy_factor.f90
 klarsfeld_maquet_self_energy_factor.f90
 hydrogenic_self_energy_factor.f90
-accumulate_closed_shell_breit.f90 accumulate_closed_shell_breit_interface.f90
+accumulate_closed_shell_breit.f90
 evaluate_breit_hartree_z.f90
 coulomb_radial_integral.f90
 lookup_slater_integral.f90
@@ -75,7 +75,7 @@ build_vacuum_polarization.f90
 vinti_radial_integral.f90
 calculate_vinti_integral.f90
 vacuum_polarization_integral.f90
-calculate_vacuum_polarization_integral.f90 calculate_vacuum_polarization_integral_interface.f90
+calculate_vacuum_polarization_integral.f90
 read_ci_level_selection.f90
 assemble_hamiltonian_block.f90
 assemble_ci_matrix.f90

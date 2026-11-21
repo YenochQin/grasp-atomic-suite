@@ -7,8 +7,8 @@ rmcdhf_mcp_memory.f90
 read_mcp_structure_from_memory.f90
 read_mcp_coefficients_from_memory.f90
 load_mcp_records_into_memory.f90
-read_mcp_structure_into_memory.f90 read_mcp_structure_into_memory_interface.f90
-read_mcp_coefficients_into_memory.f90 read_mcp_coefficients_into_memory_interface.f90
+read_mcp_structure_into_memory.f90
+read_mcp_coefficients_into_memory.f90
 query_total_system_memory.f90
 query_available_system_memory.f90
 cache_mcp_files.f90
@@ -17,7 +17,6 @@ csf_density_matrix_element.f90
 direct_angular_coefficient.f90
 exchange_angular_coefficient.f90
 assemble_orbital_potential_coefficients.f90
-lodcsh2GG.f90 lodcsh2GG_I.f90
 load_csf_basis_data.f90
 configure_debug_output.f90
 assemble_hamiltonian_block.f90
@@ -68,7 +67,7 @@ improve_orbital.f90
 run_scf_iterations.f90
 write_input_summary.f90
 
-rmcdhf_main.f90
+rmcdhf_mem_main.f90
 "
 generate-makefile > ${MAKEFILE}
 generate-cmakelists > ${CMAKELISTSTXT}

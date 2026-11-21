@@ -1,11 +1,12 @@
-program fical
+program isotope_shift_transition_main
     ! Module dependencies
     use calculation_state_files, only: read_state_name
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
     integer :: isotope_shift_output_unit
     integer :: i,j,ii,jj,lsjpresent,lmax,lmax1,lmax2
-    integer :: nvec1,nvec2,nveclsj1,nveclsj2,level1(500),level2(500),levellsj1(500),levellsj2(500)
+    integer :: first_state_level_count,second_state_level_count,nveclsj1,nveclsj2,level1(500),level2(500),levellsj1(500), &
+        & levellsj2(500)
     integer :: relflag,efacflag
 
     real(real64) :: energy1(500),nms1(500),sms1(500),ms1(500),fs1(6,500),fshift1(500),fshift11(500)
@@ -18,7 +19,7 @@ program fical
     real(real64) :: f0, f2, f4, f6, f0res, f2res, linfac
     real(real64) :: fieldshiftres, fieldshift22res, linfac2
 
-    real(real64), parameter :: au2kays = 219474.63136320_real64   ! CODATA 2018
+    real(real64), parameter :: hartree_to_wavenumber_cm = 219474.63136320_real64   ! CODATA 2018
     real(real64) :: drms
     real(real64) :: z
 
@@ -246,9 +247,9 @@ program fical
 
     end if
 
-    call read_isotope_shift_report(file1,unit,efacflag,relflag,nvec1,level1,spinpar1,energy1,nms1,sms1,ms1,fs1)
+    call read_isotope_shift_report(file1,unit,efacflag,relflag,first_state_level_count,level1,spinpar1,energy1,nms1,sms1,ms1,fs1)
 
-    call read_isotope_shift_report(file2,unit,efacflag,relflag,nvec2,level2,spinpar2,energy2,nms2,sms2,ms2,fs2)
+    call read_isotope_shift_report(file2,unit,efacflag,relflag,second_state_level_count,level2,spinpar2,energy2,nms2,sms2,ms2,fs2)
 
     call read_isotope_data("isodata",file3,z)
 
@@ -272,25 +273,25 @@ program fical
     write(isotope_shift_output_unit,*)
 
     if(efacflag==1) then
-        fshift1(:nvec1) = fs1(5,:nvec1)
-        fshift2(:nvec2) = fs2(5,:nvec2)
-        fshift11(:nvec1) = fs1(6,:nvec1)
-        fshift22(:nvec2) = fs2(6,:nvec2)
+        fshift1(:first_state_level_count) = fs1(5,:first_state_level_count)
+        fshift2(:second_state_level_count) = fs2(5,:second_state_level_count)
+        fshift11(:first_state_level_count) = fs1(6,:first_state_level_count)
+        fshift22(:second_state_level_count) = fs2(6,:second_state_level_count)
     else
         if(unit=="GHz") then
-            fs1(1,:nvec1) = fs1(1,:nvec1)*z*4.9210908105e-3_real64
-            fs2(1,:nvec2) = fs2(1,:nvec2)*z*4.9210908105e-3_real64
+            fs1(1,:first_state_level_count) = fs1(1,:first_state_level_count)*z*4.9210908105e-3_real64
+            fs2(1,:second_state_level_count) = fs2(1,:second_state_level_count)*z*4.9210908105e-3_real64
         else if(unit=="MHz") then
-            fs1(1,:nvec1) = fs1(1,:nvec1)*z*4.9210908105_real64
-            fs2(1,:nvec2) = fs2(1,:nvec2)*z*4.9210908105_real64
+            fs1(1,:first_state_level_count) = fs1(1,:first_state_level_count)*z*4.9210908105_real64
+            fs2(1,:second_state_level_count) = fs2(1,:second_state_level_count)*z*4.9210908105_real64
         else if(unit=="meV") then
-            fs1(1,:nvec1) = fs1(1,:nvec1)*z*4.9210908105e-3_real64/241.7989348_real64
-            fs2(1,:nvec2) = fs2(1,:nvec2)*z*4.9210908105e-3_real64/241.7989348_real64
+            fs1(1,:first_state_level_count) = fs1(1,:first_state_level_count)*z*4.9210908105e-3_real64/241.7989348_real64
+            fs2(1,:second_state_level_count) = fs2(1,:second_state_level_count)*z*4.9210908105e-3_real64/241.7989348_real64
         end if
-        fshift1(:nvec1) = fs1(1,:nvec1)
-        fshift2(:nvec2) = fs2(1,:nvec2)
-        fshift11(:nvec1) = fs1(1,:nvec1)
-        fshift22(:nvec2) = fs2(1,:nvec2)
+        fshift1(:first_state_level_count) = fs1(1,:first_state_level_count)
+        fshift2(:second_state_level_count) = fs2(1,:second_state_level_count)
+        fshift11(:first_state_level_count) = fs1(1,:first_state_level_count)
+        fshift22(:second_state_level_count) = fs2(1,:second_state_level_count)
     end if
 
     if(soph=="y") then
@@ -300,13 +301,13 @@ program fical
         drms =abs(radmom1(1)-radmom2(1))
 
         fieldshift1(:) = 0.0_real64
-        do i=1,nvec1
+        do i=1,first_state_level_count
             do j=1,4
                 fieldshift1(i) = fieldshift1(i) + fs1(j,i)*(radmom1(j)-radmom2(j))
             end do
         end do
         fieldshift2(:) = 0.0_real64
-        do i=1,nvec2
+        do i=1,second_state_level_count
             do j=1,4
                 fieldshift2(i) = fieldshift2(i) + fs2(j,i)*(radmom1(j)-radmom2(j))
             end do
@@ -358,20 +359,20 @@ program fical
             end if
         end if
         write(isotope_shift_output_unit,*)
-        do i=1,nvec1
+        do i=1,first_state_level_count
             do ii=1,nveclsj1
                 if((level1(i)==levellsj1(ii)).and.(spinpar1(i)(6:9)==spinlsj1(ii)).and.(spinpar1(i)(11:11)==parlsj1(ii))) then
                     csflabel1scal = csflabel1(ii)
                 end if
             end do
-            do j=1,nvec2
+            do j=1,second_state_level_count
                 do jj=1,nveclsj2
                     if((level2(j)==levellsj2(jj)).and.(spinpar2(j)(6:9)==spinlsj2(jj)).and.(spinpar2(j)(11:11)==parlsj2(jj))) then
                         csflabel2scal = csflabel2(jj)
                     end if
                 end do
                 if(energy1(i)>energy2(j)) then
-                    tenergy = (energy1(i)-energy2(j))*au2kays
+                    tenergy = (energy1(i)-energy2(j))*hartree_to_wavenumber_cm
                     nmslaw = -1.0_real64*tenergy*nmsconst
                     if(state1==state2.and.j>i) then
                         if(lsjpresent==0) then
@@ -395,7 +396,7 @@ program fical
                         end if
                     end if
                 else
-                    tenergy = (energy2(j)-energy1(i))*au2kays
+                    tenergy = (energy2(j)-energy1(i))*hartree_to_wavenumber_cm
                     nmslaw = -1.0_real64*tenergy*nmsconst
                     if(state1==state2.and.j>i) then
                         if(lsjpresent==0) then
@@ -445,20 +446,20 @@ program fical
             end if
         end if
         write(isotope_shift_output_unit,*)
-        do i=1,nvec1
+        do i=1,first_state_level_count
             do ii=1,nveclsj1
                 if((level1(i)==levellsj1(ii)).and.(spinpar1(i)(6:9)==spinlsj1(ii)).and.(spinpar1(i)(11:11)==parlsj1(ii))) then
                     csflabel1scal = csflabel1(ii)
                 end if
             end do
-            do j=1,nvec2
+            do j=1,second_state_level_count
                 do jj=1,nveclsj2
                     if((level2(j)==levellsj2(jj)).and.(spinpar2(j)(6:9)==spinlsj2(jj)).and.(spinpar2(j)(11:11)==parlsj2(jj))) then
                         csflabel2scal = csflabel2(jj)
                     end if
                 end do
                 if(energy1(i)>energy2(j)) then
-                    tenergy = (energy1(i)-energy2(j))*au2kays
+                    tenergy = (energy1(i)-energy2(j))*hartree_to_wavenumber_cm
                     f0 = fs1(1,i)-fs2(1,j)
                     f2 = fs1(2,i)-fs2(2,j)
                     f4 = fs1(3,i)-fs2(3,j)
@@ -493,7 +494,7 @@ program fical
                         end if
                     end if
                 else
-                    tenergy = (energy2(j)-energy1(i))*au2kays
+                    tenergy = (energy2(j)-energy1(i))*hartree_to_wavenumber_cm
                     f0 = fs2(1,j)-fs1(1,i)
                     f2 = fs2(2,j)-fs1(2,i)
                     f4 = fs2(3,j)-fs1(3,i)
@@ -558,20 +559,20 @@ program fical
             end if
         end if
         write(isotope_shift_output_unit,*)
-        do i=1,nvec1
+        do i=1,first_state_level_count
             do ii=1,nveclsj1
                 if((level1(i)==levellsj1(ii)).and.(spinpar1(i)(6:9)==spinlsj1(ii)).and.(spinpar1(i)(11:11)==parlsj1(ii))) then
                     csflabel1scal = csflabel1(ii)
                 end if
             end do
-            do j=1,nvec2
+            do j=1,second_state_level_count
                 do jj=1,nveclsj2
                     if((level2(j)==levellsj2(jj)).and.(spinpar2(j)(6:9)==spinlsj2(jj)).and.(spinpar2(j)(11:11)==parlsj2(jj))) then
                         csflabel2scal = csflabel2(jj)
                     end if
                 end do
                 if(energy1(i)>energy2(j)) then
-                    tenergy = (energy1(i)-energy2(j))*au2kays
+                    tenergy = (energy1(i)-energy2(j))*hartree_to_wavenumber_cm
                     f0 = fs1(1,i)-fs2(1,j)
                     f2 = fs1(2,i)-fs2(2,j)
                     f4 = fs1(3,i)-fs2(3,j)
@@ -606,7 +607,7 @@ program fical
                         end if
                     end if
                 else
-                    tenergy = (energy2(j)-energy1(i))*au2kays
+                    tenergy = (energy2(j)-energy1(i))*hartree_to_wavenumber_cm
                     f0 = fs2(1,j)-fs1(1,i)
                     f2 = fs2(2,j)-fs1(2,i)
                     f4 = fs2(3,j)-fs1(3,i)
@@ -674,20 +675,20 @@ program fical
         end if
 
         write(isotope_shift_output_unit,*)
-        do i=1,nvec1
+        do i=1,first_state_level_count
             do ii=1,nveclsj1
                 if((level1(i)==levellsj1(ii)).and.(spinpar1(i)(6:9)==spinlsj1(ii)).and.(spinpar1(i)(11:11)==parlsj1(ii))) then
                     csflabel1scal = csflabel1(ii)
                 end if
             end do
-            do j=1,nvec2
+            do j=1,second_state_level_count
                 do jj=1,nveclsj2
                     if((level2(j)==levellsj2(jj)).and.(spinpar2(j)(6:9)==spinlsj2(jj)).and.(spinpar2(j)(11:11)==parlsj2(jj))) then
                         csflabel2scal = csflabel2(jj)
                     end if
                 end do
                 if(energy1(i)>energy2(j)) then
-                    tenergy = (energy1(i)-energy2(j))*au2kays
+                    tenergy = (energy1(i)-energy2(j))*hartree_to_wavenumber_cm
                     if(m1>m2) then
                         masshift = (ms1(i)-ms2(j))*(m2-m1)/(m1*m2)
                         if(soph=="y") then
@@ -726,7 +727,7 @@ program fical
                         end if
                     end if
                 else
-                    tenergy = (energy2(j)-energy1(i))*au2kays
+                    tenergy = (energy2(j)-energy1(i))*hartree_to_wavenumber_cm
                     if(m1>m2) then
                         masshift = (ms2(j)-ms1(i))*(m2-m1)/(m1*m2)
                         if(soph=="y") then
@@ -1134,4 +1135,4 @@ contains
         !write(*,*) nvec
     end subroutine read_lsj_report
 
-end program fical
+end program isotope_shift_transition_main

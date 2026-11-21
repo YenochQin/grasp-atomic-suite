@@ -9,7 +9,7 @@ program ris4_mpi_main
     use, intrinsic :: iso_fortran_env, only: real64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
-    use debug_output_settings,         only: cutoff
+    use debug_output_settings,         only: matrix_element_screening_cutoff
     use mpi_state, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_finalize, mpi_integer, &
         mpi_process_count, mpi_rank, processor_name, processor_name_length
     use calculation_state_files, only: read_state_name, property_state_arguments
@@ -39,14 +39,14 @@ program ris4_mpi_main
     use calculate_isotope_shifts_mpi_interface, only: calculate_isotope_shifts_mpi
 
     ! Module dependencies
-    use mpi_utilities, only: mpix_shutdown
-    use mpi_utilities, only: mpix_startup
+    use mpi_utilities, only: finish_mpi_application
+    use mpi_utilities, only: start_mpi_application
     implicit none (type, external)
     integer :: input_status, mixing_file_kind, unused_core_subshell_count, start_clock_count
     logical :: yes, use_args
     character :: name*24
 
-    call mpix_startup(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count, &
+    call start_mpi_application(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count, &
         "RIS4_MPI", "This is the MPI RIS program", &
         "isodata, descriptor Parquet/header, name.mix/name.cimix, name.wfn", &
         "name.i or name.ci", .true.)
@@ -55,7 +55,7 @@ program ris4_mpi_main
     mixing_file_kind = 1
     nondefault_options_flag = 0
     use_args = .false.
-    cutoff = 1.0e-10_real64
+    matrix_element_screening_cutoff = 1.0e-10_real64
 
     if (mpi_rank == 0) then
         use_args = command_argument_count() > 0
@@ -113,6 +113,6 @@ program ris4_mpi_main
     call initialize_log_factorial_table
     call calculate_isotope_shifts_mpi(name)
 
-    call mpix_shutdown(mpi_rank, start_clock_count, "RIS4_MPI")
+    call finish_mpi_application(mpi_rank, start_clock_count, "RIS4_MPI")
     stop
 end program ris4_mpi_main

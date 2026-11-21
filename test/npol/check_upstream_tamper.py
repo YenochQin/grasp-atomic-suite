@@ -9,7 +9,13 @@ import shutil
 import tempfile
 
 from check_upstream import main as verify
-from check_upstream import APP_MODULES_SNAPSHOT, APP_SYMBOLS_SNAPSHOT, DIAGNOSTIC_LABELS_SNAPSHOT, suite_source_path
+from check_upstream import (
+    APP_MODULES_SNAPSHOT,
+    APP_SYMBOLS_SNAPSHOT,
+    AUDITED_NAMES_SNAPSHOT,
+    DIAGNOSTIC_LABELS_SNAPSHOT,
+    suite_source_path,
+)
 
 
 def main() -> None:
@@ -20,8 +26,12 @@ def main() -> None:
         migration = json.loads((root / "docs/reference/rmcdhf_descriptor_snapshot.json").read_text())
         app_symbols = json.loads((root / APP_SYMBOLS_SNAPSHOT).read_text())
         app_modules = json.loads((root / APP_MODULES_SNAPSHOT).read_text())
+        audited_names = json.loads((root / AUDITED_NAMES_SNAPSHOT).read_text())
         removed = set(migration["removed"]) | set(app_modules["merged_interfaces"])
         renamed_paths = {name: record["suite_path"] for name, record in app_symbols["files"].items()}
+        renamed_paths.update({
+            name: record["suite_path"] for name, record in audited_names["files"].items() if "suite_path" in record
+        })
         paths = [
             suite_source_path(root, name, renamed_paths)
             for name in manifest["files"] if name not in removed
@@ -37,6 +47,7 @@ def main() -> None:
                          "src/apps/rmcdhf/direct_angular_coefficient.f90",
                          "src/apps/rmcdhf/serial_mpi_context.f90",
                          "src/apps/rmcdhf/rmcdhf_main.f90",
+                         "src/apps/rmcdhf_mem_mpi/rmcdhf_mem_mpi_main.f90",
                          "src/apps/rmcdhf/diagonalize_hamiltonian_block.f90",
                          "src/apps/rmcdhf/CMakeLists.txt",
                          "src/apps/rmcdhf_mpi/Makefile",
@@ -47,6 +58,8 @@ def main() -> None:
                          "docs/reference/rmcdhf_app_symbols_snapshot.json",
                          "docs/reference/rmcdhf_app_source_style_snapshot.json",
                          "docs/reference/rmcdhf_app_modules_snapshot.json",
+                         "docs/reference/rmcdhf_semantic_names_snapshot.json",
+                         AUDITED_NAMES_SNAPSHOT,
                          DIAGNOSTIC_LABELS_SNAPSHOT,
                          "docs/reference/rmcdhf_grasp_mpi_naming_snapshot.json",
                          "docs/reference/rmcdhf_grasp_shared_naming_snapshot.json",

@@ -12,8 +12,6 @@ OBJS= \
 	 \
 	assemble_orbital_potential_coefficients.o \
 	 \
-	lodcsh2GG.o \
-	lodcsh2GG_I.o \
 	load_csf_basis_data.o \
 	 \
 	configure_debug_output.o \

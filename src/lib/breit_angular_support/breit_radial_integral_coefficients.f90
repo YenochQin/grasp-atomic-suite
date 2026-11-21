@@ -68,7 +68,19 @@ contains
         integer :: orbital_a, orbital_b, orbital_c, orbital_d, kappa_a, kappa_b, kappa_c, kappa_d, kappa_swap, orbital_swap, &
             & phase_exponent, two_rank_plus_one
         real(real64) :: rank_norm, reduced_angular_product, first_kappa_difference, second_kappa_difference, &
-            rank, next_rank, g1, g2, g3, g4, leading_prefactor, f1, f2, f3, f4, mixed_prefactor, exchange_kappa_difference
+            rank, next_rank, leading_prefactor, mixed_prefactor, exchange_kappa_difference
+        real(real64) :: first_kappa_difference_minus_rank
+        real(real64) :: first_kappa_difference_plus_rank
+        real(real64) :: second_kappa_difference_minus_rank
+        real(real64) :: second_kappa_difference_plus_rank
+        real(real64) :: first_kappa_difference_minus_next_rank
+        real(real64) :: first_kappa_difference_plus_next_rank
+        real(real64) :: second_kappa_difference_minus_next_rank
+        real(real64) :: second_kappa_difference_plus_next_rank
+        real(real64) :: exchange_kappa_difference_plus_rank
+        real(real64) :: exchange_kappa_difference_minus_rank
+        real(real64) :: exchange_kappa_difference_plus_next_rank
+        real(real64) :: exchange_kappa_difference_minus_next_rank
         !-----------------------------------------------
         !
         !
@@ -124,19 +136,23 @@ contains
                 second_kappa_difference = kappa_d - kappa_b
                 rank = tensor_rank
                 next_rank = tensor_rank + 1
-                g1 = first_kappa_difference - next_rank
-                g2 = first_kappa_difference + next_rank
-                g3 = second_kappa_difference - next_rank
-                g4 = second_kappa_difference + next_rank
+                first_kappa_difference_minus_next_rank = first_kappa_difference - next_rank
+                first_kappa_difference_plus_next_rank = first_kappa_difference + next_rank
+                second_kappa_difference_minus_next_rank = second_kappa_difference - next_rank
+                second_kappa_difference_plus_next_rank = second_kappa_difference + next_rank
                 two_rank_plus_one = tensor_rank + tensor_rank + 1
                 reduced_angular_product = reduced_angular_element(kappa_a,tensor_rank,kappa_c)*reduced_angular_element(kappa_b, &
                     & tensor_rank,kappa_d)
                 if (mod(tensor_rank,2) /= 0) reduced_angular_product = -reduced_angular_product
                 leading_prefactor = reduced_angular_product*rank/next_rank/dble(two_rank_plus_one*(two_rank_plus_one + 2))
-                radial_integral_coefficients(1) = leading_prefactor*g1*g3
-                radial_integral_coefficients(2) = leading_prefactor*g2*g4
-                radial_integral_coefficients(3) = leading_prefactor*g1*g4
-                radial_integral_coefficients(4) = leading_prefactor*g2*g3
+                radial_integral_coefficients(1) = leading_prefactor*first_kappa_difference_minus_next_rank* &
+                    & second_kappa_difference_minus_next_rank
+                radial_integral_coefficients(2) = leading_prefactor*first_kappa_difference_plus_next_rank* &
+                    & second_kappa_difference_plus_next_rank
+                radial_integral_coefficients(3) = leading_prefactor*first_kappa_difference_minus_next_rank* &
+                    & second_kappa_difference_plus_next_rank
+                radial_integral_coefficients(4) = leading_prefactor*first_kappa_difference_plus_next_rank* &
+                    & second_kappa_difference_minus_next_rank
                 return
             end if
             !
@@ -146,32 +162,40 @@ contains
             second_kappa_difference = kappa_d - kappa_b
             rank = tensor_rank
             next_rank = tensor_rank + 1
-            f1 = first_kappa_difference - rank
-            f2 = first_kappa_difference + rank
-            f3 = second_kappa_difference - rank
-            f4 = second_kappa_difference + rank
-            g1 = first_kappa_difference - next_rank
-            g2 = first_kappa_difference + next_rank
-            g3 = second_kappa_difference - next_rank
-            g4 = second_kappa_difference + next_rank
+            first_kappa_difference_minus_rank = first_kappa_difference - rank
+            first_kappa_difference_plus_rank = first_kappa_difference + rank
+            second_kappa_difference_minus_rank = second_kappa_difference - rank
+            second_kappa_difference_plus_rank = second_kappa_difference + rank
+            first_kappa_difference_minus_next_rank = first_kappa_difference - next_rank
+            first_kappa_difference_plus_next_rank = first_kappa_difference + next_rank
+            second_kappa_difference_minus_next_rank = second_kappa_difference - next_rank
+            second_kappa_difference_plus_next_rank = second_kappa_difference + next_rank
             two_rank_plus_one = tensor_rank + tensor_rank + 1
             reduced_angular_product = reduced_angular_element(kappa_a,tensor_rank,kappa_c)*reduced_angular_element(kappa_b, &
                 & tensor_rank,kappa_d)
             if (mod(tensor_rank,2) /= 0) reduced_angular_product = -reduced_angular_product
             leading_prefactor = reduced_angular_product*next_rank/rank/dble(two_rank_plus_one*(two_rank_plus_one - 2))
-            radial_integral_coefficients(1) = leading_prefactor*f2*f4
-            radial_integral_coefficients(2) = leading_prefactor*f1*f3
-            radial_integral_coefficients(3) = leading_prefactor*f2*f3
-            radial_integral_coefficients(4) = leading_prefactor*f1*f4
+            radial_integral_coefficients(1) = leading_prefactor*first_kappa_difference_plus_rank*second_kappa_difference_plus_rank
+            radial_integral_coefficients(2) = leading_prefactor*first_kappa_difference_minus_rank*second_kappa_difference_minus_rank
+            radial_integral_coefficients(3) = leading_prefactor*first_kappa_difference_plus_rank*second_kappa_difference_minus_rank
+            radial_integral_coefficients(4) = leading_prefactor*first_kappa_difference_minus_rank*second_kappa_difference_plus_rank
             mixed_prefactor = reduced_angular_product/dble(two_rank_plus_one*two_rank_plus_one)
-            radial_integral_coefficients(5) = mixed_prefactor*f2*g3
-            radial_integral_coefficients(6) = mixed_prefactor*f4*g1
-            radial_integral_coefficients(7) = mixed_prefactor*f1*g4
-            radial_integral_coefficients(8) = mixed_prefactor*f3*g2
-            radial_integral_coefficients(9) = mixed_prefactor*f2*g4
-            radial_integral_coefficients(10) = mixed_prefactor*f3*g1
-            radial_integral_coefficients(11) = mixed_prefactor*f1*g3
-            radial_integral_coefficients(12) = mixed_prefactor*f4*g2
+            radial_integral_coefficients(5) = mixed_prefactor*first_kappa_difference_plus_rank* &
+                & second_kappa_difference_minus_next_rank
+            radial_integral_coefficients(6) = mixed_prefactor*second_kappa_difference_plus_rank* &
+                & first_kappa_difference_minus_next_rank
+            radial_integral_coefficients(7) = mixed_prefactor*first_kappa_difference_minus_rank* &
+                & second_kappa_difference_plus_next_rank
+            radial_integral_coefficients(8) = mixed_prefactor*second_kappa_difference_minus_rank* &
+                & first_kappa_difference_plus_next_rank
+            radial_integral_coefficients(9) = mixed_prefactor*first_kappa_difference_plus_rank* &
+                & second_kappa_difference_plus_next_rank
+            radial_integral_coefficients(10) = mixed_prefactor*second_kappa_difference_minus_rank* &
+                & first_kappa_difference_minus_next_rank
+            radial_integral_coefficients(11) = mixed_prefactor*first_kappa_difference_minus_rank* &
+                & second_kappa_difference_minus_next_rank
+            radial_integral_coefficients(12) = mixed_prefactor*second_kappa_difference_plus_rank* &
+                & first_kappa_difference_plus_next_rank
             return
         !
         !   3.0  IBR = 2  Degenerate case: only one non-zero R-integral
@@ -234,15 +258,18 @@ contains
                 exchange_kappa_difference = kappa_b - kappa_a
                 next_rank = tensor_rank + 1
                 rank = tensor_rank
-                g1 = exchange_kappa_difference + next_rank
-                g2 = exchange_kappa_difference - next_rank
+                exchange_kappa_difference_plus_next_rank = exchange_kappa_difference + next_rank
+                exchange_kappa_difference_minus_next_rank = exchange_kappa_difference - next_rank
                 two_rank_plus_one = tensor_rank + tensor_rank + 1
                 reduced_angular_product = reduced_angular_element(kappa_a,tensor_rank,kappa_b)**2
                 if (kappa_a*kappa_b < 0) reduced_angular_product = -reduced_angular_product
                 leading_prefactor = reduced_angular_product*rank/next_rank/dble(two_rank_plus_one*(two_rank_plus_one + 2))
-                radial_integral_coefficients(1) = -leading_prefactor*g1*g1
-                radial_integral_coefficients(2) = -2.0_real64*leading_prefactor*g1*g2
-                radial_integral_coefficients(3) = -leading_prefactor*g2*g2
+                radial_integral_coefficients(1) = -leading_prefactor*exchange_kappa_difference_plus_next_rank* &
+                    & exchange_kappa_difference_plus_next_rank
+                radial_integral_coefficients(2) = -2.0_real64*leading_prefactor*exchange_kappa_difference_plus_next_rank* &
+                    & exchange_kappa_difference_minus_next_rank
+                radial_integral_coefficients(3) = -leading_prefactor*exchange_kappa_difference_minus_next_rank* &
+                    & exchange_kappa_difference_minus_next_rank
                 return
             end if
             !
@@ -251,24 +278,31 @@ contains
             exchange_kappa_difference = kappa_b - kappa_a
             rank = tensor_rank
             next_rank = tensor_rank + 1
-            f1 = exchange_kappa_difference + rank
-            f2 = exchange_kappa_difference - rank
-            g1 = exchange_kappa_difference + next_rank
-            g2 = exchange_kappa_difference - next_rank
+            exchange_kappa_difference_plus_rank = exchange_kappa_difference + rank
+            exchange_kappa_difference_minus_rank = exchange_kappa_difference - rank
+            exchange_kappa_difference_plus_next_rank = exchange_kappa_difference + next_rank
+            exchange_kappa_difference_minus_next_rank = exchange_kappa_difference - next_rank
             two_rank_plus_one = tensor_rank + tensor_rank + 1
             reduced_angular_product = reduced_angular_element(kappa_a,tensor_rank,kappa_b)**2
             if (kappa_a*kappa_b < 0) reduced_angular_product = -reduced_angular_product
             leading_prefactor = reduced_angular_product*next_rank/rank/dble(two_rank_plus_one*(two_rank_plus_one - 2))
-            radial_integral_coefficients(1) = -leading_prefactor*f2*f2
-            radial_integral_coefficients(2) = -2.0_real64*leading_prefactor*f1*f2
-            radial_integral_coefficients(3) = -leading_prefactor*f1*f1
+            radial_integral_coefficients(1) = -leading_prefactor*exchange_kappa_difference_minus_rank* &
+                & exchange_kappa_difference_minus_rank
+            radial_integral_coefficients(2) = -2.0_real64*leading_prefactor*exchange_kappa_difference_plus_rank* &
+                & exchange_kappa_difference_minus_rank
+            radial_integral_coefficients(3) = -leading_prefactor*exchange_kappa_difference_plus_rank* &
+                & exchange_kappa_difference_plus_rank
             mixed_prefactor = reduced_angular_product/dble(two_rank_plus_one*two_rank_plus_one)
             mixed_prefactor = mixed_prefactor + mixed_prefactor
-            radial_integral_coefficients(4) = -mixed_prefactor*f1*g2
+            radial_integral_coefficients(4) = -mixed_prefactor*exchange_kappa_difference_plus_rank* &
+                & exchange_kappa_difference_minus_next_rank
             !     S(5) = S(4)
-            radial_integral_coefficients(5) = -mixed_prefactor*f2*g1
-            radial_integral_coefficients(6) = -mixed_prefactor*f1*g1
-            radial_integral_coefficients(7) = -mixed_prefactor*f2*g2
+            radial_integral_coefficients(5) = -mixed_prefactor*exchange_kappa_difference_minus_rank* &
+                & exchange_kappa_difference_plus_next_rank
+            radial_integral_coefficients(6) = -mixed_prefactor*exchange_kappa_difference_plus_rank* &
+                & exchange_kappa_difference_plus_next_rank
+            radial_integral_coefficients(7) = -mixed_prefactor*exchange_kappa_difference_minus_rank* &
+                & exchange_kappa_difference_minus_next_rank
             return
         end select
     !

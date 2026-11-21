@@ -36,21 +36,21 @@ program gj_mpi
 
     ! Module dependencies
     use log_factorial_table, only: initialize_log_factorial_table
-    use mpi_utilities, only: mpix_shutdown
-    use mpi_utilities, only: mpix_startup
+    use mpi_utilities, only: finish_mpi_application
+    use mpi_utilities, only: start_mpi_application
     implicit none (type, external)
     integer :: input_status, mixing_file_kind, unused_core_subshell_count, start_clock_count
     logical :: prompt_answer, use_command_line_arguments
     real(real64), pointer :: lande_g_factors(:), lande_g_factor_corrections(:)
-    character :: name*24
+    character :: state_name*24
     !-----------------------------------------------
     !
-    call mpix_startup(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count, &
+    call start_mpi_application(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count, &
         "GJ_MPI", "This is the MPI Lande-factor program", &
         "isodata, descriptor Parquet/header, name.mix/name.cimix, name.wfn", &
         "name.gj or name.cgj", .true.)
     !
-    name = " "
+    state_name = " "
     mixing_file_kind = 1
     nondefault_options_flag = 0
     use_command_line_arguments = .false.
@@ -58,7 +58,7 @@ program gj_mpi
     if (mpi_rank == 0) then
         use_command_line_arguments = command_argument_count() > 0
         if (use_command_line_arguments) then
-            call property_state_arguments("gj_mpi", name, mixing_file_kind, input_status)
+            call property_state_arguments("gj_mpi", state_name, mixing_file_kind, input_status)
             if (input_status /= 0) nondefault_options_flag = -input_status
         end if
         if (.not.use_command_line_arguments .and. nondefault_options_flag == 0) then
@@ -75,7 +75,7 @@ program gj_mpi
         end if
         !
         if (nondefault_options_flag == 0 .and. .not.use_command_line_arguments) then
-            call read_state_name(name, status=input_status)
+            call read_state_name(state_name, status=input_status)
             if (input_status /= 0) then
                 nondefault_options_flag = -input_status
             else
@@ -99,26 +99,26 @@ program gj_mpi
         stop
     end if
     !
-    call mpi_bcast(name, len(name), mpi_character, 0, mpi_comm_world, mpi_error_code)
+    call mpi_bcast(state_name, len(state_name), mpi_character, 0, mpi_comm_world, mpi_error_code)
     call mpi_bcast(mixing_file_kind, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
     !
     call configure_debug_output
     call initialize_machine_constants
     call initialize_physical_constants
-    call load_csf_basis_mpi(name, unused_core_subshell_count)
-    call read_hyperfine_options(name)
-    call read_mixing_blocks(name, mixing_file_kind)
+    call load_csf_basis_mpi(state_name, unused_core_subshell_count)
+    call read_hyperfine_options(state_name)
+    call read_mixing_blocks(state_name, mixing_file_kind)
     call initialize_log_factorial_table
     !
     call alloc(lande_g_factors, active_level_count, "lande_g_factors", "GJ_MPI")
     call alloc(lande_g_factor_corrections, active_level_count, "lande_g_factor_corrections", "GJ_MPI")
     !
     call compute_gj_only_mpi(lande_g_factors, lande_g_factor_corrections)
-    if (mpi_rank == 0) call write_lande_g_factors(name, mixing_file_kind, lande_g_factors, lande_g_factor_corrections)
+    if (mpi_rank == 0) call write_lande_g_factors(state_name, mixing_file_kind, lande_g_factors, lande_g_factor_corrections)
     !
     call dalloc(lande_g_factors, "lande_g_factors", "GJ_MPI")
     call dalloc(lande_g_factor_corrections, "lande_g_factor_corrections", "GJ_MPI")
     !
-    call mpix_shutdown(mpi_rank, start_clock_count, "GJ_MPI")
+    call finish_mpi_application(mpi_rank, start_clock_count, "GJ_MPI")
     stop
 end program gj_mpi

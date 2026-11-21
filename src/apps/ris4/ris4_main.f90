@@ -19,7 +19,7 @@ program ris4_main
     use, intrinsic :: iso_fortran_env, only: real64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
-    use debug_output_settings,         only: cutoff
+    use debug_output_settings,         only: matrix_element_screening_cutoff
     use calculation_state_files, only: read_state_name
     use yes_no_input, only: read_yes_no
 
@@ -54,7 +54,7 @@ program ris4_main
     !
     !   Matrix elements smaller than CUTOFF are not accumulated
     !
-    cutoff = 1.0e-10_real64
+    matrix_element_screening_cutoff = 1.0e-10_real64
     !
     write (stderr_unit, *)
     write (stderr_unit, *) "ris4_main: Execution begins ..."

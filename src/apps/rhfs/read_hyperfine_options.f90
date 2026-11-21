@@ -8,7 +8,7 @@ contains
 
     !***********************************************************************
     !                                                                      *
-    subroutine read_hyperfine_options(name)
+    subroutine read_hyperfine_options(state_name)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: input_unit, output_unit
         !                                                                      *
@@ -38,7 +38,7 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        character(len=24), intent(in) :: name
+        character(len=24), intent(in) :: state_name
 
         ! Local declarations
         logical            :: prompt_answer
@@ -142,7 +142,7 @@ contains
         !
         !      CALL SETRWFA(NAME)
 
-        call read_radial_wavefunction_file (orbital_input_path(name))
+        call read_radial_wavefunction_file (orbital_input_path(state_name))
 
         !
         return

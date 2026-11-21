@@ -60,18 +60,19 @@ contains
         !      INTEGER, DIMENSION(:), pointer :: ICLMN, INDEX, LABEL, NSWAP
         integer, pointer :: nswap(:)
         !      REAL(DOUBLE), DIMENSION(:), pointer :: COEFF
-        integer :: text_length, lck, io_status, i, heap_root_index, heap_end_index, icl, ind, lab, nsw, j, last, ibeg, iend, &
+        integer :: text_length, lck, io_status, i, heap_root_index, heap_end_index, saved_csf_column, saved_matrix_position, &
+            & lab, nsw, j, last, ibeg, iend, &
             & ncontr, ia, ib, k, id, ic, &
-            igg
-        real(real64) :: cof
+            channel_array_index
+        real(real64) :: saved_angular_coefficient
         character :: number_text*20, ck*2
         character (len = len (output_file_prefix) + 3):: file_path
         !-----------------------------------------------
         !
         if(mcp_channel_index == 31) then
-            igg = 1
+            channel_array_index = 1
         else
-            igg = mcp_channel_index - 30
+            channel_array_index = mcp_channel_index - 30
         end if
         !      IGG = IGGMAX_K*(IGG-1)
         !   Message
@@ -120,28 +121,29 @@ contains
             do
                 if (heap_root_index > 1) then
                     heap_root_index = heap_root_index - 1
-                    cof = channel_coefficients(heap_root_index,igg)
-                    icl = channel_csf_columns(heap_root_index,igg)
-                    ind = channel_matrix_positions(heap_root_index,igg)
-                    lab = channel_packed_orbital_labels(heap_root_index,igg)
+                    saved_angular_coefficient = channel_coefficients(heap_root_index,channel_array_index)
+                    saved_csf_column = channel_csf_columns(heap_root_index,channel_array_index)
+                    saved_matrix_position = channel_matrix_positions(heap_root_index,channel_array_index)
+                    lab = channel_packed_orbital_labels(heap_root_index,channel_array_index)
                     nsw = nswap(heap_root_index)
                 else
-                    cof = channel_coefficients(heap_end_index,igg)
-                    icl = channel_csf_columns(heap_end_index,igg)
-                    ind = channel_matrix_positions(heap_end_index,igg)
-                    lab = channel_packed_orbital_labels(heap_end_index,igg)
+                    saved_angular_coefficient = channel_coefficients(heap_end_index,channel_array_index)
+                    saved_csf_column = channel_csf_columns(heap_end_index,channel_array_index)
+                    saved_matrix_position = channel_matrix_positions(heap_end_index,channel_array_index)
+                    lab = channel_packed_orbital_labels(heap_end_index,channel_array_index)
                     nsw = nswap(heap_end_index)
-                    channel_coefficients(heap_end_index,igg) = channel_coefficients(1,igg)
-                    channel_csf_columns(heap_end_index,igg) = channel_csf_columns(1,igg)
-                    channel_matrix_positions(heap_end_index,igg) = channel_matrix_positions(1,igg)
-                    channel_packed_orbital_labels(heap_end_index,igg) = channel_packed_orbital_labels(1,igg)
+                    channel_coefficients(heap_end_index,channel_array_index) = channel_coefficients(1,channel_array_index)
+                    channel_csf_columns(heap_end_index,channel_array_index) = channel_csf_columns(1,channel_array_index)
+                    channel_matrix_positions(heap_end_index,channel_array_index) = channel_matrix_positions(1,channel_array_index)
+                    channel_packed_orbital_labels(heap_end_index,channel_array_index) = channel_packed_orbital_labels(1, &
+                        & channel_array_index)
                     nswap(heap_end_index) = nswap(1)
                     heap_end_index = heap_end_index - 1
                     if (heap_end_index == 1) then
-                        channel_coefficients(1,igg) = cof
-                        channel_csf_columns(1,igg) = icl
-                        channel_matrix_positions(1,igg) = ind
-                        channel_packed_orbital_labels(1,igg) = lab
+                        channel_coefficients(1,channel_array_index) = saved_angular_coefficient
+                        channel_csf_columns(1,channel_array_index) = saved_csf_column
+                        channel_matrix_positions(1,channel_array_index) = saved_matrix_position
+                        channel_packed_orbital_labels(1,channel_array_index) = lab
                         nswap(1) = nsw
                         exit
                     end if
@@ -150,14 +152,19 @@ contains
                 heap_child_index = heap_root_index + heap_root_index
                 do while (heap_child_index <= heap_end_index)
                     if (heap_child_index < heap_end_index) then
-                        if (channel_packed_orbital_labels(heap_child_index,igg) < &
-                            & channel_packed_orbital_labels(heap_child_index+1,igg)) heap_child_index = heap_child_index + 1
+                        if (channel_packed_orbital_labels(heap_child_index,channel_array_index) < &
+                            & channel_packed_orbital_labels(heap_child_index+1,channel_array_index)) heap_child_index = &
+                                & heap_child_index + 1
                     end if
-                    if (lab < channel_packed_orbital_labels(heap_child_index,igg)) then
-                        channel_coefficients(heap_parent_index,igg) = channel_coefficients(heap_child_index,igg)
-                        channel_csf_columns(heap_parent_index,igg) = channel_csf_columns(heap_child_index,igg)
-                        channel_matrix_positions(heap_parent_index,igg) = channel_matrix_positions(heap_child_index,igg)
-                        channel_packed_orbital_labels(heap_parent_index,igg) = channel_packed_orbital_labels(heap_child_index,igg)
+                    if (lab < channel_packed_orbital_labels(heap_child_index,channel_array_index)) then
+                        channel_coefficients(heap_parent_index,channel_array_index) = channel_coefficients(heap_child_index, &
+                            & channel_array_index)
+                        channel_csf_columns(heap_parent_index,channel_array_index) = channel_csf_columns(heap_child_index, &
+                            & channel_array_index)
+                        channel_matrix_positions(heap_parent_index,channel_array_index) = &
+                            & channel_matrix_positions(heap_child_index,channel_array_index)
+                        channel_packed_orbital_labels(heap_parent_index,channel_array_index) = &
+                            & channel_packed_orbital_labels(heap_child_index,channel_array_index)
                         nswap(heap_parent_index) = nswap(heap_child_index)
                         heap_parent_index = heap_child_index
                         heap_child_index = heap_child_index + heap_child_index
@@ -165,10 +172,10 @@ contains
                         heap_child_index = heap_end_index + 1
                     end if
                 end do
-                channel_coefficients(heap_parent_index,igg) = cof
-                channel_csf_columns(heap_parent_index,igg) = icl
-                channel_matrix_positions(heap_parent_index,igg) = ind
-                channel_packed_orbital_labels(heap_parent_index,igg) = lab
+                channel_coefficients(heap_parent_index,channel_array_index) = saved_angular_coefficient
+                channel_csf_columns(heap_parent_index,channel_array_index) = saved_csf_column
+                channel_matrix_positions(heap_parent_index,channel_array_index) = saved_matrix_position
+                channel_packed_orbital_labels(heap_parent_index,channel_array_index) = lab
                 nswap(heap_parent_index) = nsw
             end do
 
@@ -183,25 +190,26 @@ contains
             do
                 if (heap_root_index > 1) then
                     heap_root_index = heap_root_index - 1
-                    cof = channel_coefficients(heap_root_index,igg)
-                    icl = channel_csf_columns(heap_root_index,igg)
-                    ind = channel_matrix_positions(heap_root_index,igg)
-                    lab = channel_packed_orbital_labels(heap_root_index,igg)
+                    saved_angular_coefficient = channel_coefficients(heap_root_index,channel_array_index)
+                    saved_csf_column = channel_csf_columns(heap_root_index,channel_array_index)
+                    saved_matrix_position = channel_matrix_positions(heap_root_index,channel_array_index)
+                    lab = channel_packed_orbital_labels(heap_root_index,channel_array_index)
                 else
-                    cof = channel_coefficients(heap_end_index,igg)
-                    icl = channel_csf_columns(heap_end_index,igg)
-                    ind = channel_matrix_positions(heap_end_index,igg)
-                    lab = channel_packed_orbital_labels(heap_end_index,igg)
-                    channel_coefficients(heap_end_index,igg) = channel_coefficients(1,igg)
-                    channel_csf_columns(heap_end_index,igg) = channel_csf_columns(1,igg)
-                    channel_matrix_positions(heap_end_index,igg) = channel_matrix_positions(1,igg)
-                    channel_packed_orbital_labels(heap_end_index,igg) = channel_packed_orbital_labels(1,igg)
+                    saved_angular_coefficient = channel_coefficients(heap_end_index,channel_array_index)
+                    saved_csf_column = channel_csf_columns(heap_end_index,channel_array_index)
+                    saved_matrix_position = channel_matrix_positions(heap_end_index,channel_array_index)
+                    lab = channel_packed_orbital_labels(heap_end_index,channel_array_index)
+                    channel_coefficients(heap_end_index,channel_array_index) = channel_coefficients(1,channel_array_index)
+                    channel_csf_columns(heap_end_index,channel_array_index) = channel_csf_columns(1,channel_array_index)
+                    channel_matrix_positions(heap_end_index,channel_array_index) = channel_matrix_positions(1,channel_array_index)
+                    channel_packed_orbital_labels(heap_end_index,channel_array_index) = channel_packed_orbital_labels(1, &
+                        & channel_array_index)
                     heap_end_index = heap_end_index - 1
                     if (heap_end_index == 1) then
-                        channel_coefficients(1,igg) = cof
-                        channel_csf_columns(1,igg) = icl
-                        channel_matrix_positions(1,igg) = ind
-                        channel_packed_orbital_labels(1,igg) = lab
+                        channel_coefficients(1,channel_array_index) = saved_angular_coefficient
+                        channel_csf_columns(1,channel_array_index) = saved_csf_column
+                        channel_matrix_positions(1,channel_array_index) = saved_matrix_position
+                        channel_packed_orbital_labels(1,channel_array_index) = lab
                         exit
                     end if
                 end if
@@ -209,24 +217,29 @@ contains
                 heap_child_index = heap_root_index + heap_root_index
                 do while (heap_child_index <= heap_end_index)
                     if (heap_child_index < heap_end_index) then
-                        if (channel_packed_orbital_labels(heap_child_index,igg) < &
-                            & channel_packed_orbital_labels(heap_child_index+1,igg)) heap_child_index = heap_child_index + 1
+                        if (channel_packed_orbital_labels(heap_child_index,channel_array_index) < &
+                            & channel_packed_orbital_labels(heap_child_index+1,channel_array_index)) heap_child_index = &
+                                & heap_child_index + 1
                     end if
-                    if (lab < channel_packed_orbital_labels(heap_child_index,igg)) then
-                        channel_coefficients(heap_parent_index,igg) = channel_coefficients(heap_child_index,igg)
-                        channel_csf_columns(heap_parent_index,igg) = channel_csf_columns(heap_child_index,igg)
-                        channel_matrix_positions(heap_parent_index,igg) = channel_matrix_positions(heap_child_index,igg)
-                        channel_packed_orbital_labels(heap_parent_index,igg) = channel_packed_orbital_labels(heap_child_index,igg)
+                    if (lab < channel_packed_orbital_labels(heap_child_index,channel_array_index)) then
+                        channel_coefficients(heap_parent_index,channel_array_index) = channel_coefficients(heap_child_index, &
+                            & channel_array_index)
+                        channel_csf_columns(heap_parent_index,channel_array_index) = channel_csf_columns(heap_child_index, &
+                            & channel_array_index)
+                        channel_matrix_positions(heap_parent_index,channel_array_index) = &
+                            & channel_matrix_positions(heap_child_index,channel_array_index)
+                        channel_packed_orbital_labels(heap_parent_index,channel_array_index) = &
+                            & channel_packed_orbital_labels(heap_child_index,channel_array_index)
                         heap_parent_index = heap_child_index
                         heap_child_index = heap_child_index + heap_child_index
                     else
                         heap_child_index = heap_end_index + 1
                     end if
                 end do
-                channel_coefficients(heap_parent_index,igg) = cof
-                channel_csf_columns(heap_parent_index,igg) = icl
-                channel_matrix_positions(heap_parent_index,igg) = ind
-                channel_packed_orbital_labels(heap_parent_index,igg) = lab
+                channel_coefficients(heap_parent_index,channel_array_index) = saved_angular_coefficient
+                channel_csf_columns(heap_parent_index,channel_array_index) = saved_csf_column
+                channel_matrix_positions(heap_parent_index,channel_array_index) = saved_matrix_position
+                channel_packed_orbital_labels(heap_parent_index,channel_array_index) = lab
             end do
 
         end if
@@ -241,19 +254,20 @@ contains
         !
         if (coefficient_count > 0) then
             !
-            last = channel_packed_orbital_labels(1,igg)
+            last = channel_packed_orbital_labels(1,channel_array_index)
             ibeg = 1
             iend = 1
             distinct_integral_count = 1
             !
             do i = 2, coefficient_count
-                if (channel_packed_orbital_labels(i,igg) == last) then
+                if (channel_packed_orbital_labels(i,channel_array_index) == last) then
                     iend = iend + 1
                 else
                     write (mcp_append_unit) last, iend - ibeg + 1
                     !GG               WRITE (9999,*) LAST, IEND - IBEG + 1
-                    write (mcp_append_unit) (channel_csf_columns(j,igg),channel_matrix_positions(j,igg),channel_coefficients( &
-                        & j,igg), &
+                    write (mcp_append_unit) (channel_csf_columns(j,channel_array_index),channel_matrix_positions(j, &
+                        & channel_array_index),channel_coefficients( &
+                        & j,channel_array_index), &
                         j=ibeg,iend)
                     !cjb-GG              DO J = IBEG,IEND
                     !GG               WRITE (9999,'(2I12,E25.15)') ICLMN(J),INDEX(J),COEFF(J)
@@ -261,7 +275,7 @@ contains
 
                     !              IF (NFILE.EQ.33) WRITE (20) (NSWAP(J),J = IBEG,IEND)
                     distinct_integral_count = distinct_integral_count + 1
-                    last = channel_packed_orbital_labels(i,igg)
+                    last = channel_packed_orbital_labels(i,channel_array_index)
                     ibeg = iend + 1
                     iend = ibeg
                 end if
@@ -270,8 +284,9 @@ contains
             if (ibeg <= coefficient_count) then
                 write (mcp_append_unit) last, coefficient_count - ibeg + 1
                 !GG            WRITE (9999,*) LAST, NCOEFF - IBEG + 1
-                write (mcp_append_unit) (channel_csf_columns(j,igg),channel_matrix_positions(j,igg),channel_coefficients(j, &
-                    & igg),       &
+                write (mcp_append_unit) (channel_csf_columns(j,channel_array_index),channel_matrix_positions(j, &
+                    & channel_array_index),channel_coefficients(j, &
+                    & channel_array_index),       &
                     j=ibeg,coefficient_count)
                 !GG          DO J=IBEG,NCOEFF
                 !GG            WRITE (9999,'(2I12,E25.15)') ICLMN(J),INDEX(J),COEFF(J)
@@ -304,14 +319,14 @@ contains
             write (output_unit, '(/,"From sort_mcp_coefficients_in_memory:")')
             if (coefficient_count > 0) then
                 !
-                last = channel_packed_orbital_labels(1,igg)
+                last = channel_packed_orbital_labels(1,channel_array_index)
                 ibeg = 1
                 iend = 1
                 !
                 do i = 2, coefficient_count
-                    if (channel_packed_orbital_labels(i,igg) == last) iend = iend + 1
+                    if (channel_packed_orbital_labels(i,channel_array_index) == last) iend = iend + 1
                     do
-                        if (channel_packed_orbital_labels(i,igg)==last .and. i/=coefficient_count) exit
+                        if (channel_packed_orbital_labels(i,channel_array_index)==last .and. i/=coefficient_count) exit
                         lab = last
                         ncontr = iend - ibeg + 1
                         if (mcp_channel_index == 31) then
@@ -323,9 +338,10 @@ contains
                                 & orbital_symmetry_labels(ib)
                             do j = ibeg, iend
                                 call ensure_debug_output()
-                                write (angular_debug_unit, '("  T_[",1i2,",",1i4,"] = ",1p,d19.12)') channel_csf_columns(j,igg), &
-                                    & channel_matrix_positions(j,igg),       &
-                                    channel_coefficients(j,igg)
+                                write (angular_debug_unit, '("  T_[",1i2,",",1i4,"] = ",1p,d19.12)') channel_csf_columns(j, &
+                                    & channel_array_index), &
+                                    & channel_matrix_positions(j,channel_array_index),       &
+                                    channel_coefficients(j,channel_array_index)
                             end do
                         else
                             k = mcp_channel_index - 32
@@ -343,11 +359,12 @@ contains
                             do j = ibeg, iend
                                 call ensure_debug_output()
                                 write (angular_debug_unit, '("  V^[(",1i2,")]_[",1i8,",",1i8,"] = ",1p,d19.12)') &
-                                    k,channel_csf_columns(j,igg),channel_matrix_positions(j,igg),     &
-                                    channel_coefficients(j,igg)
+                                    k,channel_csf_columns(j,channel_array_index),channel_matrix_positions(j, &
+                                        & channel_array_index),     &
+                                    channel_coefficients(j,channel_array_index)
                             end do
                         end if
-                        last = channel_packed_orbital_labels(i,igg)
+                        last = channel_packed_orbital_labels(i,channel_array_index)
                         ibeg = iend + 1
                         iend = ibeg
                         if (iend /= coefficient_count) exit

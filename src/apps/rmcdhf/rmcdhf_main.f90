@@ -139,7 +139,7 @@ program rmcdhf_main
 
     call connect_mcp_files (closed_core_subshell_count, maximum_input_symmetry_blocks, block_labels, files%mcp)
     call load_csf_basis_data (files%descriptors, core_subshell_count, block_labels)
-    if (closed_core_subshell_count /= core_subshell_count) error stop "rscfvu: ncore"
+    if (closed_core_subshell_count /= core_subshell_count) error stop "RMCDHF: closed-core subshell count mismatch"
 
     !=======================================================================
     !  Gather all remaining information and perform some setup. This

@@ -42,7 +42,7 @@ contains
 
         if (packed_integral_index < breit_integral_indices_2(search_lower_index) .or. &
             packed_integral_index > breit_integral_indices_2(search_upper_index)) then
-            write(*,*) "Something wrong in brint2"
+            write(*,*) "Something wrong in breit_radial_integral_2"
             stop
         end if
         !
@@ -66,7 +66,7 @@ contains
             table_position = search_lower_index
         else
             write(*,*) k,orbital_a,orbital_b,orbital_c,orbital_d,packed_integral_index
-            write(*,*) "Brint2 Integral not found"
+            write(*,*) "breit_radial_integral_2 Integral not found"
             stop
         end if
         !

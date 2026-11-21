@@ -315,11 +315,11 @@ contains
 
     ! Positional state and CI selection shared by property programs with a CLI.
     ! Only density calculations expose the optional ordering argument.
-    subroutine property_state_arguments(program, name, nci, status, ordering)
+    subroutine property_state_arguments(program, name, mixing_file_kind, status, ordering)
         ! Arguments
         character(*), intent(in) :: program
         character(*), intent(out) :: name
-        integer, intent(inout) :: nci
+        integer, intent(inout) :: mixing_file_kind
         integer, intent(out) :: status
         integer, optional, intent(inout) :: ordering
 
@@ -340,9 +340,9 @@ contains
             case ("-h", "--help")
                 status = 1
             case ("--ci")
-                nci = 0
+                mixing_file_kind = 0
             case ("--nonci")
-                nci = 1
+                mixing_file_kind = 1
             case ("--order=1", "--order=2")
                 if (present(ordering)) then
                     ordering = merge(1, 2, arg == "--order=1")

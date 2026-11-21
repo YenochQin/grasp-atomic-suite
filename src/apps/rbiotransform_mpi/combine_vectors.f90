@@ -11,7 +11,8 @@ contains
     !     V E C S U M
     !     ------------------------------------------------------------------
     !
-    subroutine combine_vectors(c, a, b, faca, facb, ndim)
+    subroutine combine_vectors(combined_vector, first_vector, second_vector, first_vector_weight, second_vector_weight, &
+        & element_count)
         ! Module dependencies
         !
         !     CACLULATE THE VECTOR C(I)=FACA*A(I)+FACB*B(I)
@@ -20,27 +21,28 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer, intent(in) :: ndim
-        real(real64), intent(in) :: faca
-        real(real64), intent(in) :: facb
-        real(real64), intent(in)  :: a(ndim)
-        real(real64), intent(in)  :: b(ndim)
-        real(real64), intent(out) :: c(ndim)
+        integer, intent(in) :: element_count
+        real(real64), intent(in) :: first_vector_weight
+        real(real64), intent(in) :: second_vector_weight
+        real(real64), intent(in)  :: first_vector(element_count)
+        real(real64), intent(in)  :: second_vector(element_count)
+        real(real64), intent(out) :: combined_vector(element_count)
 
         ! Local declarations
         !-----------------------------------------------
         !
-        if (faca/=0.0_real64 .and. facb/=0.0_real64) then
-            c(:ndim) = faca*a(:ndim) + facb*b(:ndim)
+        if (first_vector_weight/=0.0_real64 .and. second_vector_weight/=0.0_real64) then
+            combined_vector(:element_count) = first_vector_weight*first_vector(:element_count) + second_vector_weight* &
+                & second_vector(:element_count)
         !
-        else if (faca==0.0_real64 .and. facb/=0.0_real64) then
-            c(:ndim) = facb*b(:ndim)
+        else if (first_vector_weight==0.0_real64 .and. second_vector_weight/=0.0_real64) then
+            combined_vector(:element_count) = second_vector_weight*second_vector(:element_count)
         !
-        else if (faca/=0.0_real64 .and. facb==0.0_real64) then
-            c(:ndim) = faca*a(:ndim)
+        else if (first_vector_weight/=0.0_real64 .and. second_vector_weight==0.0_real64) then
+            combined_vector(:element_count) = first_vector_weight*first_vector(:element_count)
         !
-        else if (faca==0.0_real64 .and. facb==0.0_real64) then
-            c(:ndim) = 0.0_real64
+        else if (first_vector_weight==0.0_real64 .and. second_vector_weight==0.0_real64) then
+            combined_vector(:element_count) = 0.0_real64
         end if
         !
         return

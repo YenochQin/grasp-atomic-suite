@@ -21,7 +21,7 @@ contains
         !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters, only: orbital_index_radix, max_orbitals
-        use debug_output_settings, only: cutoff
+        use debug_output_settings, only: matrix_element_screening_cutoff
         use eigenstate_expansions, only: csf_mixing_coefficients
         use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count, orbital_kappa
         use selected_level_indices, only: active_level_count
@@ -111,7 +111,7 @@ contains
                         if (orbital_index == ket_orbital_index) then
                             coefficient_count = 0
                             do orbital_index = 1,orbital_count
-                                if (abs (shell_coefficients(orbital_index)) > cutoff) then
+                                if (abs (shell_coefficients(orbital_index)) > matrix_element_screening_cutoff) then
                                     coefficient_count = coefficient_count + 1
                                     stored_shell_coefficients(coefficient_count) = shell_coefficients(orbital_index)
                                     contributing_orbitals(coefficient_count) = orbital_index
@@ -141,7 +141,7 @@ contains
                                 end do
                             end if
                         else
-                            if (abs (shell_coefficients(1)) > cutoff) then
+                            if (abs (shell_coefficients(1)) > matrix_element_screening_cutoff) then
                                 if (orbital_kappa(orbital_index)==orbital_kappa(ket_orbital_index)) then
                                     if (angular_cache_write_mode==1) write(one_body_cache_unit) csf_index,row_csf,1
                                     if (angular_cache_write_mode==1) then
@@ -168,13 +168,13 @@ contains
                         end if
                     end if
                     if (.not. has_contr) cycle
-                    if (abs(contact_density_element) <= cutoff .and. &
-                        abs(total_nms_element) <= cutoff .and. &
-                        abs(radius_element) <= cutoff .and. &
-                        abs(radius_squared_element) <= cutoff .and. &
-                        abs(inverse_radius_element) <= cutoff .and. &
-                        abs(inverse_radius_squared_element) <= cutoff .and. &
-                        abs(leading_nms_element) <= cutoff) cycle
+                    if (abs(contact_density_element) <= matrix_element_screening_cutoff .and. &
+                        abs(total_nms_element) <= matrix_element_screening_cutoff .and. &
+                        abs(radius_element) <= matrix_element_screening_cutoff .and. &
+                        abs(radius_squared_element) <= matrix_element_screening_cutoff .and. &
+                        abs(inverse_radius_element) <= matrix_element_screening_cutoff .and. &
+                        abs(inverse_radius_squared_element) <= matrix_element_screening_cutoff .and. &
+                        abs(leading_nms_element) <= matrix_element_screening_cutoff) cycle
                     if (row_csf == csf_index) then
                         pair_scale = 1.0_real64
                     else

@@ -14,7 +14,7 @@ program rlevels
     ! Derived types
     type :: level
         ! Components
-        integer :: position
+        integer :: root_position_in_symmetry_block
         real(real64) :: energy
         character(len=12) :: j_text
         character :: parity
@@ -24,7 +24,7 @@ program rlevels
     ! Derived types
     type :: symmetry_block
         ! Components
-        integer :: first = 0, count = 0
+        integer :: first_level_index = 0, block_level_count = 0
     end type symmetry_block
 
     type(level), allocatable :: levels(:)
@@ -129,9 +129,9 @@ contains
             first = last + 1
             last = last + block_level_count
             blocks(symmetry_block_index) = symmetry_block(first, block_level_count)
-            read (unit, iostat=status) entries(first:last)%position
+            read (unit, iostat=status) entries(first:last)%root_position_in_symmetry_block
             if (status /= 0) call fail(name, 'cannot read root positions')
-            if (any(entries(first:last)%position < 1)) call fail(name, 'invalid root position')
+            if (any(entries(first:last)%root_position_in_symmetry_block < 1)) call fail(name, 'invalid root position')
             read (unit, iostat=status) hamiltonian_energy_shift, entries(first:last)%energy
             if (status /= 0) call fail(name, 'cannot read block energies')
             if (.not. ieee_is_finite(hamiltonian_energy_shift) .or. .not. all(ieee_is_finite(entries(first:last)%energy))) &
@@ -210,8 +210,8 @@ contains
 
             ! jj2lsj prints the ordinal in the block, which can differ from the root position in G92MIX.
             do block = 1, size(blocks)
-                if (ordinal > blocks(block)%count) cycle
-                index_in_table = blocks(block)%first + ordinal - 1
+                if (ordinal > blocks(block)%block_level_count) cycle
+                index_in_table = blocks(block)%first_level_index + ordinal - 1
                 associate (entry => entries(index_in_table))
                     if (entry%j_text /= adjustl(j_text) .or. entry%parity /= parity) cycle
                     if (abs(entry%energy - energy) >= label_energy_tolerance) cycle
@@ -265,7 +265,7 @@ contains
         character(len=4) :: legacy_j
         integer, allocatable :: order(:), work(:)
         integer :: row, legacy_j_width
-        real(real64) :: ground, previous, excitation, splitting
+        real(real64) :: ground_energy_hartree, previous_level_energy_hartree, excitation, splitting
 
         allocate(order(size(entries)), work(size(entries)))
         order = [(row, row=1,size(entries))]
@@ -284,25 +284,27 @@ contains
                 ' J/P block; Splitting is the energy difference with the lower neighbor'
         end if
         write (output_unit, '(A)') rule, heading, '                      (a.u.)      (cm^-1)     (cm^-1)', rule
-        ground = entries(order(1))%energy
-        previous = ground
+        ground_energy_hartree = entries(order(1))%energy
+        previous_level_energy_hartree = ground_energy_hartree
         do row = 1, size(order)
             associate (entry => entries(order(row)))
-                excitation = (entry%energy - ground)*hartree_to_wavenumber_cm
-                splitting = (entry%energy - previous)*hartree_to_wavenumber_cm
+                excitation = (entry%energy - ground_energy_hartree)*hartree_to_wavenumber_cm
+                splitting = (entry%energy - previous_level_energy_hartree)*hartree_to_wavenumber_cm
                 legacy_j_width = merge(4, 3, index(entry%j_text, '/') > 0)
-                if (row <= 999 .and. entry%position <= 99 .and. len_trim(entry%j_text) <= legacy_j_width .and. &
-                    abs(entry%energy) <= 99999.0_real64 .and. excitation < 1.0e7_real64) then
+                if (row <= 999 .and. entry%root_position_in_symmetry_block <= 99 .and. &
+                    & len_trim(entry%j_text) <= legacy_j_width .and. abs(entry%energy) <= 99999.0_real64 .and. &
+                    & excitation < 1.0e7_real64) then
                     legacy_j = adjustr(entry%j_text(:4))
                     if (scan(legacy_j, '/') == 0) legacy_j = legacy_j(2:)//' '
                     write (output_unit, '(2I3,1X,A4,1X,A1,2X,F14.7,2F12.2,2X,A)') &
-                        row, entry%position, legacy_j, entry%parity, entry%energy, excitation, splitting, trim(entry%configuration)
+                        row, entry%root_position_in_symmetry_block, legacy_j, entry%parity, entry%energy, excitation, splitting, &
+                            & trim(entry%configuration)
                 else
                     write (output_unit, '(I0,1X,I0,1X,A,1X,A1,1X,F0.7,1X,F0.2,1X,F0.2,2X,A)') &
-                        row, entry%position, trim(entry%j_text), entry%parity, entry%energy, &
+                        row, entry%root_position_in_symmetry_block, trim(entry%j_text), entry%parity, entry%energy, &
                         excitation, splitting, trim(entry%configuration)
                 end if
-                previous = entry%energy
+                previous_level_energy_hartree = entry%energy
             end associate
         end do
         write (output_unit, '(A)') rule

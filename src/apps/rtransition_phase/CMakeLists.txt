@@ -36,7 +36,7 @@ add_executable(rtransition_phase
     calculate_oscillator_strengths.f90
     write_input_summary.f90
     check_transition_mixing_coefficients.f90
-    rtransition_main.f90
+    rtransition_phase_main.f90
 )
 target_link_libraries_Fortran(rtransition_phase PUBLIC davidson_eigensolver spin_angular breit_angular_support core grasp_shared)
 install(TARGETS rtransition_phase DESTINATION bin/)

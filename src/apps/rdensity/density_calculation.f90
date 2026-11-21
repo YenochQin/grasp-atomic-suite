@@ -13,7 +13,7 @@ module density_calculation
     use eigenstate_expansions, only: csf_mixing_coefficients
     use selected_level_indices, only: active_level_count, active_level_indices
     use level_symmetry_metadata, only: level_two_j_plus_one, level_parity_signs
-    use debug_output_settings, only: cutoff
+    use debug_output_settings, only: matrix_element_screening_cutoff
     use angular_symmetry_labels, only: right_justified_j_labels, parity_labels
     use density_parallel, only: density_fail, mpi_rank, sum_density, mpi_process_count
     use natural_orbitals, only: diagonalize_density, transform_radial_block
@@ -25,25 +25,25 @@ module density_calculation
     private
     public :: calculate_density
 contains
-    recursive subroutine calculate_density(name, nci, ordering)
+    recursive subroutine calculate_density(name, mixing_file_kind, ordering)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
 
         ! Arguments
         character(*), intent(in) :: name
-        integer, intent(in) :: nci, ordering
+        integer, intent(in) :: mixing_file_kind, ordering
 
         ! Local declarations
         real(real64), allocatable :: rho(:,:,:)
         real(real64) :: shell_coefficients(max_orbitals), coefficient
-        integer, allocatable :: jvalue(:), parity(:)
+        integer, allocatable :: csf_two_j_plus_one(:), parity(:)
         integer :: csf_index, row_csf_index, bra_orbital_index, ket_orbital_index, orbital_index, state, offset, &
             & differing_subshell_count, occupation_difference
 
-        allocate(rho(orbital_count,orbital_count,active_level_count), jvalue(csf_count), parity(csf_count))
+        allocate(rho(orbital_count,orbital_count,active_level_count), csf_two_j_plus_one(csf_count), parity(csf_count))
         rho = 0.0_real64
         do csf_index = 1,csf_count
-            jvalue(csf_index) = csf_total_j_code(csf_index)
+            csf_two_j_plus_one(csf_index) = csf_total_j_code(csf_index)
             parity(csf_index) = csf_parity_code(csf_index)
         end do
         ! Same cyclic column ownership as RHFS/RIS. Each process has its
@@ -52,7 +52,8 @@ contains
             if (mpi_rank == 0 .and. mod((csf_index-1)/mpi_process_count,100) == 0) &
                 write(*,"(a,i0)") "Processing root CSF column: ", csf_index
             do row_csf_index = csf_index,csf_count
-                if (jvalue(csf_index) /= jvalue(row_csf_index) .or. parity(csf_index) /= parity(row_csf_index)) cycle
+                if (csf_two_j_plus_one(csf_index) /= csf_two_j_plus_one(row_csf_index) .or. parity(csf_index) /= &
+                    & parity(row_csf_index)) cycle
                 ! Exact one-body selection rules, also used by RIS_MPI.
                 differing_subshell_count = 0
                 do orbital_index = 1,orbital_count
@@ -72,7 +73,7 @@ contains
                 if (bra_orbital_index == 0) cycle
                 if (bra_orbital_index == ket_orbital_index) then
                     do orbital_index = 1,orbital_count
-                        if (abs(shell_coefficients(orbital_index)) <= cutoff) cycle
+                        if (abs(shell_coefficients(orbital_index)) <= matrix_element_screening_cutoff) cycle
                         do state = 1,active_level_count
                             offset = (state-1)*csf_count
                             coefficient = csf_mixing_coefficients(csf_index+offset)*csf_mixing_coefficients(row_csf_index+offset)* &
@@ -82,7 +83,7 @@ contains
                     end do
                 else
                     if (orbital_kappa(bra_orbital_index) /= orbital_kappa(ket_orbital_index) .or. abs(shell_coefficients(1)) <= &
-                        & cutoff) cycle
+                        & matrix_element_screening_cutoff) cycle
                     do state = 1,active_level_count
                         offset = (state-1)*csf_count
                         coefficient = csf_mixing_coefficients(csf_index+offset)*csf_mixing_coefficients(row_csf_index+offset)* &
@@ -98,18 +99,18 @@ contains
         end do
         if (mpi_rank == 0) then
             ! Use the original radial basis before rotating PF and QF.
-            call write_density(name, nci, rho)
+            call write_density(name, mixing_file_kind, rho)
             call make_natural_orbitals(name, ordering, rho)
         end if
     end subroutine calculate_density
 
-    recursive subroutine write_density(name, nci, rho)
+    recursive subroutine write_density(name, mixing_file_kind, rho)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
 
         ! Arguments
         character(*), intent(in) :: name
-        integer, intent(in) :: nci
+        integer, intent(in) :: mixing_file_kind
         real(real64), intent(in) :: rho(:,:,:)
 
         ! Local declarations
@@ -118,7 +119,7 @@ contains
         character(256) :: filename
 
         filename = trim(name)//".d"
-        if (nci == 0) filename = trim(name)//".cd"
+        if (mixing_file_kind == 0) filename = trim(name)//".cd"
         open(newunit=unit, file=filename, status="new", action="write", iostat=io_status)
         if (io_status /= 0) call density_fail("Cannot create "//trim(filename)//" (remove an existing output first)")
         allocate(radial(radial_point_count))

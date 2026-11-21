@@ -6,7 +6,7 @@ module build_orbital_potential_mpi_interface
     public :: build_orbital_potential_mpi
 contains
 
-    subroutine build_orbital_potential_mpi(eol, j, npts)
+    subroutine build_orbital_potential_mpi(extended_optimal_level, orbital_index, radial_point_count)
         ! Module dependencies
         !************************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
@@ -27,31 +27,31 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer  :: j
-        integer  :: npts
-        logical  :: eol
+        integer  :: orbital_index
+        integer  :: radial_point_count
+        logical  :: extended_optimal_level
 
         ! Local declarations
-        real(real64) :: tmpmpi(npts)
+        real(real64) :: radial_reduction_buffer(radial_point_count)
         !-----------------------------------------------------------------------
 
-        call assemble_orbital_potential_coefficients (eol, j)
-        call build_direct_radial_potential (j)
-        call build_exchange_radial_potential (j)
-        call apply_lagrange_constraints (j, mpi_process_count)
+        call assemble_orbital_potential_coefficients (extended_optimal_level, orbital_index)
+        call build_direct_radial_potential (orbital_index)
+        call build_exchange_radial_potential (orbital_index)
+        call apply_lagrange_constraints (orbital_index, mpi_process_count)
         call apply_off_diagonal_integrals
 
-        call mpi_allreduce (orbital_y_potential, tmpmpi, npts, mpi_double_precision,  &
+        call mpi_allreduce (orbital_y_potential, radial_reduction_buffer, radial_point_count, mpi_double_precision,  &
             mpi_sum, mpi_comm_world, mpi_error_code)
-        call dcopy (npts, tmpmpi, 1, orbital_y_potential, 1)
+        call dcopy (radial_point_count, radial_reduction_buffer, 1, orbital_y_potential, 1)
 
-        call mpi_allreduce (large_exchange_source, tmpmpi, npts, mpi_double_precision,  &
+        call mpi_allreduce (large_exchange_source, radial_reduction_buffer, radial_point_count, mpi_double_precision,  &
             mpi_sum, mpi_comm_world, mpi_error_code)
-        call dcopy (npts, tmpmpi, 1, large_exchange_source, 1)
+        call dcopy (radial_point_count, radial_reduction_buffer, 1, large_exchange_source, 1)
 
-        call mpi_allreduce (small_exchange_source, tmpmpi, npts, mpi_double_precision,  &
+        call mpi_allreduce (small_exchange_source, radial_reduction_buffer, radial_point_count, mpi_double_precision,  &
             mpi_sum, mpi_comm_world, mpi_error_code)
-        call dcopy (npts, tmpmpi, 1, small_exchange_source, 1)
+        call dcopy (radial_point_count, radial_reduction_buffer, 1, small_exchange_source, 1)
 
         return
     end subroutine build_orbital_potential_mpi

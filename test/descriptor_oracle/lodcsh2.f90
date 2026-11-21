@@ -36,7 +36,8 @@ contains
 !   M o d u l e s
 !-----------------------------------------------
       use grasp_parameters,   only: max_orbitals
-      use debug_output_settings, only: cutoff, angular_coefficient_debug_flag, ibug2, ibug3, ibug4, ibug5, ibug6, ldbpa, &
+      use debug_output_settings, only: cutoff => matrix_element_screening_cutoff, angular_coefficient_debug_flag, ibug2, ibug3, &
+          & ibug4, ibug5, ibug6, ldbpa, &
           ldbpg, rmcdhf_debug_flags
       use atomic_calculation_state, only: electron_count
       use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count, orbital_l, &

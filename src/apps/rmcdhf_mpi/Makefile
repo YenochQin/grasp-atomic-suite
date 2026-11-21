@@ -83,10 +83,6 @@ OBJS= \
 	 \
 	basis_csf_two_j_plus_one.o \
 	 \
-	lodcslmpiGG.o \
-	lodcslmpiGG_I.o \
-	lodcsh2GG.o \
-	lodcsh2GG_I.o \
 	find_least_consistent_orbital.o \
 	 \
 	update_scf_mixing_mpi.o \

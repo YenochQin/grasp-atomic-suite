@@ -41,8 +41,8 @@ program rhfs_mpi_main
 
     ! Module dependencies
     use mpi_utilities, only: reduce_mpi_real_max_to_root
-    use mpi_utilities, only: mpix_shutdown
-    use mpi_utilities, only: mpix_startup
+    use mpi_utilities, only: finish_mpi_application
+    use mpi_utilities, only: start_mpi_application
     implicit none (type, external)
     integer :: input_status, mixing_file_kind, unused_core_subshell_count, start_clock_count
     integer :: stage_start_clock_count, stage_finish_clock_count, clock_tick_rate, maximum_clock_count
@@ -52,7 +52,7 @@ program rhfs_mpi_main
     character :: name*24
     !-----------------------------------------------
     !
-    call mpix_startup(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count, &
+    call start_mpi_application(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count, &
         "RHFS_MPI", "This is the MPI hyperfine structure program", &
         "isodata, descriptor Parquet/header, name.mix/name.cimix, name.wfn", &
         "name.(c)h, name.(c)hoffd", .true.)
@@ -158,6 +158,6 @@ program rhfs_mpi_main
             hyperfine_matrix_element_seconds, " s"
     end if
     !
-    call mpix_shutdown(mpi_rank, start_clock_count, "RHFS_MPI")
+    call finish_mpi_application(mpi_rank, start_clock_count, "RHFS_MPI")
     stop
 end program rhfs_mpi_main

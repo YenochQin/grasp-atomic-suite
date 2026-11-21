@@ -4,7 +4,7 @@ module mpi_runtime
     ! Module interface
     private
     public :: initialize_mpi_runtime
-    public :: mpix_bytes
+    public :: create_contiguous_mpi_byte_datatype
     public :: finalize_mpi_runtime
 contains
     ! Initialize MPI_COMM_WORLD and return the rank, process count and processor name.
@@ -30,7 +30,7 @@ contains
         return
     end subroutine initialize_mpi_runtime
     ! Create and commit a datatype consisting of byte_count contiguous MPI_BYTE entries.
-    subroutine mpix_bytes (byte_count, byte_datatype, mpi_return_code)
+    subroutine create_contiguous_mpi_byte_datatype (byte_count, byte_datatype, mpi_return_code)
 
         ! Module dependencies
         use mpi, only: mpi_byte, mpi_type_commit, mpi_type_contiguous
@@ -49,7 +49,7 @@ contains
         mpi_return_code = mpi_return_code + create_status
 
         return
-    end subroutine mpix_bytes
+    end subroutine create_contiguous_mpi_byte_datatype
     ! Print the caller's message, synchronize MPI_COMM_WORLD and finalize MPI.
     ! All ranks must reach this routine to complete the barrier before finalizing.
     subroutine finalize_mpi_runtime (message, rank)
