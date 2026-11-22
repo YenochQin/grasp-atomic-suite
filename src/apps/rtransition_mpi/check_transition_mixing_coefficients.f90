@@ -1,3 +1,4 @@
+! Check the dimensions and consistency of mixing data for the transition calculation.
 module check_transition_mixing_coefficients_interface
     implicit none (type, external)
 
@@ -6,14 +7,9 @@ module check_transition_mixing_coefficients_interface
     public :: check_transition_mixing_coefficients
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This routine checks the mixing coefficients
     subroutine check_transition_mixing_coefficients
         ! Module dependencies
-        !                                                                      *
-        !   This routine checks the mixing coefficients                        *
-        !                                                                      *
-        !***********************************************************************
         use biorthogonal_orbital_sets, only: final_csf_count, final_orbital_count, initial_csf_count, initial_orbital_count
         use atomic_calculation_state, only: final_electron_count, initial_electron_count
         use eigenstate_expansions, only: final_hamiltonian_energy_shift, initial_hamiltonian_energy_shift, &
@@ -27,9 +23,6 @@ contains
 
         ! Local declarations
         integer :: i, j
-        !-----------------------------------------------
-        !
-        !
 
         write (*, *) " ****************"
         write (*, *) " Entering testmix"

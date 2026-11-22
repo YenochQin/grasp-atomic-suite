@@ -1,3 +1,4 @@
+! Solve for the requested eigenpairs of a Hamiltonian symmetry block.
 module diagonalize_hamiltonian_block_interface
     implicit none (type, external)
 
@@ -6,41 +7,28 @@ module diagonalize_hamiltonian_block_interface
     public :: diagonalize_hamiltonian_block
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This module  manages the  operation of the  eigensolvers and the
+    !   storage of the eigenpairs.  There are two principal branches:
+    !
+    !      (1) Matrix of order 1: the trivial case
+    !      (2) Matrix of order greater than 1: eigenpairs are found
+    !          using DVDSON; this involves up to three steps:
+    !                    (a) The matrix is analysed to determine its
+    !                        block structure (only irreducibe matrices
+    !                        are correctly treated by DVDSON)
+    !                    (b) Eigenpairs are extracted for each block
+    !                    (c) The appropriate eigenpairs are selected and
+    !                        stored
+    !
+    !   We  assume that  the sparse representation  of the matrix  is in
+    !   core.
+    !
+    ! Written by Farid A. Parpia. Last revision: 27 Sep 1993
+    ! Modified by Xinghong He. Last revision: 17 Aug 1998
+    ! Modified by G. Gaigalas. 05 Feb 2017
     subroutine diagonalize_hamiltonian_block(first_davidson_solve, print_details, symmetry_block_index, &
         block_csf_offset, block_eigenvalue_offset, block_mixing_offset, total_csf_count)
         ! Module dependencies
-        !                                                                      *
-        !   This module  manages the  operation of the  eigensolvers and the   *
-        !   storage of the eigenpairs.  There are two principal branches:      *
-        !                                                                      *
-        !      (1) Matrix of order 1: the trivial case                         *
-        !      (2) Matrix of order greater than 1: eigenpairs are found        *
-        !          using DVDSON; this involves up to three steps:              *
-        !                    (a) The matrix is analysed to determine its       *
-        !                        block structure (only irreducibe matrices     *
-        !                        are correctly treated by DVDSON)              *
-        !                    (b) Eigenpairs are extracted for each block       *
-        !                    (c) The appropriate eigenpairs are selected and   *
-        !                        stored                                        *
-        !                                                                      *
-        !   We  assume that  the sparse representation  of the matrix  is in   *
-        !   core.                                                              *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, DALLOC, ISPAR, ITJPO, RALLOC.          *
-        !               [RSCF92]: POSNFL, SPICMV2.
-        !               [DVDSON]: DVDSON                                       *
-        !               [AUXBLAS]: DINIT/SINIT                                 *
-        !               [BLAS]: DCOPY/SCOPY, DSCAL/SSCAL, DSWAP/SSWAP          *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 27 Sep 1993   *
-        !   Modified by Xinghong He               Last revision: 17 Aug 1998   *
-        !   Midified by G. Gaigalas                              05 Feb 2017   *
-        !      It was deleted the arrays:  JQSA(3*NNNW*NCF),                   *
-        !                                  JCUPA(NNNW*NCF)                     *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use array_memory_management, only: alloc, dalloc
         use atomic_calculation_state, only: requested_level_indices
@@ -80,51 +68,38 @@ contains
             dnfac
         real(real64), pointer :: real_workspace(:), matrix_diagonal(:)
         logical :: solve_high_end
-        !-----------------------------------------------
 
-        !PRINT *, 'maneig ...'
-
-        !      ...spicmv2 needs this COMMON /WCHBLK/JBLOCKK
+        ! ...spicmv2 needs this COMMON /WCHBLK/JBLOCKK
         active_block_index = symmetry_block_index
-        !
-        !=======================================================================
-        !   Trivial case
-        !=======================================================================
+        ! Trivial case
         if (csf_count == 1) then
             shifted_eigenvalues(block_eigenvalue_offset+1) = 0.0_real64
             csf_mixing_coefficients(block_mixing_offset+1) = 1.0_real64
         else
+            ! Non-trivial case - Use Davidson eigensolver
             !
-            !=======================================================================
-            !   Non-trivial case - Use Davidson eigensolver
-            !=======================================================================
-            !
-            !   Allocate storage for workspace; see the header of DVDSON for
-            !   the expression below; the value of LIM can be reduced to NVECT
-            !   plus a smaller number if storage is severely constrained
-            !
+            ! Allocate storage for workspace; see the header of DVDSON for
+            ! the expression below; the value of LIM can be reduced to NVECT
+            ! plus a smaller number if storage is severely constrained
             nvect = highest_selected_level_by_block(symmetry_block_index)
             subspace_limit = min(csf_count,2*nvect + 40)
             real_workspace_size = 2*csf_count*subspace_limit + subspace_limit*subspace_limit*2 + 11*subspace_limit + nvect
             call alloc (real_workspace, real_workspace_size, "real_workspace", "diagonalize_hamiltonian_block")
 
-            !...At most 14 ? restriction removed xhh 98-05-19
-            !nvex = MIN (nvect,ncfblk(jblock),14)
+            ! ...At most 14 ? restriction removed xhh 98-05-19
+            ! nvex = MIN (nvect,ncfblk(jblock),14)
             nvex = min(nvect,csf_counts_by_block(symmetry_block_index))
             initial_vector_count = nvex
             iteration_limit = min(nvect*200,csf_count)
-            !      N1000 = 2000
+            ! N1000 = 2000
             submatrix_order_limit = 4000
-            !
-            !   Initial estimates for eigenvectors
-            !
-            !CFF
+            !    Initial estimates for eigenvectors
             if (first_davidson_solve .or. (csf_count <= submatrix_order_limit) ) then
                 call estimate_sparse_initial_basis (submatrix_order_limit, csf_count, initial_vector_count, real_workspace, &
                     & hamiltonian_values, &
                     & stored_segment_end_offsets, matrix_partner_indices)
             else
-                !CFF        .. use current estimates
+                ! .. use current estimates
                 nend = csf_count * nvex
                 do level_index = 1, eigenvector_counts_by_block(symmetry_block_index)
                     real_workspace( nend + requested_level_indices(level_index+block_eigenvalue_offset) ) = &
@@ -154,14 +129,12 @@ contains
                 highest_pair_index = nvex
                 integer_workspace_size = 6*subspace_limit + nvect
                 eigenvalue_tolerance = 1.0e-17_real64
-                !         CRITC = 1.0D-08
-                !         CRITR = 1.0D-08
+                ! CRITC = 1.0D-08
+                ! CRITR = 1.0D-08
 
                 coefficient_tolerance = 1.0e-9_real64
                 residual_tolerance = 1.0e-9_real64
-                !
-                !   Store the diagonals in a separate array and make it global
-                !
+                ! Store the diagonals in a separate array and make it global
                 call alloc (matrix_diagonal, csf_count, "matrix_diagonal", "diagonalize_hamiltonian_block")
 
                 do csf_index = mpi_rank + 1, csf_count, mpi_process_count
@@ -185,9 +158,7 @@ contains
                     & matrix_vector_product_count
                 if (ierr /= 0) write (*, '(" Returned from solve_davidson_eigenpairs with IERR = ",1i4)') ierr
             end if
-            !
-            !   Pick up the eigen pairs and store in EVAL and EVEC
-            !
+            ! Pick up the eigen pairs and store in EVAL and EVEC
             nend = csf_count*nvex
             do level_index = 1, eigenvector_counts_by_block(symmetry_block_index)
                 shifted_eigenvalues(block_eigenvalue_offset+level_index) = real_workspace(nend + &
@@ -202,17 +173,13 @@ contains
                         (level_index-1)+( &
                     & csf_count)), 1)
             end do
-            !     print *, ncminpat,(eval(ncminpat+j),j=1,nevblk(jblock)),
-            !    1 'zou,from maneig'
+            !  1 'zou,from maneig'
             !
-            !   Deallocate storage
-            !
+            ! Deallocate storage
             call dalloc (real_workspace, "real_workspace", "diagonalize_hamiltonian_block")
         end if
         do jstate = 1, eigenvector_counts_by_block(symmetry_block_index)
-            !
-            !   Find the dominant component of each eigenvector
-            !
+            ! Find the dominant component of each eigenvector
             iofset = block_mixing_offset + csf_count*(jstate - 1)
 
             amax = 0.0_real64
@@ -222,22 +189,18 @@ contains
                 amax = wa
                 ia = i
             end do
+            !    Find the angular momentum and parity of the dominant component
             !
-            !   Find the angular momentum and parity of the dominant component
+            ! IATJPO(JSTATE+NCMINPAT) = ITJPO(IA + NCFPAT)
+            ! IASPAR(JSTATE+NCMINPAT) = ISPAR(IA + NCFPAT)
             !
-            !GG         IATJPO(JSTATE+NCMINPAT) = ITJPO(IA + NCFPAT)
-            !GG         IASPAR(JSTATE+NCMINPAT) = ISPAR(IA + NCFPAT)
-            !
-            !   Redefine eigenvectors so that the dominant component
-            !   is positive
-            !
+            !    Redefine eigenvectors so that the dominant component
+            !    is positive
             if (csf_mixing_coefficients(ia+iofset) >= 0.0_real64) cycle
             dnfac = -1.0_real64
             call dscal (csf_count, dnfac, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1)
-            !===============================================================
 
         end do
-
 
         return
     end subroutine diagonalize_hamiltonian_block

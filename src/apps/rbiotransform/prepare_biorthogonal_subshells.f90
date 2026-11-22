@@ -1,3 +1,4 @@
+! Set up the corresponding initial and final subshells for the biorthogonal transformation.
 module prepare_biorthogonal_subshells_interface
     implicit none (type, external)
 
@@ -6,21 +7,16 @@ module prepare_biorthogonal_subshells_interface
     public :: prepare_biorthogonal_subshells
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This subroutine determines the number of kappa quantum numbers
+    !   KAMAX together with the number of orbitals of each kappa.
+    !
+    !   This subroutine also checks if the orbital ordering is normal
+    !   or reversed. If reversed then JA and JB have to be permuted
+    !   In the subroutine ti1tv
+    !
+    ! Written by Per Jonsson
     subroutine prepare_biorthogonal_subshells(ntestg, ncore1, ncore2)
         ! Module dependencies
-        !                                                                      *
-        !   This subroutine determines the number of kappa quantum numbers     *
-        !   KAMAX together with the number of orbitals of each kappa.          *
-        !                                                                      *
-        !   This subroutine also checks if the orbital ordering is normal      *
-        !   or reversed. If reversed then JA and JB have to be permuted        *
-        !   In the subroutine ti1tv                                            *
-        !                                                                      *
-        !   Written by Per Jonsson                                             *
-        !                                                                      *
-        !***********************************************************************
         use grasp_parameters,   only: max_orbitals
         use biorthogonal_orbital_sets,         only: initial_orbital_count, initial_orbital_kappa, &
             initial_orbital_principal_n, final_orbital_count, final_orbital_kappa, final_orbital_principal_n
@@ -40,10 +36,7 @@ contains
         integer :: isort(2*max_orbitals)
         integer :: ntestl, ntest, i, j, k, ital, nref
         logical :: klar
-        !-----------------------------------------------
-        !
-        !
-        !
+
         ntestl = 0
         ntest = max0(ntestl,ntestg)
 
@@ -63,9 +56,7 @@ contains
 
         initial_orbital_positions_by_group(:max_biorthogonal_kappa_groups,:max_orbitals) = 0
         final_orbital_positions_by_group(:max_biorthogonal_kappa_groups,:max_orbitals) = 0
-        !
-        !   Sort the kappa quantum numbers
-        !
+        ! Sort the kappa quantum numbers
         do k = 1, initial_orbital_count + final_orbital_count
             if (k <= initial_orbital_count) then
                 ital = initial_orbital_kappa(k)
@@ -84,9 +75,7 @@ contains
             end do
             isort(i+1) = ital
         end do
-        !
-        !   Determine the unique set of kappa IKAPPA
-        !
+        ! Determine the unique set of kappa IKAPPA
         kappa_group_count = 1
         kappa_by_group(1) = isort(1)
         do k = 1, 2*max_orbitals - 1
@@ -94,12 +83,10 @@ contains
             kappa_group_count = kappa_group_count + 1
             kappa_by_group(kappa_group_count) = isort(k+1)
         end do
-        !
-        !  Make a connection between each kappa and a number in the
-        !  range [1,KAMAX] as to know on which file to dump the data
-        !  Determine the number of shells NSHLII for each I in the
-        !  range [1,KAMAX]
-        !
+        ! Make a connection between each kappa and a number in the
+        ! range [1,KAMAX] as to know on which file to dump the data
+        ! Determine the number of shells NSHLII for each I in the
+        ! range [1,KAMAX]
         if (ntest >= 10) then
             write (*, *) "******************"
             write (*, *) " Entering kapdata"
@@ -190,17 +177,15 @@ contains
             end do
 
         end if
+        ! Check if the orbital ordering is normal or reversed.
         !
-        !  Check if the orbital ordering is normal or reversed.
+        ! For normal ordering
         !
-        !  For normal ordering
+        !   NPII(NSHLPII(I,1)) < NPII(NSHLPII(I,2)) < ... < NPII(NSHLPII(I,NSHLII(I))
         !
-        !    NPII(NSHLPII(I,1)) < NPII(NSHLPII(I,2)) < ... < NPII(NSHLPII(I,NSHLII(I))
+        ! For reversed ordering
         !
-        !  For reversed ordering
-        !
-        !    NPII(NSHLPII(I,1)) > NPII(NSHLPII(I,2)) > ... > NPII(NSHLPII(I,NSHLII(I))
-        !
+        !   NPII(NSHLPII(I,1)) > NPII(NSHLPII(I,2)) > ... > NPII(NSHLPII(I,NSHLII(I))
         initial_orbital_order_code = 0
         do i = 1, kappa_group_count
             nref = 0
@@ -224,9 +209,7 @@ contains
             write (*, *) " should be the same. STOP"
             stop
         end if
-        !
-        !   If not normal order check if reversed order
-        !
+        ! If not normal order check if reversed order
         if (initial_orbital_order_code == 1) then
             do i = 1, kappa_group_count
                 nref = 0
@@ -251,9 +234,9 @@ contains
             stop
         end if
 
-        !w      write(*,*) 'Give nordii'
-        !w      read(*,*) nordii
-        !w      nordff = nordii
+        ! w      write(*,*) 'Give nordii'
+        ! w      read(*,*) nordii
+        ! w      nordff = nordii
 
         if (initial_orbital_order_code == 0) then
             write (*, *) " Normal orbital ordering"

@@ -7,7 +7,7 @@
 和 `name.mix` 或 `name.cimix`。程序为每个态写出 `name.bw` 和 `name.bm`（MCDHF）或
 `name.cbm`（CI）供跃迁程序读取。可选的 `name.TB` 文件保存可复用的角向数据。
 
-[rtransition](../rtransition/) · [rtransition_phase](../rtransition_phase/) · [MPI 版本](../rbiotransform_mpi/README.md)
+[rtransition](../rtransition/README.md) · [rtransition_phase](../rtransition_phase/README.md) · [MPI 版本](../rbiotransform_mpi/README.md)
 
 ## 计算流程
 

@@ -1,3 +1,4 @@
+! Form the exchange contribution to the radial equation of the current orbital.
 module build_exchange_radial_potential_interface
     implicit none (type, external)
 
@@ -6,22 +7,16 @@ module build_exchange_radial_potential_interface
     public :: build_exchange_radial_potential
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This subroutine tabulates the exchange terms (the first terms on
+    ! the  right-hand  sides of eqs (14), I P Grant, B J McKenzie, P H
+    ! Norrington, D F Mayers, and N C Pyper, Computer  Phys  Commun 21
+    ! (1980) 211) for orbital J. The exchange terms are stored  in the
+    ! common arrays XP and XQ.
+    !
+    ! Written by Farid A Parpia, at Oxford. Last update: 10 Dec 1992
     subroutine build_exchange_radial_potential(orbital_index)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This subroutine tabulates the exchange terms (the first terms on   *
-        !   the  right-hand  sides of eqs (14), I P Grant, B J McKenzie, P H   *
-        !   Norrington, D F Mayers, and N C Pyper, Computer  Phys  Commun 21   *
-        !   (1980) 211) for orbital J. The exchange terms are stored  in the   *
-        !   common arrays XP and XQ.                                           *
-        !                                                                      *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford    Last update: 10 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: orbital_index_radix
         use debug_output_settings, only: rmcdhf_debug_flags
@@ -45,24 +40,17 @@ contains
         integer :: i, coefficient_index, packed_coefficient_label, k, first_integral_orbital, second_integral_orbital, &
             source_orbital, nb2, row_count, ii, ii1, ii2, mfi
         real(real64) :: coeff, weighted_radial_integral
-        !-----------------------------------------------
-        !
-        !   Debug printout: header
-        !
+        ! Debug printout: header
         if (rmcdhf_debug_flags(27) .or. rmcdhf_debug_flags(28)) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,/," Exchange potential contributions (coefficients will ",&
                 &" be divided by C) for ",1i2,1a2," orbital :"/,/)') orbital_principal_n(orbital_index), &
                 & orbital_symmetry_labels(orbital_index)
         end if
-        !
-        !   Clear for accumulation of sums
-        !
+        ! Clear for accumulation of sums
         large_exchange_source(:radial_point_count) = 0.0_real64
         small_exchange_source(:radial_point_count) = 0.0_real64
-        !
-        !   Add contributions from exchange terms
-        !
+        ! Add contributions from exchange terms
         do coefficient_index = 1, exchange_coefficient_count
 
             ! Decode information in label
@@ -87,14 +75,10 @@ contains
             end if
 
             call evaluate_hartree_yz_functions (k, first_integral_orbital, second_integral_orbital)
-            !
-            !   Accumulate contributions
-            !
+            ! Accumulate contributions
             mfi = orbital_last_grid_index(source_orbital)
             coeff = coeff/speed_of_light_au
-            !DO I = 1, MF(IORB)
             do i = 1, mfi
-                !GG         DO I = 1, N
                 weighted_radial_integral = coeff*radial_workspace_b(i)
                 large_exchange_source(i) = large_exchange_source(i) + &
                     & weighted_radial_integral*radial_small_components(i,source_orbital)
@@ -102,9 +86,7 @@ contains
                     & weighted_radial_integral*radial_large_components(i,source_orbital)
             end do
         end do
-        !
-        !   Debug printout: potential functions
-        !
+        ! Debug printout: potential functions
         if (rmcdhf_debug_flags(28)) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,/,31x,"(P)",19x,"(Q)",41x,"(P)",19x,"(Q)"/,&
@@ -133,10 +115,7 @@ contains
             call plot_radial_orbital_ascii (large_exchange_source, 1.0_real64, small_exchange_source, speed_of_light_au, &
                 & radial_point_count)
         end if
-        !
         return
-        !
         return
-        !
     end subroutine build_exchange_radial_potential
 end module build_exchange_radial_potential_interface

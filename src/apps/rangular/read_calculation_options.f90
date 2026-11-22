@@ -1,3 +1,4 @@
+! Read the settings that select CSF interactions for angular-coefficient generation.
 module read_calculation_options_interface
     implicit none (type, external)
 
@@ -6,25 +7,18 @@ module read_calculation_options_interface
     public :: read_calculation_options
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Interactively determines data governing the generation of MCP co-
+    ! efficients.
+    !
+    ! Written by Farid A. Parpia. Last revision: 19 Dec 1992
+    ! Modified Xinghong He. Last revision: 30 Jun 1998
+    !
+    ! File shared (hard link) by mcpmpi, mcpblk
+    !
+    ! Updated to treat ICCUT for block
     subroutine read_calculation_options
         ! Module dependencies
         use calculation_file_units, only: angular_log_unit
-        !                                                                      *
-        !   Interactively determines data governing the generation of MCP co-  *
-        !   efficients.                                                        *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: CONVRT, GETYN.                                *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 19 Dec 1992   *
-        !   Modified Xinghong He                  Last revision: 30 Jun 1998   *
-        !                                                                      *
-        !   File shared (hard link) by mcpmpi, mcpblk
-        !
-        !   Updated to treat ICCUT for block
-        !
-        !***********************************************************************
         use csf_block_cutoffs, only: active_csf_cutoffs
         use calculation_input_defaults, only: nondefault_options_flag
         use standard_io_units, only: stderr_unit
@@ -35,21 +29,10 @@ contains
 
         ! Local declarations
         integer :: i
-        !-----------------------------------------------
 
-        !-----------------------------------------------------------------------
+        ! Determine the physical effects specifications
         !
-        !   Determine the physical effects specifications
-        !
-        !     Commenting out the EAL option
-        !     IF (NDEF .NE. 0) THEN
-        !        WRITE  (istde,*) 'Generate MCP coefficients only for'
-        !    & , ' diagonal matrix elements? '
-        !        WRITE (istde,*) '(This is appropriate to (E)AL calculation):'
-        !        DIAG = GETYN ()
-        !     ELSE
-        !        DIAG = .FALSE.
-        !     ENDIF
+        !   Commenting out the EAL option
         diagonal_only = .false.
         if (diagonal_only) then
             use_first_order_restriction = .false.
@@ -58,9 +41,7 @@ contains
             end do
         else
             if (nondefault_options_flag /= 0) then
-                !            WRITE (istde,*) 'Treat contributions of some CSFs', &
-                !                            ' as first-order perturbations?'
-                !            LFORDR = GETYN ()
+
                 use_first_order_restriction = .true.
             else
                 use_first_order_restriction = .false.
@@ -73,13 +54,7 @@ contains
                     write(stderr_unit,*) "Give ICCUT for block",i
                     read *, active_csf_cutoffs(i)
                     write(angular_log_unit,*) active_csf_cutoffs(i), "! ICCUT FOR BLOCK",i
-                    !    1          READ *, ICCUT(i)
-                    !               IF ((ICCUT(i).LE.1).OR.(ICCUT(i).GE.ncfblk(i))) THEN
-                    !                  WRITE (istde,*) 'GETINF: ICCUT must be greater than 1', &
-                    !                                  ' and less than ',ncfblk(i)
-                    !                  WRITE (istde,*) ' please reenter ICCUT:'
-                    !                  GOTO 1
-                    !               ENDIF
+
                 end do
             end if
         end if

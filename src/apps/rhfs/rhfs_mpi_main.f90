@@ -1,12 +1,7 @@
-!***********************************************************************
-!                                                                      *
+! Calculate hyperfine and magnetic matrix elements across MPI ranks.
 program rhfs_mpi_main
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: output_unit
-    !                                                                      *
-    !   Entry routine for the MPI hyperfine-structure program.             *
-    !                                                                      *
-    !***********************************************************************
     use, intrinsic :: iso_fortran_env, only: real64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
@@ -50,18 +45,15 @@ program rhfs_mpi_main
     real(real64) :: basis_loading_seconds, hyperfine_option_input_seconds, mixing_input_seconds, hyperfine_matrix_element_seconds
     real(real64) :: elapsed_time_reduction_buffer(1)
     character :: name*24
-    !-----------------------------------------------
-    !
+
     call start_mpi_application(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count, &
         "RHFS_MPI", "This is the MPI hyperfine structure program", &
         "isodata, descriptor Parquet/header, name.mix/name.cimix, name.wfn", &
         "name.(c)h, name.(c)hoffd", .true.)
-    !
     name = " "
     mixing_file_kind = 1
     nondefault_options_flag = 0
     use_command_line_arguments = .false.
-    !
     if (mpi_rank == 0) then
         use_command_line_arguments = command_argument_count() > 0
         if (use_command_line_arguments) then
@@ -80,13 +72,11 @@ program rhfs_mpi_main
                 write (stderr_unit, *) "RHFS_MPI currently supports default settings only."
             end if
         end if
-        !
         if (nondefault_options_flag == 0 .and. .not.use_command_line_arguments) then
             call read_state_name(name, status=input_status)
             if (input_status /= 0) then
                 nondefault_options_flag = -input_status
             else
-                !
                 write (stderr_unit, *)
                 write (stderr_unit, *) "Mixing coefficients from a CI calc.?"
                 prompt_answer = read_yes_no()
@@ -98,17 +88,14 @@ program rhfs_mpi_main
             end if
         end if
     end if
-    !
     call mpi_bcast(nondefault_options_flag, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
     if (nondefault_options_flag /= 0) then
         call mpi_finalize(mpi_error_code)
         if (nondefault_options_flag == -2) stop 2
         stop
     end if
-    !
     call mpi_bcast(name, len(name), mpi_character, 0, mpi_comm_world, mpi_error_code)
     call mpi_bcast(mixing_file_kind, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
-    !
     call configure_debug_output
     call initialize_machine_constants
     call initialize_physical_constants
@@ -120,7 +107,6 @@ program rhfs_mpi_main
     elapsed_time_reduction_buffer(1) = basis_loading_seconds
     call reduce_mpi_real_max_to_root(elapsed_time_reduction_buffer, 1)
     if (mpi_rank == 0) basis_loading_seconds = elapsed_time_reduction_buffer(1)
-    !
     call system_clock(stage_start_clock_count, clock_tick_rate, maximum_clock_count)
     call read_hyperfine_options(name)
     call system_clock(stage_finish_clock_count, clock_tick_rate, maximum_clock_count)
@@ -128,7 +114,6 @@ program rhfs_mpi_main
     elapsed_time_reduction_buffer(1) = hyperfine_option_input_seconds
     call reduce_mpi_real_max_to_root(elapsed_time_reduction_buffer, 1)
     if (mpi_rank == 0) hyperfine_option_input_seconds = elapsed_time_reduction_buffer(1)
-    !
     call system_clock(stage_start_clock_count, clock_tick_rate, maximum_clock_count)
     call read_mixing_blocks(name, mixing_file_kind)
     call system_clock(stage_finish_clock_count, clock_tick_rate, maximum_clock_count)
@@ -138,7 +123,6 @@ program rhfs_mpi_main
     if (mpi_rank == 0) mixing_input_seconds = elapsed_time_reduction_buffer(1)
     if (mpi_rank == 0) call write_input_summary
     call initialize_log_factorial_table
-    !
     call system_clock(stage_start_clock_count, clock_tick_rate, maximum_clock_count)
     call calculate_hyperfine_matrix_elements_mpi
     call system_clock(stage_finish_clock_count, clock_tick_rate, maximum_clock_count)
@@ -146,7 +130,6 @@ program rhfs_mpi_main
     elapsed_time_reduction_buffer(1) = hyperfine_matrix_element_seconds
     call reduce_mpi_real_max_to_root(elapsed_time_reduction_buffer, 1)
     if (mpi_rank == 0) hyperfine_matrix_element_seconds = elapsed_time_reduction_buffer(1)
-    !
     if (mpi_rank == 0) then
         write (output_unit, "(A, F10.3, A)") "RHFS_MPI setcsla wall time  (max rank): ", &
             basis_loading_seconds, " s"
@@ -157,7 +140,6 @@ program rhfs_mpi_main
         write (output_unit, "(A, F10.3, A)") "RHFS_MPI hfsgg wall time    (max rank): ", &
             hyperfine_matrix_element_seconds, " s"
     end if
-    !
     call finish_mpi_application(mpi_rank, start_clock_count, "RHFS_MPI")
     stop
 end program rhfs_mpi_main

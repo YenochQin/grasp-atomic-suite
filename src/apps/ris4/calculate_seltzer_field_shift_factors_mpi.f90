@@ -1,3 +1,4 @@
+! Distribute the Seltzer field-shift matrix-element calculation across MPI ranks.
 module calculate_seltzer_field_shift_factors_mpi_interface
     implicit none (type, external)
 
@@ -6,19 +7,14 @@ module calculate_seltzer_field_shift_factors_mpi_interface
     public :: calculate_seltzer_field_shift_factors_mpi
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   MPI version of DENSNEW_SELTZ. Each rank handles a strided subset
+    !   of the outer IC loop. In MPI mode angular coefficients are
+    !   evaluated on the fly and not saved.
     subroutine calculate_seltzer_field_shift_factors_mpi(angular_cache_write_mode,contact_density_integrals,total_nms_integrals, &
         & radius_integrals,radius_squared_integrals,inverse_radius_integrals, &
         inverse_radius_squared_integrals,leading_nms_integrals,orbital_density_profiles,level_density_profiles, &
             & nuclear_density_point_count)
         ! Module dependencies
-        !                                                                      *
-        !   MPI version of DENSNEW_SELTZ. Each rank handles a strided subset   *
-        !   of the outer IC loop. In MPI mode angular coefficients are         *
-        !   evaluated on the fly and not saved.                                *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters, only: orbital_index_radix, max_orbitals
         use debug_output_settings, only: matrix_element_screening_cutoff

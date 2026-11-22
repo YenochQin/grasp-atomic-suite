@@ -1,18 +1,13 @@
+! Tabulate LS–jj coefficients for the supported p, d, and f shell occupations.
+!     Set-up the LS-jj transformation coefficients
+!       * for p^N shell, N = 3, 4, 5, 6
+!       * for d^N shell, N = 3, 4, 5, 6, 7, 8, 9, 10
+!       * for f^N shell, N = 3, 4, 5
 !
-!***********************************************************************
-!                                                                      *
+! Written by G. Gaigalas,
+! NIST                                     last update: May 2011
 module ls_jj_coefficients_low_j
     ! Module dependencies
-    !                                                                      *
-    !     Set-up the LS-jj transformation coefficients                     *
-    !       * for p^N shell, N = 3, 4, 5, 6                                *
-    !       * for d^N shell, N = 3, 4, 5, 6, 7, 8, 9, 10                   *
-    !       * for f^N shell, N = 3, 4, 5                                   *
-    !                                                                      *
-    !     Written by G. Gaigalas,                                          *
-    !     NIST                                     last update: May 2011   *
-    !                                                                      *
-    !***********************************************************************
     use ls_jj_subshell_terms, only: ls_jj_me, ls_jj_number_d10, ls_jj_number_d3, ls_jj_number_d4, &
         & ls_jj_number_d5, ls_jj_number_d6, ls_jj_number_d7, ls_jj_number_d8, ls_jj_number_d9, ls_jj_number_f3, &
         & ls_jj_number_f4, ls_jj_number_f5, ls_jj_number_f6, ls_jj_number_f7, ls_jj_number_p3, ls_jj_number_p4, &
@@ -26,7 +21,6 @@ module ls_jj_coefficients_low_j
     private :: int64
 
     ! Module constants
-    !-----------------------------------------------
     !
     !              w,2Q,2L,2S,2J, Nm,2Qm,2Jm,2Qp,2Jp,fac,nom,denom
     ! p^3  shell
@@ -42,7 +36,6 @@ module ls_jj_coefficients_low_j
         ls_jj_me(0, 0, 4, 1, 3, 1, 0, 1, 0, 4, 1, 4, 9), &
         ls_jj_me(0, 0, 4, 1, 3, 2, 1, 0, 1, 3,-1, 5,18), &
         ls_jj_me(0, 0, 4, 1, 5, 1, 0, 1, 0, 4, 1, 1, 1) ]
-    !
     ! p^4  shell
     type(ls_jj_me), parameter ::     &
         ls_jj_p_4(1:9) = [                                   &
@@ -55,18 +48,15 @@ module ls_jj_coefficients_low_j
         ls_jj_me(0, 1, 2, 2, 4, 2, 1, 0, 0, 4, 1, 2, 3), &
         ls_jj_me(0, 1, 4, 0, 4, 1, 0, 1, 1, 3,-1, 2, 3), &
         ls_jj_me(0, 1, 4, 0, 4, 2, 1, 0, 0, 4, 1, 1, 3) ]
-    !
     ! p^5  shell
     type(ls_jj_me), parameter ::     &
         ls_jj_p_5(1:2) = [                                   &
         ls_jj_me(0, 2, 2, 1, 1, 1, 0, 1, 2, 0, 1, 1, 1), &
         ls_jj_me(0, 2, 2, 1, 3, 2, 1, 0, 1, 3, 1, 1, 1) ]
-    !
     ! p^6  shell
     type(ls_jj_me), parameter ::     &
         ls_jj_p_6(1:1) = [                                   &
         ls_jj_me(0, 3, 0, 0, 0, 2, 1, 0, 2, 0, 1, 1, 1) ]
-    !
     ! d^3  shell
     type(ls_jj_me), parameter ::      &
         ls_jj_d_3(1:65) = [                                     &
@@ -135,7 +125,6 @@ module ls_jj_coefficients_low_j
         ls_jj_me(0, 2,10, 1, 9, 1, 1, 3, 1, 8,-1, 48,125), &
         ls_jj_me(0, 2,10, 1, 9, 2, 0, 4, 2, 5, 1, 66,125), &
         ls_jj_me(0, 2,10, 1,11, 1, 1, 3, 1, 8,-1,  1,  1) ]
-    !
     ! d^4  shell
     type(ls_jj_me), parameter ::      &
         ls_jj_d_4(1:166) = [                                      &
@@ -305,7 +294,6 @@ module ls_jj_coefficients_low_j
         ls_jj_me(0, 1,10, 2,12, 2, 0, 4, 1, 8, 1,  2,   5), &
         ls_jj_me(0, 1,12, 0,12, 1, 1, 3, 0, 9, 1,  2,   5), &
         ls_jj_me(0, 1,12, 0,12, 2, 0, 4, 1, 8,-1,  3,   5) ]
-    !
     ! d^5  shell
     type(ls_jj_me), parameter ::        &
         ls_jj_d_5(1:184) = [                                        &
@@ -493,7 +481,6 @@ module ls_jj_coefficients_low_j
         ls_jj_me(0, 0,12, 1,11, 2, 0, 4, 0, 9,-1,  12,   25), &
         ls_jj_me(0, 0,12, 1,11, 3, 1, 3, 1, 8,-1,  13,   50), &
         ls_jj_me(0, 0,12, 1,13, 2, 0, 4, 0, 9,-1,   1,    1) ]
-    !
     ! d^6  shell
     type(ls_jj_me), parameter ::      &
         ls_jj_d_6(1:166) = [                                      &
@@ -663,7 +650,6 @@ module ls_jj_coefficients_low_j
         ls_jj_me(0, 1,10, 2,12, 3, 1, 3, 0, 9, 1,  3,   5), &
         ls_jj_me(0, 1,12, 0,12, 2, 0, 4, 1, 8,-1,  3,   5), &
         ls_jj_me(0, 1,12, 0,12, 3, 1, 3, 0, 9, 1,  2,   5) ]
-    !
     ! d^7  shell
     type(ls_jj_me), parameter ::      &
         ls_jj_d_7(1:65) = [                                     &
@@ -732,7 +718,6 @@ module ls_jj_coefficients_low_j
         ls_jj_me(0, 2,10, 1, 9, 3, 1, 3, 1, 8,-1, 48,125), &
         ls_jj_me(0, 2,10, 1, 9, 4, 2, 0, 0, 9,-1, 11,125), &
         ls_jj_me(0, 2,10, 1,11, 3, 1, 3, 1, 8,-1,  1,  1) ]
-    !
     ! d^8  shell
     type(ls_jj_me), parameter ::     &
         ls_jj_d_8(1:19) = [                                    &
@@ -755,18 +740,15 @@ module ls_jj_coefficients_low_j
         ls_jj_me(0, 3, 6, 2, 8, 4, 2, 0, 1, 8, 1, 4,  5), &
         ls_jj_me(0, 3, 8, 0, 8, 3, 1, 3, 2, 5,-1, 4,  5), &
         ls_jj_me(0, 3, 8, 0, 8, 4, 2, 0, 1, 8, 1, 1,  5) ]
-    !
     ! d^9  shell
     type(ls_jj_me), parameter ::     &
         ls_jj_d_9(1:2) = [                                   &
         ls_jj_me(0, 4, 4, 1, 3, 3, 1, 3, 3, 0, 1, 1, 1), &
         ls_jj_me(0, 4, 4, 1, 5, 4, 2, 0, 2, 5, 1, 1, 1) ]
-    !
     ! d^10 shell
     type(ls_jj_me), parameter ::     &
         ls_jj_d_10(1:1) = [                                  &
         ls_jj_me(0, 5, 0, 0, 0, 4, 2, 0, 3, 0, 1, 1, 1) ]
-    !
     ! f^3  shell
     type(ls_jj_me), parameter ::            &
         ls_jj_f_3(1:216) = [                                            &
@@ -986,7 +968,6 @@ module ls_jj_coefficients_low_j
         ls_jj_me(1, 4,16, 1,15, 1, 2, 5, 2,12,-1,    15,     49), &
         ls_jj_me(1, 4,16, 1,15, 2, 1, 8, 3, 7, 1,   255,    392), &
         ls_jj_me(1, 4,16, 1,17, 1, 2, 5, 2,12,-1,     1,      1) ]
-    !
     ! f^4  shell
     type(ls_jj_me), parameter ::               &
         ls_jj_f_4(1:1210) = [                                                &
@@ -2200,7 +2181,6 @@ module ls_jj_coefficients_low_j
         ls_jj_me(1, 3,18, 2,20, 2, 1, 8, 2,12,-1,       2,        7), &
         ls_jj_me(1, 3,20, 0,20, 1, 2, 5, 1,15, 1,       2,        7), &
         ls_jj_me(1, 3,20, 0,20, 2, 1, 8, 2,12,-1,       5,        7) ]
-    !
     ! f^5  shell
     type(ls_jj_me), parameter ::                 &
         ls_jj_f_5_1(1:1000) = [                                                &
@@ -3204,7 +3184,6 @@ module ls_jj_coefficients_low_j
         ls_jj_me(4, 2, 6, 1, 5, 2, 1, 8, 1,11,-1,     2080,    160083), &
         ls_jj_me(4, 2, 6, 1, 5, 3, 2, 5, 4, 0, 1,        1,       294), &
         ls_jj_me(4, 2, 6, 1, 5, 3, 2, 5, 2, 4, 1,      605,     86436) ]
-    !
     type(ls_jj_me), parameter ::                 &
         ls_jj_f_5_2(1:1000) = [                                                &
         ls_jj_me(4, 2, 6, 1, 5, 3, 2, 5, 2, 8,-1,    24649,    950796), &
@@ -4207,7 +4186,6 @@ module ls_jj_coefficients_low_j
         ls_jj_me(2, 2, 8, 3, 9, 1, 2, 5, 0, 8, 1,    22542,    924385), &
         ls_jj_me(2, 2, 8, 3, 9, 1, 2, 5, 0,10,-1,       26,      2695), &
         ls_jj_me(2, 2, 8, 3, 9, 1, 2, 5, 2,12,-1,     8125,    213444) ]
-    !
     type(ls_jj_me), parameter ::                 &
         ls_jj_f_5_3(1:1000) = [                                                &
         ls_jj_me(2, 2, 8, 3, 9, 2, 3, 0, 1, 9,-1,    36517,   1267728), &
@@ -5210,7 +5188,6 @@ module ls_jj_coefficients_low_j
         ls_jj_me(7, 2,10, 1,11, 3, 0, 9, 2, 8,-1,     4205,    249018), &
         ls_jj_me(7, 2,10, 1,11, 3, 0, 9, 2,12,-1,  1328125, 146422584), &
         ls_jj_me(7, 2,10, 1,11, 4, 1, 4, 3, 7, 1,   296595,   3380608) ]
-    !
     type(ls_jj_me), parameter ::                  &
         ls_jj_f_5_4(1:799) = [                                                &
         ls_jj_me(7, 2,10, 1,11, 4, 1, 8, 3, 7,-1,    32761,   3380608), &
@@ -6012,8 +5989,6 @@ module ls_jj_coefficients_low_j
         ls_jj_me(0, 2,22, 1,21, 2, 1, 8, 1,15, 1,      240,       539), &
         ls_jj_me(0, 2,22, 1,21, 3, 0, 9, 2,12, 1,      230,       539), &
         ls_jj_me(0, 2,22, 1,23, 2, 1, 8, 1,15, 1,        1,         1) ]
-    !
     type(ls_jj_me), parameter ::                 &
         ls_jj_f_5(1:3799) = [ls_jj_f_5_1, ls_jj_f_5_2, ls_jj_f_5_3, ls_jj_f_5_4]
-    !
 end module ls_jj_coefficients_low_j

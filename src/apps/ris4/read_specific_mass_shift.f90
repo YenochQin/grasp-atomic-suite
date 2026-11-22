@@ -6,18 +6,12 @@ module read_specific_mass_shift_interface
     public :: read_specific_mass_shift
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! WRITTEN  by C. Naz\'e  Oct. 2011
+    !
+    ! Translated by Gediminas Gaigalas 11/18/19
     subroutine read_specific_mass_shift(vinti_integrals,recoil_corrected_vinti_integrals)
         ! Module dependencies
         use calculation_file_units, only: two_body_cache_unit
-        !
-        !   Call(s) to: [LIB92]: ALCBUF                                        *
-        !                                                                      *
-        !   WRITTEN  by C. Naz\'e  Oct. 2011                                   *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Gediminas Gaigalas 11/18/19
         use grasp_parameters,    only: orbital_index_radix, max_orbitals
         use selected_level_indices, only: active_level_count
         use isotope_shift_options, only: contact_density_by_level, total_nms_by_level, radius_by_level, &
@@ -39,15 +33,14 @@ contains
         real(real64) :: total_sms_contribution, leading_sms_contribution, coeffsms
         integer :: column_csf, row_csf, level_index, orbital_a, orbital_b, orbital_c, orbital_d, level_mixing_offset, &
             & packed_orbital_label, io_status
-        !-----------------------------------------------
-        !
+
         call manage_angular_coefficient_buffer (1)
 
         rewind(two_body_cache_unit)
         do
             read (two_body_cache_unit,iostat = io_status) column_csf,row_csf
             if (io_status /= 0) exit
-            !cc        DO J = 1,NVEC
+            ! cc        DO J = 1,NVEC
             read(two_body_cache_unit) coeffsms,packed_orbital_label
             orbital_d = mod (packed_orbital_label, orbital_index_radix)
             packed_orbital_label = packed_orbital_label/orbital_index_radix

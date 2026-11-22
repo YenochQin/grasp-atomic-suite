@@ -1,3 +1,4 @@
+! Return the encoded total angular momentum, 2J + 1, of a CSF in the MCDHF basis.
 module basis_csf_two_j_plus_one_interface
     implicit none (type, external)
 

@@ -1,3 +1,4 @@
+! Preserve one state's CSF data before loading the other basis.
 module copy_state_csf_data_interface
     implicit none (type, external)
 
@@ -6,17 +7,12 @@ module copy_state_csf_data_interface
     public :: copy_state_csf_data
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This subroutine transfers data to the initial and final state
+    ! module state for the transformation.
+    !
+    ! Written by Per Jonsson. Last revision: June. 1996
     subroutine copy_state_csf_data(n)
         ! Module dependencies
-        !                                                                      *
-        !   This subroutine transfers data to the initial and final state      *
-        !   common blocks                                                      *
-        !                                                                      *
-        !   Written by Per Jonsson                Last revision: June   1996   *
-        !                                                                      *
-        !***********************************************************************
         use biorthogonal_orbital_sets, only: final_orbital_symmetry_labels, initial_orbital_symmetry_labels, final_csf_count, &
             final_orbital_count, initial_csf_count, initial_orbital_count, final_orbital_principal_n, final_orbital_kappa, &
             initial_orbital_principal_n, initial_orbital_kappa, final_orbital_l, final_orbital_two_j, initial_orbital_l, &
@@ -29,14 +25,10 @@ contains
         integer, intent(in) :: n
 
         ! Local declarations
-        !-----------------------------------------------
         !
         !  Initial state commons
         !
-        !
         !  Final state commons
-        !
-        !
         if (n == 1) then
             initial_csf_count = csf_count
             initial_orbital_count = orbital_count

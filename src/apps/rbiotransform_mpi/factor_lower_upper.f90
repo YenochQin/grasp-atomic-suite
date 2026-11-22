@@ -6,48 +6,38 @@ module factor_lower_upper_interface
     public :: factor_lower_upper
 contains
 
+    ! LU DECOMPOSITION OF MATRIX A
     !
+    !     A = L * U
     !
-    !     ------------------------------------------------------------------
-    !     L U L U
-    !     ------------------------------------------------------------------
+    ! WHERE L IS A LOWER TRIANGULAR MATRIX WITH A
+    ! UNIT DIAGONAL AND U IS AN UPPER DIAGONAL
     !
+    ! L AND U ARE STORED AS ONE DIMENSIONAL ARRAYS
+    !
+    !   L(I,J) = L(I*(I-1)/2 + J ) ( I .GE. J )
+    !
+    !   U(I,J) = U(J*(J-1)/2 + I ) ( J .GE. I )
+    !
+    ! THIS ADRESSING SCHEMES SUPPORTS VECTORIZATION OVER COLUMNS
+    ! FOR L AND  OVER ROWS FOR U .
+    !
+    ! NO PIVOTING IS DONE HERE , SO THE SCHEME GOES :
+    !
+    !     LOOP OVER R=1, NDIM
+    !        LOOP OVER J = R, NDIM
+    !          U(R,J) = A(R,J) - SUM(K=1,R-1) L(R,K) * U(K,J)
+    !        END OF LOOP OVER J
+    !
+    !        LOOP OVER I = R+1, NDIM
+    !          L(I,R) = (A(I,R) - SUM(K=1,R-1)L(I,K) * U(K,R) ) /U(R,R)
+    !        END OF LOOP OVER I
+    !     END OF LOOP OVER R
+    !
+    ! JEPPE OLSEN , OCTOBER 1988
     subroutine factor_lower_upper(input_matrix, packed_lower_factor, packed_upper_factor, matrix_order)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
-        !
-        ! LU DECOMPOSITION OF MATRIX A
-        !
-        !     A = L * U
-        !
-        ! WHERE L IS A LOWER TRIANGULAR MATRIX WITH A
-        ! UNIT DIAGONAL AND U IS AN UPPER DIAGONAL
-        !
-        ! L AND U ARE STORED AS ONE DIMENSIONAL ARRAYS
-        !
-        !   L(I,J) = L(I*(I-1)/2 + J ) ( I .GE. J )
-        !
-        !   U(I,J) = U(J*(J-1)/2 + I ) ( J .GE. I )
-        !
-        ! THIS ADRESSING SCHEMES SUPPORTS VECTORIZATION OVER COLUMNS
-        ! FOR L AND  OVER ROWS FOR U .
-        !
-        !
-        ! NO PIVOTING IS DONE HERE , SO THE SCHEME GOES :
-        !
-        !     LOOP OVER R=1, NDIM
-        !        LOOP OVER J = R, NDIM
-        !          U(R,J) = A(R,J) - SUM(K=1,R-1) L(R,K) * U(K,J)
-        !        END OF LOOP OVER J
-        !
-        !        LOOP OVER I = R+1, NDIM
-        !          L(I,R) = (A(I,R) - SUM(K=1,R-1)L(I,K) * U(K,R) ) /U(R,R)
-        !        END OF LOOP OVER I
-        !     END OF LOOP OVER R
-        !
-        ! JEPPE OLSEN , OCTOBER 1988
-        !
-        !************************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
 
         ! Procedure interfaces
@@ -64,16 +54,13 @@ contains
         ! Local declarations
         integer :: pivot_index, column_index, row_index, trace_level
         real(real64) :: inverse_upper_pivot
-        !-----------------------------------------------
-        !
+
         do pivot_index = 1, matrix_order
-            !
             do column_index = pivot_index, matrix_order
                 packed_upper_factor(column_index*(column_index-1)/2+pivot_index) = input_matrix(pivot_index,column_index) - &
                 & vector_inner_product(packed_lower_factor(pivot_index*(pivot_index-1)/2+1),packed_upper_factor(column_index* &
                 & (column_index-1)/2+1),pivot_index-1)
             end do
-            !
             inverse_upper_pivot = 1.0_real64/packed_upper_factor(pivot_index*(pivot_index+ &
                 & 1)/2)
             packed_lower_factor(pivot_index*(pivot_index+1)/2) = 1.0_real64
@@ -83,9 +70,7 @@ contains
                 & (pivot_index-1)/2+1),pivot_index-1))&
                     *inverse_upper_pivot
             end do
-            !
         end do
-        !
         trace_level = 0
         if (trace_level /= 0) then
             write (output_unit, *) " L MATRIX "
@@ -93,7 +78,6 @@ contains
             write (output_unit, *) " U MATRIX ( TRANSPOSED ) "
             call print_matrix_symmetry (packed_upper_factor, matrix_order)
         end if
-        !
         return
     end subroutine factor_lower_upper
 end module factor_lower_upper_interface

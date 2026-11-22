@@ -1,3 +1,4 @@
+! Load the MCP structure, integral labels, and contributions into memory for reuse by SCF iterations.
 module cache_mcp_files_interface
     implicit none (type, external)
 
@@ -6,16 +7,10 @@ module cache_mcp_files_interface
     public :: cache_mcp_files
 contains
 
-    !*******************************************************************
-    !                                                                  *
+    ! Written by  G. Gaigalas               Vilnius, September 2021
     subroutine cache_mcp_files(block_count,mcp_channel)
         ! Module dependencies
         use mcp_file_metadata, only: mcp_input_units
-        !                                                                  *
-        !   Written by  G. Gaigalas               Vilnius, September 2021  *
-        !                                                                  *
-        !*******************************************************************
-        !
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use array_memory_management, only: alloc
         use input_error_handling, only: fail_input_io
@@ -83,13 +78,12 @@ contains
         integer :: discarded_csf_column_index, probed_integral_label, probed_integral_contribution_count, &
             & discarded_sparse_matrix_index
         integer :: file_matrix_element_count, discarded_column_end, discarded_row_index
-        !-----------------------------------------------
 
         total_contribution_count = 0
         total_secondary_contribution_count = 0
         do symmetry_block_index = 1, block_count
             if(mcp_channel == 30) then
-                !*** Read in IROW from file mcp.30 ***
+                ! Read in IROW from file mcp.30 ***
                 read (mcp_input_units(30), iostat=io_status) mcp_channel_label, file_block_index, block_csf_count
                 if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(30), &
                     "MCP cache_mcp_files block or channel header")
@@ -134,8 +128,7 @@ contains
                 if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(mcp_channel), &
                     & "MCP cache_mcp_files count-pass label/count")
                 do while (probed_integral_label /= 0 .or. probed_integral_contribution_count /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) (discarded_csf_column_index, &
                         & discarded_sparse_matrix_index,discarded_angular_coefficient,             &
                         i=1,probed_integral_contribution_count)
@@ -415,12 +408,11 @@ contains
         read (mcp_input_units(mcp_channel), iostat=io_status)
         if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(mcp_channel), &
             "MCP cache_mcp_files skip header or payload")
-        !
         total_contribution_count = 0
         total_secondary_contribution_count = 0
         do symmetry_block_index = 1, block_count
             if(mcp_channel == 30) then
-                !*** Read in IROW from file mcp.30 ***
+                ! Read in IROW from file mcp.30 ***
                 read (mcp_input_units(30), iostat=io_status) mcp_channel_label, file_block_index, block_csf_count
                 if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(30), &
                     "MCP cache_mcp_files block or channel header")
@@ -455,8 +447,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_31(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_31(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_31(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_31(total_contribution_count+i),                   &
@@ -479,8 +470,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_32(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_32(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_32(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_32(total_contribution_count+i),                   &
@@ -503,8 +493,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_33(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_33(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_33(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_33(total_contribution_count+i),                   &
@@ -527,8 +516,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_34(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_34(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_34(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_34(total_contribution_count+i),                   &
@@ -551,8 +539,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_35(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_35(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_35(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_35(total_contribution_count+i),                   &
@@ -575,8 +562,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_36(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_36(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_36(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_36(total_contribution_count+i),                   &
@@ -599,8 +585,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_37(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_37(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_37(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_37(total_contribution_count+i),                   &
@@ -623,8 +608,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_38(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_38(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_38(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_38(total_contribution_count+i),                   &
@@ -647,8 +631,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_39(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_39(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_39(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_39(total_contribution_count+i),                   &
@@ -671,8 +654,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_40(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_40(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_40(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_40(total_contribution_count+i),                   &
@@ -695,8 +677,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_41(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_41(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_41(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_41(total_contribution_count+i),                   &
@@ -719,8 +700,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_42(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_42(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_42(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_42(total_contribution_count+i),                   &
@@ -743,8 +723,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_43(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_43(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_43(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_43(total_contribution_count+i),                   &
@@ -767,8 +746,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_44(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_44(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_44(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_44(total_contribution_count+i),                   &
@@ -791,8 +769,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_45(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_45(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_45(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_45(total_contribution_count+i),                   &
@@ -815,8 +792,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_46(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_46(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_46(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_46(total_contribution_count+i),                   &
@@ -839,8 +815,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_47(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_47(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_47(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_47(total_contribution_count+i),                   &
@@ -863,8 +838,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_48(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_48(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_48(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_48(total_contribution_count+i),                   &
@@ -887,8 +861,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_49(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_49(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_49(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_49(total_contribution_count+i),                   &
@@ -911,8 +884,7 @@ contains
                     & "MCP cache_mcp_files load-pass label/count")
                 do while (lab_50(total_secondary_contribution_count) /= 0 .or.                    &
                     integral_contribution_counts_by_label_mcp_50(total_secondary_contribution_count) /= 0)
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     read (mcp_input_units(mcp_channel), iostat=io_status) &
                         & (contribution_csf_column_indices_mcp_50(total_contribution_count+i),                   &
                         contribution_sparse_matrix_indices_mcp_50(total_contribution_count+i),                   &

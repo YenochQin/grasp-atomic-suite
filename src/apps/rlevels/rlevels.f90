@@ -1,3 +1,4 @@
+! Merge MCDHF or CI levels into an energy table with optional LSJ labels.
 ! Based on GRASP src/tool/rlevels.f90 (Xinghong He, 1998; G. Gaigalas, 2011).
 program rlevels
     ! Module dependencies

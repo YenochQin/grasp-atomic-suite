@@ -1,3 +1,4 @@
+! Read the settings that select CSF interactions for angular-coefficient generation.
 module read_calculation_options_interface
     implicit none (type, external)
 

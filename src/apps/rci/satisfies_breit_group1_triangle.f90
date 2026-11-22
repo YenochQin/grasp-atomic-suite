@@ -6,20 +6,16 @@ module satisfies_breit_group1_triangle_interface
     public :: satisfies_breit_group1_triangle
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !      Evaluate the triangular relation for the Breit integral of
+    !      See paper by I. Grant and B McKenzie, JPB 13, (1980) 2671-2681
+    !      formula 5
+    !
+    ! Written by Per Jonsson
+    !
+    ! Translated by Charlotte Froese Fischer
+    !                        Gediminas Gaigalas  10/05/17
     logical function satisfies_breit_group1_triangle (orbital_a,orbital_b,orbital_c,orbital_d,k)
-        ! Module dependencies
-        !                                                                      *
-        !     Evaluate the triangular relation for the Breit integral of       *
-        !     See paper by I. Grant and B McKenzie, JPB 13, (1980) 2671-2681   *
-        !     formula 5                                                        *
-        !                                                                      *
-        !   Written by Per Jonsson                                             *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Charlotte Froese Fischer
-        !                       Gediminas Gaigalas  10/05/17
+        !  Module dependencies
         use orbital_csf_basis, only: orbital_l, orbital_two_j
         implicit none (type, external)
 
@@ -28,8 +24,7 @@ contains
 
         ! Local declarations
         integer :: la,lb,lc,ld,ja,jb,jc,jd,l
-        !-----------------------------------------------
-        !
+
         la = orbital_l(orbital_a)
         lb = orbital_l(orbital_b)
         lc = orbital_l(orbital_c)

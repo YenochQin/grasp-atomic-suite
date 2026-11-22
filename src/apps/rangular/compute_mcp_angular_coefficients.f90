@@ -1,3 +1,4 @@
+! Generate and sort the angular contributions to one MCP symmetry block.
 module compute_mcp_angular_coefficients_interface
     implicit none (type, external)
 
@@ -6,37 +7,28 @@ module compute_mcp_angular_coefficients_interface
     public :: compute_mcp_angular_coefficients
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This routine controls the computation  and storage of the values
+    ! and all indices of the angular coefficients
+    !
+    !                                     k
+    !                 T  (ab)            V  (abcd)
+    ! rs
+    !
+    ! k is the multipolarity of a two-particle Coulomb integral. a, b,
+    ! c and d are orbital sequence numbers.  r and s are configuration
+    ! state function indices.
+    !
+    ! Written by Farid A. Parpia. Last revision: 28 Sep 1993
+    ! Modified by C. Froese Fischer for block computation.
+    ! Modified by Gediminas Gaigalas: Feb 2017
+    !                             1) for new spin-angular integration,
+    !                             2) for sorting in the memory.
     subroutine compute_mcp_angular_coefficients (symmetry_block_index, is_restart, mpi_rank, mpi_process_count, &
         & output_file_prefix, temporary_file_prefix)
         ! Module dependencies
         use mcp_generation_options, only: mcp_temporary_units
         use calculation_file_units, only: summary_output_unit
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This routine controls the computation  and storage of the values   *
-        !   and all indices of the angular coefficients                        *
-        !                                                                      *
-        !                                       k                              *
-        !                   T  (ab)            V  (abcd)                       *
-        !                    rs                 rs                             *
-        !                                                                      *
-        !   k is the multipolarity of a two-particle Coulomb integral. a, b,   *
-        !   c and d are orbital sequence numbers.  r and s are configuration   *
-        !   state function indices.                                            *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALCBUF, ALLOC, CONVRT, DALLOC, RKCO_GG,       *
-        !                        TNSRJJ.                                       *
-        !               [GENMCP]: FNDBEG, SETSDA, SORT.                        *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 28 Sep 1993   *
-        !   Modified by C. Froese Fischer for block computation.               *
-        !   Modified by Gediminas Gaigalas:                         Feb 2017   *
-        !                               1) for new spin-angular integration,   *
-        !                               2) for sorting in the memory.          *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use iso_fortran_env, only: int64
         use rangular_profile, only: stage_clock, record_stage
@@ -93,10 +85,7 @@ contains
 
         ! Local declarations
         !     2^(24)
-        !        PARAMETER (NGGMAX = 16777216)
         !     2^(27)
-        !        PARAMETER (NGGMAX   = 134217728)
-        !        PARAMETER (NGGMAX = 536870912)
         ! GG end
         integer, pointer :: two_electron_counts_by_rank(:), mark(:)
         integer :: first_csf_column,first_csf_row,matrix_element_position,one_electron_coefficient_count,multipole_rank, &
@@ -108,8 +97,6 @@ contains
         logical :: is_direct_monopole_integral, increment_matrix_position
         integer :: irez, sort_buffer_capacity, sort_capacity_per_channel, markt, requested_sort_capacity, jj
         integer(int64) :: stage_start_count
-        !-----------------------------------------------
-        !
         !   Allocate storage to the array that stores the lengths
         !   of the lists of V coefficients of each multipolarity
         !
@@ -119,7 +106,6 @@ contains
         sort_buffer_capacity = initial_sort_buffer_capacity
         sort_capacity_per_channel = sort_buffer_capacity/(2+max_coulomb_multipole_rank)
         sort_buffer_capacity = sort_capacity_per_channel*(2+max_coulomb_multipole_rank)
-        !GG      PRINT*, "The program alloc Memory for sorting:",IGGMAX
         call alloc(two_electron_counts_by_rank, 0, max_coulomb_multipole_rank, "two_electron_counts_by_rank", &
             "compute_mcp_angular_coefficients")
         call alloc (mark, max_coulomb_multipole_rank + 1,"MARK", "compute_mcp_angular_coefficients")
@@ -139,7 +125,6 @@ contains
         !   the computation should begin.
         !   If not restart, initialize the counters for the total number of
         !   T coefficients and V coefficients of each multipolarity.
-        !
         if (is_restart) then
             print *, "Not ready for RESTART"
             stop
@@ -154,24 +139,18 @@ contains
                 two_electron_counts_by_rank(multipole_rank) = 0
             end do
         end if
-        !
-        !   Allocate storage for the arrays in BUFFER
-        !
+        ! Allocate storage for the arrays in BUFFER
         call manage_angular_coefficient_buffer (1)
         if (reuse_requested) call begin_reuse_block()
         call record_stage("coefficient_buffer_allocation", symmetry_block_index, stage_start_count)
         stage_start_count = stage_clock()
-        !
-        !   Write header to  .dbg  file if appropriate
-        !
+        ! Write header to  .dbg  file if appropriate
         if (ldbpa(2) .or. ldbpa(3)) then
             call ensure_debug_output()
             write (angular_debug_unit,'(/"From compute_mcp_angular_coefficients:")')
         end if
-        !
-        !   JA and JB respectively refer to the initial and final states
-        !   in the list of NCF configurations
-        !
+        ! JA and JB respectively refer to the initial and final states
+        ! in the list of NCF configurations
         do csf_index = first_csf_column, csf_count, mpi_process_count
             first_csf_row = 1
             do csf_row_index = first_csf_row, csf_index
@@ -179,8 +158,8 @@ contains
                     active_csf_cutoffs(symmetry_block_index))) ) then
                     if (csf_row_index/=csf_index) cycle
                 end if
-                !   LINCR is .TRUE. if npos is to be incremented by 1; there
-                !   is always a diagonal element in each column
+                ! LINCR is .TRUE. if npos is to be incremented by 1; there
+                ! is always a diagonal element in each column
                 if (csf_row_index /= csf_index) then
                     increment_matrix_position = .true.
                 else
@@ -201,9 +180,7 @@ contains
                         ! GG begin
                         if(markt == 0) then
                             if(one_electron_coefficient_count > sort_capacity_per_channel) then
-                                !   Increase array length by half the present length if the latter
-                                !   is inadequate to store another pair
-                                !
+                                ! Grow the table by half its current capacity when another pair will not fit.
                                 requested_sort_capacity = (sort_capacity_per_channel+sort_capacity_per_channel/2)*(2+ &
                                     & max_coulomb_multipole_rank)
                                 call try_allocate_sort_buffers (requested_sort_capacity,irez)
@@ -227,10 +204,8 @@ contains
                                     channel_packed_orbital_labels(one_electron_coefficient_count,1) = packed_orbital_label
                                     channel_coefficients(one_electron_coefficient_count,1) = one_electron_shell_coefficients(1)
                                 else
-                                    !GG                        print*,"LLISTT =",LLISTT
-                                    !GG                        print*,
-                                    !GG     :             "The program switches to the disk version of
-                                    !sorting"
+                                    ! "The program switches to the disk version of
+                                    ! sorting"
                                     call open_temporary_mcp_channels (symmetry_block_index, 31, temporary_file_prefix)
                                     markt = 1
                                     do jj = 1, one_electron_coefficient_count-1
@@ -253,11 +228,9 @@ contains
                         ! GG end
                     end if
                 end if
-                !
-                !   Call the MCP package to generate V coefficients; ac and bd
-                !   are the density pairs. NVCOEF is initialized here but changed
-                !   in /rkco/cor[d] via COMMON.
-                !
+                ! Call the MCP package to generate V coefficients; ac and bd
+                ! are the density pairs. NVCOEF is initialized here but changed
+                ! in /rkco/cor[d] via COMMON.
                 if (.not. reuse_requested) then
                     angular_coefficient_count = 0
                     call calculate_two_electron_angular_coefficients (csf_index, csf_row_index, calculate_closed_shell_mcp, 0, 1)
@@ -304,9 +277,7 @@ contains
                             ! GG begin
                             if(mark(multipole_rank+1) == 0) then
                                 if(two_electron_counts_by_rank(multipole_rank) > sort_capacity_per_channel) then
-                                    !   Increase array length by half the present length if the latter
-                                    !   is inadequate to store another pair
-                                    !
+                                    ! Grow the table by half its current capacity when another pair will not fit.
                                     requested_sort_capacity = (sort_capacity_per_channel+sort_capacity_per_channel/2)*(2+ &
                                         & max_coulomb_multipole_rank)
                                     call try_allocate_sort_buffers (requested_sort_capacity,irez)
@@ -334,10 +305,8 @@ contains
                                         channel_coefficients(two_electron_counts_by_rank(multipole_rank),multipole_rank+2) = &
                                             & two_electron_angular_coefficient
                                     else
-                                        !GG                        print*,"K=",K," LLISTV =",LLISTV(K)
-                                        !GG                        print*,
-                                        !GG     :             "The program switches to the disk version of
-                                        !sorting"
+                                        ! "The program switches to the disk version of
+                                        ! sorting"
                                         call open_temporary_mcp_channels (symmetry_block_index, 32+multipole_rank, &
                                             & temporary_file_prefix)
                                         mark(multipole_rank+1) = 1
@@ -368,14 +337,11 @@ contains
                             end if
                             ! GG end
 
-
                         end if
                     end if
                 end do
-                !
-                !   All angular coefficients for this pair of CSFs have been
-                !   generated; update file 30
-                !
+                ! All angular coefficients for this pair of CSFs have been
+                ! generated; update file 30
                 if ((csf_row_index == csf_index) .or. (.not. increment_matrix_position))   &
                     write (mcp_temporary_units(30)) csf_index, csf_row_index, matrix_element_position
             end do
@@ -390,17 +356,13 @@ contains
             & storage="memory_or_spill")
         if (reuse_requested) call end_reuse_block(symmetry_block_index)
         stage_start_count = stage_clock()
-        !
-        !   Deallocate storage that is no longer required
-        !
+        ! Deallocate storage that is no longer required
         call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "compute_mcp_angular_coefficients")
         call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "compute_mcp_angular_coefficients")
         call dalloc (csf_angular_codes, "csf_angular_codes", "compute_mcp_angular_coefficients")
         call manage_angular_coefficient_buffer (3)
         call record_stage("csf_and_pair_buffer_release", symmetry_block_index, stage_start_count)
-        !
-        !   Write out a report for this run
-        !
+        ! Write out a report for this run
         if (nondefault_options_flag /= 0 .and. mpi_rank == 0) then
             write (summary_output_unit,*)
             write (summary_output_unit,*) one_electron_coefficient_count, " T coefficients generated;"
@@ -409,9 +371,7 @@ contains
                     ") coefficients generated;"
             end do
         end if
-        !
-        !   Set up sparse structure definition arrays in file 30
-        !
+        ! Set up sparse structure definition arrays in file 30
         stage_start_count = stage_clock()
         rewind (mcp_temporary_units(30))
         call write_mcp_sparsity (write_mcp_sparsity_summary, matrix_element_position, ldbpa(4), symmetry_block_index, mpi_rank, &
@@ -419,7 +379,6 @@ contains
         close (mcp_temporary_units(30), status = "DELETE")
         call record_stage("sparse_structure_and_output", symmetry_block_index, stage_start_count, &
             & int(matrix_element_position,int64), storage="disk")
-        !
         !   Sort MCP coefficients into integral-based lists
         !
         ! 1) the T coefficient

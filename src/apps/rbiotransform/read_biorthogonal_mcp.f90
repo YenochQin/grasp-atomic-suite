@@ -6,33 +6,24 @@ module read_biorthogonal_mcp_interface
     public :: read_biorthogonal_mcp
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !    This routine controls the computation  and storage of the values
+    !    and all indices of the angular coefficients
+    !
+    !                    T  (ab)
+    !
+    !    k is the multipolarity of a two-particle Coulomb integral. a, b,
+    !    are orbital sequence numbers.  r and s are configuration
+    !    state function indices.
+    !
+    ! Written by Per Jonsson. Last revision: JUne 1996
+    !    Bug corrected 2005-10-18
+    !
+    ! Translated by Charlotte Froese Fischer
+    !                        Gediminas Gaigalas  10/05/17
     subroutine read_biorthogonal_mcp (name,ik,global_trace_level,mixing_file_kind)
         ! Module dependencies
         use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
         use calculation_file_units, only: mixing_input_unit
-        !                                                                      *
-        !   This routine controls the computation  and storage of the values   *
-        !   and all indices of the angular coefficients                        *
-        !                                                                      *
-        !                                                                      *
-        !                   T  (ab)                                            *
-        !                    rs                                                *
-        !                                                                      *
-        !   k is the multipolarity of a two-particle Coulomb integral. a, b,   *
-        !   are orbital sequence numbers.  r and s are configuration           *
-        !   state function indices.                                            *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, DALLOC, TNSRJJ                         *
-        !               [GENMCP]: QSORT.                                       *
-        !                                                                      *
-        !   Written by Per Jonsson                Last revision: JUne 1996     *
-        !   Bug corrected 2005-10-18                                           *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Charlotte Froese Fischer
-        !                       Gediminas Gaigalas  10/05/17
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: orbital_index_radix, max_orbitals
         use array_memory_management, only: alloc, dalloc
@@ -52,10 +43,6 @@ contains
         use transition_basis_blocks, only: transition_block_count, mixing_file_csf_count, mixing_file_level_count
 
         ! Procedure interfaces
-        !      USE tnsrjj_I
-        !      USE cor_I
-        !      USE cord_I
-        !      USE itjpo_I
         use transform_ci_coefficients_interface, only: transform_ci_coefficients
         use read_state_mixing_coefficients_interface, only: read_state_mixing_coefficients
         implicit none (type, external)
@@ -73,22 +60,17 @@ contains
         real(real64), parameter :: cutoff = 1.0e-10_real64
 
         ! Local declarations
-        !
         integer :: kappa_group_by_orbital(max_orbitals)
         integer :: shell_counts(max_biorthogonal_kappa_groups), inactive_shell_counts(max_biorthogonal_kappa_groups)
         real(real64) :: ci_rotation_matrices(20*max_biorthogonal_kappa_groups*max_biorthogonal_kappa_groups)
-        !
         real(real64), pointer :: transfer_power_workspace(:), transformed_ci_workspace(:)
         integer :: trace_level, local_trace_level, i, j, symmetry_block_index, cached_csf_count, cached_orbital_count, &
                 & cached_symmetry_count,  &
             symmetry_index, ci_rotation_offset, nvecsize
-        !
         local_trace_level = 00
         trace_level = max(global_trace_level,local_trace_level)
         trace_level = 00
-        !
-        !   Set up data for the initial and final state case respectively
-        !
+        ! Set up data for the initial and final state case respectively
         if (ik==1) then
             do i = 1,max_biorthogonal_kappa_groups
                 shell_counts(i) = initial_orbital_counts_by_group(i)
@@ -145,42 +127,29 @@ contains
 
         rewind (biorthogonal_angular_unit)
         do symmetry_block_index = 1, transition_block_count
-            !
-            !   Read the CI vectors
-            !
+            ! Read the CI vectors
             call read_state_mixing_coefficients(name,mixing_file_kind,symmetry_block_index)
-            !
-            !   Allocate memory for use in CITRAG
-            !
+            ! Allocate memory for use in CITRAG
             call alloc (transfer_power_workspace, csf_count*active_level_count, "transfer_power_workspace", "read_biorthogonal_mcp")
             call alloc (transformed_ci_workspace, csf_count*active_level_count, "transformed_ci_workspace", "read_biorthogonal_mcp")
-            !
-            !   if data available on file read the datafile. Else sort the
-            !   MCP data into inegral based lists.
-            !
+            ! if data available on file read the datafile. Else sort the
+            ! MCP data into inegral based lists.
             read(biorthogonal_angular_unit) cached_csf_count,cached_orbital_count,cached_symmetry_count
             do symmetry_index = 1,kappa_group_count
 
-                !************
-                !
-                !. Offset for given L in shell matrices
-                !
+                ! . Offset for given L in shell matrices
                 if (symmetry_index==1) then
                     ci_rotation_offset = 1
                 else
                     ci_rotation_offset = ci_rotation_offset + shell_counts(symmetry_index-1)** 2
                 end if
-                !  Corrected PER J
-
-                !**************
+                ! Corrected PER J
 
                 read(biorthogonal_angular_unit) mcp_integral_count,mcp_coefficient_count
                 if(mcp_coefficient_count*mcp_integral_count==0) cycle
-                !
-                !   Allocate memory. Note that in this case we can,
-                !   since the data is sorted, allocate less
-                !   memory than is done in qqsort.
-                !
+                ! Allocate memory. Note that in this case we can,
+                ! since the data is sorted, allocate less
+                ! memory than is done in qqsort.
                 call alloc (mcp_bra_csf_indices,mcp_coefficient_count, "mcp_bra_csf_indices", "read_biorthogonal_mcp")
                 call alloc (mcp_ket_csf_indices,mcp_coefficient_count, "mcp_ket_csf_indices", "read_biorthogonal_mcp")
                 call alloc (mcp_packed_orbital_pairs,mcp_integral_count, "mcp_packed_orbital_pairs", "read_biorthogonal_mcp")
@@ -193,25 +162,17 @@ contains
                 do i = 1,mcp_coefficient_count
                     read(biorthogonal_angular_unit) mcp_coefficient_values(i),mcp_bra_csf_indices(i),mcp_ket_csf_indices(i)
                 end do
-                !*
-                !*. Offset for given L in shell matrices
-                !*
-                !        IF (L.EQ.1) THEN
-                !          IIOFF = 1
-                !        ELSE
-                !          IIOFF = IIOFF + NSHL(L-1)** 2
-                !        END IF
-                !   BUG THE OFFSET SHOULD BE BEFORE THE CYCLE STATEMENT!!
+                ! *. Offset for given L in shell matrices
                 !
-                ! Transform for given L
-                !
+                !           IIOFF = 1
+                !           IIOFF = IIOFF + NSHL(L-1)** 2
+                !    BUG THE OFFSET SHOULD BE BEFORE THE CYCLE STATEMENT!!
+                !  Transform for given L
                 if (shell_counts(symmetry_index) > 0) &
                     call transform_ci_coefficients(csf_mixing_coefficients(:), csf_count, active_level_count, symmetry_index, &
                         shell_counts(symmetry_index), ci_rotation_matrices(ci_rotation_offset), &
                 & inactive_shell_counts(symmetry_index), local_trace_level, transformed_ci_workspace, transfer_power_workspace)
-                !
-                !   Deallocate storage for this kappa.
-                !
+                ! Deallocate storage for this kappa.
                 call dalloc (mcp_bra_csf_indices, "mcp_bra_csf_indices", "read_biorthogonal_mcp")
                 call dalloc (mcp_ket_csf_indices, "mcp_ket_csf_indices", "read_biorthogonal_mcp")
                 call dalloc (mcp_packed_orbital_pairs, "mcp_packed_orbital_pairs", "read_biorthogonal_mcp")
@@ -222,9 +183,7 @@ contains
 
             call dalloc (transfer_power_workspace, "transfer_power_workspace", "read_biorthogonal_mcp")
             call dalloc (transformed_ci_workspace, "transformed_ci_workspace", "read_biorthogonal_mcp")
-            !
-            !   Write the rotated CI vectors on file
-            !
+            ! Write the rotated CI vectors on file
             if(symmetry_block_index==1) then
                 j = index(name," ")
                 if (mixing_file_kind==0) then
@@ -243,7 +202,6 @@ contains
             write(biorthogonal_mixing_output_unit) symmetry_block_index,csf_count,active_level_count,level_two_j_plus_one(1), &
                 & level_parity_signs(1)
             write(biorthogonal_mixing_output_unit) (active_level_indices(i),i = 1,active_level_count)
-            !     WRITE(31) (IATJPO(I),IASPAR(I),I = 1,NVEC)
             write(biorthogonal_mixing_output_unit) hamiltonian_energy_shift,(shifted_eigenvalues(i),i = 1,active_level_count)
             write(biorthogonal_mixing_output_unit) ((csf_mixing_coefficients(i+(j-1)*csf_count),i = 1,csf_count),j = 1, &
                 active_level_count)
@@ -255,12 +213,9 @@ contains
             call dalloc (level_parity_signs, "level_parity_signs", "read_biorthogonal_mcp")
         end do
         close (biorthogonal_angular_unit)
-        !
-        !   Close the  mixing  file
-        !
+        ! Close the  mixing  file
         close (mixing_input_unit)
         close (biorthogonal_mixing_output_unit)
-        !
         return
     end subroutine read_biorthogonal_mcp
 end module read_biorthogonal_mcp_interface

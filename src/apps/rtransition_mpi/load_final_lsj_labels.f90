@@ -6,22 +6,16 @@ module load_final_lsj_labels_interface
     public :: load_final_lsj_labels
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !    Open, check and load data from the  .lsj.lbl   file of the
+    !    inital state.
+    !
+    ! Written by G. Gaigalas,
+    !    NIST                                                  May 2011
+    !
+    ! Translated by Charlotte Froese Fischer
+    !                        Gediminas Gaigalas  10/05/17
     subroutine load_final_lsj_labels (name)
-        ! Module dependencies
-        !                                                                      *
-        !   Open, check and load data from the  .lsj.lbl   file of the         *
-        !   inital state.                                                      *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC.                                        *
-        !                                                                      *
-        !   Written by G. Gaigalas,                                            *
-        !   NIST                                                  May 2011     *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Charlotte Froese Fischer
-        !                       Gediminas Gaigalas  10/05/17
+        !  Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use array_memory_management, only: alloc
         use transition_lsj_labels, only: rlev_ener_2, string_csf2, nvectotf, iopen_status2, lev_pos_2, lev_j_2, lev_par_2
@@ -33,10 +27,7 @@ contains
         real(real64) :: weights
         character    :: record*15
         integer      :: icount, io_status, itest, j
-        !-----------------------------------------------
-        !
-        !   Check the first record of the file; if not as expected, try again
-        !
+        ! Check the first record of the file; if not as expected, try again
         j = index(name," ")
         open (newunit=lsj_label_input_unit,file=name(1:j-1)//".lsj.lbl",form="FORMATTED",  &
             status="OLD",iostat = iopen_status2)
@@ -51,9 +42,8 @@ contains
                 call alloc (lev_j_2,    nvectotf,"Lev_J_2",    "load_final_lsj_labels")
                 call alloc (lev_par_2,  nvectotf,"Lev_Par_2",  "load_final_lsj_labels")
                 call alloc (rlev_ener_2,nvectotf,"RLev_ENER_2","load_final_lsj_labels")
-                !CPJ        CALL ALLOC (string_CSF2,NVECTOTF,'string_CSF2','LDLBL2')
+                ! CPJ        CALL ALLOC (string_CSF2,NVECTOTF,'string_CSF2','LDLBL2')
                 allocate(string_csf2(1:nvectotf))
-                !
                 icount = 1
                 do
                     read (lsj_label_input_unit,"(1X,I2,1X,A4,5X,A1,8X,F16.9)",iostat = io_status)     &

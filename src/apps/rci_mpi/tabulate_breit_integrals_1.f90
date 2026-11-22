@@ -1,3 +1,4 @@
+! Precompute the first group of Breit radial integrals used by the CI matrix.
 module tabulate_breit_integrals_1_interface
     implicit none (type, external)
 
@@ -6,28 +7,24 @@ module tabulate_breit_integrals_1_interface
     public :: tabulate_breit_integrals_1
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   Input:
+    !      MPI rank and process count
+    !   Output:
+    !    N - Number of integrals
+    !    j2max - max of 2*J
+    !
+    !        Generate the list of Breit Integrals of type 1
+    !        that could arise from a set of orbitals
+    !        of orbitals.
+    !
+    !        This routine is similar to genintrk
+    !
+    ! Written by Per Jonsson            October 2014
+    !
+    ! Translated by Charlotte Froese Fischer
+    !                        Gediminas Gaigalas  10/05/17
     subroutine tabulate_breit_integrals_1 (mpi_rank, mpi_process_count, nb, max_orbital_two_j)
-        ! Module dependencies
-        !                                                                      *
-        !  Input:
-        !     MPI rank and process count
-        !  Output:
-        !   N - Number of integrals
-        !   j2max - max of 2*J
-        !
-        !       Generate the list of Breit Integrals of type 1                 *
-        !       that could arise from a set of orbitals                        *
-        !       of orbitals.                                                   *
-        !                                                                      *
-        !       This routine is similar to genintrk                            *
-        !                                                                      *
-        !     Written by Per Jonsson            October 2014                   *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Charlotte Froese Fischer
-        !                       Gediminas Gaigalas  10/05/17
+        !  Module dependencies
         use array_memory_management, only: alloc
         use breit_integral_tables, only: breit_integral_indices_1, breit_integral_values_1
         use orbital_csf_basis, only: orbital_two_j, orbital_count
@@ -48,13 +45,10 @@ contains
         ! Local declarations
         logical :: gen
         integer :: i, key, k, orbital_index, ib, ic, id
-        !-----------------------------------------------
-        !
+
         key = orbital_count + 1
         first_breit_integral_group_offsets(0) = 1
-        !
-        !   Find 2*JMAX; it should not be greater than PARAMETER KMAX
-        !
+        ! Find 2*JMAX; it should not be greater than PARAMETER KMAX
         max_orbital_two_j = orbital_two_j(1)
         do i = 2, orbital_count
             if (orbital_two_j(i) > max_orbital_two_j) max_orbital_two_j = orbital_two_j(i)
@@ -63,11 +57,9 @@ contains
         if (max_orbital_two_j > maximum_breit_multipole_rank) then
             stop "tabulate_breit_integrals_1: maximum multipole rank is too small"
         end if
-        !
-        !   Make the breit integrals. Note that there are no symmetry relations that
-        !   can be utilized. See paper by Grasnt.
-        !   When GEN is false, sweep through to find dimension
-        !
+        ! Make the breit integrals. Note that there are no symmetry relations that
+        ! can be utilized. See paper by Grasnt.
+        ! When GEN is false, sweep through to find dimension
         gen = .false.
 
         do
@@ -90,9 +82,7 @@ contains
                 end do
                 first_breit_integral_group_offsets(k+1) = nb + 1
             end do
-            !
-            !     Allocate memory for integral book keeping
-            !
+            ! Allocate memory for integral book keeping
             if (gen) exit
             call alloc (breit_integral_indices_1,nb,"breit_integral_indices_1","tabulate_breit_integrals_1")
             call alloc (breit_integral_values_1,nb,"breit_integral_values_1","tabulate_breit_integrals_1")

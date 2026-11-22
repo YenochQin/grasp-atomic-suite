@@ -1,3 +1,4 @@
+! Integrate the coupled radial Dirac equations from the origin to the matching point.
 module integrate_radial_outward_interface
     implicit none (type, external)
 
@@ -6,26 +7,11 @@ module integrate_radial_outward_interface
     public :: integrate_radial_outward
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! The large and small components must already be tabulated at the first three points.
+    ! Propagate both components to matching_grid_index to join the inward solution.
+    ! Written by Farid A Parpia, at Oxford. Last updated: 08 Dec 1992
     subroutine integrate_radial_outward(orbital_index, matching_grid_index, large_component_values, small_component_values)
         ! Module dependencies
-        !                                                                      *
-        !   This subroutine carries out the step-by-step outward integration   *
-        !   of a pair of inhomogeneous Dirac radial equations.                 *
-        !                                                                      *
-        !   arguments:                                                         *
-        !                                                                      *
-        !      J:   (Input) Orbital index of function to be computed           *
-        !      JP:  (Input) The join point; the outward integration stops      *
-        !           at this tabulation index                                   *
-        !      P,Q: (Input and output) on input, elements 1 to 3 of both       *
-        !           arrays must be tabulated; on output, the arrays are        *
-        !           tabulated up to point JP                                   *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford   Last updated: 08 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: max_radial_points
         use radial_grid_state,           only: transformed_grid_step, radial_derivative_over_radius
@@ -44,16 +30,11 @@ contains
         integer :: i
         real(real64) :: dkhb2, dkhb2f, cpi, cmi, pi, qi, tfi, tgi, cpim1, cmim1, &
             pim1, qim1, tfim1, tgim1, ucim1, udim1, uei
-        !-----------------------------------------------
-        !
-        !   One global initialization
-        !
+        ! One global initialization
         dkhb2 = 0.5_real64*transformed_grid_step*dble(orbital_kappa(orbital_index))
+        ! Tabulate P(r) and Q(r) by step-by-step integration
         !
-        !   Tabulate P(r) and Q(r) by step-by-step integration
-        !
-        !   Initializations: set quantities for I = 3
-        !
+        ! Initializations: set quantities for I = 3
         i = 3
         dkhb2f = dkhb2*radial_derivative_over_radius(i)
         cpi = 1.0_real64 + dkhb2f
@@ -62,10 +43,9 @@ contains
         qi = small_component_values(i)
         tfi = large_equation_coefficients(i)
         tgi = small_equation_coefficients(i)
+        !    March out to from I = 4 to I = JP
         !
-        !   March out to from I = 4 to I = JP
-        !
-        !XHH Use doo-loop
+        ! XHH Use doo-loop
         do i = 4, matching_grid_index
             cpim1 = cpi
             cmim1 = cmi
@@ -86,7 +66,6 @@ contains
             large_component_values(i) = pi
             small_component_values(i) = qi
         end do
-        !
         return
     end subroutine integrate_radial_outward
 end module integrate_radial_outward_interface

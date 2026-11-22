@@ -1,3 +1,4 @@
+! Resolve and check the files for the initial and final states.
 module read_state_filenames_interface
     implicit none (type, external)
 
@@ -6,20 +7,15 @@ module read_state_filenames_interface
     public :: read_state_filenames
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Determines the name of the initial and final states
+    ! In addition this subroutine determines which J symmetries
+    ! that are to be transformed
+    !
+    ! Written by Per Jonsson
     subroutine read_state_filenames(name)
         ! Module dependencies
         use calculation_state_files, only: read_state_pair
         use, intrinsic :: iso_fortran_env, only: output_unit
-        !                                                                      *
-        !   Determines the name of the initial and final states                *
-        !   In addition this subroutine determines which J symmetries          *
-        !   that are to be transformed                                         *
-        !                                                                      *
-        !   Written by Per Jonsson                                             *
-        !                                                                      *
-        !***********************************************************************
         use biorthogonal_transition_selection, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
         use yes_no_input, only: read_yes_no
         implicit none (type, external)
@@ -30,11 +26,7 @@ contains
         ! Local declarations
         integer :: i
         logical :: yes
-        !-----------------------------------------------
-        !
-        !
-        !   Obtain the names of the initial and final state files
-        !
+        ! Obtain the names of the initial and final state files
         call read_state_pair(name)
 
         ! Per april 2007
@@ -47,7 +39,6 @@ contains
             print *, " copy name.wfn to name.bw and name.mix/name.cimix to name.(c)bm "
             print *, " and run rtransition.                               "
             print *
-
 
             print *, " Do you want to continue anyway ? "
             yes = read_yes_no ()

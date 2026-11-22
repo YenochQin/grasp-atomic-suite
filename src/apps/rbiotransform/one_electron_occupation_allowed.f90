@@ -1,3 +1,4 @@
+! Check whether the two CSF occupations admit a one-electron matrix element.
 module one_electron_occupation_allowed_interface
     implicit none (type, external)
 
@@ -6,19 +7,12 @@ module one_electron_occupation_allowed_interface
     public :: one_electron_occupation_allowed
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This routine is to check the occupation condition for one electron *
+    !   operator.
+    !
+    ! Yu Zou. Last revision: 8/16/00
     integer function one_electron_occupation_allowed (ja, jb)
         ! Module dependencies
-        !                                                                      *
-        !   This routine is to check the occupation condition for one electron *
-        !   operator.                                                          *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: IQ.                                           *
-        !                                                                      *
-        !   Yu Zou                                Last revision: 8/16/00       *
-        !                                                                      *
-        !***********************************************************************
         use orbital_csf_basis, only: orbital_count
         use csf_quantum_queries, only: csf_occupation
         implicit none (type, external)
@@ -29,9 +23,7 @@ contains
 
         ! Local declarations
         integer :: k, orbital_index, iqa, iqb
-        !-----------------------------------------------
-        !
-        !
+
         one_electron_occupation_allowed = 0
         k = 0
         do orbital_index = 1, orbital_count

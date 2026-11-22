@@ -1,3 +1,5 @@
+! Contract MCP contributions with the current mixing coefficients to form orbital-equation
+! coefficients.
 module assemble_orbital_potential_coefficients_interface
     implicit none (type, external)
 
@@ -6,25 +8,17 @@ module assemble_orbital_potential_coefficients_interface
     public :: assemble_orbital_potential_coefficients
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This  subroutine  sets  up the coefficients and orbital pointers
+    !   for the direct and exchange potentials for orbital  J .  It also
+    !   sets  up  the  coefficients  and  pointers for the inhomogeneous
+    !   terms arising from off-diagonal I (a,b) integrals.
+    !
+    ! Written by Farid A Parpia, at Oxford. Last update: 21 Dec 1992
+    ! Modified by Xinghong He. Last update: 21 Dec 1997
+    ! Modified by G. Gaigalas. Last revision: 07 Sep 2021
+    !      Spin-angular coefficiants have been put on memory
     subroutine assemble_orbital_potential_coefficients(extended_optimal_level, orbital_index)
         ! Module dependencies
-        !                                                                      *
-        !   This  subroutine  sets  up the coefficients and orbital pointers   *
-        !   for the direct and exchange potentials for orbital  J .  It also   *
-        !   sets  up  the  coefficients  and  pointers for the inhomogeneous   *
-        !   terms arising from off-diagonal I (a,b) integrals.                 *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: alloc, dalloc.                                *
-        !               [RSCF92]: alcsca, dsubrs.                              *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford    Last update: 21 Dec 1992   *
-        !   Modified by Xinghong He                 Last update: 21 Dec 1997   *
-        !   Modified by G. Gaigalas               Last revision: 07 Sep 2021   *
-        !      Spin-angular coefficiants have been put on memory               *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use grasp_parameters,    only: orbital_index_radix
         use array_memory_management, only: alloc, dalloc, ralloc
@@ -42,7 +36,6 @@ contains
         use rmcdhf_mcp_memory,     only: indx, iclmn, coeff, imin2_30, imax2_30
 
         ! Procedure interfaces
-        !      USE cons_C,           ONLY: EPS
         use csf_density_matrix_element_interface, only: csf_density_matrix_element
         use direct_angular_coefficient_interface, only: direct_angular_coefficient
         use exchange_angular_coefficient_interface, only: exchange_angular_coefficient
@@ -68,38 +61,9 @@ contains
                 & channel_record_count
         real(real64) :: current_orbital_weight, sumr, ykab, xkab, sum,  contr
         integer(int64) :: total_contribution_count, total_secondary_contribution_count
-        !-----------------------------------------------
-        !** Locals
-        !     POINTER (PCOEFF,COEFF(1))
-        !     POINTER (PICLMN,ICLMN(1))
-        !     POINTER (PINDEX,indx(1))
-        !
-        !     POINTER (PNIROW,IROW(1))
-        !     POINTER (PNTRDA,DA(1))
-        !     POINTER (PNTRXA,XA(1))
-        !     POINTER (PNTRYA,YA(1))
-        !     POINTER (PNTNDA,NDA(1))
-        !     POINTER (PNTNXA,NXA(1))
-        !     POINTER (PNTNYA,NYA(1))
-        !
-        !
-        !     POINTER (pncfblk, ncfblk(0:*))
-        !
-        !     POINTER (pnevblk, nevblk(1))
-        !     POINTER (pncmaxblk, ncmaxblk(1))
-        !
-        !
-        !     POINTER (pncfpast, ncfpast(1))
-        !     POINTER (pncminpast, ncminpast(1))
-        !     POINTER (pnevecpast, nevecpast(1))
-        !
-        !     INTEGER, DIMENSION(:), pointer :: nda, nxa, nya
-        !     INTEGER, DIMENSION(:), pointer :: ncfblk, nevblk, ncmaxblk, &
-        !                                       ncfpast, ncminpast, nevecpast
+        ! Locals
 
-        !=======================================================================
-        !   Initializations
-        !=======================================================================
+        ! Initializations
 
         coefficient_buffer_size = 1
         call alloc (coeff, coefficient_buffer_size, "COEFF", "assemble_orbital_potential_coefficients" )
@@ -114,10 +78,8 @@ contains
         current_orbital_two_j = orbital_two_j(orbital_index)
         current_orbital_weight = orbital_occupation_weights(orbital_index)
 
-        !=======================================================================
-        !   Generate YA coefficients that do not require MCP output list.
-        !   Computation distributed and then collected.
-        !=======================================================================
+        ! Generate YA coefficients that do not require MCP output list.
+        ! Computation distributed and then collected.
 
         packed_orbital_label_offset = 0
         packed_orbital_label_stride = orbital_index_radix*(orbital_index_radix + 1)
@@ -130,7 +92,7 @@ contains
             end if
             do multipole_rank = 0, maximum_multipole_rank, 2
 
-                !<<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
+                ! <<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
                 sumr = 0.0_real64
                 do symmetry_block_index = 1, symmetry_block_count
                     do csf_index = mpi_rank + 1, csf_counts_by_block(symmetry_block_index), mpi_process_count
@@ -140,7 +102,7 @@ contains
                             partner_orbital_index)
                     end do
                 end do
-                !>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
                 if (partner_orbital_index == orbital_index) then
                     ykab = 2.0_real64*sumr/current_orbital_weight
@@ -148,44 +110,36 @@ contains
                     ykab = sumr/current_orbital_weight
                 end if
 
-                !*** The following IF has to be removed since YKAB
-                !*** is incomplete in multiprocessor case
-                !IF (ABS (YKAB) .GT. EPS) THEN
+                ! The following IF has to be removed since YKAB
+                ! is incomplete in multiprocessor case
                 y_potential_coefficient_count = y_potential_coefficient_count + 1
                 if (y_potential_coefficient_count > y_potential_coefficient_capacity ) then
                     if (y_potential_coefficient_capacity > 0) then
                         y_potential_coefficient_capacity = 2*y_potential_coefficient_capacity
-                        !cjb RALLOC ALLOC NYA, YA, (NYDIM NYCOF)
+                        ! cjb RALLOC ALLOC NYA, YA, (NYDIM NYCOF)
                         call ralloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, &
                             "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
                         call ralloc(y_potential_coefficients, y_potential_coefficient_capacity, "y_potential_coefficients", &
                             "assemble_orbital_potential_coefficients")
-                    !                 CALL RALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
-                    !                 CALL RALLOC(YA, NYCOF, 'YA', 'SETCOF')
+
                     else
-                        !cjb similar here
+                        ! cjb similar here
                         y_potential_coefficient_capacity = 64
                         call alloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, &
                             "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
                         call alloc(y_potential_coefficients, y_potential_coefficient_capacity, "y_potential_coefficients", &
                             "assemble_orbital_potential_coefficients")
-                        !                 CALL ALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
-                        !                 CALL ALLOC(YA, NYCOF, 'YA', 'SETCOF')
-                        !                 NYDIM = NYCOF
-                        !cjb
+                        !                  NYDIM = NYCOF
                     end if
                 end if
                 y_potential_coefficients(y_potential_coefficient_count) = ykab
                 y_potential_coefficient_labels(y_potential_coefficient_count) = multipole_rank + packed_orbital_label_offset
-                !ENDIF
 
             end do
         end do
 
-        !=======================================================================
-        !   Generate XA coefficients that do not require MCP output list
-        !   Computation distributed and then collected.
-        !=======================================================================
+        ! Generate XA coefficients that do not require MCP output list
+        ! Computation distributed and then collected.
 
         packed_orbital_label_offset = orbital_index_radix*orbital_index
         packed_orbital_label_stride = orbital_index_radix*orbital_index_radix*(orbital_index_radix + 1)
@@ -202,7 +156,7 @@ contains
 
             do multipole_rank = minimum_multipole_rank, maximum_multipole_rank, 2
 
-                !<<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
+                ! <<< mpi distribute calculation <<<<<<<<<<<<<<<<<<<<<<
                 sumr = 0.0_real64
                 do symmetry_block_index = 1, symmetry_block_count
                     do csf_index = mpi_rank + 1, csf_counts_by_block(symmetry_block_index), mpi_process_count
@@ -212,60 +166,52 @@ contains
                             partner_orbital_index)
                     end do
                 end do
-                !>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
                 xkab = sumr/current_orbital_weight
 
-                !*** The following IF has to be removed since YKAB
-                !*** is incomplete in multiprocessor case
-                !IF (ABS (XKAB) .GT. EPS) THEN
+                ! The following IF has to be removed since YKAB
+                ! is incomplete in multiprocessor case
                 exchange_coefficient_count = exchange_coefficient_count + 1
                 if (exchange_coefficient_count > exchange_coefficient_capacity) then
                     if (exchange_coefficient_capacity > 0) then
                         exchange_coefficient_capacity = 2*exchange_coefficient_capacity
-                        !cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
+                        ! cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
                         call ralloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
                             "assemble_orbital_potential_coefficients")
                         call ralloc (exchange_coefficient_labels, exchange_coefficient_capacity, "exchange_coefficient_labels", &
                             "assemble_orbital_potential_coefficients")
-                    !                  CALL RALLOC (XA, NXCOF, 'XA', 'SETCOF')
-                    !                  CALL RALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
+
                     else
                         exchange_coefficient_capacity = 64
                         call alloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
                             "assemble_orbital_potential_coefficients")
                         call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, "exchange_coefficient_labels", &
                             "assemble_orbital_potential_coefficients")
-                        !                  CALL ALLOC (XA, NXCOF, 'XA', 'SETCOF')
-                        !                  CALL ALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
-                        !                  NXDIM = NXCOF
-                        !cjb
+                        !                   NXDIM = NXCOF
                     end if
                 end if
                 exchange_coefficients(exchange_coefficient_count) = xkab
                 exchange_coefficient_labels(exchange_coefficient_count) = multipole_rank + packed_orbital_label_offset
-                !ENDIF
             end do
         end do
 
-        !=======================================================================
-        !   Generate DA coefficients; these arise from the one-electron
-        !   integrals
-        !=======================================================================
+        ! Generate DA coefficients; these arise from the one-electron
+        ! integrals
 
         total_contribution_count = 0
         total_secondary_contribution_count = 0
         do jblock = 1, symmetry_block_count
 
-            !*** Read in IROW from file mcp.30 ***
+            ! Read in IROW from file mcp.30 ***
             channel_record_count = imax2_30(jblock) - imin2_30(jblock)
             stored_matrix_element_count = int(channel_record_count,kind=int64)
             call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", &
                 "assemble_orbital_potential_coefficients")
             call read_mcp_structure_from_memory(jblock)
 
-            !*** Loop over labels having non-zero coefficients
-            !*** it exits when no more labels for the block
+            ! Loop over labels having non-zero coefficients
+            ! it exits when no more labels for the block
 
             do
                 total_secondary_contribution_count = total_secondary_contribution_count + 1
@@ -278,7 +224,7 @@ contains
                     exit                              ! Actually to next block
                 end if
 
-                !*** Decode the labels of I(ab) ***
+                ! Decode the labels of I(ab) ***
                 ia = mod(lab,orbital_index_radix)
                 partner_orbital_index = lab/orbital_index_radix
 
@@ -301,7 +247,6 @@ contains
                 end if
 
                 ! Read the column index, the sparse matrix index, and the
-                ! coefficient for all contributions from this integral
 
                 call read_mcp_coefficients_into_memory(31,total_contribution_count,contribution_count)
                 total_contribution_count = total_contribution_count + contribution_count
@@ -326,14 +271,14 @@ contains
                 ! and merge is performed. This will significantly reduce
                 ! the number of direct coefficients and calls to the Hartree Y and Z evaluator.
 
-                !*** Find the right counting parameter ***
+                ! Find the right counting parameter ***
                 if (ia == orbital_index) then
                     ithis = partner_orbital_index
                 else
                     ithis = ia
                 end if
 
-                !*** Check it against the previously recorded ***
+                ! Check it against the previously recorded ***
                 if (jblock > 1) then
                     do i = 1, direct_coefficient_count
                         if (direct_orbital_indices(i) /= ithis) cycle     ! found, add the value
@@ -343,7 +288,7 @@ contains
                     if (i <= direct_coefficient_count) cycle
                 end if
 
-                !*** Not found in the record, add an item ***
+                ! Not found in the record, add an item ***
                 direct_coefficient_count = direct_coefficient_count + 1
                 if (direct_coefficient_count > direct_coefficient_capacity) then
                     if (direct_coefficient_capacity > 0) then
@@ -352,17 +297,14 @@ contains
                             "assemble_orbital_potential_coefficients")
                         call ralloc (direct_orbital_indices, direct_coefficient_capacity, "direct_orbital_indices", &
                             "assemble_orbital_potential_coefficients")
-                    !                  CALL RALLOC (DA, NDCOF, 'DA', 'SETCOF')
-                    !                  CALL RALLOC (NDA, NDCOF, 'NDA', 'SETCOF')
+
                     else
                         direct_coefficient_capacity = 64
                         call alloc (direct_coefficients, direct_coefficient_capacity, "direct_coefficients", &
                             "assemble_orbital_potential_coefficients")
                         call alloc (direct_orbital_indices, direct_coefficient_capacity, "direct_orbital_indices", &
                             "assemble_orbital_potential_coefficients")
-                        !                  CALL ALLOC (DA, NDCOF, 'DA', 'SETCOF')
-                        !                  CALL ALLOC (NDA, NDCOF, 'NDA', 'SETCOF')
-                        !                  NDDIM = NDCOF
+                        ! NDDIM = NDCOF
                     end if
                 end if
                 direct_coefficients(direct_coefficient_count) = sum                      ! print*, DA(NDCOF), ndcof, myid, 'myid'
@@ -371,21 +313,17 @@ contains
             end do                             ! For labels
         end do                                     ! For blocks
 
-        !=======================================================================
-        !   Generate YA and XA coefficients; these arise from the two-electron
-        !   integrals
-        !=======================================================================
+        ! Generate YA and XA coefficients; these arise from the two-electron
+        ! integrals
 
         do nfile = 32, 32 + max_mcp_file_multipole_rank
 
-            !=======================================================================
-            !   Loop over blocks again, this time, for V-coefficients
-            !=======================================================================
+            ! Loop over blocks again, this time, for V-coefficients
 
             total_contribution_count = 0
             total_secondary_contribution_count = 0
             do jblock = 1, symmetry_block_count
-                !           ...Read in IROW from file mcp.30
+                ! ...Read in IROW from file mcp.30
                 channel_record_count = imax2_30(jblock) - imin2_30(jblock)
                 stored_matrix_element_count = int(channel_record_count,kind=int64)
                 call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", &
@@ -394,19 +332,16 @@ contains
 
                 multipole_rank = nfile - 32                       ! multipolarity of the integral
 
-                !=======================================================================
-                !   Attempt to read another block of data
-                !=======================================================================
+                ! Attempt to read another block of data
                 do
                     total_secondary_contribution_count = total_secondary_contribution_count + 1
                     call load_mcp_records_into_memory(nfile,total_secondary_contribution_count,lab, contribution_count)
-                    !
                     if (lab==0 .and. contribution_count==0) then
                         call dalloc (matrix_partner_indices, "matrix_partner_indices", "assemble_orbital_potential_coefficients")
                         exit
                     end if
-                    !***                       k
-                    !*** Decode the labels of R (abcd)
+                    ! k
+                    ! Decode the labels of R (abcd)
                     decoded_integral_orbital_indices(4) = mod(lab,orbital_index_radix)
                     lab = lab/orbital_index_radix
                     decoded_integral_orbital_indices(2) = mod(lab,orbital_index_radix)
@@ -414,7 +349,7 @@ contains
                     decoded_integral_orbital_indices(3) = mod(lab,orbital_index_radix)
                     decoded_integral_orbital_indices(1) = lab/orbital_index_radix
 
-                    !*** Determine the number of indices that match
+                    ! Determine the number of indices that match
                     irank = 0
                     irank = irank + count(decoded_integral_orbital_indices==orbital_index)
 
@@ -423,8 +358,8 @@ contains
                         cycle
                     end if
 
-                    !*** At least one subshell index matches; allocate storage
-                    !*** for reading in the rest of this block
+                    ! At least one subshell index matches; allocate storage
+                    ! for reading in the rest of this block
                     if (contribution_count > coefficient_buffer_size) then
                         call dalloc (coeff, "COEFF", "assemble_orbital_potential_coefficients")
                         call dalloc (iclmn, "ICLMN", "assemble_orbital_potential_coefficients")
@@ -435,13 +370,12 @@ contains
                         call alloc (indx, coefficient_buffer_size, "INDX", "assemble_orbital_potential_coefficients")
                     end if
 
-                    !*** Read column index, sparse matrix index, and
-                    !*** coefficient for all contributions from this integral
+                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
                     call read_mcp_coefficients_into_memory(nfile,total_contribution_count,contribution_count)
                     total_contribution_count = total_contribution_count + contribution_count
 
-                    !*** Add up all the contributions from this integral;
-                    !*** off-diagonal contributions have double the weight
+                    ! Add up all the contributions from this integral;
+                    ! off-diagonal contributions have double the weight
                     sum = 0.0_real64
                     do i = 1, contribution_count
                         csf_index = matrix_partner_indices(indx(i))
@@ -455,11 +389,9 @@ contains
                     select case (irank)
                     case (1)
 
-                        !=======================================================================
-                        !   One matching index: exchange potential contribution
-                        !=======================================================================
+                        ! One matching index: exchange potential contribution
 
-                        !*** Similar to DA, find ithis ***
+                        ! Similar to DA, find ithis ***
                         ithis = -911                      ! initialize to an impossible value
                         ! though not necessary
                         do iind = 1, 4
@@ -480,7 +412,7 @@ contains
 
                         if (ithis == (-911)) stop "ithis .EQ. -911"
 
-                        !*** Check ithis against the previously recorded ***
+                        ! Check ithis against the previously recorded ***
                         if (jblock > 1) then
                             do i = 1, exchange_coefficient_count
                                 if (exchange_coefficient_labels(i) /= ithis) cycle
@@ -490,28 +422,24 @@ contains
                             if (i <= exchange_coefficient_count) cycle
                         end if
 
-                        !*** Not found in records, add an item ***
+                        ! Not found in records, add an item ***
                         exchange_coefficient_count = exchange_coefficient_count + 1
                         if (exchange_coefficient_count > exchange_coefficient_capacity) then
                             if (exchange_coefficient_capacity > 0) then
                                 exchange_coefficient_capacity = 2*exchange_coefficient_capacity
-                                !cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
+                                ! cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
                                 call ralloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
                                     "assemble_orbital_potential_coefficients")
                                 call ralloc (exchange_coefficient_labels, exchange_coefficient_capacity, &
                                     "exchange_coefficient_labels", "assemble_orbital_potential_coefficients")
-                            !                  CALL RALLOC (XA, NXCOF, 'XA', 'SETCOF')
-                            !                  CALL RALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
+
                             else
                                 exchange_coefficient_capacity = 64
                                 call alloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
                                     "assemble_orbital_potential_coefficients")
                                 call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, &
                                     "exchange_coefficient_labels", "assemble_orbital_potential_coefficients")
-                                !                  CALL ALLOC (XA, NXCOF, 'XA', 'SETCOF')
-                                !                  CALL ALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
-                                !                  NXDIM = NXCOF
-                                !cjb
+                                !                   NXDIM = NXCOF
                             end if
                         end if
                         exchange_coefficients(exchange_coefficient_count) = sum
@@ -519,10 +447,8 @@ contains
 
                     case (2)
 
-                        !=======================================================================
-                        !   Two matching indices: either direct or exchange potential
-                        !   contribution
-                        !=======================================================================
+                        ! Two matching indices: either direct or exchange potential
+                        ! contribution
 
                         ifound = 0
                         do iind = 1, 4
@@ -537,10 +463,9 @@ contains
                         end do
 
                         if (loc2 - loc1 == 2) then
+                            !    Direct contribution
                             !
-                            !   Direct contribution
-                            !
-                            !*** Find ithis ***
+                            ! Find ithis ***
                             il = loc1 + 3
                             if (il > 4) il = il - 4
                             iyo2 = decoded_integral_orbital_indices(il)
@@ -549,7 +474,7 @@ contains
                             iyo1 = decoded_integral_orbital_indices(il)
                             ithis = (iyo2*orbital_index_radix + iyo1)*orbital_index_radix + multipole_rank
 
-                            !*** Check it against the previously recorded ***
+                            ! Check it against the previously recorded ***
                             if (jblock > 1) then
                                 do i = 1, y_potential_coefficient_count
                                     if (y_potential_coefficient_labels(i) /= ithis) cycle
@@ -559,38 +484,33 @@ contains
                                 if (i <= y_potential_coefficient_count) cycle
                             end if
 
-                            !*** Not found, add an item ***
+                            ! Not found, add an item ***
                             y_potential_coefficient_count = y_potential_coefficient_count + 1
                             if (y_potential_coefficient_count > y_potential_coefficient_capacity) then
                                 if (y_potential_coefficient_capacity > 0) then
                                     y_potential_coefficient_capacity = 2*y_potential_coefficient_capacity
-                                    !cjb RALLOC ALLOC NYA, YA, (NYDIM NYCOF)
+                                    ! cjb RALLOC ALLOC NYA, YA, (NYDIM NYCOF)
                                     call ralloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, &
                                         "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
                                     call ralloc(y_potential_coefficients, y_potential_coefficient_capacity, &
                                         "y_potential_coefficients", "assemble_orbital_potential_coefficients")
-                                !                 CALL RALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
-                                !                 CALL RALLOC(YA, NYCOF, 'YA', 'SETCOF')
+
                                 else
                                     y_potential_coefficient_capacity = 64
                                     call alloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, &
                                         "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
                                     call alloc(y_potential_coefficients, y_potential_coefficient_capacity, &
                                         "y_potential_coefficients", "assemble_orbital_potential_coefficients")
-                                    !                 CALL ALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
-                                    !                 CALL ALLOC(YA, NYCOF, 'YA', 'SETCOF')
-                                    !                 NYDIM = NYCOF
-                                    !cjb
+                                    !                  NYDIM = NYCOF
                                 end if
                             end if
                             y_potential_coefficients(y_potential_coefficient_count) = sum + sum
                             y_potential_coefficient_labels(y_potential_coefficient_count) = ithis
 
                         else
+                            !    Exchange contribution
                             !
-                            !   Exchange contribution
-                            !
-                            !*** Find ithis ***
+                            ! Find ithis ***
                             il = loc1 + 2
                             if (il > 4) il = il - 4
                             iorb = decoded_integral_orbital_indices(il)
@@ -603,7 +523,7 @@ contains
                             ithis = ((iorb*orbital_index_radix + iyo2)*orbital_index_radix + iyo1)*orbital_index_radix + &
                                 & multipole_rank
 
-                            !*** Check it against the previously recorded ***
+                            ! Check it against the previously recorded ***
                             if (jblock > 1) then
                                 do i = 1, exchange_coefficient_count
                                     if (exchange_coefficient_labels(i) /= ithis) cycle
@@ -613,28 +533,24 @@ contains
                                 if (i <= exchange_coefficient_count) cycle
                             end if
 
-                            !*** Not found, add an item ***
+                            ! Not found, add an item ***
                             exchange_coefficient_count = exchange_coefficient_count + 1
                             if (exchange_coefficient_count > exchange_coefficient_capacity) then
                                 if (exchange_coefficient_capacity > 0) then
                                     exchange_coefficient_capacity = 2*exchange_coefficient_capacity
-                                    !cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
+                                    ! cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
                                     call ralloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
                                         "assemble_orbital_potential_coefficients")
                                     call ralloc (exchange_coefficient_labels, exchange_coefficient_capacity, &
                                         "exchange_coefficient_labels", "assemble_orbital_potential_coefficients")
-                                !                  CALL RALLOC (XA, NXCOF, 'XA', 'SETCOF')
-                                !                  CALL RALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
+
                                 else
                                     exchange_coefficient_capacity = 64
                                     call alloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
                                         "assemble_orbital_potential_coefficients")
                                     call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, &
                                         "exchange_coefficient_labels", "assemble_orbital_potential_coefficients")
-                                    !                  CALL ALLOC (XA, NXCOF, 'XA', 'SETCOF')
-                                    !                  CALL ALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
-                                    !                  NXDIM = NXCOF
-                                    !cjb
+                                    !                   NXDIM = NXCOF
                                 end if
                             end if
                             exchange_coefficients(exchange_coefficient_count) = sum + sum
@@ -644,11 +560,9 @@ contains
 
                     case (3)
 
-                        !=======================================================================
-                        !   Three matching indices: direct and exchange potential contributions
-                        !=======================================================================
+                        ! Three matching indices: direct and exchange potential contributions
 
-                        !*** Find ithis AND ithis2
+                        ! Find ithis AND ithis2
                         ithis = -911
                         ithis2 = -911
                         do iind = 1, 4
@@ -666,7 +580,7 @@ contains
 
                         if (ithis==(-911) .or. ithis2==(-911)) stop "ithis2"
 
-                        !*** Check the previously recorded for YA
+                        ! Check the previously recorded for YA
                         if (jblock > 1) then
                             do i = 1, y_potential_coefficient_count
                                 if (y_potential_coefficient_labels(i) /= ithis) cycle
@@ -686,17 +600,14 @@ contains
                                         "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
                                     call ralloc (y_potential_coefficients, y_potential_coefficient_capacity, &
                                         "y_potential_coefficients", "assemble_orbital_potential_coefficients")
-                                !                     CALL RALLOC (NYA, NYCOF, 'NYA', 'SETCOF')
-                                !                     CALL RALLOC (YA, NYCOF, 'YA', 'SETCOF')
+
                                 else
                                     y_potential_coefficient_capacity = 64
                                     call alloc (y_potential_coefficient_labels, y_potential_coefficient_capacity, &
                                         "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
                                     call alloc (y_potential_coefficients, y_potential_coefficient_capacity, &
                                         "y_potential_coefficients", "assemble_orbital_potential_coefficients")
-                                    !                     CALL ALLOC (NYA, NYCOF, 'NYA', 'SETCOF')
-                                    !                     CALL ALLOC (YA, NYCOF, 'YA', 'SETCOF')
-                                    !                     NYDIM = NYCOF
+                                    ! NYDIM = NYCOF
                                 end if
                             end if
                             y_potential_coefficients(y_potential_coefficient_count) = sum + sum
@@ -704,7 +615,7 @@ contains
 
                         end if
 
-                        !*** Check the previously recorded for XA
+                        ! Check the previously recorded for XA
                         if (jblock > 1) then
                             do i = 1, exchange_coefficient_count
                                 if (exchange_coefficient_labels(i) /= ithis2) cycle
@@ -719,22 +630,18 @@ contains
                         if (exchange_coefficient_count > exchange_coefficient_capacity) then
                             if (exchange_coefficient_capacity > 0) then
                                 exchange_coefficient_capacity = 2*exchange_coefficient_capacity
-                                !cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
+                                ! cjb RALLOC ALLOC NXA, XA, (NXDIM NXCOF)
                                 call ralloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
                                     "assemble_orbital_potential_coefficients")
                                 call ralloc (exchange_coefficient_labels, exchange_coefficient_capacity, &
                                     "exchange_coefficient_labels", "assemble_orbital_potential_coefficients")
-                            !                  CALL RALLOC (XA, NXCOF, 'XA', 'SETCOF')
-                            !                  CALL RALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
+
                             else
                                 call alloc (exchange_coefficients, exchange_coefficient_capacity, "exchange_coefficients", &
                                     "assemble_orbital_potential_coefficients")
                                 call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, &
                                     "exchange_coefficient_labels", "assemble_orbital_potential_coefficients")
-                                !                  CALL ALLOC (XA, NXCOF, 'XA', 'SETCOF')
-                                !                  CALL ALLOC (NXA, NXCOF, 'NXA', 'SETCOF')
-                                !                  NXDIM = NXCOF
-                                !cjb
+                                !                   NXDIM = NXCOF
                             end if
                         end if
                         exchange_coefficients(exchange_coefficient_count) = sum
@@ -742,16 +649,14 @@ contains
 
                     case (4)
 
-                        !=======================================================================
-                        !   Four matching indices: direct potential contribution
-                        !=======================================================================
+                        ! Four matching indices: direct potential contribution
 
-                        !*** Find ithis AND ithis2
+                        ! Find ithis AND ithis2
                         iyo2 = orbital_index
                         iyo1 = orbital_index
                         ithis = (iyo2*orbital_index_radix + iyo1)*orbital_index_radix + multipole_rank
 
-                        !*** Check the previously recorded for YA
+                        ! Check the previously recorded for YA
                         if (jblock > 1) then
                             do i = 1, y_potential_coefficient_count
                                 if (y_potential_coefficient_labels(i) /= ithis) cycle
@@ -766,24 +671,20 @@ contains
                         if (y_potential_coefficient_count > y_potential_coefficient_capacity) then
                             if (y_potential_coefficient_capacity > 0) then
                                 y_potential_coefficient_capacity = 2*y_potential_coefficient_capacity
-                                !cjb RALLOC ALLOC NYA, YA, (NYDIM NYCOF)
+                                ! cjb RALLOC ALLOC NYA, YA, (NYDIM NYCOF)
                                 call ralloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, &
                                     "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
                                 call ralloc(y_potential_coefficients, y_potential_coefficient_capacity, &
                                     "y_potential_coefficients", "assemble_orbital_potential_coefficients")
-                            !                 CALL RALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
-                            !                 CALL RALLOC(YA, NYCOF, 'YA', 'SETCOF')
+
                             else
-                                !cjb similar here
+                                ! cjb similar here
                                 y_potential_coefficient_capacity = 64
                                 call alloc(y_potential_coefficient_labels, y_potential_coefficient_capacity, &
                                     "y_potential_coefficient_labels", "assemble_orbital_potential_coefficients")
                                 call alloc(y_potential_coefficients, y_potential_coefficient_capacity, "y_potential_coefficients", &
                                     "assemble_orbital_potential_coefficients")
-                                !                 CALL ALLOC(NYA, NYCOF, 'NYA', 'SETCOF')
-                                !                 CALL ALLOC(YA, NYCOF, 'YA', 'SETCOF')
-                                !                 NYDIM = NYCOF
-                                !cjb
+                                !                  NYDIM = NYCOF
                             end if
                         end if
                         y_potential_coefficients(y_potential_coefficient_count) = 4.0_real64*sum
@@ -795,9 +696,7 @@ contains
             end do                                  ! loop for V-Coefficients
         end do
 
-        !=======================================================================
-        !   Deallocate storage for arrays local to this routine
-        !=======================================================================
+        ! Deallocate storage for arrays local to this routine
         call dalloc (coeff, "COEFF", "assemble_orbital_potential_coefficients")
         call dalloc (iclmn, "ICLMN", "assemble_orbital_potential_coefficients")
         call dalloc (indx, "INDX", "assemble_orbital_potential_coefficients")

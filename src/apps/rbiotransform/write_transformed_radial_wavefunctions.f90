@@ -1,3 +1,4 @@
+! Save the initial and final biorthogonal radial orbitals for the transition calculation.
 module write_transformed_radial_wavefunctions_interface
     implicit none (type, external)
 
@@ -6,16 +7,11 @@ module write_transformed_radial_wavefunctions_interface
     public :: write_transformed_radial_wavefunctions
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !  This subroutine outputs the transformed radial orbitals
+    !
+    ! Written by Per Jonsson
     subroutine write_transformed_radial_wavefunctions(name)
         ! Module dependencies
-        !                                                                      *
-        !  This subroutine outputs the transformed radial orbitals             *
-        !                                                                      *
-        !  Written by Per Jonsson                                              *
-        !                                                                      *
-        !***********************************************************************
         use biorthogonal_orbital_sets, only: final_orbital_energy_parameters, initial_orbital_energy_parameters, &
             final_orbital_count, initial_orbital_count, final_orbital_principal_n, final_orbital_kappa, &
             initial_orbital_principal_n, initial_orbital_kappa
@@ -29,8 +25,7 @@ contains
         integer :: wavefunction_output_unit
         character, intent(in) :: name(2)*24
         integer :: j, k, i
-        !-----------------------------------------------
-        !
+
         j = index(name(1)," ")
         open(newunit=wavefunction_output_unit, file=name(1)(1:j-1)//".bw", form="UNFORMATTED", status=&
             "UNKNOWN", position="asis")

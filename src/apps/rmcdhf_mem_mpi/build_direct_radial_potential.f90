@@ -1,3 +1,4 @@
+! Form the direct contribution to the radial equation of the current orbital.
 module build_direct_radial_potential_interface
     implicit none (type, external)
 
@@ -6,22 +7,16 @@ module build_direct_radial_potential_interface
     public :: build_direct_radial_potential
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This subroutine  tabulates the  potential function Y(r) (Eq (14)
+    ! in  I P Grant, B J McKenzie, P H Norrington, D F Mayers, and N C
+    ! Pyper, Computer  Phys  Commun  21 (1980) 211) for orbital J. The
+    ! function is tabulated in the COMMON array YP.
+    !
+    ! Written by Farid A Parpia, at Oxford. Last update: 17 Dec 1992
+    ! MPI version by Xinghong He. Last revision: 05 Aug 1998
     subroutine build_direct_radial_potential(orbital_index)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This subroutine  tabulates the  potential function Y(r) (Eq (14)   *
-        !   in  I P Grant, B J McKenzie, P H Norrington, D F Mayers, and N C   *
-        !   Pyper, Computer  Phys  Commun  21 (1980) 211) for orbital J. The   *
-        !   function is tabulated in the COMMON array YP.                      *
-        !                                                                      *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford    Last update: 17 Dec 1992   *
-        !   MPI version by Xinghong He            Last revision: 05 Aug 1998   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: orbital_index_radix
         use debug_output_settings, only: rmcdhf_debug_flags
@@ -44,19 +39,17 @@ contains
         ! Local declarations
         integer :: index, label, k, ioy1, ioy2, nb3, row_count, ii, ii1, ii2, ii3
         real(real64) :: coeff
-        !-----------------------------------------------
-        !   Debug printout: composition
+        ! Debug printout: composition
 
         if (rmcdhf_debug_flags(29) .or. rmcdhf_debug_flags(30)) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,/," Direct potential for ",1i2,1a2," orbital :"/,/)') &
                 orbital_principal_n(orbital_index), orbital_symmetry_labels(orbital_index)
         end if
+        ! Initialize array YP with the nuclear potential piece
         !
-        !   Initialize array YP with the nuclear potential piece
-        !
-        !   Since YA() below  contains contributions from THIS node only,
-        !   the initialization should be in consistence with that.
+        ! Since YA() below  contains contributions from THIS node only,
+        ! the initialization should be in consistence with that.
 
         orbital_y_potential(:radial_point_count) = negative_radius_times_potential(:radial_point_count) / mpi_process_count
 
@@ -82,9 +75,7 @@ contains
             orbital_y_potential(:radial_point_count) = orbital_y_potential(:radial_point_count) - &
                 coeff*radial_workspace_b(:radial_point_count)
         end do
-        !
-        !   Debug printout
-        !
+
         if (rmcdhf_debug_flags(30)) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,/,3(" --------- r --------- ------- Y (r) -------"))')
@@ -114,10 +105,7 @@ contains
             end do
             call plot_radial_orbital_ascii (orbital_y_potential, 1.0_real64, orbital_y_potential, 0.0_real64, radial_point_count)
         end if
-        !
         return
-        !
         return
-        !
     end subroutine build_direct_radial_potential
 end module build_direct_radial_potential_interface

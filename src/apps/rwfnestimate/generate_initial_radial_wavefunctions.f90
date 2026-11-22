@@ -1,3 +1,4 @@
+! Dispatch the selected methods for constructing the initial orbitals.
 module generate_initial_radial_wavefunctions_interface
     implicit none (type, external)
 
@@ -6,23 +7,14 @@ module generate_initial_radial_wavefunctions_interface
     public :: generate_initial_radial_wavefunctions
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Controls the computation of the subshell radial wavefunctions.
+    !
+    ! Written by Farid A. Parpia. Last revision: 18 Dec 1992
+    ! Updated by Xinghong He. Last revision: 11 Nov 1997
+    !  for menu-driven and less questions
     subroutine generate_initial_radial_wavefunctions(default_orbitals)
         ! Module dependencies
         use calculation_file_units, only: calculation_log_unit, summary_output_unit
-        !                                                                      *
-        !   Controls the computation of the subshell radial wavefunctions.     *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, GETRSL, GETYN.                         *
-        !               [ERWF]: FRMHYD, FRMRWF, FRMTFP, PRTREM, SUMMRY,        *
-        !                       TFPOT.                                         *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 18 Dec 1992   *
-        !   Updated by Xinghong He                Last revision: 11 Nov 1997   *
-        !    for menu-driven and less questions
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use array_memory_management, only: alloc
         use radial_node_count_settings, only: relative_extremum_cutoff
@@ -62,21 +54,14 @@ contains
         logical :: all, existed
         logical, save :: modify = .false.
         character(len=max(128, len(default_orbitals))) :: infile
-        !-----------------------------------------------
 
-        !
-        !   Set the threshold for node counting
-        !
+        ! Set the threshold for node counting
         relative_extremum_cutoff = 0.05_real64
-        !
-        !   Set up the Thomas-Fermi potential
-        !
+        ! Set up the Thomas-Fermi potential
         call build_thomas_fermi_potential
-        !
-        !   Allocate storage to the arrays that store the subshell
-        !   radial wavefunction arrays; initialise these and all
-        !   associated arrays
-        !
+        ! Allocate storage to the arrays that store the subshell
+        ! radial wavefunction arrays; initialise these and all
+        ! associated arrays
         call alloc (radial_large_components,max_radial_points,orbital_count,"radial_large_components", &
             "generate_initial_radial_wavefunctions")
         call alloc (radial_small_components,max_radial_points,orbital_count,"radial_small_components", &
@@ -107,13 +92,9 @@ contains
                 end if
             end if
         end do
-        !
-        !   Write out the complete list of subshell radial wave functions
-        !
+        ! Write out the complete list of subshell radial wave functions
         call print_uninitialized_orbitals (all)
-        !
         ! Direct to read radial functions till finish
-        !
         do
             do while (.not.all)
                 do
@@ -167,9 +148,7 @@ contains
 
                 call print_uninitialized_orbitals (all)
             end do
-            !
             ! All read. Let know, and allow modifying if non default
-            !
             write (stderr_unit, *) "All required subshell radial wavefunctions ", &
                 " have been estimated:"
             call write_initial_wavefunction_summary (stderr_unit)

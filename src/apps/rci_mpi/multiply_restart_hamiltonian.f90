@@ -1,3 +1,4 @@
+! Apply the Hamiltonian represented by the CI restart records to trial vectors.
 module multiply_restart_hamiltonian_interface
     implicit none (type, external)
 
@@ -6,25 +7,17 @@ module multiply_restart_hamiltonian_interface
     public :: multiply_restart_hamiltonian
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Matrix-matrix product: C = AB.  A  sparse  representation of the
+    ! lower triangle of the  (NxN)  matrix  A  is read from the disk
+    !
+    ! This is an adaptation of  Andreas Stathopulos'  routine  SPSBMV,
+    ! and is specific to GRASP2 derivatives.
+    !
+    ! F A Parpia and A Stathopoulos. Last revision: 13 Oct 1992
+    ! Block Version by Xinghong He. Last revision: 18 Jun 1998
     subroutine multiply_restart_hamiltonian(n, m, b, c)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
-        !                                                                      *
-        !   Matrix-matrix product: C = AB.  A  sparse  representation of the   *
-        !   lower triangle of the  (NxN)  matrix  A  is read from the disk     *
-        !                                                                      *
-        !   This is an adaptation of  Andreas Stathopulos'  routine  SPSBMV,   *
-        !   and is specific to GRASP2 derivatives.                             *
-        !                                                                      *
-        !   Call(s) to: [AUXBLAS]: DINIT/SINIT;                                *
-        !               [SPBLAS]: DAXPYI/SAXPYI, DDOTI/SDOTI.                  *
-        !                                                                      *
-        !   F A Parpia and A Stathopoulos         Last revision: 13 Oct 1992   *
-        !   Block Version by Xinghong He          Last revision: 18 Jun 1998   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use eigenstate_expansions, only: hamiltonian_energy_shift
         use ci_restart_units, only: restart_matrix_unit
@@ -44,33 +37,27 @@ contains
 
         ! Local declarations
         integer :: stored_row_indices(n)
-        !cjb  INTEGER :: MYID, NPROCS, NCF, NCFDUM, ICCUTDUM, MYIDDUM, NPROCSDUM, ICOL&
         integer ::               csf_count, file_csf_count, file_first_order_cutoff, file_mpi_rank, file_mpi_process_count, &
             & stored_column_index&
             , stored_entry_count, stored_entry_index, rhs_vector_index
         real(real64) :: stored_column_values(n)
         real(real64) :: stored_column_energy, output_with_diagonal, off_diagonal_dot_product
-        !-----------------------------------------------
-        !
-        !     !...nposition+1 is the current position of the .res file
-        !     !...It is set in matrix and used in maneig, spodmv
-        !
-        !-----------------------------------------------------------------------
+        ! !...nposition+1 is the current position of the .res file
+        ! !...It is set in matrix and used in maneig, spodmv
         write (output_unit, *) "Calling multiply_restart_hamiltonian..."
         csf_count = n
 
-        !   Initialise the result matrix; note that this is specific to the
-        !   data structure of DVDSON
+        ! Initialise the result matrix; note that this is specific to the
+        ! data structure of DVDSON
 
         call initialize_real_vector (n*m, 0.0_real64, c, 1)
 
-        !...moved from maneig before "CALL GDVD (SPODMV..."
+        ! ...moved from maneig before "CALL GDVD (SPODMV..."
         call position_calculation_file (0, restart_matrix_unit, nposition)
 
         read (restart_matrix_unit) file_csf_count, file_first_order_cutoff, file_mpi_rank, file_mpi_process_count
         if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) stop &
             "multiply_restart_hamiltonian: restart file CSF count mismatch"
-
 
         do stored_column_index = mpi_rank + 1, n, mpi_process_count
             read (restart_matrix_unit) stored_entry_count, stored_column_energy, (stored_column_values(stored_entry_index), &

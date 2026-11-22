@@ -1,50 +1,21 @@
-!***********************************************************************
-!***********************************************************************
-!***********************************************************************
-!**                                                                  ***
-!**                                                                  ***
-!**       ******    *****    *****   *******   *****    *****        ***
-!**       **   **  **   **  **   **  **       **   **  **   **       ***
-!**       **   **  **       **       **       **   **       **       ***
-!**       ******    *****   **       ****      *****       **        ***
-!**       **  **        **  **       **          **       **         ***
-!**       **   **  **   **  **   **  **         **      **           ***
-!**       **   **   *****    *****   **        **      *******       ***
-!**                                                                  ***
-!**            Relativistic Self-Consistent-Field Program            ***
-!**                                                                  ***
-!**   This program is a derivative of GRASP2 (F. A. Parpia, I. P.    ***
-!**   Grant, and C. F. Fischer, 1990)                                ***
-!**                                                                  ***
-!**                            GRASP92                               ***
-!**          F. A. Parpia, C. F. Fischer, and I. P. Grant            ***
-!**   Modified by C.F. FIscher for block input                       ***
-!***********************************************************************
-!***********************************************************************
-!***********************************************************************
-!                                                                      *
+! Optimize orbitals with the MPI MCDHF solver using rank-local MCP files.
+! Relativistic Self-Consistent-Field Program
+!
+! This program is a derivative of GRASP2 (F. A. Parpia, I. P.
+! Grant, and C. F. Fischer, 1990)
+!
+! GRASP92
+! F. A. Parpia, C. F. Fischer, and I. P. Grant
+! Modified by C.F. FIscher for block input
+! Written by Farid A. Parpia. Last revision: 31 Dec 1992
+! Block version by Xinghong He. Last revision: 17 Aug 1998
+! Modified by G. Gaigalas. 05 Feb 2017
 program rmcdhf_mpi_main
     ! Module dependencies
     use calculation_file_units, only: calculation_log_unit
-    !                                                                      *
-    !   Entry routine for RSCFVU. Controls the entire computation.      *
-    !                                                                      *
-    !   Call(s) to: [LIB92]: SETMC, SETCON.                                *
-    !               [RSCF92]: CHKPLT, setcsl, setdbg
-    !                        SETMIX, SETRES, SETSUM, STRSUM.
-    !               [NJGRAF]: FACTT.                                       *
-    !                                                                      *
-    !   Written by Farid A. Parpia            Last revision: 31 Dec 1992   *
-    !   Block version by Xinghong He          Last revision: 17 Aug 1998   *
-    !   Midified by G. Gaigalas                              05 Feb 2017   *
-    !      It was deleted the arrays:  JQSA(3*NNNWP*NCF),                  *
-    !                                  JCUPA(NNNWP*NCF)                    *
-    !                                                                      *
-    !***********************************************************************
     use calculation_input_defaults, only: nondefault_options_flag
     use closed_core_subshells, only: closed_core_subshell_count
     use mpi_state, only: mpi_process_count, mpi_rank, processor_name, processor_name_length
-    !GG po to isimti
     use calculation_state_files, only: check_orbital_output
     use calculation_state_files, only: state_files, state_name_length, files_for_state
     use mpi_calculation_state, only: select_mpi_state
@@ -80,16 +51,11 @@ program rmcdhf_mpi_main
     character(state_name_length) :: state
     logical :: extended_optimal_level, yes
     character :: block_labels(maximum_input_symmetry_blocks)*8
-    !      CHARACTER (LEN = *) :: host
     character (len = 128) :: startup_directory,serial_io_directory,rank_scratch_root
     character(:), allocatable :: csf_descriptor_path, isotope_file_path, initial_radial_file_path
     character(:), allocatable :: mixing_output_path, radial_output_path
-    !-----------------------------------------------
-    !
 
-    !=======================================================================
-    !  Start mpi --- get processor info: myid, nprocs, host name; and print
-    !=======================================================================
+    ! Initialize MPI and set up the I/O and scratch directories.
     startup_directory = "  "
     csf_descriptor_path = "  "
     serial_io_directory = "  "
@@ -101,9 +67,7 @@ program rmcdhf_mpi_main
         startup_directory, serial_io_directory, rank_scratch_root, "RMCDHF_MPI")
     lenperm = len_trim (serial_io_directory)
 
-    !=======================================================================
-    !  Get NDEF
-    !=======================================================================
+    ! Record whether the run uses default SCF options.
 
     call select_mpi_state(state, "Default settings? (y/n)", yes, serial_io_directory)
     files = files_for_state(state)
@@ -117,21 +81,7 @@ program rmcdhf_mpi_main
         end if
     end if
 
-    !=======================================================================
-    !
-    !  Checks and settings... Mostly done in backyard.
-    !
-    !    CHKPLT - compatibility of plant substitutions
-    !    SETDBGmpi - Debug output control parameters
-    !    SETMC - machine- and installation- dependent constants
-    !    SETCON - physical constants
-    !    SETSUM - open the summary file
-    !    SETMCP - open and check the  .mcp  files
-    !    SETCSLmpi - open, check, load data from, and close the  .csl  file
-    !    STRSUM - append a summary of the inputs to the  .sum  file
-    !    SETMIX - mixing coefficients file setup
-    !    FACTT - table of logarithms of factorials setup
-    !=======================================================================
+    ! Load the MCP metadata and the descriptor basis, then check that they agree.
     call configure_debug_output_mpi (trim(serial_io_directory)//"/"//files%scf_debug)
     call initialize_machine_constants
     call initialize_physical_constants
@@ -143,10 +93,7 @@ program rmcdhf_mpi_main
     call load_csf_basis_data_mpi (csf_descriptor_path, core_subshell_count, block_labels)
     if (closed_core_subshell_count /= core_subshell_count) error stop "rmcdhf_mpi_main: closed-core subshell count mismatch"
 
-    !=======================================================================
-    !  Gather all remaining information and perform some setup. This
-    !  part (routine) asks for user-inputs.
-    !=======================================================================
+    ! Read the SCF controls and prepare the radial orbitals.
 
     if(mpi_rank == 0) isotope_file_path = serial_io_directory(1:lenperm) // "/isodata"
     if(mpi_rank == 0) initial_radial_file_path = trim(serial_io_directory)//"/"//files%initial_orbitals
@@ -160,19 +107,14 @@ program rmcdhf_mpi_main
 
     call initialize_log_factorial_table
 
-    !=======================================================================
-    !  Proceed with the SCF calculation close all files except
-    !  the  .sum  file
-    !=======================================================================
+    ! Iterate the SCF solution and save the optimized orbitals.
 
     radial_output_path = "  "
     if(mpi_rank == 0) radial_output_path = trim(serial_io_directory)//"/"//files%orbitals
 
     call run_scf_iterations_mpi (extended_optimal_level, radial_output_path)
 
-    !=======================================================================
-    !  Execution finished; Statistics output
-    !=======================================================================
+    ! Report elapsed time.
 
     call finalize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length, &
         & start_clock_count, "RMCDHF_MPI")

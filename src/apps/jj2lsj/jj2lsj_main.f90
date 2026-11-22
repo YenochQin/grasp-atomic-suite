@@ -1,33 +1,17 @@
+! Load the jj-coupled basis and run the LSJ conversion for the selected states.
+! When both relativistic partners occupy a shell, list j = l - 1/2 before j = l + 1/2.
+! The LS basis follows the same shell order.
+! The LS–jj coefficient tables are in the ls_jj_coefficients modules.
+! Written by G. Gaigalas,
+!     NIST                                                  May 2011
+!     VILNIUS                                               May 2017
 !
-!***********************************************************************
-!                                                                      *
+! Modified by G. Gaigalas and C. Cychen. 2021
+! Modified by G. Gaigalas. 2022
+! Modified by G. Gaigalas. Jan 2024
+! Modified by G. Gaigalas. Jan 2025
 program jj2lsj_main
     ! Module dependencies
-    !                                                                      *
-    !     This MAIN program controls the transformation of atomic states,  *
-    !     which are given in a jj-coupled CSF basis, into an LS-coupled    *
-    !     basis. The program requires a jj-coupled basis in standard order *
-    !     where, if both subshells | n j = l-1/2> and | n j = l+1/2>       *
-    !     of a given shell (nl) occurs, they always follow successively    *
-    !     in this order. The LS-coupled basis, moreover, is given in       *
-    !     the same sequence of shells.                                     *
-    !                                                                      *
-    !     All LS-jj transformation coefficients are precalculated and      *
-    !     'stored' in the modules rabs_lsj_data_1, rabs_lsj_data_2 and     *
-    !     rabs_lsj_data_3.                                                 *
-    !                                                                      *
-    !     Calls:  FACTT, SETISO, JJ2LSJ, starttime, stoptime.              *
-    !                                                                      *
-    !     Written by G. Gaigalas,                                          *
-    !     NIST                                                  May 2011   *
-    !     VILNIUS                                               May 2017   *
-    !                                                                      *
-    !     Modified by G. Gaigalas and C. Cychen                     2021   *
-    !     Modified by G. Gaigalas                                   2022   *
-    !     Modified by G. Gaigalas                               Jan 2024   *
-    !     Modified by G. Gaigalas                               Jan 2025   *
-    !                                                                      *
-    !***********************************************************************
     use jj2lsj_profile, only: profile_finish, profile_start
     use jj2lsj_conversion, only: run_ls_coupling_conversion, profile_finish, profile_start
     use log_factorial_table, only: initialize_log_factorial_table
@@ -37,7 +21,6 @@ program jj2lsj_main
     use physical_constants, only: initialize_physical_constants
     implicit none (type, external)
     integer           :: start_clock_count
-    !-----------------------------------------------
     call profile_start()
     call begin_run_timer (start_clock_count, "jj2lsj_omp")
     print *, " "
@@ -52,14 +35,11 @@ program jj2lsj_main
     print *, "                     name.uni.lsj.lbl, name.uni.lsj.sum,"
     print *, "                     name.lsj.T"
     print *, " "
-    !
-    !  Set up the table of logarithms of factorials
+    ! Initialize the log-factorial table for angular algebra.
     call initialize_physical_constants
     call initialize_log_factorial_table
-    !
     call read_isotope_data("isodata")
     call run_ls_coupling_conversion
-    !
     call profile_finish()
     call finish_run_timer (start_clock_count, "jj2lsj_omp")
     stop

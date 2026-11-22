@@ -1,3 +1,4 @@
+! Solve the current radial equation and return the updated orbital to the SCF iteration.
 module solve_radial_orbital_interface
     implicit none (type, external)
 
@@ -6,31 +7,22 @@ module solve_radial_orbital_interface
     public :: solve_radial_orbital
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This subroutine  performs  step  2 in Algorithm 5.2 and 5.3 of C
+    ! Froese Fischer, Comput Phys Rep 3 (1986) 295. Some minor changes
+    ! have been made.
+    !
+    ! Arguments:
+    !
+    !    J     : (Input) The serial number of the orbital
+    !    JP    : (Output) The join point
+    !    FAIL  : (Output) If .true., the iterations did not yield an
+    !            acceptable solution (methods 1 and 2)
+    !
+    ! Written by Farid A Parpia, at Oxford. Last update: 26 Sep 1993
     subroutine solve_radial_orbital(orbital_index, solve_failed, orbital_sign_reversal_count, matching_grid_index, &
         & radial_node_count)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This subroutine  performs  step  2 in Algorithm 5.2 and 5.3 of C   *
-        !   Froese Fischer, Comput Phys Rep 3 (1986) 295. Some minor changes   *
-        !   have been made.                                                    *
-        !                                                                      *
-        !   Arguments:                                                         *
-        !                                                                      *
-        !      J     : (Input) The serial number of the orbital                *
-        !      JP    : (Output) The join point                                 *
-        !      FAIL  : (Output) If .true., the iterations did not yield an     *
-        !              acceptable solution (methods 1 and 2)                   *
-        !                                                                      *
-        !   Call(s) to: [RSCF92]: COUNT, ESTIM, IN, NEWE, OUT, cofpot,         *
-        !                         SETXUV, SETXV, SETXZ, START                  *
-        !               [LIB92]: DCBSRW, QUAD, SETPOT.                         *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford    Last update: 26 Sep 1993   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: max_radial_points
         use debug_output_settings, only: rmcdhf_debug_flags
@@ -102,33 +94,24 @@ contains
             bb, cc, discr, qq, root1, root2, pmx, apm, pati, abpi, ratio, test1, &
             test2, dele
         logical :: check
-        !-----------------------------------------------
-        !
-        !   Initialization
-        !
+        ! Initialization
         check = .not.suppress_radial_inversion(orbital_index)
         solve_failed = .false.
         solve_iteration = 0
         orbital_relativistic_kappa = orbital_kappa(orbital_index)
-        !     TWOCSQ = 2.0D 00*137.036**2
+        ! TWOCSQ = 2.0D 00*137.036**2
         twocsq = 2.0_real64*speed_of_light_au*speed_of_light_au
-        !
-        !   Debug header
-        !
+        ! Debug header
         if (rmcdhf_debug_flags(22)) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,/," Debug printout active; orbital: ",1i2,1a2)') &
                 orbital_principal_n(orbital_index), orbital_symmetry_labels(orbital_index)
         end if
-        !
         maximum_solve_iterations = max(minimum_radial_solver_iterations,3*orbital_principal_n(orbital_index))
-        !
         call estimate_orbital_energy (orbital_index)
         elast = orbital_energy_parameters(orbital_index)
         orbital_energy_parameters(orbital_index) = solve_radial_eigenvalue(orbital_index)
-        !
-        !   Checks on lower bounds
-        !
+        ! Checks on lower bounds
         if (orbital_energy_parameters(orbital_index) < lower_trial_energy_bound) then
             if (orbital_energy_parameters(orbital_index) > 0.0_real64) then
                 lower_trial_energy_bound = orbital_energy_parameters(orbital_index)
@@ -150,9 +133,7 @@ contains
                 end if
             end if
         end if
-        !
-        !   Check on upper bound
-        !
+        ! Check on upper bound
         if (radial_solution_methods(orbital_index) <= 2) then
             if (orbital_energy_parameters(orbital_index) > upper_trial_energy_bound) then
                 tenej = 10.0_real64*orbital_energy_parameters(orbital_index)
@@ -166,18 +147,12 @@ contains
                 end if
             end if
         end if
-        !
-        !   Iteration loop begins here
-        !
+        ! Iteration loop begins here
         do
             solve_iteration = solve_iteration + 1
-            !
             trial_large_origin_parameter = orbital_origin_parameters(orbital_index)
-            !
             if (solve_iteration > 1) then
-                !
-                !   Check that bounds are ordered correctly
-                !
+                ! Check that bounds are ordered correctly
                 if (upper_trial_energy_bound <= lower_trial_energy_bound) write (*, &
                     '(" Warning: difficulty with node-counting procedure"/,&
                     &" lower bound on energy (",1p,d11.4,") exceeds upper"," bound (",1d11.4,"; E(",1i2,1a2,") = ",1d11.4)') &
@@ -185,7 +160,6 @@ contains
                         orbital_symmetry_labels(orbital_index), &
                     & orbital_energy_parameters(orbital_index&
                     )
-                !
                 if (solve_iteration>maximum_solve_iterations .or. &
                     & upper_trial_energy_bound-lower_trial_energy_bound<1.0_real64/dble(orbital_principal_n(orbital_index))**3) then
                     write (*, '(" Method ",1i1," unable to solve for ",1i2,1a2," orbital")') &
@@ -205,15 +179,11 @@ contains
                     return
                 end if
             end if
-            !
-            !   Set up arrays TF and TG; find join point
-            !
+            ! Set up arrays TF and TG; find join point
             call calculate_radial_dirac_coefficients (orbital_index, matching_grid_index)
-            !
-            !   Set right-hand side to zero to form homogeneous equations;
-            !   integrate homogeneous equations outwards and inwards; store
-            !   small component at join point each time
-            !
+            ! Set right-hand side to zero to form homogeneous equations;
+            ! integrate homogeneous equations outwards and inwards; store
+            ! small component at join point each time
             call clear_radial_inhomogeneous_terms (orbital_index)
             radial_equation_type = 1
             call solve_radial_origin (orbital_index, radial_equation_type, trial_large_origin_parameter, &
@@ -223,11 +193,9 @@ contains
             call integrate_radial_inward (orbital_index, matching_grid_index, large_component_values, small_component_values, &
                 & homogeneous_last_grid_index)
             homogeneous_inward_match_small = small_component_values(matching_grid_index)
-            !
-            !   Set up right-hand side for inhomogeneous equations; integrate
-            !   inhomogeneous equations outwards and inwards; store small
-            !   component at join point each time
-            !
+            ! Set up right-hand side for inhomogeneous equations; integrate
+            ! inhomogeneous equations outwards and inwards; store small
+            ! component at join point each time
             call build_radial_inhomogeneous_terms (orbital_index)
             radial_equation_type = 2
             call solve_radial_origin (orbital_index, radial_equation_type, trial_large_origin_parameter, &
@@ -237,9 +205,7 @@ contains
             call integrate_radial_inward (orbital_index, matching_grid_index, trial_large_component, trial_small_component, &
                 inhomogeneous_last_grid_index)
             inhomogeneous_inward_match_small = trial_small_component(matching_grid_index)
-            !
-            !   Determine energy adjustment for methods 1 and 2
-            !
+            ! Determine energy adjustment for methods 1 and 2
             if (radial_solution_methods(orbital_index) <= 2) then
                 radial_workspace_a(1) = 0.0_real64
                 radial_workspace_a(2:inhomogeneous_last_grid_index) = &
@@ -248,14 +214,12 @@ contains
                     & *radial_grid_derivative(2:inhomogeneous_last_grid_index)
                 integration_last_index = inhomogeneous_last_grid_index
                 call integrate_radial_grid (dnorm)
-                !        DELEPS = 137.036*P(JP)*(QJPII-QJPOI)/DNORM
+                ! DELEPS = 137.036*P(JP)*(QJPII-QJPOI)/DNORM
                 energy_correction = speed_of_light_au*trial_large_component(matching_grid_index)* &
                     (inhomogeneous_inward_match_small - &
                     & inhomogeneous_outward_match_small)/dnorm
             end if
-            !
-            !   Generate the continuous solution
-            !
+            ! Generate the continuous solution
             combined_last_grid_index = max(homogeneous_last_grid_index,inhomogeneous_last_grid_index)
             alfa = -(inhomogeneous_inward_match_small - inhomogeneous_outward_match_small)/(homogeneous_inward_match_small - &
                 & homogeneous_outward_match_small)
@@ -265,13 +229,10 @@ contains
                 large_component_values(:combined_last_grid_index)
             trial_small_component(:combined_last_grid_index) = trial_small_component(:combined_last_grid_index) + alfa* &
                 small_component_values(:combined_last_grid_index)
-            !
             if (radial_solution_methods(orbital_index)==2 .or. radial_solution_methods(orbital_index)==4) then
-                !
-                !   Set up right-hand side for variational equations; integrate
-                !   variational equations outwards and inwards; store small
-                !   component at join point each time
-                !
+                ! Set up right-hand side for variational equations; integrate
+                ! variational equations outwards and inwards; store small
+                ! component at join point each time
                 origin_slope_parameter = 0.0_real64
                 call build_variation_source_term (orbital_index)
                 radial_equation_type = 3
@@ -281,23 +242,19 @@ contains
                 qjpov = qv(matching_grid_index)
                 call integrate_radial_inward (orbital_index, matching_grid_index, pv, qv, variation_last_grid_index)
                 qjpiv = qv(matching_grid_index)
-                !
-                !   Generate continuous solutions
-                !
+                ! Generate continuous solutions
                 combined_variation_last_grid_index = max(combined_last_grid_index,variation_last_grid_index)
                 alfa = -(qjpiv - qjpov)/(homogeneous_inward_match_small - homogeneous_outward_match_small)
                 pv(:combined_variation_last_grid_index) = pv(:combined_variation_last_grid_index) + &
                     & alfa*large_component_values(:combined_variation_last_grid_index)
                 qv(:combined_variation_last_grid_index) = qv(:combined_variation_last_grid_index) + &
                     & alfa*small_component_values(:combined_variation_last_grid_index)
-                !
                 radial_workspace_a(1) = 0.0_real64
                 radial_workspace_a(2:combined_last_grid_index) = &
                     & radial_grid_derivative(2:combined_last_grid_index) &
                     & *(trial_large_component(2:combined_last_grid_index)**2 + trial_small_component(2:combined_last_grid_index)**2)
                 integration_last_index = combined_last_grid_index
                 call integrate_radial_grid (dnorm)
-                !
                 integration_last_index = min(combined_last_grid_index,combined_variation_last_grid_index)
                 radial_workspace_a(1) = 0.0_real64
                 radial_workspace_a(2:integration_last_index) = &
@@ -305,18 +262,15 @@ contains
                         pv(2:integration_last_index)+ &
                     trial_small_component(2:integration_last_index)*qv(2:integration_last_index))
                 call integrate_radial_grid (crnorm)
-                !
                 radial_workspace_a(1) = 0.0_real64
                 radial_workspace_a(2:combined_variation_last_grid_index) = &
                     & radial_grid_derivative(2:combined_variation_last_grid_index) &
                     & *(pv(2:combined_variation_last_grid_index)**2 + qv(2:combined_variation_last_grid_index)**2)
                 integration_last_index = combined_variation_last_grid_index
                 call integrate_radial_grid (dvnorm)
-                !
-                !   Determine deleps required to normalize new solution to
-                !   first order: modified form of solution to a quadratic
-                !   equation (see Press et al.)
-                !
+                ! Determine deleps required to normalize new solution to
+                ! first order: modified form of solution to a quadratic
+                ! equation (see Press et al.)
                 aa = dvnorm
                 bb = crnorm + crnorm
                 cc = dnorm - 1.0_real64
@@ -370,9 +324,7 @@ contains
                 else
                     dele = -bb/(aa + aa)
                 end if
-                !
-                !   Generate new solution
-                !
+                ! Generate new solution
                 trial_orbital_last_grid_index = max(combined_last_grid_index,combined_variation_last_grid_index)
                 trial_large_origin_parameter = trial_large_origin_parameter + dele*alfa*p0h
                 trial_large_component(2:trial_orbital_last_grid_index) = &
@@ -382,20 +334,14 @@ contains
             else
                 trial_orbital_last_grid_index = combined_last_grid_index
             end if
-            !
-            !   Debug printout
-            !
+
             if (rmcdhf_debug_flags(23)) call print_radial_wavefunction (orbital_index)
-            !
-            !   Count nodes in large component function; determine sign at first
-            !   oscillation, effective quantum number; note that node counting
-            !   is never enforced on the small component
-            !
+            ! Count nodes in large component function; determine sign at first
+            ! oscillation, effective quantum number; note that node counting
+            ! is never enforced on the small component
             call count_radial_nodes (trial_large_component, trial_orbital_last_grid_index, radial_node_count, &
                 & first_oscillation_sign)
-            !
-            !   DEBUG PRINTOUT
-            !
+
             if (rmcdhf_debug_flags(22)) then
                 call ensure_debug_output()
                 write (angular_debug_unit, '(" Iteration number: ",1i2,", limit: ",1i2,/," Present estimate of P0; ",1d21.14,/&
@@ -409,9 +355,7 @@ contains
                         expected_radial_node_counts(orbital_index), &
                         & first_oscillation_sign
             end if
-            !
-            !   Proceed according to method
-            !
+            ! Proceed according to method
             if (radial_solution_methods(orbital_index) > 2) then
                 if (check .and. first_oscillation_sign<0.0_real64) then
                     orbital_sign_reversal_count = 1
@@ -430,12 +374,8 @@ contains
             end if
             exit
         end do
-        !
-        !   Solution found
-        !
+        ! Solution found
         return
-        !
         return
-        !
     end subroutine solve_radial_orbital
 end module solve_radial_orbital_interface

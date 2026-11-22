@@ -1,3 +1,4 @@
+! Resolve and check the files for the initial and final states.
 module read_state_filenames_interface
     implicit none (type, external)
 
@@ -6,17 +7,12 @@ module read_state_filenames_interface
     public :: read_state_filenames
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Determines the name of the initial and final states
+    !
+    ! Written by Per Jonsson
     subroutine read_state_filenames(name)
         ! Module dependencies
         use calculation_state_files, only: read_state_pair
-        !                                                                      *
-        !   Determines the name of the initial and final states                *
-        !                                                                      *
-        !   Written by Per Jonsson                                             *
-        !                                                                      *
-        !***********************************************************************
         implicit none (type, external)
 
         ! Arguments

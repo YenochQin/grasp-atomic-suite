@@ -1,3 +1,4 @@
+! Continue a radial solution into its outer tail.
 module integrate_radial_tail_interface
     implicit none (type, external)
 
@@ -6,20 +7,14 @@ module integrate_radial_tail_interface
     public :: integrate_radial_tail
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This subroutine begins the inward integration of the homogeneous
+    !   Dirac radial equation. With only minor modifications, the series
+    !   given by  J E Sienkiewicz  and W E Baylis, J Phys B: At Mol Phys
+    !   20 (1987) 5145-5156, p 5155, is used.
+    !
+    ! Written by Farid A Parpia, at Oxford. Last update: 09 Dec 1992
     subroutine integrate_radial_tail(orbital_index, large_component_values, small_component_values, matching_grid_index, mtp)
         ! Module dependencies
-        !                                                                      *
-        !   This subroutine begins the inward integration of the homogeneous   *
-        !   Dirac radial equation. With only minor modifications, the series   *
-        !   given by  J E Sienkiewicz  and W E Baylis, J Phys B: At Mol Phys   *
-        !   20 (1987) 5145-5156, p 5155, is used.                              *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford    Last update: 09 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
-        !
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters, only: max_radial_points
         use atomic_calculation_state, only: working_tolerance, speed_of_light_au, maximum_exp_argument
@@ -40,20 +35,14 @@ contains
         real(real64) :: eps, bige, bigebc, bgebc2, beta, fk, rjp, qem, offset, t&
             , zloc, gam2, zlbb, dnu, fkmzbb, sump, sumq, em, cm, emfact, ovltrm, &
             pterm, qterm, exptrm
-        !-----------------------------------------------
-        !
-        !
-        !   Initialize
-        !
+        ! Initialize
         eps = working_tolerance*0.1_real64
         bige = -orbital_energy_parameters(orbital_index)
         bigebc = bige/speed_of_light_au
         bgebc2 = bigebc/speed_of_light_au
         beta = sqrt((-bige*(2.0_real64 + bgebc2)))
         fk = dble(orbital_kappa(orbital_index))
-        !
-        !   Find MTP
-        !
+        ! Find MTP
         radial_index = matching_grid_index
         nm4 = radial_point_count - 4
         rjp = radial_grid(matching_grid_index)
@@ -69,24 +58,17 @@ contains
             end if
             exit
         end do
-        !
-        !   Compute offset for exponential function
-        !
+        ! Compute offset for exponential function
         offset = beta*radial_grid(mtp)
-        !
-        !   Tabulate tail points
-        !
+        ! Tabulate tail points
         loc = radial_point_count + 1
         do radial_index = mtp, radial_point_count
-            !
             t = 2.0_real64*beta*radial_grid(radial_index)
-            !
             zloc = orbital_y_potential(radial_index)
             gam2 = fk**2 - (zloc/speed_of_light_au)**2
             zlbb = zloc/beta
             dnu = zlbb*(1.0_real64 + bgebc2)
             fkmzbb = fk - zlbb
-            !
             m = -1
             sump = 0.0_real64
             sumq = 0.0_real64
@@ -129,10 +111,7 @@ contains
         end do
         large_component_values(loc:radial_point_count) = 0.0_real64
         small_component_values(loc:radial_point_count) = 0.0_real64
-        !
         return
-        !
         return
-        !
     end subroutine integrate_radial_tail
 end module integrate_radial_tail_interface

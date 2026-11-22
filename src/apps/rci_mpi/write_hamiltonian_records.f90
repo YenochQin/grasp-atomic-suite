@@ -1,3 +1,4 @@
+! Write sparse Hamiltonian elements and indices for later diagonalization or restart.
 module write_hamiltonian_records_interface
     implicit none (type, external)
 
@@ -6,20 +7,13 @@ module write_hamiltonian_records_interface
     public :: write_hamiltonian_records
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Routine for printing the Hamiltonian matrix.  File restart_matrix_unit must be
+    ! positioned correctly before a call is made to this module.
+    !
+    ! Written by Farid A Parpia. Last revision: 14 Oct 1992
     subroutine write_hamiltonian_records(restart_matrix_unit)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   Routine for printing the Hamiltonian matrix.  File restart_matrix_unit must be   *
-        !   positioned correctly before a call is made to this module.         *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: CONVRT.                                       *
-        !                                                                      *
-        !   Written by Farid A Parpia             Last revision: 14 Oct 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use sparse_hamiltonian_storage, only: hamiltonian_values, matrix_partner_indices
         use orbital_csf_basis, only: csf_count
@@ -33,8 +27,7 @@ contains
         integer      :: csf_index, nelc, ir, lenthr, lenthc
         real(real64) :: elsto
         character    :: cir*8, cic*8
-        !-----------------------------------------------
-        !
+
         do csf_index = 1, csf_count
             read (restart_matrix_unit) nelc, elsto, (hamiltonian_values(ir),ir=1,nelc), (matrix_partner_indices(ir),ir=1,nelc)
             do ir = 1, nelc
@@ -45,8 +38,6 @@ contains
                     & hamiltonian_values(ir)
             end do
         end do
-        !
         return
-        !
     end subroutine write_hamiltonian_records
 end module write_hamiltonian_records_interface

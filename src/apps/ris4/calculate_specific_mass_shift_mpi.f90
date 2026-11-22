@@ -1,3 +1,4 @@
+! Distribute the specific mass-shift matrix-element calculation across MPI ranks.
 module calculate_specific_mass_shift_mpi_interface
     implicit none (type, external)
 
@@ -6,17 +7,12 @@ module calculate_specific_mass_shift_mpi_interface
     public :: calculate_specific_mass_shift_mpi
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! MPI version of SMSNEW. Each rank handles a strided subset of the
+    ! outer IC loop and can optionally write a per-rank angular-data
+    ! fragment that the root process later merges into name.ITB.
     subroutine calculate_specific_mass_shift_mpi(angular_cache_write_mode,vinti_integrals,recoil_corrected_vinti_integrals)
         ! Module dependencies
         use calculation_file_units, only: two_body_cache_unit
-        !                                                                      *
-        !   MPI version of SMSNEW. Each rank handles a strided subset of the   *
-        !   outer IC loop and can optionally write a per-rank angular-data      *
-        !   fragment that the root process later merges into name.ITB.          *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: orbital_index_radix, max_orbitals
         use debug_output_settings, only: matrix_element_screening_cutoff

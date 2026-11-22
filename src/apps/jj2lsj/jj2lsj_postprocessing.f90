@@ -1,4 +1,4 @@
-! Stable LS ranking. The input coefficients are never reordered or truncated.
+! Rank the LS components for diagnostics and labels while preserving the coefficient order.
 module jj2lsj_postprocessing
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: real64

@@ -1,3 +1,4 @@
+! Construct initial radial orbitals in a screened hydrogenic potential.
 module estimate_hydrogenic_orbitals_interface
     implicit none (type, external)
 
@@ -6,22 +7,14 @@ module estimate_hydrogenic_orbitals_interface
     public :: estimate_hydrogenic_orbitals
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This  subroutine  is  used  to  produce  estimates  of  the wave
+    ! functions from the hydrogenic approximation. The screening cons-
+    ! tant is taken to be 0.4 (Changed, see comments below,XHH)
+    !
+    ! Written by Farid A Parpia, at Oxford  Last revision: 18 Dec 1992
     subroutine estimate_hydrogenic_orbitals(matched_orbital_indices, matched_subshell_count, modify, nradial)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: input_unit
-        !                                                                      *
-        !   This  subroutine  is  used  to  produce  estimates  of  the wave   *
-        !   functions from the hydrogenic approximation. The screening cons-   *
-        !   tant is taken to be 0.4 (Changed, see comments below,XHH)          *
-        !                                                                      *
-        !   Call(s) to: [ERWF]: DCBSRW.                                        *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford  Last revision: 18 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
-        !
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state, only: nuclear_charge
         use initial_orbital_selection, only: max_orbitals, orbital_initialized
@@ -41,9 +34,7 @@ contains
         integer :: matched_subshell_index, orbital_index
         integer, intent(in) :: nradial
         real(real64) :: effective_nuclear_charge, effective_nuclear_charge_shift
-        !-----------------------------------------------
-        !
-        !
+
         effective_nuclear_charge_shift = 0.0_real64
         if (nradial == 4)  then
             write (stderr_unit, *) "Enter increase in Z for correlation orbitals"
@@ -60,7 +51,7 @@ contains
             effective_nuclear_charge = nuclear_charge - orbital_screening_constants(orbital_index) + effective_nuclear_charge_shift
             write (stderr_unit, "(I2,A2,F10.2)") orbital_principal_n(orbital_index), orbital_symmetry_labels(orbital_index), &
                 & effective_nuclear_charge
-            !           ...Calculate radial wavefunctions
+            ! ...Calculate radial wavefunctions
             call evaluate_dirac_coulomb_orbital (orbital_principal_n(orbital_index), orbital_kappa(orbital_index), &
                 & effective_nuclear_charge, &
                 & orbital_energy_parameters(orbital_index), &

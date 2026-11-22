@@ -6,18 +6,13 @@ module read_final_radial_wavefunctions_interface
     public :: read_final_radial_wavefunctions
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This subroutine loads  radial wavefunctions from the  .rwf  file
+    ! and performs some related setup.
+    !
+    ! Written by Per Jonsson                              June 1996
     subroutine read_final_radial_wavefunctions(state_name)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
-        !                                                                      *
-        !   This subroutine loads  radial wavefunctions from the  .rwf  file   *
-        !   and performs some related setup.                                   *
-        !                                                                      *
-        !   Written by Per Jonsson                              June 1996      *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_radial_points
         use array_memory_management, only: alloc, dalloc
@@ -36,41 +31,26 @@ contains
         real(real64) :: con, fkk, eyff, pzy
         real(real64), pointer :: pa(:), qa(:), ra(:)
         character :: radial_file_signature*6
-        !-----------------------------------------------
-        !
-        !   Common relevant for the final state
-        !
-        !
-        !   Write entry message
-        !
+        ! Common relevant for the final state
         write (output_unit, *) "Loading Radial WaveFunction File for final state..."
-        !
-        !   Open the radial wave function file
-        !
+        ! Open the radial wave function file
         j = index(state_name," ")
         open(newunit=wavefunction_input_unit, file=state_name(1:j-1)//".bw", form="UNFORMATTED", status="OLD", &
             position="asis")
-        !
-        !   Allocate storage to orbital arrays
-        !
+        ! Allocate storage to orbital arrays
         call alloc (final_radial_large_components, max_radial_points, final_orbital_count, "final_radial_large_components", &
             "read_final_radial_wavefunctions")
         call alloc (final_radial_small_components, max_radial_points, final_orbital_count, "final_radial_small_components", &
             "read_final_radial_wavefunctions")
-        !
-        !   Setup: (1) Orbital arrays to zero
-        !          (2) Array E to -1 (no orbitals estimated)
-        !          (3) Parameters GAMMA for each orbital
-        !
+        ! Setup: (1) Orbital arrays to zero
+        !        (2) Array E to -1 (no orbitals estimated)
+        !        (3) Parameters GAMMA for each orbital
         con = nuclear_charge/speed_of_light_au
         con = con*con
-        !
         do j = 1, final_orbital_count
             final_radial_large_components(:max_radial_points,j) = 0.0_real64
             final_radial_small_components(:max_radial_points,j) = 0.0_real64
-            !
             final_orbital_energy_parameters(j) = -1.0_real64
-            !
             k = abs(final_orbital_kappa(j))
             if (nuclear_model_parameter_count > 0) then
                 final_orbital_origin_exponents(j) = dble(k)
@@ -86,11 +66,8 @@ contains
                     stop
                 end if
             end if
-            !
         end do
-        !
-        !   Read orbital information from Read Orbitals File;
-        !
+        ! Read orbital information from Read Orbitals File;
         nwin = 0
         read (wavefunction_input_unit, iostat=io_status) radial_file_signature
         if (io_status/=0 .or. radial_file_signature/="G92RWF") then
@@ -124,17 +101,13 @@ contains
             call dalloc (qa, "QA", "read_final_radial_wavefunctions")
             call dalloc (ra, "RA", "read_final_radial_wavefunctions")
         end do
-        !
-        !   Stop with an error message if all orbitals are not known
-        !
+        ! Stop with an error message if all orbitals are not known
         if (nwin < final_orbital_count) then
             write (output_unit, *) "read_final_radial_wavefunctions: All required orbitals not"
             write (output_unit, *) " found."
             stop
         end if
-        !
         write (output_unit, *) " ... load complete;"
-        !
         close(wavefunction_input_unit)
 
         return

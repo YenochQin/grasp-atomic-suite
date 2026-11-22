@@ -1,3 +1,4 @@
+! Resolve the state name and header path for the radial-orbital estimate.
 ! Ordinary rwfnestimate input selection and the rCSFs header.toml adapter.
 module rwfnestimate_input
     ! Module dependencies

@@ -1,3 +1,4 @@
+! Read existing radial orbitals as initial estimates on the current grid.
 module estimate_from_saved_orbitals_interface
     implicit none (type, external)
 
@@ -6,20 +7,13 @@ module estimate_from_saved_orbitals_interface
     public :: estimate_from_saved_orbitals
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This subroutine loads  radial wavefunctions from the  .rwf  file
+    ! and performs some related setup.
+    !
+    ! Written by Farid A. Parpia. Last revision: 18 Dec 1992
     subroutine estimate_from_saved_orbitals(matched_orbital_indices, matched_subshell_count, file_path)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This subroutine loads  radial wavefunctions from the  .rwf  file   *
-        !   and performs some related setup.                                   *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, DALLOC, INTRPQ, OPENFL.                *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 18 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use array_memory_management, only: alloc, dalloc
         use debug_output_settings, only: rmcdhf_debug_flags
@@ -43,12 +37,9 @@ contains
         real(real64), pointer :: saved_large_component(:), saved_small_component(:), saved_radial_grid(:)
         logical :: found
         character :: radial_file_signature*6
-        !-----------------------------------------------
-        !
-        !
 
-        !FORM = 'UNFORMATTED'
-        !STATUS = 'OLD'
+        ! FORM = 'UNFORMATTED'
+        ! STATUS = 'OLD'
 
         call open_calculation_file (wavefunction_input_unit, file_path, "UNFORMATTED", "OLD", open_status)
         if (open_status == 1) then
@@ -57,19 +48,15 @@ contains
             close(wavefunction_input_unit)
             stop
         end if
-        !
-        !   Check the file; if not as expected, try again
-        !
+        ! Check the file; if not as expected, try again
         read (wavefunction_input_unit, iostat=io_status) radial_file_signature
         if (io_status/=0 .or. radial_file_signature/="G92RWF") then
             write (stderr_unit, *) "This is not a Radial WaveFunction File;"
             close(wavefunction_input_unit)
             stop
         end if
-        !
-        !   Read orbital information from Read Orbitals File; write summary
-        !   to  .dbg  file if option set
-        !
+        ! Read orbital information from Read Orbitals File; write summary
+        ! to  .dbg  file if option set
         if (rmcdhf_debug_flags(3)) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,"From SUBROUTINE FRMRWF:"/," Orbital",8x,"Eigenvalue",19x,"Norm")')
@@ -119,12 +106,8 @@ contains
             call ensure_debug_output()
             write (angular_debug_unit, *) " orbitals renormalised;"
         end if
-        !
         close(wavefunction_input_unit)
-        !
         return
-        !
         return
-        !
     end subroutine estimate_from_saved_orbitals
 end module estimate_from_saved_orbitals_interface

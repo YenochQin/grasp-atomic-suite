@@ -1,3 +1,4 @@
+! Open the MCP output channels and write their block and orbital metadata.
 module open_mcp_outputs_interface
     implicit none (type, external)
 
@@ -6,17 +7,13 @@ module open_mcp_outputs_interface
     public :: open_mcp_outputs
 contains
 
-    !***********************************************************************
+    ! A wrapper for setmcp/getinf. setmcp/getinf are then shared by serial
+    ! and MPI programs.
+    !
+    ! Written by Xinghong He. Last revision: 30 Jun 1998
     subroutine open_mcp_outputs(mpi_rank, mpi_process_count, core_subshell_count, block_labels, filehead)
         ! Module dependencies
         use mcp_generation_options, only: mcp_output_units
-        !
-        ! A wrapper for setmcp/getinf. setmcp/getinf are then shared by serial
-        ! and MPI programs.
-        !
-        !   Written by Xinghong He                Last revision: 30 Jun 1998
-        !
-        !***********************************************************************
         use atomic_calculation_state, only: electron_count
         use csf_block_cutoffs, only: active_csf_cutoffs
         use mcp_generation_options, only: diagonal_only, max_coulomb_multipole_rank, use_first_order_restriction

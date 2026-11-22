@@ -6,12 +6,6 @@ module invert_dense_submatrix_interface
     public :: invert_dense_submatrix
 contains
 
-    !
-    !
-    !     ------------------------------------------------------------------
-    !     I N V M A T
-    !     ------------------------------------------------------------------
-    !
     subroutine invert_dense_submatrix(matrix, inverse_workspace, leading_dimension, submatrix_order)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
@@ -24,7 +18,6 @@ contains
         !
         ! OUTPUT : A : INVERSE MATRIX ( ORIGINAL MATRIX THUS DESTROYED )
         ! WARNINGS ARE ISSUED IN CASE OF CONVERGENCE PROBLEMS )
-        !
         use, intrinsic :: iso_fortran_env, only: real64
 
         ! Procedure interfaces
@@ -41,8 +34,7 @@ contains
         ! Local declarations
         integer      :: inversion_status, trace_level
         real(real64) :: determinant, singularity_tolerance
-        !-----------------------------------------------
-        !
+
         inversion_status = 0
         if (submatrix_order == 1) then
             if (matrix(1,1) /= 0.0_real64) then
@@ -56,7 +48,6 @@ contains
             call invert_banded_matrix (matrix, inverse_workspace, submatrix_order, determinant, singularity_tolerance, &
                 & inversion_status, leading_dimension)
         end if
-        !
         if (inversion_status /= 0) then
             write (output_unit, "(A,I3)") " INVERSION PROBLEM NUMBER..", inversion_status
             stop
@@ -66,7 +57,6 @@ contains
             write (output_unit, *) " INVERTED MATRIX "
             call write_matrix (matrix, submatrix_order, submatrix_order, leading_dimension, leading_dimension)
         end if
-        !
         return
     end subroutine invert_dense_submatrix
 end module invert_dense_submatrix_interface

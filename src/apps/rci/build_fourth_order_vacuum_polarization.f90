@@ -1,3 +1,4 @@
+! Build the fourth-order vacuum-polarization contribution on the radial grid.
 module build_fourth_order_vacuum_polarization_interface
     implicit none (type, external)
 
@@ -6,24 +7,12 @@ module build_fourth_order_vacuum_polarization_interface
     public :: build_fourth_order_vacuum_polarization
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Use Fullerton and Rinker, Phys. Rev. A 13, 1283–1287 (1976), Eqs. (11) and (12).
+    ! Return the tabulated potential in radial_workspace_a.
+    ! Written by Farid A Parpia, at Oxford. Last update: 15 Oct 1992
     subroutine build_fourth_order_vacuum_polarization
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This routine sets up the fourth-order vacuum polarization poten-   *
-        !   tial using equations (11) and (12) of L Wayne Fullerton and  G A   *
-        !   Rinker, Jr,  Phys  Rev  A 13 (1976) 1283-1287. The potential  is   *
-        !   accumulated in array  TC(I), I = 1, ..., N. It is transferred to   *
-        !   array TA in COMMON block TATB.                                     *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: QUAD.                                         *
-        !               [RCI92]: FUNL.                                         *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford    Last update: 15 Oct 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_radial_points
         use debug_output_settings, only: rmcdhf_debug_flags
@@ -44,19 +33,12 @@ contains
         integer :: i, k, nb2, row_count, ii, ii1, ii2
         real(real64) :: tc(max_radial_points)
         real(real64) :: epsi, twocv, factor, ri, x, tci, rk, xk, xi, xm, xp
-        !-----------------------------------------------
-        !
-        !   Overall initialization
-        !
+        ! Overall initialization
         epsi = machine_precision*machine_precision
         twocv = vacuum_speed_of_light_au + vacuum_speed_of_light_au
-        !
-        !   Potential for point nucleus: equation (12)
-        !
+        ! Potential for point nucleus: equation (12)
         factor = -nuclear_charge/(pi*vacuum_speed_of_light_au)**2
-        !
         tc(1) = 0.0_real64
-        !
         i = 1
         do
             i = i + 1
@@ -71,36 +53,25 @@ contains
                 exit
             end if
         end do
-        !
-        !   Potential for finite nucleus: equation (11)
-        !
+        ! Potential for finite nucleus: equation (11)
         if (nuclear_model_parameter_count == 2) then
-            !
             factor = -1.0_real64/(pi*vacuum_speed_of_light_au**3)
-            !
             tc(1) = 0.0_real64
-            !
             k = 1
             do
                 k = k + 1
-                !
                 rk = radial_grid(k)
                 xk = twocv*rk
                 radial_workspace_a(1) = 0.0_real64
-                !
                 do i = 2, integration_last_index
                     xi = twocv*radial_grid(i)
                     xm = abs(xk - xi)
                     xp = xk + xi
                     radial_workspace_a(i) = (fullerton_rinker_l_function(xm,0) - fullerton_rinker_l_function(xp,0))*zdist(i)
                 end do
-                !
                 call integrate_radial_grid (x)
-                !
                 x = x*factor/rk
-                !
-                !   Get out of the loop if the asymptotic region has been reached
-                !
+                ! Get out of the loop if the asymptotic region has been reached
                 if (abs(x) >= epsi) then
                     if (abs((tc(k)-x)/x) > 1.0e-3_real64) then
                         tc(k) = x
@@ -109,9 +80,7 @@ contains
                 end if
                 exit
             end do
-            !
         end if
-        !
         if (rmcdhf_debug_flags(8)) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,/,/," ++++++++++ VAC4 ++++++++++"/,/,2(" -------- r -------- ----- VV2 (r) -----",&
@@ -137,14 +106,9 @@ contains
                 end if
             end do
         end if
-        !
-        !   Generate total vacuum-polarization potential
-        !
+        ! Generate total vacuum-polarization potential
         radial_workspace_b(:radial_point_count) = tc(:radial_point_count) + radial_workspace_b(:radial_point_count)
-        !
         return
-        !
         return
-        !
     end subroutine build_fourth_order_vacuum_polarization
 end module build_fourth_order_vacuum_polarization_interface

@@ -6,8 +6,6 @@ module read_eol_average_options_interface
     public :: read_eol_average_options
 contains
 
-    !***********************************************************************
-    !                                                                      *
     subroutine read_eol_average_options(idblk)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
@@ -44,9 +42,6 @@ contains
         ! Local declarations
         integer  :: indx(max_orbitals)
         integer :: i, nsubs, norder, loc, noffset, symmetry_block_index, level_index
-        !-----------------------------------------------
-
-        !WRITE (istde,*) 'EOL type calculation;'
 
         ! lodstate fills
         !    nevblk(), ncmaxblk()
@@ -56,53 +51,41 @@ contains
             "read_eol_average_options")
         call alloc (eigenvector_counts_by_block, symmetry_block_count, "eigenvector_counts_by_block", "read_eol_average_options" )
 
-        !cjb  ncmaxblk & nevblk initialised in lodstate
-        !     NEVBLK = 0
-        !     NCMAXBLK = 0
-        !cjb
+        ! ncmaxblk & nevblk initialised in lodstate
+        !      NEVBLK = 0
+        !      NCMAXBLK = 0
 
-        !cjb LODSTATE(NBLOCK, NCFBLK, IDBLK, NEVBLK, NCMAXBLK) -> (IDBLK)
-        !     CALL LODSTATE (NBLOCK, NCFBLK(1), IDBLK, NEVBLK, NCMAXBLK)
+        ! cjb LODSTATE(NBLOCK, NCFBLK, IDBLK, NEVBLK, NCMAXBLK) -> (IDBLK)
         call read_block_level_selection (idblk)
-        !cjb
-        !
-        !   Allocate the storage for and set the weights
-        !
+        !    Allocate the storage for and set the weights
         call alloc (requested_level_weights, selected_level_count, "requested_level_weights", "read_eol_average_options")
 
         call read_eol_level_weights (nondefault_options_flag, selected_level_count, requested_level_weights)
-        !
-        !   Eigenvector damping
-        !
+        ! Eigenvector damping
         call alloc (mixing_damping_factors, selected_level_count, "mixing_damping_factors", "read_eol_average_options")
-        !
         mixing_damping_factors(:selected_level_count) = 0.0_real64
-        !
-        !   Print the list of all subshells
-        !
+        ! Print the list of all subshells
         write (stderr_unit, *) "Radial functions"
         call print_scf_results
-        !
-        !   Determine which orbitals are to be varied, which are fixed.
-        !   Quantities determined here:
-        !     nfix, lfix(1:nw), iorder(1:nw), scnsty(1:nw)
-        !   Instead of broadcasting these quantities, we broadcast
-        !   the intermediate result from GETRSL (see below)
-        !
+        ! Determine which orbitals are to be varied, which are fixed.
+        ! Quantities determined here:
+        !   nfix, lfix(1:nw), iorder(1:nw), scnsty(1:nw)
+        ! Instead of broadcasting these quantities, we broadcast
+        ! the intermediate result from GETRSL (see below)
         is_orbital_fixed(:orbital_count) = .true.
 
         write (stderr_unit, *) "Enter orbitals to be varied (Updating order)"
         call select_subshell_labels (indx, nsubs)
 
         is_orbital_fixed(indx(:nsubs)) = .false.
-        !XHH      give a big value, rather than zero to scnsty()
+        ! XHH      give a big value, rather than zero to scnsty()
         orbital_self_consistency_errors(indx(:nsubs)) = 1.0e20_real64
         fixed_orbital_count = orbital_count - nsubs
         if (fixed_orbital_count == orbital_count) write (stderr_unit, *) &
             "All subshell radial wavefunctions are fixed;", &
             " performing CI calculation."
 
-        !   Determine orbital updating order
+        ! Determine orbital updating order
 
         norder = 0
         do i = 1, orbital_count
@@ -111,9 +94,7 @@ contains
             norder = norder + 1
             orbital_update_order(i) = indx(norder)
         end do
-        !
-        !XHH added a array to store the index of the correlation functions
-        !
+        ! XHH added a array to store the index of the correlation functions
         is_correlation_orbital(:orbital_count) = .true.
 
         write (stderr_unit, *) "Which of these are spectroscopic orbitals?"
@@ -138,19 +119,14 @@ contains
             orbital_updates_per_scf_iteration = 0
             exit
         end do
-        !
         maximum_scf_iterations = 24
         minimum_radial_solver_iterations = 3
         enforce_orbital_orthogonality = .true.
-        !
-        !   Make the allocation for the auxiliary vector required
-        !   by SUBROUTINE NEWCO
-        !
+        ! Make the allocation for the auxiliary vector required
+        ! by SUBROUTINE NEWCO
         call alloc (level_average_weights, selected_level_count, "level_average_weights", "read_eol_average_options")
-        !
-        !   Place the block numbers of the all ncmin eigenstate(wanted)
-        !   in array idxblk
-        !
+        ! Place the block numbers of the all ncmin eigenstate(wanted)
+        ! in array idxblk
         call alloc (level_block_indices, selected_level_count, "level_block_indices", "read_eol_average_options")
         noffset = 0
         do symmetry_block_index = 1, symmetry_block_count

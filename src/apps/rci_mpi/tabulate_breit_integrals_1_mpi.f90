@@ -1,3 +1,4 @@
+! Precompute this rank's first group of Breit radial integrals.
 module tabulate_breit_integrals_1_mpi_interface
     implicit none (type, external)
 
@@ -6,16 +7,13 @@ module tabulate_breit_integrals_1_mpi_interface
     public :: tabulate_breit_integrals_1_mpi
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Written by Per Jonsson. Last revision: October 2014
+    !
+    ! Translated by Charlotte Froese Fischer
+    !                        Gediminas Gaigalas  10/05/17
     subroutine tabulate_breit_integrals_1_mpi (mpi_rank, mpi_process_count, max_orbital_two_j)
 
-        ! Module dependencies
-        !   Written by Per Jonsson                Last revision: October 2014  *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Charlotte Froese Fischer
-        !                       Gediminas Gaigalas  10/05/17
+        !  Module dependencies
         use breit_integral_tables, only: breit_integral_indices_1, breit_integral_values_1
 
         ! Procedure interfaces
@@ -32,8 +30,7 @@ contains
 
         ! Local declarations
         integer :: n
-        !-----------------------------------------------
-        !
+
         call tabulate_breit_integrals_1 ((mpi_rank), (mpi_process_count), n, max_orbital_two_j)
 
         ! Gather integrals (and their indeces) from- and send to- all nodes

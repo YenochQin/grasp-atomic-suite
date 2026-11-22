@@ -1,3 +1,4 @@
+! Solve for the requested eigenpairs of a Hamiltonian symmetry block.
 module diagonalize_hamiltonian_block_interface
     implicit none (type, external)
 
@@ -6,51 +7,38 @@ module diagonalize_hamiltonian_block_interface
     public :: diagonalize_hamiltonian_block
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !  This module  manages the  operation of the  eigensolvers and the
+    !  storage of the eigenpairs.  There are two principal branches:
+    !
+    !     (1) Matrix of order 1: the trivial case
+    !     (2) Matrix of order greater than 1: there are two branches
+    !            (i) Matrices of order less than or equal to IOLPCK:
+    !                eigenpairs are found using LAPACK SUBROUTINEs
+    !           (ii) Matrices of order greater than IOLPCK: eigenpairs
+    !                are found using DVDSON; this involves up to three
+    !                steps:
+    !                   (a) The matrix is analysed to determine its
+    !                       block structure (only irreducibe matrices
+    !                       are correctly treated by DVDSON)
+    !                   (b) Eigenpairs are extracted for each block
+    !                   (c) The appropriate eigenpairs are selected and
+    !                       stored
+    !                Different methods of storage and different
+    !                versions of the matrix-vector multiply are used
+    !                depending upon the order and density of the matrix
+    !
+    ! Written by Farid A. Parpia. Last revision: 27 Sep 1993
+    !  Modified Misha Saparov                                  Feb 1997
+    !           Charlotte F. Fischer                           May 1997
+    !                Except for the disk version, all matrices have
+    !                diagonals  shifted by EAV
+    ! All arrays allocated here are de-allocated except pneval and pnevec *
+    ! which will be de-allocated in matrix.
+    ! Block Version  By Xinghong He. Last revision: 18 Jun 1998
     subroutine diagonalize_hamiltonian_block(iatjpo, iaspar)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         use calculation_file_units, only: summary_output_unit
-        !                                                                      *
-        !   This module  manages the  operation of the  eigensolvers and the   *
-        !   storage of the eigenpairs.  There are two principal branches:      *
-        !                                                                      *
-        !      (1) Matrix of order 1: the trivial case                         *
-        !      (2) Matrix of order greater than 1: there are two branches      *
-        !             (i) Matrices of order less than or equal to IOLPCK:      *
-        !                 eigenpairs are found using LAPACK SUBROUTINEs        *
-        !            (ii) Matrices of order greater than IOLPCK: eigenpairs    *
-        !                 are found using DVDSON; this involves up to three    *
-        !                 steps:                                               *
-        !                    (a) The matrix is analysed to determine its       *
-        !                        block structure (only irreducibe matrices     *
-        !                        are correctly treated by DVDSON)              *
-        !                    (b) Eigenpairs are extracted for each block       *
-        !                    (c) The appropriate eigenpairs are selected and   *
-        !                        stored                                        *
-        !                 Different methods of storage and different           *
-        !                 versions of the matrix-vector multiply are used      *
-        !                 depending upon the order and density of the matrix   *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, DALLOC, ISPAR, ITJPO, posfile,         *
-        !                        RALLOC.                                       *
-        !               [RCI92]: DNICMV, SPICMV2, SPODMV.                      *
-        !               [DVDSON]: DVDSON.                                      *
-        !               [AUXBLAS]: DINIT/SINIT.                                *
-        !               [BLAS]: DCOPY/SCOPY, DSWAP/SSWAP.                      *
-        !               [LAPACK]: DSPEVX/SSPEVX.                               *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 27 Sep 1993   *
-        !   Modified Misha Saparov                                  Feb 1997   *
-        !            Charlotte F. Fischer                           May 1997   *
-        !                 Except for the disk version, all matrices have       *
-        !                 diagonals  shifted by EAV                            *
-        !  All arrays allocated here are de-allocated except pneval and pnevec *
-        !  which will be de-allocated in matrix.                               *
-        !  Block Version  By Xinghong He          Last revision: 18 Jun 1998   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use array_memory_management, only: alloc, dalloc, ralloc
         use eigenstate_expansions, only: hamiltonian_energy_shift, shifted_eigenvalues, csf_mixing_coefficients
@@ -94,18 +82,14 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        !-----------------------------------------------
+        !
         !  E x t e r n a l   F u n c t i o n s
-        !-----------------------------------------------
         integer, intent(out) :: iatjpo
         integer, intent(out) :: iaspar
 
-        ! Local constants
-        !cjb  INTEGER, PARAMETER      :: IOLPCK = 1000
+        !  Local constants
         integer, parameter      :: dense_initial_csf_limit = 2000
-        ! GG      REAL(DOUBLE), PARAMETER :: ABSTOL = 1.0D-10
-        !cjb  NINCOR
-        !cjb  INTEGER, PARAMETER      :: NINCOR = 1         ! To enforce DISK
+        ! NINCOR
         integer, parameter      :: in_memory_matrix_element_limit = 268435456 ! = 2 GB or  memory
 
         ! Local declarations
@@ -121,60 +105,42 @@ contains
         logical :: solve_high_end, ldisc, sparse
         real(real64), pointer :: w(:), z(:), real_workspace(:), matrix_diagonal(:)
         integer, pointer :: integer_workspace(:), ifail(:), selected_pair_indices(:)
-        !-----------------------------------------------------------------------
         abstol = 2*dlamch("S")
         mpi_rank = 0
         mpi_process_count = 1
-        !IF (MYID == 0) WRITE (6, *) 'Calling maneig...'
 
-        !  (nrows+1) is the number of records of the present block's .res file
+        ! (nrows+1) is the number of records of the present block's .res file
 
         row_count = (csf_count - mpi_rank - 1 + mpi_process_count)/mpi_process_count
         if (csf_count < mpi_process_count) row_count = csf_count/(mpi_rank + 1)
-        !CALL posfile (1, restart_matrix_unit, nrows+1)
         call position_calculation_file (0, restart_matrix_unit, nposition)
 
         if (csf_count == 1) then
-            !-----------------------------------------------------------------------
-            !
             ! (1) - Trivial    ncf = 1
-            !
-            !-------------------------------------------------------
             write (summary_output_unit, *) "Trivial eigenvalue problem."
 
-            !   Matrix of order 1: the trivial case; we assume that the value
-            !   of EAV is available
+            ! Matrix of order 1: the trivial case; we assume that the value
+            ! of EAV is available
 
             call alloc (shifted_eigenvalues, 1,"shifted_eigenvalues", "diagonalize_hamiltonian_block" )
             call alloc (csf_mixing_coefficients, 1, "csf_mixing_coefficients", "diagonalize_hamiltonian_block")
             shifted_eigenvalues(1) = 0.0_real64
             csf_mixing_coefficients(1) = 1.0_real64
 
-            ! Still read through the .res file
-            !GG
-            !GG Gediminas NIST 2005.11.03
-            !GG         READ (restart_matrix_unit)
+            !  Still read through the .res file
+            ! GG Gediminas NIST 2005.11.03
             do i = 1, row_count + 1
                 read (restart_matrix_unit)
             end do
 
         else                                       !if-2
-            !-----------------------------------------------------------------------
-            !
             ! (2) - Non trivial
             !
-            !-------------------------------------------------------
-            !
             !   Matrix of order greater than 1; how many elements in a triangle?
-            !
             ndense = (csf_count*(csf_count + 1))/2
 
             if (csf_count <= dense_initial_csf_limit) then
-                !-----------------------------------------------------------------------
-                !
                 ! (2.1) - LAPACK    Dense, Memory,
-                !
-                !-------------------------------------------------------
                 if (mpi_rank == 0) then
                     write (output_unit, *) &
                         "LAPACK routine DSPEVX selected for eigenvalue problem."
@@ -182,14 +148,14 @@ contains
                         "LAPACK routine DSPEVX selected for eigenvalue problem."
                 end if
 
-                !   Allocate storage for the dense representation of the matrix
-                !   and initialize emt
+                ! Allocate storage for the dense representation of the matrix
+                ! and initialize emt
 
                 call alloc (hamiltonian_values, ndense, "hamiltonian_values", "diagonalize_hamiltonian_block")
                 call initialize_real_vector (ndense, 0.0_real64, hamiltonian_values, 1)
 
-                !   Read the matrix into position from the disc file; it's already
-                !   been properly positioned.
+                ! Read the matrix into position from the disc file; it's already
+                ! been properly positioned.
 
                 call alloc (real_workspace, csf_count,"real_workspace", "diagonalize_hamiltonian_block" )
                 call alloc (matrix_partner_indices, csf_count, "matrix_partner_indices", "diagonalize_hamiltonian_block")
@@ -213,13 +179,13 @@ contains
                 call dalloc (real_workspace, "real_workspace", "diagonalize_hamiltonian_block")
                 call dalloc (matrix_partner_indices, "matrix_partner_indices", "diagonalize_hamiltonian_block")
 
-                !   Find the eigenpairs
+                ! Find the eigenpairs
                 !
-                !    ivec() - serial numbers of eigenstates of the current block
-                !    iccmin() - serial numbers of eigenstates of all blocks.
-                !    nvecmn - minimum serial number of the eigenstates of the block
-                !    nvecmx - maximum .............
-                !    nvex - clear from def: NVECMX-NVECMN+1
+                !  ivec() - serial numbers of eigenstates of the current block
+                !  iccmin() - serial numbers of eigenstates of all blocks.
+                !  nvecmn - minimum serial number of the eigenstates of the block
+                !  nvecmx - maximum .............
+                !  nvex - clear from def: NVECMX-NVECMN+1
 
                 nvecmn = csf_count
                 do i = 1, active_level_count
@@ -230,7 +196,6 @@ contains
                 call alloc (z, csf_count*nvex,"Z", "diagonalize_hamiltonian_block" )
                 call alloc (real_workspace, csf_count*8,"real_workspace", "diagonalize_hamiltonian_block" )
                 call alloc (integer_workspace, csf_count*5,"integer_workspace", "diagonalize_hamiltonian_block" )
-                ! GG            CALL ALLOC (IFAIL, NVEX, 'IFAIL', 'MANEIG')
                 call alloc (ifail, csf_count, "IFAIL", "diagonalize_hamiltonian_block")
                 call dspevx ("V", "I", "U", csf_count, hamiltonian_values, dummy, dummy, nvecmn, highest_active_level_index&
                     , abstol, m, w, z, csf_count, real_workspace, integer_workspace, ifail, info)
@@ -240,7 +205,7 @@ contains
                 call dalloc (ifail, "IFAIL", "diagonalize_hamiltonian_block")
                 call dalloc (hamiltonian_values, "hamiltonian_values", "diagonalize_hamiltonian_block")
 
-                !   Store the eigenpairs in their proper positions EVAL() and EVEC()
+                ! Store the eigenpairs in their proper positions EVAL() and EVEC()
 
                 call alloc (shifted_eigenvalues, active_level_count,"shifted_eigenvalues", "diagonalize_hamiltonian_block" )
                 call alloc (csf_mixing_coefficients, csf_count*active_level_count, "csf_mixing_coefficients", &
@@ -257,45 +222,35 @@ contains
                 call dalloc (z, "Z", "diagonalize_hamiltonian_block")
 
             else
-                !-----------------------------------------------------------------------
 
                 ! (2.2) - DVDSON --- preparation work
-                !
-                !-------------------------------------------------------
                 write (summary_output_unit,*)"solve_davidson_eigenpairs routine selected for eigenvalue problem;"
 
-                !   Sparse or dense matrix multiply? On disc or in core?
+                ! Sparse or dense matrix multiply? On disc or in core?
 
-                !GG            NBRKEV = (NCF + 1)*(NCF + 1)/3       ! Normal
-                !NBRKEV =  1                      ! To enforce DENSE
-                !NBRKEV = (NCF*(NCF+1)) / 2 + 1   ! To enforde SPARSE
-                !--------------------------------------------------------------
-                ! Uncomment out the following to force sparse storage
+                ! NBRKEV = (NCF + 1)*(NCF + 1)/3       ! Normal
+                ! NBRKEV =  1                      ! To enforce DENSE
+                ! NBRKEV = (NCF*(NCF+1)) / 2 + 1   ! To enforde SPARSE
                 !
-                !
-                !--------------------------------------------------------------
+                !  Uncomment out the following to force sparse storage
                 sparse = .true.
                 nstore = stored_matrix_element_count + stored_matrix_element_count/2 + (csf_count + 1)/2
 
                 call alloc (matrix_diagonal, csf_count, "matrix_diagonal", "diagonalize_hamiltonian_block")
 
                 if (nstore > in_memory_matrix_element_limit) then
-                    !-----------------------------------------------------------------------
-                    !
                     ! (2.2.1) - DVDSON --- Disk, load diagonal
-                    !
-                    !-------------------------------------------------------
                     write (summary_output_unit, *) " matrix stored on disc;"
 
-                    !   Disk storage; necessarily sparse; one column of the matrix in
-                    !   memory
+                    ! Disk storage; necessarily sparse; one column of the matrix in
+                    ! memory
 
                     ldisc = .true.
                     sparse = .true.
                     imv = 1
 
-                    !   Load diagonal - Each node will have the same, complete copy
-                    !   after this if block
+                    ! Load diagonal - Each node will have the same, complete copy
+                    ! after this if block
 
                     read (restart_matrix_unit) file_csf_count, iccutdum, file_mpi_rank, file_mpi_process_count
                     if (csf_count/=file_csf_count .or. mpi_rank/=file_mpi_rank .or. file_mpi_process_count/=mpi_process_count) &
@@ -308,21 +263,13 @@ contains
                     end do
 
                 else
-                    !-----------------------------------------------------------------------
-                    !
                     ! (2.2.2) - DVDSON --- Memory, load all
                     !
-                    !-------------------------------------------------------
-                    !
                     !   Core storage; load matrix into memory
-                    !
                     ldisc = .false.
                     if (sparse) then
-                        !-----------------------------------------------------------------------
 
                         ! (2.2.2.1) - DVDSON --- Memory, load all, sparse
-                        !
-                        !-------------------------------------------------------
                         if (mpi_rank == 0) write (summary_output_unit, *) &
                             " matrix stored in sparse representation in core;"
 
@@ -347,15 +294,10 @@ contains
                             matrix_diagonal(i) = hamiltonian_values(nelc+iofset)
                             iofset = iofset + nelc
                             stored_segment_end_offsets(i) = iofset
-                            !                     WRITE (31 + MYID, *) I, IENDC(I), DIAG(I)
 
                         end do
                     else
-                        !-----------------------------------------------------------------------
-                        !
                         ! (2.2.2.2) - DVDSON --- Memory, load all, dense
-                        !
-                        !-------------------------------------------------------
                         write (summary_output_unit, *) &
                             " matrix stored in full representation in core;"
 
@@ -392,36 +334,32 @@ contains
                         call dalloc (matrix_partner_indices, "matrix_partner_indices", "diagonalize_hamiltonian_block")
 
                     end if
-                    !               ...Memory mode - sparse or dense
-                    !-----------------------------------------------------------------------
-                    !  (2.2.2.3e)          *** E n d   o f   D V D S O N   m e m o r y
-                    !-----------------------------------------------------------------------
+                    !              ...Memory mode - sparse or dense
+                    !
+                    ! (2.2.2.3e)          *** E n d   o f   D V D S O N   m e m o r y
                 end if
-                !            ...Disk or Memory
-                !-----------------------------------------------------------------------
-                !  (2.2.3e)      *** E n d   o f   D V D S O N
-                !-----------------------------------------------------------------------
+                !           ...Disk or Memory
                 !
-                !   Allocate storage for workspace; see the header of DVDSON for
-                !   the expression below; the value of LIM can be reduced to NVECMX
-                !   plus a smaller number if storage is severely constrained
+                ! (2.2.3e)      *** E n d   o f   D V D S O N
                 !
+                !  Allocate storage for workspace; see the header of DVDSON for
+                !  the expression below; the value of LIM can be reduced to NVECMX
+                !  plus a smaller number if storage is severely constrained
                 subspace_limit = min(csf_count,2*highest_active_level_index + 60)
-                !           lwork = 2*ncf*lim + lim*lim + (nvecmx+10)*lim + nvecmx
+                ! lwork = 2*ncf*lim + lim*lim + (nvecmx+10)*lim + nvecmx
                 real_workspace_size = 2*csf_count*subspace_limit + subspace_limit*subspace_limit*2 + 11*subspace_limit + &
                     highest_active_level_index
                 call alloc (real_workspace, real_workspace_size, "real_workspace", "diagonalize_hamiltonian_block")
                 integer_workspace_size = 6*subspace_limit + highest_active_level_index
                 call alloc (integer_workspace, integer_workspace_size, "integer_workspace", "diagonalize_hamiltonian_block")
-                !*changed by Misha 02/12/97
+                ! *changed by Misha 02/12/97
                 eigenvalue_tolerance = 1.0e-17_real64
                 coefficient_tolerance = 1.0e-9_real64
                 residual_tolerance = 1.0e-9_real64
                 ! end of changes
 
-                !            maxitr = MAX (nvecmx*100, ncf/10)
+                ! maxitr = MAX (nvecmx*100, ncf/10)
                 iteration_limit = max(highest_active_level_index*200,csf_count/10)
-                !maxitr = MIN (nvect*100, ncf)  ! FROM RSCFVU !!!
                 call alloc (selected_pair_indices, subspace_limit,"selected_pair_indices", "diagonalize_hamiltonian_block" )
 
                 call alloc (shifted_eigenvalues, highest_active_level_index, "shifted_eigenvalues", "diagonalize_hamiltonian_block")
@@ -431,7 +369,7 @@ contains
                 dmungo = 10.0e99_real64
                 call initialize_real_vector (highest_active_level_index, dmungo, shifted_eigenvalues, 1)
 
-                !   Compute the eigenpairs in each block
+                ! Compute the eigenpairs in each block
 
                 nvex = highest_active_level_index
                 if (ldisc) then
@@ -444,21 +382,17 @@ contains
                 lowest_pair_index = 1
                 highest_pair_index = nvex
                 initial_vector_count = nvex
-                !************************************************************************
-                !
-                !   Call Davidson eigensolver
-                !
+                ! Call Davidson eigensolver
                 select case (imv)
                 case (1)
-                    !******************** sparse and matrix on disk **********************
+                    ! sparse and matrix on disk **********************
                     write (output_unit, *) " Sparse - Disk,  iniestsd"
                     call position_calculation_file (0, restart_matrix_unit, nposition)! was within iniestsd before
                     call initialize_sparse_eigenvectors (2000, csf_count, mpi_rank, mpi_process_count, initial_vector_count, &
                         & real_workspace, &
                         & restart_matrix_unit, hamiltonian_energy_shift)
 
-                    !NIV = 0   ! Why equal 0 ???
-                    !WRITE (6, *) ' Calling gdvd(spodmv,...'
+                    ! NIV = 0   ! Why equal 0 ???
                     call solve_davidson_eigenpairs (multiply_restart_hamiltonian, csf_count, subspace_limit, matrix_diagonal, &
                         & lowest_pair_index, &
                         & highest_pair_index, &
@@ -469,14 +403,11 @@ contains
                         & matrix_vector_product_count, ierr)
 
                 case (2)
-                    !******************** sparse and matrix in memory ********************
+                    ! sparse and matrix in memory ********************
                     write (output_unit, *) " Sparse - Memory,  iniest2"
-                    !            CALL INIEST2 (1000, NCF,NIV,WORK,EMT,IENDC,IROW)
                     call estimate_sparse_initial_basis (2000, csf_count, initial_vector_count, real_workspace, hamiltonian_values, &
                         & stored_segment_end_offsets, matrix_partner_indices)
-                    !WRITE (*, *) NCF, NIV, (WORK(I),I=NCF*NIV + 1,NCF*NIV + NIV)
-                    !WRITE (*, *) LIM, ILOW, IHIGH, MBLOCK, MAXITR, LWORK, LIWORK
-                    !WRITE (*, *) IERR
+
                     call solve_davidson_eigenpairs (multiply_sparse_symmetric_matrix, csf_count, subspace_limit, &
                         & matrix_diagonal, lowest_pair_index, highest_pair_index, &
                         & selected_pair_indices, initial_vector_count, &
@@ -484,19 +415,14 @@ contains
                         & iteration_limit, real_workspace, real_workspace_size, &
                         integer_workspace, integer_workspace_size, solve_high_end, iteration_count, &
                         & matrix_vector_product_count, ierr)
-                    !WRITE (*, *) 'after gdvd...'
-                    !WRITE (*, *) NCF, NIV, (WORK(I),I=NCF*NIV + 1,NCF*NIV + NIV)
-                    !WRITE (*, *) LIM, ILOW, IHIGH, MBLOCK, MAXITR, LWORK, LIWORK
-                    !WRITE (*, *) HIEND, NLOOPS, NMV, IERR
 
                     call dalloc (hamiltonian_values, "hamiltonian_values", "diagonalize_hamiltonian_block")
                     call dalloc (matrix_partner_indices, "matrix_partner_indices", "diagonalize_hamiltonian_block")
                     call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "diagonalize_hamiltonian_block")
 
                 case (3)
-                    !*************************** dense and in memory **********************
+                    ! dense and in memory **********************
                     write (output_unit, *) " Dense - Memory,  iniestdm"
-                    !            CALL INIESTDM (1000,NCF,NIV,WORK,EMT)
                     call initialize_dense_eigenvectors (2000, csf_count, initial_vector_count, real_workspace, hamiltonian_values)
                     call solve_davidson_eigenpairs (multiply_sparse_hamiltonian, csf_count, subspace_limit, matrix_diagonal, &
                         & lowest_pair_index, &
@@ -508,7 +434,6 @@ contains
                         & matrix_vector_product_count, ierr)
                     call dalloc (hamiltonian_values, "hamiltonian_values", "diagonalize_hamiltonian_block")
                 end select
-                !************************************************************************
                 call dalloc (matrix_diagonal, "matrix_diagonal", "diagonalize_hamiltonian_block")
                 call dalloc (integer_workspace, "integer_workspace", "diagonalize_hamiltonian_block")
                 call dalloc (selected_pair_indices, "selected_pair_indices", "diagonalize_hamiltonian_block")
@@ -522,14 +447,14 @@ contains
                     stop "diagonalize_hamiltonian_block: solve_davidson_eigenpairs wrong"
                 end if
 
-                !   Put the eigenpairs in order, overwriting as necessary
+                ! Put the eigenpairs in order, overwriting as necessary
 
                 call dcopy (nvex, real_workspace(nend+1:nend+(nvex)), 1, shifted_eigenvalues, 1)
                 call dcopy (csf_count*nvex, real_workspace(1:csf_count*nvex), 1, csf_mixing_coefficients, 1)
                 call dalloc (real_workspace, "real_workspace", "diagonalize_hamiltonian_block")
 
-                !   Rearrange and reallocate storage for the eigenpairs
-                !   as necessary
+                ! Rearrange and reallocate storage for the eigenpairs
+                ! as necessary
 
                 if (active_level_count < highest_active_level_index) then
                     call alloc (integer_workspace, highest_active_level_index, "integer_workspace", "diagonalize_hamiltonian_block")
@@ -561,17 +486,14 @@ contains
         end if
         ! (3e)               *** E N D   O F    A L L
 
-        !--------------------------------------------------------------------
         ! Only the following quantities are needed after this routine is
         ! finished:
         !   eval(), evec(), iatjpo, iaspar
-        !--------------------------------------------------------------------
         !
         !   Clean up eigenvectors; determine their J/P values
-        !
         do j = 1, active_level_count
 
-            !         Find the dominant component of each eigenvector
+            ! Find the dominant component of each eigenvector
 
             iofset = (j - 1)*csf_count
 
@@ -583,12 +505,12 @@ contains
                 ia = i
             end do
 
-            !          Find the angular momentum and parity of the dominant component
+            ! Find the angular momentum and parity of the dominant component
 
             iatjpo = csf_total_j_code(ia)
             iaspar = csf_parity_code(ia)
 
-            !          Change sign of eigenvactor if dominant component is negative
+            ! Change sign of eigenvactor if dominant component is negative
 
             if (csf_mixing_coefficients(ia+iofset) >= 0.0_real64) cycle
             csf_mixing_coefficients(1+iofset:csf_count+iofset) = -csf_mixing_coefficients(1+iofset:csf_count+iofset)

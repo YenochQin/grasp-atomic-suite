@@ -1,3 +1,4 @@
+! Distribute the electronic field-shift matrix-element calculation across MPI ranks.
 module calculate_field_shift_factors_mpi_interface
     implicit none (type, external)
 
@@ -6,19 +7,14 @@ module calculate_field_shift_factors_mpi_interface
     public :: calculate_field_shift_factors_mpi
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! MPI version of DENSNEW. Each rank handles a strided subset of the
+    ! outer IC loop and can optionally write a per-rank angular-data
+    ! fragment that the root process later merges into name.IOB.
     subroutine calculate_field_shift_factors_mpi(angular_cache_write_mode,contact_density_integrals,total_nms_integrals, &
         & radius_integrals, &
         & radius_squared_integrals,inverse_radius_integrals,inverse_radius_squared_integrals,leading_nms_integrals)
         ! Module dependencies
         use calculation_file_units, only: one_body_cache_unit
-        !                                                                      *
-        !   MPI version of DENSNEW. Each rank handles a strided subset of the  *
-        !   outer IC loop and can optionally write a per-rank angular-data      *
-        !   fragment that the root process later merges into name.IOB.          *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters, only: orbital_index_radix, max_orbitals
         use debug_output_settings, only: matrix_element_screening_cutoff

@@ -1,3 +1,4 @@
+! Store the Fortran I/O unit for the CI restart matrix file.
 module ci_restart_units
     implicit none (type, external)
 

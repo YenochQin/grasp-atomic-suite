@@ -1,3 +1,4 @@
+! Load the MCDHF descriptor basis on rank 0 and distribute it after checking the MCP metadata.
 module load_csf_basis_data_mpi_interface
     implicit none (type, external)
 

@@ -1,3 +1,4 @@
+! Fit the near-origin electron density for the field-shift expansion.
 module fit_electron_density_interface
     implicit none (type, external)
 
@@ -6,18 +7,15 @@ module fit_electron_density_interface
     public :: fit_electron_density
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !      Fits polynomial b1 + b2r^2 b3r^3 + b4r^4 to (r,rho) electron
+    !      density data using least squares method
+    !
+    ! Translated by Gediminas Gaigalas 11/18/19
     subroutine fit_electron_density(xvec,yvec,z,par,nuclear_density_point_count,f,rho,res)
-        !SUBROUTINE EDENSITYFIT(XVEC,YVEC,Z,PAR,NPARFIT,                  &
-        !                                                DRMS,P,F,RHO,RES,NRNUC)
+        ! SUBROUTINE EDENSITYFIT(XVEC,YVEC,Z,PAR,NPARFIT,                  &
+        !                                                 DRMS,P,F,RHO,RES,NRNUC)
 
-        ! Module dependencies
-        !     Fits polynomial b1 + b2r^2 b3r^3 + b4r^4 to (r,rho) electron     *
-        !     density data using least squares method                          *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Gediminas Gaigalas 11/18/19
+        !  Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state,            only: pi,femtometer_to_bohr,speed_of_light_cm_per_s,hartree_to_wavenumber_cm
         use grasp_parameters,    only: max_radial_points, radial_workspace_capacity
@@ -26,7 +24,6 @@ contains
         ! Arguments and local declarations
         real(real64) :: xvec(radial_workspace_capacity)
         real(real64) :: yvec(max_radial_points)
-        !GG      REAL(DOUBLE), DIMENSION(NNNP) :: XVEC, YVEC
         real(real64) :: p(5)
         real(real64) :: f(6)
         real(real64) :: par(2)
@@ -34,7 +31,6 @@ contains
         integer      :: nuclear_density_point_count
         real(real64) :: x(radial_workspace_capacity)
         real(real64) :: y(max_radial_points), w(max_radial_points)
-        !GG      REAL(DOUBLE), DIMENSION(NNNP) :: X, Y, W, DY
         real(real64)  :: m(3, 3), mi(3, 3), c(3, 3), ci(3, 3)
         real(real64)    :: dr2(4)
         real(real64)    :: rm(3), pm(3), b(3)
@@ -42,12 +38,11 @@ contains
         real(real64) :: mdet, cdet, au2fm, norm, const
         real(real64) :: fdsum
         integer :: i, nmin, nmax
-        !-----------------------------------------------
-        !
+
         au2fm = 1.0_real64/femtometer_to_bohr                ! Bohr radius in fm
         const = 1.0e-9_real64*speed_of_light_cm_per_s*hartree_to_wavenumber_cm*au2fm      ! To get electronic factors in GHz
 
-        !     COPY ARRAYS
+        ! COPY ARRAYS
         x(:) = xvec(:)
         y(:) = yvec(:)
 
@@ -58,13 +53,13 @@ contains
 
         nmin = 10
 
-        !     SETS NMAX IN FIT TO NR
+        ! SETS NMAX IN FIT TO NR
         nmax = nuclear_density_point_count
 
-        !     DETERMINE RHO:
-        !     BELOW PM(1) + PM(2)*X(I)**2 + PM(3)*X(I)**4 IS FITTED TROUGH DATA POINTS
-        !     (X(NMIN),Y(NMIN)), (X(NMIN+2),Y(NMIN+2)), (X(NMIN+4),Y(NMIN+4)).
-        !     WE HAVE: RHO(0) = PM(1)
+        ! DETERMINE RHO:
+        ! BELOW PM(1) + PM(2)*X(I)**2 + PM(3)*X(I)**4 IS FITTED TROUGH DATA POINTS
+        ! (X(NMIN),Y(NMIN)), (X(NMIN+2),Y(NMIN+2)), (X(NMIN+4),Y(NMIN+4)).
+        ! WE HAVE: RHO(0) = PM(1)
 
         rm(1) = y(nmin)
         rm(2) = y(nmin+2)
@@ -116,9 +111,9 @@ contains
             w(i) = x(i)                        ! WEIGHTS SET TO R(I) TO COMPENSATE FOR EXPONENTIAL GRID DENSITY
         end do
 
-        !     THE DATA POINTS, SUBTRACTED SO THAT Y(I) = Y(I)-RHO, ARE FITTED TO POLYNOMIAL:
-        !     P(2)*X(I)**2 + P(3)*X(I)**4 + P(4)*X(I)**6
-        !     DETERMINE B_l AND C_{kl} MATRIX ELEMENTS
+        ! THE DATA POINTS, SUBTRACTED SO THAT Y(I) = Y(I)-RHO, ARE FITTED TO POLYNOMIAL:
+        ! P(2)*X(I)**2 + P(3)*X(I)**4 + P(4)*X(I)**6
+        ! DETERMINE B_l AND C_{kl} MATRIX ELEMENTS
         b(:) = 0.0_real64
         c(:,:) = 0.0_real64
         do i=nmin,nmax
@@ -136,12 +131,12 @@ contains
         c(3,1) = c(1,3)
         c(3,2) = c(2,3)
 
-        !     COMPUTE DETERMINANT
+        ! COMPUTE DETERMINANT
         cdet = c(1,1)*c(2,2)*c(3,3)-c(1,1)*c(2,3)*c(3,2)- &
             c(1,2)*c(2,1)*c(3,3)+c(1,2)*c(2,3)*c(3,1)+ &
             c(1,3)*c(2,1)*c(3,2)-c(1,3)*c(2,2)*c(3,1)
 
-        !     COMPUTE INVERSE OF C MATRIX
+        ! COMPUTE INVERSE OF C MATRIX
         ci(1,1) = (c(2,2)*c(3,3)-c(2,3)*c(3,2))/cdet
         ci(1,2) = (c(1,3)*c(3,2)-c(1,2)*c(3,3))/cdet
         ci(1,3) = (c(1,2)*c(2,3)-c(1,3)*c(2,2))/cdet
@@ -154,7 +149,7 @@ contains
         ci(3,2) = (c(1,2)*c(3,1)-c(1,1)*c(3,2))/cdet
         ci(3,3) = (c(1,1)*c(2,2)-c(1,2)*c(2,1))/cdet
 
-        !     DETERMINE FITTING PARAMETERS
+        ! DETERMINE FITTING PARAMETERS
         p(2) = ci(1,1)*b(1)+ci(1,2)*b(2)+ci(1,3)*b(3)
         p(3) = ci(2,1)*b(1)+ci(2,2)*b(2)+ci(2,3)*b(3)
         p(4) = ci(3,1)*b(1)+ci(3,2)*b(2)+ci(3,3)*b(3)
@@ -164,13 +159,13 @@ contains
         p(3) = p(3)*norm
         p(4) = p(4)*norm
 
-        !     RESULTING ELECTRONIC FACTORS F(N) IN GHZ fm^{-2N}
+        ! RESULTING ELECTRONIC FACTORS F(N) IN GHZ fm^{-2N}
         f(1) = 2.0_real64*pi/3.0_real64*z*p(1)*const
         f(2) = 2.0_real64*pi/10.0_real64*z*p(2)*const
         f(3) = 2.0_real64*pi/21.0_real64*z*p(3)*const
         f(4) = 2.0_real64*pi/36.0_real64*z*p(4)*const
 
-        !    DETERMINE AVERAGE POINT DISCREPANCY PARAMETER
+        ! DETERMINE AVERAGE POINT DISCREPANCY PARAMETER
         res = 0.0_real64
         do i=nmin,nmax
             y(i) = y(i)*au2fm**3.0_real64*norm+rho
@@ -182,15 +177,15 @@ contains
         res = sqrt(res/(nmax-nmin+1))
         res = res/rho*1000.0_real64    ! In per mille of RHO
 
-        !     BELOW WE APPROXIMATE THE IS ENERGY. DIFFERENCE IN RADIAL MOMENTS ARE CALUCLATED BETWEEN THE
-        !     CURRENT DISTRIBTUION (PARF) AND WITH A DISTRIBUTION WITH A R^2 1 FM LARGER. THE DIFFERNCE
-        !     IN RADIAL MOMENTS ARE THEN MULTIPLIED WITH THE ELECTRONIC FACTORS.
+        ! BELOW WE APPROXIMATE THE IS ENERGY. DIFFERENCE IN RADIAL MOMENTS ARE CALUCLATED BETWEEN THE
+        ! CURRENT DISTRIBTUION (PARF) AND WITH A DISTRIBUTION WITH A R^2 1 FM LARGER. THE DIFFERNCE
+        ! IN RADIAL MOMENTS ARE THEN MULTIPLIED WITH THE ELECTRONIC FACTORS.
 
         parf(1) = par(1)*au2fm    ! 50% FALL OFF RADIUS C
         parf(2) = par(2)*au2fm    ! SKIN THICKNESS a. 10% TO 90% FALL OFF DISTANCE t = 4.0*ln(3)*a
 
-        !DR2(1) = 1.0d0
-        !PARF2(1) =  SQRT(1.d0+PARF(1)**2.d0)
+        ! DR2(1) = 1.0d0
+        ! PARF2(1) =  SQRT(1.d0+PARF(1)**2.d0)
         dr2(2) = 10.0_real64/7.0_real64*parf(1)**2.0_real64 + 30.0_real64/7.0_real64*(pi*parf(2))**2.0_real64
         dr2(3) = 5.0_real64/3.0_real64*parf(1)**4.0_real64 + &
             110.0_real64/9.0_real64*(pi*parf(2)*parf(1))**2.0_real64 + &

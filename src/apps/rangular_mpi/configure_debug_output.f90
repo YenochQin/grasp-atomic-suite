@@ -1,3 +1,4 @@
+! Set diagnostic output options for the calculation.
 module configure_debug_output_interface
     implicit none (type, external)
 
@@ -6,23 +7,16 @@ module configure_debug_output_interface
     public :: configure_debug_output
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This routine opens the  .dbg  file and sets the arrays that con-
+    ! trol debug printout from the GENMCP program.
+    !
+    ! Written by Farid A Parpia. Last update: 08 Dec 1992
+    ! Modified by Xinghong He. Last update: 03 Jul 1998
+    !
+    ! Used by mcpvu, mcpmpivu
     subroutine configure_debug_output (debug, file_path)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit
-        !                                                                      *
-        !   This routine opens the  .dbg  file and sets the arrays that con-   *
-        !   trol debug printout from the GENMCP program.                       *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: GETYN, OPENFL.                                *
-        !                                                                      *
-        !   Written by Farid A Parpia               Last update: 08 Dec 1992   *
-        !   Modified by Xinghong He                 Last update: 03 Jul 1998   *
-        !
-        !   Used by mcpvu, mcpmpivu
-        !                                                                      *
-        !***********************************************************************
         use debug_output_settings, only: ldbpa, ldbpg
         use calculation_input_defaults, only: nondefault_options_flag
         use standard_io_units, only: stderr_unit
@@ -36,20 +30,15 @@ contains
 
         ! Local declarations
         integer :: i, open_status
-        !
         character(len = len (file_path)) :: output_file_path
         character(len=11) :: form
         character(len=3) :: status
-        !
-        !   Initialise the arrays that control the debug printout
-        !
+        ! Initialize the diagnostic output flags.
         do i = 1, 5
             ldbpa(i) = .false.
             ldbpg(i) = .false.
         end do
-        !
         return      ! Skip these questions and return immediately
-        !
         if (nondefault_options_flag == 0) then
             return
         end if
@@ -57,20 +46,15 @@ contains
         write (stderr_unit,*) "Generate debug printout?"
         debug = read_yes_no ()
         if (debug) then
-            !
-            !   The  .dbg  file is formatted; open it on unit 99
-            !
+            ! The  .dbg  file is formatted; open it on unit 99
             form = "FORMATTED"
             status = "NEW"
-            !
             write (stderr_unit,*) "File ", file_path," will be created as the"    &
                 &,                 " GENMCP DeBuG Printout File; "
             write (stderr_unit,*) " enter another file name if this is not "     &
                 &,                 "acceptable; null otherwise:"
             read (*,"(A)") output_file_path
-            !
             if (len_trim (output_file_path) == 0) output_file_path = file_path
-            !
             do
                 call open_calculation_file (angular_debug_unit, output_file_path, form, status, open_status)
                 if (open_status == 0) exit
@@ -81,14 +65,10 @@ contains
                     if (len_trim(output_file_path) /= 0) exit
                 end do
             end do
-            !
-            !   Set options for general printout
-            !
+            ! Read the general output options.
             write (stderr_unit,*) " Print out the machine constants used?"
             ldbpg(1) = read_yes_no ()
-            !
-            !   Set options for angular modules
-            !
+            ! Set options for angular modules
             write (stderr_unit,*) " Printout from LODCSL? (Not used)"
             ldbpa(1) = read_yes_no ()
             write (stderr_unit,*) " Print out T coefficients?"
@@ -99,7 +79,6 @@ contains
             ldbpa(4) = read_yes_no ()
 
         end if
-        !
         return
     end subroutine configure_debug_output
 end module configure_debug_output_interface

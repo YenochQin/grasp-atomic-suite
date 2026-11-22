@@ -1,3 +1,4 @@
+! Evaluate a two-electron Coulomb radial integral on the current grid.
 module coulomb_radial_integral_interface
     implicit none (type, external)
 
@@ -6,23 +7,16 @@ module coulomb_radial_integral_interface
     public :: coulomb_radial_integral
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This routine evaluates the transverse interaction integrals.  If
+    ! IW = 0, it calulates the U(r1,r2) integral; otherwise, it calcu-
+    ! lates  R bar (k; a c | b d ; w)  with  w = wac  if  IW = 1,  and
+    ! w = wbd  if IW = 2.
+    !
+    ! Last update: 15 Oct 1992
     real(real64) function coulomb_radial_integral (recoupling_coefficient, orbital_a, orbital_c, rbd, orbital_b, orbital_d, &
         & multipole_rank, iw)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This routine evaluates the transverse interaction integrals.  If   *
-        !   IW = 0, it calulates the U(r1,r2) integral; otherwise, it calcu-   *
-        !   lates  R bar (k; a c | b d ; w)  with  w = wac  if  IW = 1,  and   *
-        !   w = wbd  if IW = 2.                                                *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: QUAD.                                         *
-        !               [RCI92]: ZKF.                                          *
-        !                                           Last update: 15 Oct 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_radial_points
         use bessel_function_workspace, only: breit_spherical_bessel_values, breit_spherical_neumann_values, max_radial_points
@@ -50,15 +44,11 @@ contains
         ! Local declarations
         integer :: mxrbd, mxrac
         real(real64) :: result
-        !-----------------------------------------------
-        !
+
         mxrbd = min (orbital_last_grid_index(orbital_b),orbital_last_grid_index(orbital_d))
         mxrac = min (orbital_last_grid_index(orbital_a),orbital_last_grid_index(orbital_c))
-        !
         if (iw == 0) then
-            !
-            !   IW = 0
-            !
+            ! IW = 0
             radial_workspace_a(:mxrac) = recoupling_coefficient(:mxrac)
             integration_last_index = mxrac
             call evaluate_breit_hartree_z (multipole_rank, orbital_a, orbital_c)
@@ -67,11 +57,8 @@ contains
             radial_workspace_a(2:integration_last_index) = &
                 rbd(2:integration_last_index)*radial_workspace_b(2:integration_last_index)* &
                     radial_derivative_over_radius(2:integration_last_index)
-        !
         else
-            !
-            !   IW = 1,2
-            !
+            ! IW = 1,2
             radial_workspace_a(:mxrac) = recoupling_coefficient(:mxrac)*(1.0_real64 + breit_spherical_bessel_values(1,iw,:mxrac))
             integration_last_index = mxrac
             call evaluate_breit_hartree_z (multipole_rank, orbital_a, orbital_c)
@@ -81,14 +68,10 @@ contains
                 breit_spherical_neumann_values(1,iw, &
                 2:integration_last_index))*radial_workspace_b(2:integration_last_index)*radial_derivative_over_radius(2:&
                 integration_last_index)
-            !
         end if
-        !
         call integrate_radial_grid (result)
         coulomb_radial_integral = result
-        !
-        !   Debug printout if option set
-        !
+        ! Debug printout if option set
         if (rmcdhf_debug_flags(11)) then
             call ensure_debug_output()
             write (angular_debug_unit, '("_ (",1i2,")"/,"R     (",1i2,1a2,",",1i2,1a2,"|",1i2,1a2,",",1i2,1a2,";",1i2,&
@@ -97,10 +80,7 @@ contains
                 & orbital_symmetry_labels(orbital_c), orbital_principal_n(orbital_b)&
                 , orbital_symmetry_labels(orbital_b), orbital_principal_n(orbital_d), orbital_symmetry_labels(orbital_d), iw, result
         end if
-        !
         return
-        !
         return
-        !
     end function coulomb_radial_integral
 end module coulomb_radial_integral_interface

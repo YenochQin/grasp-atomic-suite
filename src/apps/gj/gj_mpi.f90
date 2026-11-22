@@ -1,11 +1,6 @@
-!***********************************************************************
-!                                                                      *
+! Calculate electronic Landé factors using MPI-distributed matrix elements.
 program gj_mpi
     ! Module dependencies
-    !                                                                      *
-    !   Entry routine for the MPI Landé-factor program.                    *
-    !                                                                      *
-    !***********************************************************************
     use, intrinsic :: iso_fortran_env, only: real64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
@@ -43,18 +38,15 @@ program gj_mpi
     logical :: prompt_answer, use_command_line_arguments
     real(real64), pointer :: lande_g_factors(:), lande_g_factor_corrections(:)
     character :: state_name*24
-    !-----------------------------------------------
-    !
+
     call start_mpi_application(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count, &
         "GJ_MPI", "This is the MPI Lande-factor program", &
         "isodata, descriptor Parquet/header, name.mix/name.cimix, name.wfn", &
         "name.gj or name.cgj", .true.)
-    !
     state_name = " "
     mixing_file_kind = 1
     nondefault_options_flag = 0
     use_command_line_arguments = .false.
-    !
     if (mpi_rank == 0) then
         use_command_line_arguments = command_argument_count() > 0
         if (use_command_line_arguments) then
@@ -73,13 +65,11 @@ program gj_mpi
                 write (stderr_unit, *) "GJ_MPI currently supports default settings only."
             end if
         end if
-        !
         if (nondefault_options_flag == 0 .and. .not.use_command_line_arguments) then
             call read_state_name(state_name, status=input_status)
             if (input_status /= 0) then
                 nondefault_options_flag = -input_status
             else
-                !
                 write (stderr_unit, *)
                 write (stderr_unit, *) "Mixing coefficients from a CI calc.?"
                 prompt_answer = read_yes_no()
@@ -91,17 +81,14 @@ program gj_mpi
             end if
         end if
     end if
-    !
     call mpi_bcast(nondefault_options_flag, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
     if (nondefault_options_flag /= 0) then
         call mpi_finalize(mpi_error_code)
         if (nondefault_options_flag == -2) stop 2
         stop
     end if
-    !
     call mpi_bcast(state_name, len(state_name), mpi_character, 0, mpi_comm_world, mpi_error_code)
     call mpi_bcast(mixing_file_kind, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
-    !
     call configure_debug_output
     call initialize_machine_constants
     call initialize_physical_constants
@@ -109,16 +96,12 @@ program gj_mpi
     call read_hyperfine_options(state_name)
     call read_mixing_blocks(state_name, mixing_file_kind)
     call initialize_log_factorial_table
-    !
     call alloc(lande_g_factors, active_level_count, "lande_g_factors", "GJ_MPI")
     call alloc(lande_g_factor_corrections, active_level_count, "lande_g_factor_corrections", "GJ_MPI")
-    !
     call compute_gj_only_mpi(lande_g_factors, lande_g_factor_corrections)
     if (mpi_rank == 0) call write_lande_g_factors(state_name, mixing_file_kind, lande_g_factors, lande_g_factor_corrections)
-    !
     call dalloc(lande_g_factors, "lande_g_factors", "GJ_MPI")
     call dalloc(lande_g_factor_corrections, "lande_g_factor_corrections", "GJ_MPI")
-    !
     call finish_mpi_application(mpi_rank, start_clock_count, "GJ_MPI")
     stop
 end program gj_mpi

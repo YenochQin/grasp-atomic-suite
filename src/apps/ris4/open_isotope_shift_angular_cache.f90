@@ -1,3 +1,4 @@
+! Open or validate cached angular coefficients for the isotope-shift calculation.
 module open_isotope_shift_angular_cache_interface
     implicit none (type, external)
 
@@ -6,19 +7,14 @@ module open_isotope_shift_angular_cache_interface
     public :: open_isotope_shift_angular_cache
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !    Checks if the angular files name.IOB (one-body) or
+    !    name.ITB (Two-body) are available
+    !
+    ! Modified by C. Naz\'e  Oct. 2011
+    !
+    ! Translated by Gediminas Gaigalas 11/18/19
     subroutine open_isotope_shift_angular_cache(name,avail,whichone,status,cache_unit)
-        ! Module dependencies
-        !                                                                      *
-        !   Checks if the angular files name.IOB (one-body) or                 *
-        !   name.ITB (Two-body) are available                                  *
-        !                                                                      *
-        !                                                                      *
-        !   Modified by C. Naz\'e  Oct. 2011                                   *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Gediminas Gaigalas 11/18/19
+        !  Module dependencies
         use, intrinsic :: iso_fortran_env, only: iostat_end
         implicit none (type, external)
 
@@ -34,8 +30,7 @@ contains
         integer :: cache_probe_unit, istat, iword, close_status
         character(len=28) :: filename
         character :: probe
-        !-----------------------------------------------
-        !
+
         avail = .false.
         cache_unit = -1
         status = 0

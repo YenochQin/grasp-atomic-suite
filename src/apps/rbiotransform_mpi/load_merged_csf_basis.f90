@@ -1,3 +1,4 @@
+! Load one descriptor basis into the shared data used by the biorthogonal transformation.
 module load_merged_csf_basis_interface
     implicit none (type, external)
 

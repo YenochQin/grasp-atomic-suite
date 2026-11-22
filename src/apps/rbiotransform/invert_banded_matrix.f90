@@ -1,3 +1,4 @@
+! Invert the banded matrix used in the orbital transformation.
 module invert_banded_matrix_interface
     implicit none (type, external)
 
@@ -6,21 +7,15 @@ module invert_banded_matrix_interface
     public :: invert_banded_matrix
 contains
 
-    !
-    !     ------------------------------------------------------------------
-    !     B N D I N V
-    !     ------------------------------------------------------------------
-    !
     subroutine invert_banded_matrix(matrix, inverse_workspace, matrix_order, determinant, singularity_tolerance, &
                 & inversion_status, leading_dimension)
-        ! Module dependencies
+        !  Module dependencies
         !
-        !       DOUBLE PRECISION MATRIX INVERSION SUBROUTINE
-        !       FROM "DLYTAP".
+        !        DOUBLE PRECISION MATRIX INVERSION SUBROUTINE
+        !        FROM "DLYTAP".
         !
-        !*      DOUBLE PRECISION E,F
-        !*      DOUBLE PRECISION A,EL,D,DSQRT,C,S,DETERP
-        !-----------------------------------------------
+        ! *      DOUBLE PRECISION E,F
+        ! *      DOUBLE PRECISION A,EL,D,DSQRT,C,S,DETERP
         use, intrinsic :: iso_fortran_env, only: real64
         implicit none (type, external)
 
@@ -38,25 +33,18 @@ contains
                 & rotation_index, backward_column_step, backward_row_step, first_trailing_index
         real(real64) :: rotation_norm_or_value, rotation_cosine, rotation_sine, diagonal_product, largest_diagonal_pivot, &
                 & smallest_diagonal_pivot, pivot_ratio_tolerance, pivot_ratio
-        !-----------------------------------------------
         if (matrix_order < 2) then
             inversion_status = -1
             return
         end if
         diagonal_step = 0
         back_substitution_mode = 2
-        !       CALL SLITET(2,INDSNL)
-        !       CALL OVERFL(K000FX)
-        !       CALL DVCHK(K000FX)
-        !
-        !       SET EL = IDENTITY MATRIX
+        ! SET EL = IDENTITY MATRIX
         do row_index = 1, matrix_order
             inverse_workspace(row_index,:matrix_order) = 0.0_real64
             inverse_workspace(row_index,row_index) = 1.0_real64
         end do
-        !
-        !       TRIANGULARIZE A, FORM EL
-        !
+        ! TRIANGULARIZE A, FORM EL
         penultimate_column = matrix_order - 1
         first_active_index = 2
         do column_index = 1, penultimate_column
@@ -83,17 +71,13 @@ contains
             end do
             first_active_index = first_active_index + 1
         end do
-        !       CALL OVERFL(K000FX)
-        !
-        !       CALCULATE THE DETERMINANT
+        ! CALCULATE THE DETERMINANT
         diagonal_product = matrix(1,1)
         do row_index = 2, matrix_order
             diagonal_product = diagonal_product*matrix(row_index,row_index)
         end do
         determinant = diagonal_product
-        !       CALL OVERFL(K000FX)
-        !
-        !       IS MATRIX SINGULAR
+        ! IS MATRIX SINGULAR
         largest_diagonal_pivot = matrix(1,1)
         smallest_diagonal_pivot = matrix(1,1)
         do row_index = 2, matrix_order
@@ -109,15 +93,12 @@ contains
             inversion_status = 1
             return
         end if
-        !
-        !       INVERT TRIANGULAR MATRIX
+        ! INVERT TRIANGULAR MATRIX
         column_index = matrix_order
         do backward_column_step = 1, matrix_order
-            !       CALL SLITE(2)
             row_index = column_index
             diagonal_step = 1
             do backward_row_step = 1, column_index
-                !       CALL SLITET(2,K000FX)
                 if (diagonal_step == 0) back_substitution_mode = 2
                 if (diagonal_step == 1) then
                     back_substitution_mode = 1
@@ -137,11 +118,8 @@ contains
             end do
             column_index = column_index - 1
         end do
-        !       CALL OVERFL(K000FX)
 
-        !103    CALL DVCHK(K000FX)
-        !
-        !       PREMULTIPLY EL BY INVERTED TRIANGULAR MATRIX
+        !        PREMULTIPLY EL BY INVERTED TRIANGULAR MATRIX
         first_active_index = 1
         do row_index = 1, matrix_order
             do column_index = 1, matrix_order
@@ -152,9 +130,7 @@ contains
             end do
             first_active_index = first_active_index + 1
         end do
-        !       CALL OVERFL(K000FX)
-        !
-        !       RECOPY EL TO A
+        ! RECOPY EL TO A
         matrix(:matrix_order,:matrix_order) = inverse_workspace(:matrix_order,:matrix_order)
         inversion_status = 0
         return

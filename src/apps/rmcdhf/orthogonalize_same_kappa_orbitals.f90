@@ -1,3 +1,4 @@
+! Orthogonalize radial orbitals within a common Dirac kappa symmetry.
 module orthogonalize_same_kappa_orbitals_interface
     implicit none (type, external)
 
@@ -6,35 +7,31 @@ module orthogonalize_same_kappa_orbitals_interface
     public :: orthogonalize_same_kappa_orbitals
 contains
 
-    !***********************************************************************
+    ! nw     - input, total number of orbitals
+    ! jp     - input, orbital jp, usually updated from  solve. It is
+    !          the one after IORDER
+    ! lsort  - input, logical, .t. then sort according in decreasing
+    !          self-consistency order.
     !
+    ! The following quantities are not used outside this routine
+    !
+    ! kfixed - output, the number of fixed orbitals of the same kappa
+    !          (specified by nak(jp)) as the orbital jp.
+    ! ktotal - output, the number of all orbitals of the same kappa as the
+    !          orbital jp.
+    ! kindx  - output, an index array containing positions of the orbitals
+    !          in the decreasing self-consistency order. It has the size of
+    !          ktotal.
+    !
+    ! Orbitals are grouped as fixed, unfixed (non-correlation, correlation).
+    ! .For i=1 to kfixed, kindx(i) has the same order as array iorder (though
+    ! this can be modified by requiring the smallest principal quantum number
+    !  come first).
+    ! .For i=kfixed+1 to knon, kindx(i) is ordered as SCN/E**2.
+    ! .For i=knon+1 to ktotal, kindx(i) is ordered as SCN.
+    ! .When there is degeneracy (same SCN/E**2 or same SCN), iorder is used.
     subroutine orthogonalize_same_kappa_orbitals(nw, jp, lsort)
         ! Module dependencies
-        !
-        ! nw     - input, total number of orbitals
-        ! jp     - input, orbital jp, usually updated from  solve. It is
-        !          the one after IORDER
-        ! lsort  - input, logical, .t. then sort according in decreasing
-        !          self-consistency order.
-        !
-        ! The following quantities are not used outside this routine
-        !
-        ! kfixed - output, the number of fixed orbitals of the same kappa
-        !          (specified by nak(jp)) as the orbital jp.
-        ! ktotal - output, the number of all orbitals of the same kappa as the
-        !          orbital jp.
-        ! kindx  - output, an index array containing positions of the orbitals
-        !          in the decreasing self-consistency order. It has the size of
-        !          ktotal.
-        !
-        ! Orbitals are grouped as fixed, unfixed (non-correlation, correlation).
-        ! .For i=1 to kfixed, kindx(i) has the same order as array iorder (though
-        !  this can be modified by requiring the smallest principal quantum number
-        !  come first).
-        ! .For i=kfixed+1 to knon, kindx(i) is ordered as SCN/E**2.
-        ! .For i=knon+1 to ktotal, kindx(i) is ordered as SCN.
-        ! .When there is degeneracy (same SCN/E**2 or same SCN), iorder is used.
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: max_orbitals
         use atomic_calculation_state, only: working_tolerance
@@ -59,36 +56,29 @@ contains
         integer :: kfixed, nakj, ktotal, i, ki, j, knon, kj, lraw, l, nakl, mtp0, kraw, k, mtp
         real(real64) :: eps, ovrlap, dnorm, factor
         logical :: check
-        !-----------------------------------------------
-        !
         ! For inverse - taken from orthor.f which was not used anywhere
         ! Not used currently
-        !-----------------------------------------------------------------------
         check = .not.suppress_radial_inversion(jp)
 
         eps = 0.01_real64*working_tolerance
         kfixed = 0
         nakj = orbital_kappa(jp)
 
-        !-----------------------------------------------------------------------
         ! Find orbitals of the same kappa as orbital jp.
-        !-----------------------------------------------------------------------
         ktotal = 0
         do i = 1, nw
-            !         Orbital jp is supposed to be an ordered one, so should be k
+            ! Orbital jp is supposed to be an ordered one, so should be k
             ki = orbital_update_order(i)
             if (orbital_kappa(ki) /= nakj) cycle
             ktotal = ktotal + 1
             kindx(ktotal) = ki
         end do
 
-        !-----------------------------------------------------------------------
         ! Find fixed orbitals and separate them from the rest.
-        !-----------------------------------------------------------------------
 
-        !      Place the fixed orbitals at the begining of the array, no
-        !      sorting is done here. And find the number of non-correlation
-        !      orbitals.
+        ! Place the fixed orbitals at the begining of the array, no
+        ! sorting is done here. And find the number of non-correlation
+        ! orbitals.
 
         j = 0
         knon = 0
@@ -100,7 +90,7 @@ contains
 
                 ! Shift array elements rather than exchanging
                 kindx(i:1+j:(-1)) = kindx(i-1:j:(-1))
-                !            kindx(i) = kindx(j)
+                ! kindx(i) = kindx(j)
 
                 kindx(j) = ki
 
@@ -112,9 +102,7 @@ contains
 
         if (lsort) then
 
-            !-----------------------------------------------------------------------
             ! Separate correlation from non-correlation orbitals
-            !-----------------------------------------------------------------------
 
             j = kfixed
             do i = kfixed + 1, ktotal
@@ -125,17 +113,15 @@ contains
 
                 ! Shift array elements rather than exchanging
                 kindx(i:1+j:(-1)) = kindx(i-1:j:(-1))
-                !               kindx(i) = kindx(j)
+                ! kindx(i) = kindx(j)
 
                 kindx(j) = ki
             end do
 
-            !-----------------------------------------------------------------------
             ! Sort non-correlation and correlation orbitals separately
             ! This can be done indepently since knon is known
-            !-----------------------------------------------------------------------
 
-            !           non-correlation, using criteria scnsty/E^2
+            ! non-correlation, using criteria scnsty/E^2
 
             do i = kfixed + 1, kfixed + knon
                 ki = kindx(i)
@@ -151,7 +137,7 @@ contains
                 kindx(i) = ki
             end do
 
-            !           correlation orbitals, using criteria scnsty
+            ! correlation orbitals, using criteria scnsty
 
             do i = kfixed + knon + 1, ktotal
                 ki = kindx(i)
@@ -183,7 +169,7 @@ contains
                 k = kindx(kraw)
                 ovrlap = integrate_weighted_radial_overlap(l,k,0)
 
-                !   Schmidt orthogonalise
+                ! Schmidt orthogonalise
 
                 orbital_origin_parameters(l) = orbital_origin_parameters(l) - ovrlap*orbital_origin_parameters(k)
                 mtp = max(orbital_last_grid_index(l),orbital_last_grid_index(k))
@@ -193,7 +179,7 @@ contains
                 radial_small_components(:mtp,l) = radial_small_components(:mtp,l) - ovrlap*radial_small_components(:mtp,k)
             end do
 
-            !   Normalise
+            ! Normalise
 
             mtp = mtp0
 
@@ -207,7 +193,7 @@ contains
             radial_large_components(2:mtp,l) = factor*radial_large_components(2:mtp,l)
             radial_small_components(2:mtp,l) = factor*radial_small_components(2:mtp,l)
 
-            !   Find new MF(L)
+            ! Find new MF(L)
 
             mtp = mtp + 1
             do

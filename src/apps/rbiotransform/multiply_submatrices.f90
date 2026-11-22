@@ -6,28 +6,20 @@ module multiply_submatrices_interface
     public :: multiply_submatrices
 contains
 
+    !  MULTIPLY A AND B TO GIVE C
     !
-    !     ------------------------------------------------------------------
-    !     M A T M L 4
-    !     ------------------------------------------------------------------
+    !      C = A * B             FOR ITRNSP = 0
     !
+    !      C = A(TRANSPOSED) * B FOR ITRNSP = 1
+    !
+    !      C = A * B(TRANSPOSED) FOR ITRNSP = 2
+    !
+    !  JEPPE OLSEN, LAST REVISION JULY 24 1987
     subroutine multiply_submatrices(product_matrix, left_matrix, right_matrix, product_row_count, product_column_count, &
                 & left_row_count, left_column_count, right_row_count, right_column_count, &
         transpose_mode)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
-        !
-        ! MULTIPLY A AND B TO GIVE C
-        !
-        !     C = A * B             FOR ITRNSP = 0
-        !
-        !     C = A(TRANSPOSED) * B FOR ITRNSP = 1
-        !
-        !     C = A * B(TRANSPOSED) FOR ITRNSP = 2
-        !
-        !... JEPPE OLSEN, LAST REVISION JULY 24 1987
-        !
-        !************************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
 
         ! Procedure interfaces
@@ -50,8 +42,7 @@ contains
         ! Local declarations
         integer :: trace_level, product_column, contracted_index
         real(real64) :: right_element, transposed_right_element
-        !-----------------------------------------------
-        !
+
         trace_level = 0
         if (trace_level /= 0) then
             write (output_unit, *)
@@ -63,9 +54,7 @@ contains
             write (output_unit, "(6I6)") product_row_count, product_column_count, left_row_count, left_column_count, &
                 & right_row_count, right_column_count
         end if
-        !
         call fill_vector (product_matrix, 0.0_real64, product_row_count*product_column_count)
-        !
         if (transpose_mode == 0) then
             do product_column = 1, product_column_count
                 do contracted_index = 1, right_row_count
@@ -75,10 +64,9 @@ contains
                 end do
             end do
         end if
-        !
-        !
+
         if (transpose_mode == 1) then
-            !... C = A(T) * B
+            ! ... C = A(T) * B
             do product_column = 1, product_column_count
                 do contracted_index = 1, right_row_count
                     right_element = right_matrix(contracted_index,product_column)
@@ -87,9 +75,8 @@ contains
                 end do
             end do
         end if
-        !
         if (transpose_mode == 2) then
-            !... C = A*B(T)
+            ! ... C = A*B(T)
             do product_column = 1, product_column_count
                 do contracted_index = 1, right_column_count
                     transposed_right_element = right_matrix(product_column,contracted_index)
@@ -98,15 +85,13 @@ contains
                 end do
             end do
         end if
-        !
-        !
+
         if (trace_level /= 0) then
             write (output_unit, *)
             write (output_unit, *) " C MATRIX FROM multiply_submatrices "
             write (output_unit, *)
             call write_matrix (product_matrix, product_row_count, product_column_count, product_row_count, product_column_count)
         end if
-        !
         return
     end subroutine multiply_submatrices
 end module multiply_submatrices_interface

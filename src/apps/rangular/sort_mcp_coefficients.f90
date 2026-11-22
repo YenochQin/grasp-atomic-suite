@@ -6,8 +6,19 @@ module sort_mcp_coefficients_interface
     public :: sort_mcp_coefficients
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This routine sorts lists
+    !
+    !                   (ICLMN,INDEX,LABEL,COEFF)
+    ! into lists
+    !                   (LABEL,ICLMN,INDEX,COEFF)
+    !
+    ! using Heapsort. File NFILE is closed by this routine.  NCOEFF is
+    ! the number of triads (INDEX, ...) and is an input. NTGRAL is the
+    ! number of different values of LABEL, and is an output. If LPRINT
+    ! is  .TRUE. , the contents of the sorted file are interpreted and
+    ! printed to unit 99.
+    !
+    ! Written by Farid A. Parpia. Last revision: 21 Dec 1992
     subroutine sort_mcp_coefficients(mcp_channel_index, coefficient_count, distinct_integral_count, print_details, &
         & symmetry_block_index, &
         & output_file_prefix)
@@ -15,24 +26,6 @@ contains
         use mcp_generation_options, only: mcp_temporary_units
         use, intrinsic :: iso_fortran_env, only: output_unit
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This routine sorts lists                                           *
-        !                                                                      *
-        !                     (ICLMN,INDEX,LABEL,COEFF)                        *
-        !   into lists                                                         *
-        !                     (LABEL,ICLMN,INDEX,COEFF)                        *
-        !                                                                      *
-        !   using Heapsort. File NFILE is closed by this routine.  NCOEFF is   *
-        !   the number of triads (INDEX, ...) and is an input. NTGRAL is the   *
-        !   number of different values of LABEL, and is an output. If LPRINT   *
-        !   is  .TRUE. , the contents of the sorted file are interpreted and   *
-        !   printed to unit 99.                                                *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, CONVRT, DALLOC.                        *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 21 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: orbital_index_radix
         use array_memory_management, only: alloc, dalloc
@@ -66,19 +59,11 @@ contains
         real(real64) :: saved_coefficient
         character :: number_text*20, mcp_channel_label*3, channel_number_text*2
         character (len = len (output_file_prefix) + 3):: file_path
-        !-----------------------------------------------
+        !  : (PLABEL,LABEL(1)), (PNSWAP,NSWAP(1))
         !
+        ! This is the encoding key
         !
-        !     POINTER (PCOEFF,COEFF(1)), (PICLMN,ICLMN(1)), (PINDEX,INDEX(1)),
-        !    : (PLABEL,LABEL(1)), (PNSWAP,NSWAP(1))
-        !
-        !     POINTER (PNTRIQ,RIQDUMMY)
-        !
-        !
-        !   This is the encoding key
-        !
-        !   Message
-        !
+        ! Message
         call format_integer (coefficient_count, number_text, text_length)
         if (mcp_channel_index > 31) then
             call format_integer (mcp_channel_index - 32, channel_number_text, channel_number_text_length)
@@ -88,7 +73,6 @@ contains
         else
             write (output_unit, *) "Sorting "//number_text(1:text_length)//" T coefficients ...", mcp_channel_index
         end if
-        !
         call format_integer (mcp_channel_index, channel_number_text, channel_number_text_length)
         if (channel_number_text_length > 2) then
             write (stderr_unit, *) "sort_mcp_coefficients: nfile > 99; check fullname"
@@ -104,20 +88,14 @@ contains
             stop
         end if
 
-        !     IF (NFILE.EQ.33) REWIND (20)
-
         read (mcp_temporary_units(mcp_channel_index)) mcp_channel_label, file_block_index
         if (symmetry_block_index /= file_block_index) then
             write (stderr_unit, *) "sort_mcp_coefficients: nb = ", symmetry_block_index, ".NE. mb (=", file_block_index, ")"
             stop
         end if
-        !
-        !   Sort the list
-        !
+        ! Sort the list
         if (coefficient_count > 0) then
-            !
-            !   Allocate storage for all required arrays
-            !
+            ! Allocate storage for all required arrays
             call alloc (angular_coefficients, coefficient_count, "angular_coefficients", "sort_mcp_coefficients")
             call alloc (csf_column_indices, coefficient_count, "csf_column_indices", "sort_mcp_coefficients")
             call alloc (matrix_element_positions, coefficient_count, "matrix_element_positions", "sort_mcp_coefficients")
@@ -125,26 +103,16 @@ contains
 
             if (mcp_channel_index == 33) call alloc (orbital_swap_counts, coefficient_count,"orbital_swap_counts", &
                 "sort_mcp_coefficients"  )
-            !
-            !   Read arrays into memory from NFILE
-            !
+            ! Read arrays into memory from NFILE
             do i = 1, coefficient_count
                 read (mcp_temporary_units(mcp_channel_index)) csf_column_indices(i), matrix_element_positions(i), &
                     & packed_orbital_labels(i), angular_coefficients(i)
             end do
 
-            !         IF (NFILE.EQ.33) THEN
-            !            DO 11 I = 1,NCOEFF
-            !               READ (20) NSWAP(I)
-            !   11       CONTINUE
-            !         ENDIF
-            !
         end if
-        !
-        !   Sort LABEL into ascending order using the heapsort algorithm;
-        !   move the associated members of COEFF and INDEX in the same
-        !   manner; the code below is adapted from Press et al.
-        !
+        ! Sort LABEL into ascending order using the heapsort algorithm;
+        ! move the associated members of COEFF and INDEX in the same
+        ! manner; the code below is adapted from Press et al.
         if (mcp_channel_index==33 .and. coefficient_count>1) then
 
             heap_root_index = coefficient_count/2 + 1
@@ -205,11 +173,9 @@ contains
             end do
 
         else if (mcp_channel_index/=33 .and. coefficient_count>1) then
-            !
-            !   Sort LABEL into ascending order using the heapsort algorithm;
-            !   move the associated members of COEFF and INDEX in the same
-            !   manner; the code below is adapted from Press et al.
-            !
+            ! Sort LABEL into ascending order using the heapsort algorithm;
+            ! move the associated members of COEFF and INDEX in the same
+            ! manner; the code below is adapted from Press et al.
             heap_root_index = coefficient_count/2 + 1
             heap_end_index = coefficient_count
             do
@@ -262,84 +228,55 @@ contains
             end do
 
         end if
-        !
-        !   Sorting complete; rewrite the file header
-        !
-        !
+        ! Sorting complete; rewrite the file header
         write (mcp_append_unit) "MCP", symmetry_block_index, csf_count, coefficient_count
-        !GG      WRITE (9999,*) 'MCP', NB, NCF, NCOEFF, NFILE
-        !
-        !   Write the sorted list to mcp.xx
-        !
+        !    Write the sorted list to mcp.xx
         if (coefficient_count > 0) then
-            !
             group_orbital_label = packed_orbital_labels(1)
             first_group_index = 1
             last_group_index = 1
             distinct_integral_count = 1
-            !
             do i = 2, coefficient_count
                 if (packed_orbital_labels(i) == group_orbital_label) then
                     last_group_index = last_group_index + 1
                 else
                     write (mcp_append_unit) group_orbital_label, last_group_index - first_group_index + 1
-                    !GG               WRITE (9999,*) LAST, IEND - IBEG + 1
                     write (mcp_append_unit) &
                         & (csf_column_indices(j),matrix_element_positions(j),angular_coefficients(j), &
                             j=first_group_index,last_group_index)
-                    !cjb-GG        DO J = IBEG,IEND
-                    !GG               WRITE (9999,'(2I12,E25.15)') ICLMN(J),INDEX(J),COEFF(J)
-                    !cjb-GG        END DO
+                    ! GG        DO J = IBEG,IEND
+                    ! GG        END DO
 
-                    !              IF (NFILE.EQ.33) WRITE (20) (NSWAP(J),J = IBEG,IEND)
                     distinct_integral_count = distinct_integral_count + 1
                     group_orbital_label = packed_orbital_labels(i)
                     first_group_index = last_group_index + 1
                     last_group_index = first_group_index
                 end if
             end do
-            !
             if (first_group_index <= coefficient_count) then
                 write (mcp_append_unit) group_orbital_label, coefficient_count - first_group_index + 1
-                !GG            WRITE (9999,*) LAST, NCOEFF - IBEG + 1
                 write (mcp_append_unit) &
                     & (csf_column_indices(j),matrix_element_positions(j),angular_coefficients(j), &
                             j=first_group_index,coefficient_count)
                 do j=first_group_index,coefficient_count
-                    !GG            WRITE (9999,'(2I12,E25.15)') ICLMN(J),INDEX(J),COEFF(J)
                 end do
 
-                !           IF (NFILE.EQ.33) WRITE (20) (NSWAP(J),J = IBEG,NCOEFF)
             end if
-        !
         else
-            !
             distinct_integral_count = 0
-            !
         end if
-        !
-        !     write the terminator record for this block
-        !
+        ! write the terminator record for this block
         write (mcp_append_unit) 0, 0
-        !GG      WRITE (9999,*) 0, 0
         close(mcp_append_unit)
-        !
-        !   Completion message
-        !
-        !PRINT *, ' ... sort complete; ', ntgral, ' integrals;'
-        !
-        !   Debug printout
-        !
+        !    Completion message
         if (print_details) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,"From sort_mcp_coefficients:")')
             write (output_unit, '(/,"From sort_mcp_coefficients:")')
             if (coefficient_count > 0) then
-                !
                 group_orbital_label = packed_orbital_labels(1)
                 first_group_index = 1
                 last_group_index = 1
-                !
                 do i = 2, coefficient_count
                     if (packed_orbital_labels(i) == group_orbital_label) last_group_index = last_group_index + 1
                     do
@@ -387,9 +324,7 @@ contains
             call ensure_debug_output()
             write (angular_debug_unit, '("  Number of integrals is ",1i4)') distinct_integral_count
         end if
-        !
-        !   Deallocate storage
-        !
+        ! Deallocate storage
         if (coefficient_count > 0) then
             call dalloc (angular_coefficients,"angular_coefficients", "sort_mcp_coefficients")
             call dalloc (csf_column_indices, "csf_column_indices", "sort_mcp_coefficients")
@@ -397,7 +332,6 @@ contains
             call dalloc (packed_orbital_labels, "packed_orbital_labels", "sort_mcp_coefficients")
             if (mcp_channel_index == 33) call dalloc (orbital_swap_counts, "orbital_swap_counts", "sort_mcp_coefficients")
         end if
-
 
         return
     end subroutine sort_mcp_coefficients

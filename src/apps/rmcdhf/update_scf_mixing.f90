@@ -1,3 +1,4 @@
+! Update the mixing coefficients for the next SCF iteration and evaluate their change.
 module update_scf_mixing_interface
     implicit none (type, external)
 
@@ -6,25 +7,16 @@ module update_scf_mixing_interface
     public :: update_scf_mixing
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This routine computes the level weights, the generalized occupa-
+    ! tion numbers,  and average energy for  EOL calculations;  this
+    ! information and the eigenvectors are then printed out.
+    !
+    ! Last revision: 24 Dec 1992
+    ! Block version by Xinghong He. Last revision: 05 Aug 1998
+    ! Modified by G. Gaigalas. 05 Feb 2017
     subroutine update_scf_mixing(weighted_average_energy)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This routine computes the level weights, the generalized occupa-   *
-        !   tion numbers,  and average energy for  EOL calculations;  this     *
-        !   information and the eigenvectors are then printed out.             *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: IQ.                                           *
-        !               [RSCF92]: CSFWGT, DSUBRS.                              *
-        !                                         Last revision: 24 Dec 1992   *
-        !   Block version by Xinghong He          Last revision: 05 Aug 1998   *
-        !   Midified by G. Gaigalas                              05 Feb 2017   *
-        !      It was deleted the arrays:  JQSA(3*NNNW*NCF),                   *
-        !                                  JCUPA(NNNW*NCF)                     *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use debug_output_settings, only: ldbpg
         use atomic_calculation_state, only: requested_level_indices, selected_level_count, requested_level_weights, &
@@ -57,21 +49,14 @@ contains
             & selected_level_index, weight_block_index
         real(real64) :: requested_weight, level_energy, weight_sum, occupation_sum
         logical :: use_extended_optimal_level
-        !-----------------------------------------------
-        !
-        !     POINTER (pncfblk, ncfblk(0:*))
-        !
-        !
-        !   Compute weighting factors
-        !
+        ! Compute weighting factors
         weight_sum = 0.0_real64
         do weight_index = 1, selected_level_count
             requested_weight = requested_level_weights(weight_index)
             if (requested_weight == (-2.0_real64)) then
                 level_average_weights(weight_index) = 1.0_real64
             else if (requested_weight == (-1.0_real64)) then
-                !GGGG
-                !GG            WT(J) = IATJPO(J)
+                ! WT(J) = IATJPO(J)
                 weight_block_index = level_block_indices(weight_index)     ! Block number of this state
                 level_average_weights(weight_index) = abs(packed_block_symmetries(weight_block_index))
             else
@@ -81,10 +66,8 @@ contains
         end do
 
         level_average_weights(:selected_level_count) = level_average_weights(:selected_level_count)/weight_sum
-        !
-        !   Compute generalised occupation numbers
-        !   <----- Distributed ----->
-        !
+        ! Compute generalised occupation numbers
+        ! <----- Distributed ----->
         use_extended_optimal_level = .true.
 
         do orbital_index = 1, orbital_count
@@ -98,9 +81,7 @@ contains
             end do
             orbital_occupation_weights(orbital_index) = occupation_sum
         end do
-        !
-        !   Write out level energies and weights
-        !
+        ! Write out level energies and weights
         write (*, '(/,"Optimise on the following level(s):"/)')
         weighted_average_energy = 0.0_real64
         mixing_coefficient_offset = 0
@@ -127,17 +108,12 @@ contains
         end do
 
         call write_csf_weights (.true.)
-        !
-        !   Write out average energy
-        !
+        ! Write out average energy
         if (selected_level_count > 1) write (*, '(/,"Weighted average energy of these levels = ",1p,d18.10)') &
             & weighted_average_energy
-        !
-        !   Write out generalized occupation numbers
-        !
+        ! Write out generalized occupation numbers
         write (*, '(/,"Generalised occupation numbers:"/)')
         write (*, '(1x,1p,6d12.4)') (orbital_occupation_weights(csf_index),csf_index=1,orbital_count)
-
 
         return
     end subroutine update_scf_mixing

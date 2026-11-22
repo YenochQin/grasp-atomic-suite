@@ -1,3 +1,4 @@
+! Estimate the energy parameter for a radial orbital during optimization.
 module estimate_orbital_energy_interface
     implicit none (type, external)
 
@@ -6,17 +7,12 @@ module estimate_orbital_energy_interface
     public :: estimate_orbital_energy
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This  subprogram implements  Part 1 of Algorithm 7.1 of C Froese
+    !   Fischer, Comput Phys Rep, 3 (1986) 320-321.
+    !
+    ! Written by Farid A Parpia, at Oxford. Last update: 26 Sep 1993
     subroutine estimate_orbital_energy(orbital_index)
         ! Module dependencies
-        !                                                                      *
-        !   This  subprogram implements  Part 1 of Algorithm 7.1 of C Froese   *
-        !   Fischer, Comput Phys Rep, 3 (1986) 320-321.                        *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford    Last update: 26 Sep 1993   *
-        !                                                                      *
-        !***********************************************************************
         use atomic_calculation_state, only: electron_count, nuclear_charge, speed_of_light_au
         use orbital_csf_basis, only: orbital_kappa, orbital_principal_n
         use scf_iteration_state, only: lower_trial_energy_bound, upper_trial_energy_bound, initial_lower_trial_energy_bound, &
@@ -31,10 +27,7 @@ contains
         integer :: principal_n, absolute_kappa
         real(real64) :: fine_structure_constant, speed_of_light_squared, radial_quantum_number, absolute_kappa_real, &
             & kappa_squared, charge_times_fine_structure_constant, gamma, dirac_energy_over_rest_energy
-        !-----------------------------------------------
-        !
-        !   Initializations
-        !
+        ! Initializations
         fine_structure_constant = 1.0_real64/speed_of_light_au
         speed_of_light_squared = speed_of_light_au*speed_of_light_au
         principal_n = orbital_principal_n(orbital_index)
@@ -42,17 +35,13 @@ contains
         radial_quantum_number = dble(principal_n - absolute_kappa)
         absolute_kappa_real = dble(absolute_kappa)
         kappa_squared = absolute_kappa_real*absolute_kappa_real
+        ! Set ZINF, the asymptotic charge seen by the electron
         !
-        !   Set ZINF, the asymptotic charge seen by the electron
+        !   ZINF = DBLE (IONCTY+1)
         !
-        !     ZINF = DBLE (IONCTY+1)
-        !
-        !   Changed on 07/06/93 by WPW
-        !
+        ! Changed on 07/06/93 by WPW
         asymptotic_nuclear_charge = nuclear_charge + dble((-electron_count) + 1)
-        !
-        !   Set the lower bound
-        !
+        ! Set the lower bound
         charge_times_fine_structure_constant = asymptotic_nuclear_charge*fine_structure_constant
         if (charge_times_fine_structure_constant < absolute_kappa_real) then
             gamma = sqrt(kappa_squared - charge_times_fine_structure_constant*charge_times_fine_structure_constant)
@@ -63,9 +52,7 @@ contains
             lower_trial_energy_bound = 0.25_real64*speed_of_light_squared/dble(principal_n*principal_n)
         end if
         initial_lower_trial_energy_bound = lower_trial_energy_bound
-        !
-        !   Set the upper bound
-        !
+        ! Set the upper bound
         charge_times_fine_structure_constant = nuclear_charge*fine_structure_constant
         if (charge_times_fine_structure_constant < absolute_kappa_real) then
             gamma = sqrt(kappa_squared - charge_times_fine_structure_constant*charge_times_fine_structure_constant)
@@ -76,7 +63,6 @@ contains
             upper_trial_energy_bound = speed_of_light_squared + speed_of_light_squared
         end if
         initial_upper_trial_energy_bound = upper_trial_energy_bound
-        !
         return
     end subroutine estimate_orbital_energy
 end module estimate_orbital_energy_interface

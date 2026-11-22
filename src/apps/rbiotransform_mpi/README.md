@@ -7,7 +7,7 @@
 和 `name.mix` 或 `name.cimix`，为每个态写出 `name.bw` 和 `name.bm` 或 `name.cbm`。
 若保存角向数据，`.TB` 缓存文件头会记录 MPI rank 和进程数。
 
-[串行版本](../rbiotransform/README.md) · [rtransition_mpi](../rtransition_mpi/)
+[串行版本](../rbiotransform/README.md) · [rtransition_mpi](../rtransition_mpi/README.md)
 
 ## 计算流程
 

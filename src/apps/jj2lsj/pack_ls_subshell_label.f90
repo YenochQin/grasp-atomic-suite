@@ -1,3 +1,4 @@
+! Format the subshell occupations and coupling terms of an LS configuration label.
 module pack_ls_subshell_label_interface
     implicit none (type, external)
 
@@ -6,30 +7,24 @@ module pack_ls_subshell_label_interface
     public :: pack_ls_subshell_label
 contains
 
+    ! Subroutine written by Bin LIU
     !
-    !***********************************************************************
-    !                                                                      *
+    !    Rules for encoding
+    !    1. All blanks deleted
+    !    2. If Qi=1, omit Qi
+    !    3. If Qi=1 or Qi>=4l+1, omit ALFAi
+    !    4. If i=1 or (Qi=4l+2 and i<>m), insert '.'; else _BETAi.
+    !
+    ! Modified by G. Gaigalas,. May 2011
+    !
+    ! ...Switches:
     subroutine pack_ls_subshell_label(subshell_count, subshell_labels, subshell_occupations, coupling_labels, packed_label)
-        ! Procedure interfaces
-        !                                                                      *
-        !   Subroutine written by Bin LIU                                      *
-        !                                                                      *
-        !   Rules for encoding                                                 *
-        !   1. All blanks deleted                                              *
-        !   2. If Qi=1, omit Qi                                                *
-        !   3. If Qi=1 or Qi>=4l+1, omit ALFAi                                 *
-        !   4. If i=1 or (Qi=4l+2 and i<>m), insert '.'; else _BETAi.          *
-        !                                                                      *
-        !   Modified by G. Gaigalas,                                May 2011   *
-        !                                                                      *
-        !***********************************************************************
-        !...Switches:
+        !  Procedure interfaces
         use orbital_letter_to_l_interface, only: orbital_letter_to_l
         implicit none (type, external)
 
         ! Arguments
         integer, intent(in)            :: subshell_count
-        !GG      CHARACTER(LEN=64), INTENT(OUT) :: STR
         character(len=164), intent(out) :: packed_label
         integer, intent(in)            :: subshell_occupations(*)
         character(len=3), intent(in)   :: subshell_labels(*), coupling_labels(*)
@@ -39,22 +34,18 @@ contains
         integer          :: l, previous_q
         character(len=1) :: ch1
         character(len=3) :: ch3
-        !-----------------------------------------------
-        !  FULL   :  4l+2
-        !  CONST  :   constant for converting lowercase to uppercase
-        !  CH*    :  temporary variables
-        !
+        ! FULL   :  4l+2
+        ! CONST  :   constant for converting lowercase to uppercase
+        ! CH*    :  temporary variables
         const = ichar("a") - ichar("A")
         packed_label = " "
         j = 1
         icore = 0
         full = 0; n = 0; full1 = 0; n1 = 0
-        !
-        !   -----  begin to encode  -----
-        !
+        ! -----  begin to encode  -----
         do i = 1, subshell_count
-            !        Fortran does not guarantee short-circuit evaluation of .AND.;
-            !        never reference Q(0), even when a condition starts with I /= 1.
+            ! Fortran does not guarantee short-circuit evaluation of .AND.;
+            ! never reference Q(0), even when a condition starts with I /= 1.
             previous_q = 0
             if (i > 1) previous_q = subshell_occupations(i-1)
             if (subshell_occupations(i) == 0) cycle
@@ -72,17 +63,13 @@ contains
             if(i /= 1) n1 = n
             l = orbital_letter_to_l(ch1)
             full = 4*l + 2
-            !
-            !  -----  convert Qi into character  -----
-            !
+            ! -----  convert Qi into character  -----
             j = j + k
             n = subshell_occupations(i)
             if (n > 14) stop "Too many electrons"
             if(i /= 1 .and. full1 /= n1) icore = icore + full1 - n1
-            !
-            !  -----  If Qi<>1, add Qi
-            !           If Qi<4l+1, add TERMi for the shell -----
-            !
+            ! -----  If Qi<>1, add Qi
+            !          If Qi<4l+1, add TERMi for the shell -----
             if (n /= 1) then
                 packed_label(j:j) = "("
                 j = j + 1
@@ -431,10 +418,8 @@ contains
                     end if
                 end if
             end if
-            !
-            !  -----  If i=1 or Qi=4l+2 and i<>m,
-            !           insert '.'; else _RESULTANTi.  -----
-            !
+            ! -----  If i=1 or Qi=4l+2 and i<>m,
+            !          insert '.'; else _RESULTANTi.  -----
             if(i/=1 .and. previous_q==full1 .and. n==1 .and. subshell_count/=i .and.      &
                 icore<2) then
                 continue
@@ -457,10 +442,9 @@ contains
             packed_label(j:j) = "."
             j = j + 1
         end do
-        !
-        !>>>>>    Because of a compiler error on the SUN, the following is
-        !         needed to have the string printed correctly.
-        !         STR = STR(1:J)
+        ! >>>>>    Because of a compiler error on the SUN, the following is
+        !          needed to have the string printed correctly.
+        !          STR = STR(1:J)
         return
     end subroutine pack_ls_subshell_label
 end module pack_ls_subshell_label_interface

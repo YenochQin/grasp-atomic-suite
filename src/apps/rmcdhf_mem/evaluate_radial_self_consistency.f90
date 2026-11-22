@@ -1,3 +1,4 @@
+! Measure the change of a radial orbital between SCF iterations.
 module evaluate_radial_self_consistency_interface
     implicit none (type, external)
 
@@ -6,16 +7,11 @@ module evaluate_radial_self_consistency_interface
     public :: evaluate_radial_self_consistency
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This routine computes the weighted self-consistency of orbital J
+    !
+    ! Written by Farid A Parpia, at OXFORD. Last update: 08 Dec 1992
     subroutine evaluate_radial_self_consistency(orbital_index)
         ! Module dependencies
-        !                                                                      *
-        !   This routine computes the weighted self-consistency of orbital J   *
-        !                                                                      *
-        !   Written by Farid A Parpia, at OXFORD    Last update: 08 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use radial_dirac_workspace, only: trial_orbital_last_grid_index, trial_large_component, trial_small_component
         use scf_iteration_state, only: orbital_occupation_weights, orbital_self_consistency_errors
@@ -28,9 +24,7 @@ contains
         ! Local declarations
         integer :: common_last_grid_index, radial_index
         real(real64) :: maximum_component_difference, component_difference
-        !-----------------------------------------------
-        !
-        !
+
         maximum_component_difference = 0.0_real64
         common_last_grid_index = min(trial_orbital_last_grid_index,orbital_last_grid_index(orbital_index))
         do radial_index = 1, common_last_grid_index
@@ -40,7 +34,6 @@ contains
         end do
         orbital_self_consistency_errors(orbital_index) = maximum_component_difference* &
             sqrt(orbital_occupation_weights(orbital_index))
-        !
         return
     end subroutine evaluate_radial_self_consistency
 end module evaluate_radial_self_consistency_interface

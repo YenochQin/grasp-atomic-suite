@@ -1,3 +1,4 @@
+! Build one symmetry block of the CI Hamiltonian from angular and radial integrals.
 module assemble_hamiltonian_block_interface
     implicit none (type, external)
 
@@ -6,17 +7,12 @@ module assemble_hamiltonian_block_interface
     public :: assemble_hamiltonian_block
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Modified by G. Gaigalas. Last revision: 07 Sep 2021
+    !    Spin-angular coefficiants have been put on memory
     subroutine assemble_hamiltonian_block(symmetry_block_index, mpi_rank, mpi_process_count, total_contribution_count, &
         & total_secondary_contribution_count)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
-        !                                                                      *
-        !   Modified by G. Gaigalas               Last revision: 07 Sep 2021   *
-        !      Spin-angular coefficiants have been put on memory               *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use grasp_parameters,    only: orbital_index_radix
         use array_memory_management, only: alloc, dalloc
@@ -56,41 +52,22 @@ contains
         integer(int64) :: lod      !  INTEGER*8 version of LOC
         real(real64) :: diaa, coef, f0aa, fkaa, f0ab, gkab, radial_integral_value
         logical :: set
-        !-----------------------------------------------
+        ! !*** needs EMT, IENDC.
         !
-        !     !*** needs EMT, IENDC.
-        !     POINTER (PNTEMT,EMT(1))
-        !     POINTER (PIENDC,IENDC(0:*))
-        !     POINTER (PNIROW,IROW(1))
+        ! !*** needs ncf, nw
         !
-        !     !*** needs ncf, nw
-        !     POINTER (PNTRIQ,RIQDUMMY)
-        !
-        !
-        !     POINTER (pncfpast, ncfpast(1))
-        !     POINTER (pncminpast, ncminpast(1))
-        !     POINTER (pnevecpast, nevecpast(1))
-        !
-        !     POINTER (PCOEFF,COEFF(1))
-        !     !POINTER (PICLMN,ICLMNdum)
-        !     POINTER (PINDX,INDX(1))
-        !
-        !-----------------------------------------------------------------------
+        ! !POINTER (PICLMN,ICLMNdum)
         block_csf_offset = csf_offsets_by_block(symmetry_block_index)
-        !=======================================================================
-        !   Accumulate diagonal terms that do not require MCP coefficients
-        !=======================================================================
+        ! Accumulate diagonal terms that do not require MCP coefficients
 
-        !=======================================================================
-        !   Piece involving I(a,a) integrals
-        !=======================================================================
+        ! Piece involving I(a,a) integrals
 
         do orbital_index = 1, orbital_count
             set = .false.
             do csf_index = mpi_rank + 1, csf_count, mpi_process_count
                 itmp = csf_occupation(orbital_index,csf_index + block_csf_offset)
                 if (itmp <= 0) cycle
-                !*** Occupation number not zero ...
+                ! Occupation number not zero ...
                 if (.not.set) then
                     diaa = integrate_one_electron_radial(orbital_index,orbital_index,0)
                     set = .true.
@@ -101,17 +78,15 @@ contains
             end do
         end do
 
-        !=======================================================================
-        !                    0
-        !   Piece involving F (a,a) integrals
-        !=======================================================================
+        !                  0
+        ! Piece involving F (a,a) integrals
 
         do orbital_index = 1, orbital_count
             set = .false.
             do csf_index = mpi_rank + 1, csf_count, mpi_process_count
                 coef = direct_angular_coefficient(0,csf_index + block_csf_offset,orbital_index,orbital_index)
                 if (coef == 0.0_real64) cycle
-                !*** Angular coefficient not zero ...
+                ! Angular coefficient not zero ...
                 if (.not.set) then
                     f0aa = calculate_slater_radial_integral(orbital_index,orbital_index,orbital_index,orbital_index,0)
                     set = .true.
@@ -122,10 +97,8 @@ contains
             end do
         end do
 
-        !=======================================================================
-        !                    k
-        !   Piece involving F (a,a) integrals
-        !=======================================================================
+        !                  k
+        ! Piece involving F (a,a) integrals
 
         km = 0
         k = 0
@@ -152,10 +125,8 @@ contains
             if (k >= km) exit
         end do
 
-        !=======================================================================
-        !                    0
-        !   Piece involving F (a,b) integrals
-        !=======================================================================
+        !                  0
+        ! Piece involving F (a,b) integrals
 
         do orbital_index = 1, orbital_count - 1
             do ib = orbital_index + 1, orbital_count
@@ -174,10 +145,8 @@ contains
             end do
         end do
 
-        !=======================================================================
-        !                    k
-        !   Piece involving G (a,b) integrals
-        !=======================================================================
+        !                  k
+        ! Piece involving G (a,b) integrals
 
         km = 0
         k = -1
@@ -215,28 +184,24 @@ contains
             if (k >= km) exit
         end do
 
-        !=======================================================================
-        !   Local storage for reading mcpXXX files
-        !=======================================================================
+        ! Local storage for reading mcpXXX files
 
         ndim = 1
         call alloc (coeff, ndim, "COEFF", "assemble_hamiltonian_block" )
         call alloc (indx, ndim, "INDX", "assemble_hamiltonian_block")
 
-        !=======================================================================
-        !   Loop over non-zero labels which have non-zero elements
-        !=======================================================================
+        ! Loop over non-zero labels which have non-zero elements
 
         total_secondary_contribution_count(1) = total_secondary_contribution_count(1) + 1
         ! Cached labels are memory accesses; there is no IOSTAT result.
         call load_mcp_records_into_memory(31,total_secondary_contribution_count(1),packed_orbital_label, contribution_count)
         do while(packed_orbital_label/=0 .or. contribution_count/=0)
 
-            !*** decode the label of I(ab)
+            ! decode the label of I(ab)
             orbital_index = mod(packed_orbital_label,orbital_index_radix)
             ib = packed_orbital_label/orbital_index_radix
 
-            !*** Compute radial integral I(ab)
+            ! Compute radial integral I(ab)
             radial_integral_value = integrate_one_electron_radial(orbital_index,ib,0)
 
             ! Read column index, sparse matrix index, and coefficient
@@ -251,7 +216,7 @@ contains
             call read_mcp_structure_into_memory(31,total_contribution_count(1),contribution_count,file_csf_column)
             total_contribution_count(1) = total_contribution_count(1) + contribution_count
 
-            !*** Store all the contributions from this integral
+            ! Store all the contributions from this integral
             do i = 1, contribution_count
                 loc = indx(i)
                 lod = loc   !  (Convert type)
@@ -270,9 +235,7 @@ contains
         do mcp_channel = 32, 32 + max_mcp_file_multipole_rank
             k = mcp_channel - 32
 
-            !=======================================================================
-            !   Loop over non-zero labels which have non-zero elements
-            !=======================================================================
+            ! Loop over non-zero labels which have non-zero elements
 
             total_secondary_contribution_count(mcp_channel-30) = total_secondary_contribution_count(mcp_channel-30) + 1
             call load_mcp_records_into_memory(mcp_channel, total_secondary_contribution_count(mcp_channel-30), &
@@ -280,8 +243,8 @@ contains
                 & contribution_count)
             do while(packed_orbital_label/=0 .or. contribution_count/=0)
 
-                !                         k
-                !*** decode the label of R (abcd)
+                !                          k
+                ! decode the label of R (abcd)
                 id = mod(packed_orbital_label,orbital_index_radix)
                 packed_orbital_label = packed_orbital_label/orbital_index_radix
                 ib = mod(packed_orbital_label,orbital_index_radix)
@@ -289,7 +252,7 @@ contains
                 ic = mod(packed_orbital_label,orbital_index_radix)
                 orbital_index = packed_orbital_label/orbital_index_radix
 
-                !*** Compute radial integral
+                ! Compute radial integral
                 radial_integral_value = calculate_slater_radial_integral(orbital_index,ib,ic,id,k)
 
                 ! Read column index, sparse matrix index, and coefficient
@@ -305,7 +268,7 @@ contains
                     contribution_count, file_csf_column)
                 total_contribution_count(mcp_channel-30) = total_contribution_count(mcp_channel-30) + contribution_count
 
-                !*** Store all the contributions from this integral
+                ! Store all the contributions from this integral
                 do i = 1, contribution_count
                     loc = indx(i)
                     lod = loc
@@ -324,9 +287,7 @@ contains
             end do
         end do
 
-        !=======================================================================
-        !   Deallocate local storage
-        !=======================================================================
+        ! Deallocate local storage
 
         call dalloc (coeff, "COEFF", "assemble_hamiltonian_block")
         call dalloc (indx, "INDX", "assemble_hamiltonian_block")

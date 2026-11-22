@@ -6,12 +6,9 @@ module open_temporary_mcp_channels_interface
     public :: open_temporary_mcp_channels
 contains
 
-    !***********************************************************************
-    !                                                                      *
     subroutine open_temporary_mcp_channels(symmetry_block_index, max_coulomb_multipole_rank, output_file_prefix)
         ! Module dependencies
         use mcp_generation_options, only: mcp_temporary_units
-        !***********************************************************************
         use integer_format, only: format_integer
         use file_open, only: open_calculation_file
         use standard_io_units, only: stderr_unit
@@ -25,10 +22,7 @@ contains
         ! Local declarations
         integer :: mcp_channel_index, text_length, open_status, opened_channel_index, prefix_length
         character :: number_text*2
-        !-----------------------------------------------
-        !
         ! All files  filehead.XX  are UNFORMATTED;
-        !
         prefix_length = len_trim(output_file_prefix)
         do mcp_channel_index = 30, 32 + max_coulomb_multipole_rank
             call format_integer (mcp_channel_index, number_text, text_length)

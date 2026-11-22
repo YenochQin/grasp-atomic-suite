@@ -1,3 +1,4 @@
+! Set the RCI diagnostics and open the debug stream when requested.
 module configure_ci_debug_output_interface
     implicit none (type, external)
 
@@ -6,22 +7,14 @@ module configure_ci_debug_output_interface
     public :: configure_ci_debug_output
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This subroutine sets the arrays that control debug printout from
+    !   the radial and angular modules of the GRASP92 suite.
+    !
+    ! Written by Farid A Parpia. Last update: 21 Oct 1992
     subroutine configure_ci_debug_output
         ! Module dependencies
-        !                                                                      *
-        !   This subroutine sets the arrays that control debug printout from   *
-        !   the radial and angular modules of the GRASP92 suite.               *
-        !                                                                      *
-        !                                                                      *
-        !   Written by Farid A Parpia               Last update: 21 Oct 1992   *
-        !                                                                      *
-        !***********************************************************************
-        !-----------------------------------------------
         use debug_output_settings, only: ldbpa, ldbpg, rmcdhf_debug_flags
         implicit none (type, external)
-        !
         ldbpa = .false.
         ldbpg = .false.
 

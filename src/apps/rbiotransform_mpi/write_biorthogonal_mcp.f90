@@ -6,36 +6,24 @@ module write_biorthogonal_mcp_interface
     public :: write_biorthogonal_mcp
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This routine controls the computation  and storage of the values
+    ! and all indices of the angular coefficients
+    !
+    !                 T  (ab)
+    !
+    ! k is the multipolarity of a two-particle Coulomb integral. a, b,
+    ! are orbital sequence numbers.  r and s are configuration
+    ! state function indices.
+    !
+    ! Written by Per Jonsson. Last revision: JUne 1996
     subroutine write_biorthogonal_mcp(name, startup_directory, ik, ntestg, inpci)
         ! Module dependencies
         use biorthogonal_subshell_layout, only: kappa_coefficient_units
         use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
         use, intrinsic :: iso_fortran_env, only: output_unit
-        !                                                                      *
-        !   This routine controls the computation  and storage of the values   *
-        !   and all indices of the angular coefficients                        *
-        !                                                                      *
-        !                                                                      *
-        !                   T  (ab)                                            *
-        !                    rs                                                *
-        !                                                                      *
-        !   k is the multipolarity of a two-particle Coulomb integral. a, b,   *
-        !   are orbital sequence numbers.  r and s are configuration           *
-        !   state function indices.                                            *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, DALLOC, TNSRJJ                         *
-        !               [GENMCP]: QSORT.                                       *
-        !                                                                      *
-        !   Written by Per Jonsson                Last revision: JUne 1996     *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_orbitals, orbital_index_radix
         use array_memory_management, only: dalloc
-        !      USE def_C
-        !      USE EIGV_C
         use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes
         use transition_basis_blocks, only: cumulative_csf_counts, transition_block_count
         use orbital_csf_basis,           only: csf_count, orbital_count, orbital_kappa, csf_subshell_occupations
@@ -74,12 +62,7 @@ contains
             bra_csf_index, ket_csf_index, ibb, orbital_index, ket_orbital_index, lab, jan, jbn, l
         real(real64) :: shell_coefficients(max_orbitals)
         logical   :: comp, avail
-        !-----------------------------------------------
-        !
         ! Locals
-        !     POINTER (pscr, scr(1))
-        !     POINTER (pciout, ciout(1))
-        !
 
         write (output_unit, *) "NBLOCK,(NCFBLK(i),i=1,NBLOCK)"
         write (output_unit, *) transition_block_count, (cumulative_csf_counts(i),i=1,transition_block_count)
@@ -87,13 +70,10 @@ contains
         ntestl = 0
         ntest = max(ntestg,ntestl)
         ntest = 0
-        !
-        !   Set the rank (zero) and parity (even) for the one-particle
-        !   coefficients
-        !
+        ! Set the rank (zero) and parity (even) for the one-particle
+        ! coefficients
         ka = 0
         iopar = 1
-        !
         !   Check if angular data is available. If available read this data.
         !   If not available calculate the data
         !
@@ -109,8 +89,6 @@ contains
             nakinv(:max_orbitals) = final_kappa_group_by_orbital(:max_orbitals)
         end if
 
-
-
         write (output_unit, *) " open sorted ang. file .TB(NF)", 200
         j = index(name," ")
         open(newunit=biorthogonal_angular_unit, file=name(1:j-1)//".TB", status="UNKNOWN", form=&
@@ -118,33 +96,24 @@ contains
 
         ncf0 = 1
         do iblk = 1, transition_block_count
-            !
-            !   Open scratchfiles to dump the T coefficients for each kappa
-            !
+            ! Open scratchfiles to dump the T coefficients for each kappa
             do k = 1, kappa_group_count
                 write(coefficient_filename, "(A,I0)") "fort.", 80 + k
                 open(newunit=kappa_coefficient_units(k), file=coefficient_filename, &
                     status="UNKNOWN", form="UNFORMATTED", position="asis")
             end do
-            !
-            !   Initialize the counters for the total number of T coefficients
-            !
+            ! Initialize the counters for the total number of T coefficients
             llistt(:max_biorthogonal_kappa_groups) = 0
-            !
-            !   JA and JB respectively refer to the initial and final states
-            !   in the list of NCF configurations
-            !
+            ! JA and JB respectively refer to the initial and final states
+            ! in the list of NCF configurations
             do bra_csf_index = mpi_rank+ncf0,cumulative_csf_counts(iblk),mpi_process_count
                 if (mod(bra_csf_index,100)==0 .and. ik==1) then
                     write (*, *) " JA1 =", bra_csf_index, bra_csf_index - ncf0 + 1
                 else if (mod(bra_csf_index,100)==0 .and. ik==2) then
                     write (*, *) " JA2 =", bra_csf_index, bra_csf_index - ncf0 + 1
                 end if
-                !
                 do ket_csf_index = ncf0, cumulative_csf_counts(iblk)
-                    !
-                    !   Call the MCT package to compute T coefficients
-                    !
+                    ! Call the MCT package to compute T coefficients
                     if (ntrans == 1) then
                         comp = .false.
                         if (ik == 1) then
@@ -162,20 +131,16 @@ contains
                         comp = .true.
                     end if
 
-
                     if (.not.comp) cycle
-                    !            write(*,*) JA,JB
-                    !GG               CALL TNSRJJ (KA, IOPAR, JA, JB, IA, IB, TSHELL)
+
                     call calculate_one_electron_scalar_coefficients(bra_csf_index,ket_csf_index,orbital_index,ket_orbital_index, &
                         & shell_coefficients)
                     if (orbital_index == 0) cycle
                     if (orbital_index == ket_orbital_index) then
                         do orbital_index = 1, orbital_count
-                            !
-                            !   If T coefficient is greater than zero and the kappa quantum numbers
-                            !   of the two orbitals are the same dump to file
-                            !   In a later version use a buffer with a reasonable record length
-                            !
+                            ! If T coefficient is greater than zero and the kappa quantum numbers
+                            ! of the two orbitals are the same dump to file
+                            ! In a later version use a buffer with a reasonable record length
                             if (dabs(shell_coefficients(orbital_index)) <= cutoff) cycle
                             llistt(nakinv(orbital_index)) = llistt(nakinv(orbital_index)) + 1
                             lab = orbital_index*orbital_index_radix + orbital_index
@@ -188,16 +153,12 @@ contains
                             & ket_orbital_index)) then
                             llistt(nakinv(orbital_index)) = llistt(nakinv(orbital_index)) + 1
                             if (initial_orbital_order_code==0 .and. final_orbital_order_code==0) then
-                                !
-                                !   Experssion for normal orbital ordering
-                                !
+                                ! Experssion for normal orbital ordering
                                 lab = orbital_index*orbital_index_radix + ket_orbital_index
                                 jan = bra_csf_index - ncf0 + 1
                                 jbn = ket_csf_index - ncf0 + 1
                             else if (initial_orbital_order_code==1 .and. final_orbital_order_code==1) then
-                                !
-                                !   Experssion for reversed orbital ordering
-                                !
+                                ! Experssion for reversed orbital ordering
                                 lab = ket_orbital_index*orbital_index_radix + orbital_index
                                 jan = ket_csf_index - ncf0 + 1
                                 jbn = bra_csf_index - ncf0 + 1
@@ -208,14 +169,10 @@ contains
                             write (kappa_coefficient_units(nakinv(orbital_index))) jan, jbn, lab, shell_coefficients(1)
                         end if
                     end if
-                    !
                 end do
             end do
 
-
-            !
-            !   sort the MCP data into inegral based lists.
-            !
+            ! sort the MCP data into inegral based lists.
             do l = 1, kappa_group_count
                 if (llistt(l) > 0) then
                     call sort_biorthogonal_mcp (l, llistt(l), ik, name, kappa_group_count)
@@ -224,19 +181,14 @@ contains
                     write (biorthogonal_angular_unit) llistt(l), llistt(l)
                 end if
             end do
-            !
-            !  Close the angular files
-            !
+            ! Close the angular files
             do l = 1, kappa_group_count
                 close(kappa_coefficient_units(l), status="DELETE")
             end do
-            !
             ncf0 = cumulative_csf_counts(iblk) + 1
         end do
-        !
-        !   Deallocate storage that is no longer required. This was
-        !   allocated in lodcsl.
-        !
+        ! Deallocate storage that is no longer required. This was
+        ! allocated in lodcsl.
         call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "write_biorthogonal_mcp")
         call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "write_biorthogonal_mcp")
         call dalloc (csf_angular_codes, "csf_angular_codes", "write_biorthogonal_mcp")

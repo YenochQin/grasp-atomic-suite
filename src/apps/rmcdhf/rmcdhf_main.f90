@@ -1,46 +1,18 @@
-!***********************************************************************
-!***********************************************************************
-!***********************************************************************
-!**                                                                  ***
-!**                                                                  ***
-!**       ******    *****    *****   *******   *****    *****        ***
-!**       **   **  **   **  **   **  **       **   **  **   **       ***
-!**       **   **  **       **       **       **   **       **       ***
-!**       ******    *****   **       ****      *****       **        ***
-!**       **  **        **  **       **          **       **         ***
-!**       **   **  **   **  **   **  **         **      **           ***
-!**       **   **   *****    *****   **        **      *******       ***
-!**                                                                  ***
-!**            Relativistic Self-Consistent-Field Program            ***
-!**                                                                  ***
-!**   This program is a derivative of GRASP2 (F. A. Parpia, I. P.    ***
-!**   Grant, and C. F. Fischer, 1990)                                ***
-!**                                                                  ***
-!**                            GRASP92                               ***
-!**          F. A. Parpia, C. F. Fischer, and I. P. Grant            ***
-!**   Modified by C.F. FIscher for block input                       ***
-!***********************************************************************
-!***********************************************************************
-!***********************************************************************
-!                                                                      *
+! Optimize radial orbitals and CSF mixing coefficients with a serial MCDHF calculation.
+! Relativistic Self-Consistent-Field Program
+!
+! This program is a derivative of GRASP2 (F. A. Parpia, I. P.
+! Grant, and C. F. Fischer, 1990)
+!
+! GRASP92
+! F. A. Parpia, C. F. Fischer, and I. P. Grant
+! Modified by C.F. FIscher for block input
+! Written by Farid A. Parpia. Last revision: 31 Dec 1992
+! Block version by Xinghong He. Last revision: 17 Aug 1998
+! Modified by G. Gaigalas. 05 Feb 2017
 program rmcdhf_main
     ! Module dependencies
     use calculation_file_units, only: calculation_log_unit
-    !                                                                      *
-    !   Entry routine for RSCFVU. Controls the entire computation.         *
-    !                                                                      *
-    !   Call(s) to: [LIB92]: SETMC, SETCON.                                *
-    !               [RSCF92]: CHKPLT, setcsl, setdbg                       *
-    !                        SETMIX, SETRES, SETSUM, STRSUM.               *
-    !               [NJGRAF]: FACTT.                                       *
-    !                                                                      *
-    !   Written by Farid A. Parpia            Last revision: 31 Dec 1992   *
-    !   Block version by Xinghong He          Last revision: 17 Aug 1998   *
-    !   Midified by G. Gaigalas                              05 Feb 2017   *
-    !      It was deleted the arrays:  JQSA(3*NNNW*NCF),                   *
-    !                                  JCUPA(NNNW*NCF)                     *
-    !                                                                      *
-    !***********************************************************************
     use calculation_input_defaults, only: nondefault_options_flag
     use closed_core_subshells, only: closed_core_subshell_count
     use serial_mpi_context, only: mpi_process_count, mpi_rank
@@ -78,11 +50,7 @@ program rmcdhf_main
     character(state_name_length) :: state
     logical :: extended_optimal_level, yes
     character :: block_labels(maximum_input_symmetry_blocks)*8
-    !-----------------------------------------------
-    !
-    !
-    ! Things for timing
-    !-----------------------------------------------------------------------
+    ! Use a single-process context for the serial kernels.
     mpi_rank = 0
     mpi_process_count = 1
 
@@ -102,9 +70,7 @@ program rmcdhf_main
     open(newunit=calculation_log_unit,file=files%scf_log,status="UNKNOWN")
     if (state /= "") write(calculation_log_unit,"(A)") trim(state)
 
-    !=======================================================================
-    !  Get NDEF
-    !=======================================================================
+    ! Record whether the run uses default SCF options.
 
     if (mpi_rank == 0) then
         if (yes) then
@@ -116,20 +82,7 @@ program rmcdhf_main
         end if
     end if
 
-    !=======================================================================
-    !
-    !  Checks and settings... Mostly done in backyard.
-    !
-    !    SETDBG - Debug output control parameters
-    !    SETMC - machine- and installation- dependent constants
-    !    SETCON - physical constants
-    !    SETSUM - open the summary file
-    !    SETMCP - open and check the  .mcp  files
-    !    SETCSL - open, check, load data from, and close the  .csl  file
-    !    STRSUM - append a summary of the inputs to the  .sum  file
-    !    SETMIX - mixing coefficients file setup
-    !    FACTT - table of logarithms of factorials setup
-    !=======================================================================
+    ! Load the MCP metadata and the descriptor basis, then check that they agree.
 
     call configure_debug_output (files%scf_debug)
     call initialize_machine_constants
@@ -141,10 +94,7 @@ program rmcdhf_main
     call load_csf_basis_data (files%descriptors, core_subshell_count, block_labels)
     if (closed_core_subshell_count /= core_subshell_count) error stop "RMCDHF: closed-core subshell count mismatch"
 
-    !=======================================================================
-    !  Gather all remaining information and perform some setup. This
-    !  part (routine) asks for user-inputs.
-    !=======================================================================
+    ! Read the SCF controls and prepare the radial orbitals.
 
     call read_scf_options (extended_optimal_level, block_labels, "isodata", files%initial_orbitals, "npol.inp")
 
@@ -155,17 +105,12 @@ program rmcdhf_main
 
     call initialize_log_factorial_table
 
-    !=======================================================================
-    !  Proceed with the SCF calculation close all files except
-    !  the  .sum  file
-    !=======================================================================
+    ! Iterate the SCF solution and save the optimized orbitals.
 
     call run_scf_iterations (extended_optimal_level, files%orbitals)
     close (calculation_log_unit)
 
-    !=======================================================================
-    !  Execution finished; Statistics output
-    !=======================================================================
+    ! Report elapsed time.
 
     call finish_run_timer (start_clock_count, "RMCDHF")
 

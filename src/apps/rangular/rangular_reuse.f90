@@ -1,3 +1,4 @@
+! Support reuse of previously generated angular coefficients for matching CSF pairs.
 ! Exact, order-preserving memoization for the ordinary scalar/Coulomb pair.
 ! This module owns no scientific cutoffs and never changes the MCP writer.
 module rangular_reuse

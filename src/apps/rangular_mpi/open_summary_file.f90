@@ -6,22 +6,15 @@ module open_summary_file_interface
     public :: open_summary_file
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !  Open the  .sum  file on stream 24.
+    !
+    ! Written by Farid A. Parpia. Last revision: 11 Nov 1992
+    ! Modified by Xinghong He. Last revision:  3 Jul 1998
+    !
+    ! File shared by mcpblk, mcpmpi
     subroutine open_summary_file(file_path)
         ! Module dependencies
         use calculation_file_units, only: summary_output_unit
-        !                                                                      *
-        !   Open the  .sum  file on stream 24.                                 *
-        !                                                                      *
-        !   Call(s) to: [LIB92]:  OPENFL.                                      *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 11 Nov 1992   *
-        !   Modified by Xinghong He               Last revision:  3 Jul 1998   *
-        !
-        !  File shared by mcpblk, mcpmpi
-        !                                                                      *
-        !***********************************************************************
         use standard_io_units, only: stderr_unit
         use file_open, only: open_calculation_file
         implicit none (type, external)
@@ -34,19 +27,15 @@ contains
         character(len=120) :: output_file_path  ! The original did not compile
         character(len=11) :: form
         character(len=3)  :: status
-        !-----------------------------------------------
 
         form = "FORMATTED"
         status = "NEW"
-        !
         write (stderr_unit, *) "File ", file_path, " will be created as the", &
             " GENMCP SUMmary File;"
         write (stderr_unit, *) "enter another file name if this is not ", &
             "acceptable; null otherwise:"
         read (*, "(A)") output_file_path
-        !
         if (len_trim(output_file_path) == 0) output_file_path = file_path
-        !
         do
             call open_calculation_file (summary_output_unit, output_file_path, form, status, open_status)
             if (open_status == 0) exit
@@ -57,7 +46,6 @@ contains
                 if (len_trim(output_file_path) /= 0) exit
             end do
         end do
-        !
         return
     end subroutine open_summary_file
 end module open_summary_file_interface

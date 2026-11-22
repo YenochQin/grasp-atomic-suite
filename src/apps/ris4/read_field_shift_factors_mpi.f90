@@ -6,17 +6,12 @@ module read_field_shift_factors_mpi_interface
     public :: read_field_shift_factors_mpi
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! MPI version of DENSREAD. Each rank scans the full angular file but *
+    ! only accumulates records whose IC belongs to its strided subset.
     subroutine read_field_shift_factors_mpi(contact_density_integrals,total_nms_integrals,radius_integrals, &
         & radius_squared_integrals,inverse_radius_integrals,inverse_radius_squared_integrals,leading_nms_integrals)
         ! Module dependencies
         use calculation_file_units, only: one_body_cache_unit
-        !                                                                      *
-        !   MPI version of DENSREAD. Each rank scans the full angular file but *
-        !   only accumulates records whose IC belongs to its strided subset.    *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: orbital_index_radix, max_orbitals
         use debug_output_settings,          only: matrix_element_screening_cutoff

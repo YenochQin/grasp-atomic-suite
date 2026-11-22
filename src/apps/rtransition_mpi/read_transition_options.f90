@@ -1,3 +1,4 @@
+! Read the multipole, radial-grid, and output options for the transition calculation.
 module read_transition_options_interface
     implicit none (type, external)
 
@@ -6,18 +7,13 @@ module read_transition_options_interface
     public :: read_transition_options
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Interactively determines the data governing the transition prob-
+    ! lem.
+    !
+    ! Written by Per Jonsson. Last revision: June 1996
     subroutine read_transition_options(name)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: input_unit, output_unit
-        !                                                                      *
-        !   Interactively determines the data governing the transition prob-   *
-        !   lem.                                                               *
-        !                                                                      *
-        !   Written by Per Jonsson                Last revision: June 1996     *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters, only: max_radial_points
         use atomic_calculation_state, only: working_tolerance, max_radial_points, nuclear_charge, speed_of_light_au, &
@@ -51,10 +47,7 @@ contains
         ! Local declarations
         logical :: yes
         character :: cunits*4
-        !-----------------------------------------------
-        !
-        !   Determine the physical effects specifications
-        !
+        ! Determine the physical effects specifications
         if (nondefault_options_flag /= 0) then
             if (mpi_rank == 0) then
                 print *, "The physical speed of light in"
@@ -72,18 +65,12 @@ contains
         else
             speed_of_light_au = vacuum_speed_of_light_au
         end if
-        !
         use_first_order_csf_perturbation = .false.
         first_order_csf_cutoff = 0
-        !
-        !   Determine the multipolarity and parity of the transitions
-        !
+        ! Determine the multipolarity and parity of the transitions
         call read_multipole_options
-        !
-        !   Determine the units for the printout and other options
-        !
+        ! Determine the units for the printout and other options
         transition_option_flags = .false.
-        !
         if (nondefault_options_flag /= 0) then
             if (mpi_rank ==0) then
                 write (output_unit, *) "Which units are to be used to"
@@ -117,11 +104,7 @@ contains
         else
             transition_option_flags(5) = .true.
         end if
-        !
-        !      WRITE (6, *) 'Sort transitions by energy?'
-        !      YES = GETYN()
-        !      IF (YES) LTC(6) = .TRUE.
-        !
+
         if (nondefault_options_flag /= 0) then
             if (mpi_rank == 0) then
                 write (output_unit, *) "Einstein A and B coefficients are"
@@ -134,15 +117,13 @@ contains
         else
             transition_option_flags(7) = .false.
         end if
-        !
-        !   Determine the parameters controlling the radial grid
-        !
+        ! Choose the radial grid parameters.
         if (nuclear_model_parameter_count == 0) then
             radial_grid_scale = exp((-65.0_real64/16.0_real64))/nuclear_charge
             transformed_grid_step = 0.5_real64**4
             radial_point_count = min(220,max_radial_points)
         else
-            !CFF     ... should be Z-dependent
+            ! ... should be Z-dependent
             radial_grid_scale = 2.0e-6_real64/nuclear_charge
             transformed_grid_step = 5.0e-2_real64
             radial_point_count = max_radial_points
@@ -174,29 +155,18 @@ contains
             call mpi_bcast(asymptotic_grid_step,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
             call mpi_bcast (radial_point_count, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
         end if
-        !
-        !   ACCY is an estimate of the accuracy of the numerical procedures
-        !
+        ! ACCY is an estimate of the accuracy of the numerical procedures
         working_tolerance = transformed_grid_step**6
-        !
-        !   Set up the coefficients for the numerical proceduRes
-        !
+        ! Set up the coefficients for the numerical proceduRes
         call initialize_radial_stencil_weights
-        !
-        !   Generate the radial grid and all associated arrays
-        !
+        ! Build the radial grid and its derivative arrays.
         call initialize_radial_grid
-        !
-        !   Load the initial state radial wavefunctions.
-        !
+        ! Load the initial state radial wavefunctions.
         call read_initial_radial_wavefunctions (name(1))
-        !
-        !   Load the final state radial wavefunctions.
-        !
+        ! Load the final state radial wavefunctions.
         call read_final_radial_wavefunctions (name(2))
 
-        !   Construct the radial overlap matrix.
-        !
+        ! Construct the radial overlap matrix.
         call calculate_biorthogonal_overlap
 
         return

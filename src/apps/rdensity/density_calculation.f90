@@ -1,3 +1,4 @@
+! Accumulate one-body densities by level and form statistically averaged natural orbitals.
 ! MPI/serial migration of GRASP rdensity (upstream 488e875d).
 ! Accumulate one-body density matrices before contracting radial functions.
 module density_calculation

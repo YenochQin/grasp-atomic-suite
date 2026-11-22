@@ -1,3 +1,4 @@
+! Evaluate the near-origin radial density contribution used in the field shift.
 module field_shift_radial_integral_interface
     implicit none (type, external)
 
@@ -6,22 +7,13 @@ module field_shift_radial_integral_interface
     public :: field_shift_radial_integral
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   The value of RINTDENS is an approximation to:
+    !
+    !      (4pi^)-1  r^-2 |P (r)*P (r) + Q (r)*Q (r) | r -> 0
+    !
+    ! Written by Per Jonsson. Last revision: 24 Dec 1992
     real(real64) function field_shift_radial_integral (first_orbital, second_orbital)
         ! Module dependencies
-        !                                                                      *
-        !   The value of RINTDENS is an approximation to:                      *
-        !                                                                      *
-        !                                                                      *
-        !      (4pi^)-1  r^-2 |P (r)*P (r) + Q (r)*Q (r) | r -> 0              *
-        !                     I     J       I     J                            *
-        !                                                                      *
-        !   Call(s) to: [SMS92]:  POLINT                                       *
-        !                                                                      *
-        !   Written by Per Jonsson             Last revision: 24 Dec 1992      *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state, only: pi
         use radial_grid_state, only: radial_grid
@@ -38,8 +30,7 @@ contains
         integer :: radial_index, sample_index, first_grid_index
         real(real64) :: sample_radii(3), sample_densities(3)
         real(real64) :: density_at_origin
-        !-----------------------------------------------
-        !
+
         first_grid_index = 10
 
         sample_index = 1
@@ -54,7 +45,6 @@ contains
         end do
         call interpolate_electron_density (sample_radii,sample_densities,density_at_origin)
         field_shift_radial_integral = density_at_origin
-        !
         return
     end function field_shift_radial_integral
 end module field_shift_radial_integral_interface

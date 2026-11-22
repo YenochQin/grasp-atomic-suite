@@ -1,3 +1,4 @@
+! Load descriptor data for the application's CSF basis and check its block metadata.
 module load_csf_basis_data_interface
     implicit none (type, external)
 

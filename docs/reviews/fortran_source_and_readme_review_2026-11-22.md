@@ -8,24 +8,24 @@
 
 ## 文件名和标识符
 
-- `rbiotransform` 和 `rbiotransform_mpi` 的原 `check_orbital_order.f90` 文件名暗示会检查轨道顺序。两份文件均改为 `check_orbital_order_stub.f90`，保留历史模块名、过程接口和直接返回的行为。应用 README 与迁移记录已更新路径，实际轨道顺序检查仍由 `prepare_biorthogonal_subshells` 执行。[串行占位过程](../../src/apps/rbiotransform/check_orbital_order_stub.f90) · [MPI 占位过程](../../src/apps/rbiotransform_mpi/check_orbital_order_stub.f90) · [轨道顺序处理](../../src/apps/rbiotransform/prepare_biorthogonal_subshells.f90#L204)
-- 串行和 MPI 的 `tabulate_slater_integrals` 将原 `n` 和 `key` 改为 `slater_integral_count` 和 `orbital_index_base`。基数仍为 `orbital_count + 1`。串行主程序和 MPI 归约包装过程中的计数名称也已同步。[串行 Slater 积分表](../../src/apps/rci/tabulate_slater_integrals.f90#L27) · [MPI Slater 积分表](../../src/apps/rci_mpi/tabulate_slater_integrals.f90#L27) · [MPI 归约](../../src/apps/rci_mpi/tabulate_slater_integrals_mpi.f90#L32)
-- `rwfnestimate` 将原 `b1` 至 `b4` 改为表示当前点及沿积分方向前三个已知点的权重名称。声明旁说明这些权重作用于径向大、小分量采样值，导数权重来自 `starting_step_weights`。[径向传播常量](../../src/apps/rwfnestimate/integrate_homogeneous_radial_segment.f90#L39)
+- `rbiotransform` 和 `rbiotransform_mpi` 的原 `check_orbital_order.f90` 文件名暗示会检查轨道顺序。两份文件均改为 `check_orbital_order_stub.f90`，保留历史模块名、过程接口和直接返回的行为。应用 README 与迁移记录已更新路径，实际轨道顺序检查仍由 `prepare_biorthogonal_subshells` 执行。[串行占位过程](../../src/apps/rbiotransform/check_orbital_order_stub.f90) · [MPI 占位过程](../../src/apps/rbiotransform_mpi/check_orbital_order_stub.f90) · [轨道顺序处理](../../src/apps/rbiotransform/prepare_biorthogonal_subshells.f90#L189)
+- 串行和 MPI 的 `tabulate_slater_integrals` 将原 `n` 和 `key` 改为 `slater_integral_count` 和 `orbital_index_base`。基数仍为 `orbital_count + 1`。串行主程序和 MPI 归约包装过程中的计数名称也已同步。[串行 Slater 积分表](../../src/apps/rci/tabulate_slater_integrals.f90#L27) · [MPI Slater 积分表](../../src/apps/rci_mpi/tabulate_slater_integrals.f90#L27) · [MPI 归约](../../src/apps/rci_mpi/tabulate_slater_integrals_mpi.f90#L27)
+- `rwfnestimate` 将原 `b1` 至 `b4` 改为表示当前点及沿积分方向前三个已知点的权重名称。声明旁说明这些权重作用于径向大、小分量采样值，导数权重来自 `starting_step_weights`。[径向传播常量](../../src/apps/rwfnestimate/integrate_homogeneous_radial_segment.f90#L34)
 
 ## 源码注释
 
 - 两份轨道顺序占位过程的文件头现在明确说明入口直接返回，并移除了宣称会执行检查的旧注释。[串行文件头](../../src/apps/rbiotransform/check_orbital_order_stub.f90#L1) · [MPI 文件头](../../src/apps/rbiotransform_mpi/check_orbital_order_stub.f90#L1)
-- 四种普通 RMCDHF 的 SCF 循环将旧的 `.rwf` 注释改为说明每轮写入调用方选定的输出路径。命名计算使用 `name.wfn`，空状态名使用 `rwfn.out`。四份导入源码的注释快照已同步。[串行循环](../../src/apps/rmcdhf/run_scf_iterations.f90#L232) · [串行内存版循环](../../src/apps/rmcdhf_mem/run_scf_iterations.f90#L232) · [MPI 循环](../../src/apps/rmcdhf_mpi/run_scf_iterations_mpi.f90#L256) · [MPI 内存版循环](../../src/apps/rmcdhf_mem_mpi/run_scf_iterations_mpi.f90#L256) · [状态路径](../../src/lib/core/calculation_state_files.f90#L32)
+- 四种普通 RMCDHF 的 SCF 循环将旧的 `.rwf` 注释改为说明每轮写入调用方选定的输出路径。命名计算使用 `name.wfn`，空状态名使用 `rwfn.out`。四份导入源码的注释快照已同步。[串行循环](../../src/apps/rmcdhf/run_scf_iterations.f90#L203) · [串行内存版循环](../../src/apps/rmcdhf_mem/run_scf_iterations.f90#L203) · [MPI 循环](../../src/apps/rmcdhf_mpi/run_scf_iterations_mpi.f90#L226) · [MPI 内存版循环](../../src/apps/rmcdhf_mem_mpi/run_scf_iterations_mpi.f90#L226) · [状态路径](../../src/lib/core/calculation_state_files.f90#L32)
 
 ## README 与实现的差异
 
 ### FICAL 编译示例
 
-旧的单文件编译命令在干净目录报找不到 `calculation_state_files.mod`。RIS4 README 已改用配置后的 CMake `fical` 目标。该目标链接 `core`，提供 FICAL 读取上态和下态名称所需的模块及实现。[RIS4 README](../../src/apps/ris4/README.md#L18) · [FICAL 入口](../../src/apps/ris4/isotope_shift_transition_main.f90#L3) · [CMake 目标](../../src/apps/ris4/CMakeLists.txt#L1)
+旧的单文件编译命令在干净目录报找不到 `calculation_state_files.mod`。RIS4 README 已改用配置后的 CMake `fical` 目标。该目标链接 `core`，提供 FICAL 读取上态和下态名称所需的模块及实现。[RIS4 README](../../src/apps/ris4/README.md#L26) · [FICAL 入口](../../src/apps/ris4/isotope_shift_transition_main.f90#L4) · [CMake 目标](../../src/apps/ris4/CMakeLists.txt#L1)
 
 ### gj 示例输入
 
-按旧示例直接运行 `gj` 会因缺少 `test_header.toml` 退出。中英文 README 已加入可复现步骤，用支持 V3 的 `rcsfs` 将 `test.c` 转为 `test_desc.parquet` 和配套头文件，然后用归档的 `test.m` 和 `test.w` 运行 MCDHF 模式。通用 `gj_mpi` 命令同时说明工作目录、可执行文件路径及 `--ci` 需要的 `name.cimix` 或 `name.cm`。[英文示例和样本](../../README.md#L204) · [中文示例和样本](../../README_ZH.md#L168) · [状态文件解析](../../src/lib/core/calculation_state_files.f90#L113) · [参考输出](../../data/test.gj)
+按旧示例直接运行 `gj` 会因缺少 `test_header.toml` 退出。中英文 README 已加入可复现步骤，用支持 V3 的 `rcsfs` 将 `test.c` 转为 `test_desc.parquet` 和配套头文件，然后用归档的 `test.m` 和 `test.w` 运行 MCDHF 模式。通用 `gj_mpi` 命令同时说明工作目录、可执行文件路径及 `--ci` 需要的 `name.cimix` 或 `name.cm`。[英文示例和样本](../../README.md#L217) · [中文示例和样本](../../README_ZH.md#L194) · [状态文件解析](../../src/lib/core/calculation_state_files.f90#L113) · [参考输出](../../data/test.gj)
 
 ### CSF 编码和共享库过程名
 
@@ -34,7 +34,7 @@
 
 ### MPI 内存版 RMCDHF 的停止条件和输出
 
-应用 README 已说明 rank 0 每轮写径向波函数，轨道自洽和相对加权能量变化可分别触发停止。达到最大迭代次数时也会结束并打印提示，收敛状态应结合迭代报告判断。[MPI 内存版 README](../../src/apps/rmcdhf_mem_mpi/README.md#L13) · [SCF 迭代与停止判断](../../src/apps/rmcdhf_mem_mpi/run_scf_iterations_mpi.f90#L220)
+应用 README 已说明 rank 0 每轮写径向波函数，轨道自洽和相对加权能量变化可分别触发停止。达到最大迭代次数时也会结束并打印提示，收敛状态应结合迭代报告判断。[MPI 内存版 README](../../src/apps/rmcdhf_mem_mpi/README.md#L13) · [SCF 迭代与停止判断](../../src/apps/rmcdhf_mem_mpi/run_scf_iterations_mpi.f90#L190)
 
 ### 顶层贡献指南的文件命名
 

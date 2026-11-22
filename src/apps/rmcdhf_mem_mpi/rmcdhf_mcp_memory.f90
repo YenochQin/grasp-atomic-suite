@@ -1,6 +1,7 @@
+! Store the MCP channels and their read positions for the in-memory MCDHF solver.
+! Written by  G. Gaigalas               Vilnius, September 2021
 module rmcdhf_mcp_memory
     ! Module dependencies
-    !   Written by  G. Gaigalas               Vilnius, September 2021  *
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
 

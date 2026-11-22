@@ -1,3 +1,4 @@
+! Load the initial-state descriptor basis and retain its original orbital and block metadata.
 module load_initial_transition_basis_interface
     implicit none (type, external)
 
@@ -6,20 +7,10 @@ module load_initial_transition_basis_interface
     public :: load_initial_transition_basis
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Translated by Charlotte Froese Fischer
+    !                        Gediminas Gaigalas  10/05/17
     subroutine load_initial_transition_basis (initial_core_subshell_count,state_name)
-        ! Module dependencies
-        !                                                                      *
-        !   Open, check, load data from and close the  .csl  file. This file   *
-        !   is always attached to stream 21.                                   *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, IQ, LENGTH, LODCSL, OPENFL.            *
-        !                                                                      *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Charlotte Froese Fischer
-        !                       Gediminas Gaigalas  10/05/17
+        !  Module dependencies
         use grasp_parameters,   only: max_orbitals
         use array_memory_management, only: dalloc
         use atomic_calculation_state, only: electron_count, initial_electron_count, left_electron_count
@@ -44,9 +35,7 @@ contains
 
         ! Local declarations
         integer :: i, j, io_status, core_subshell_count
-        !
-        !   Check the first record of the file; if not as expected, try again
-        !
+        ! Check the first record of the file; if not as expected, try again
         call load_csf_basis_mpi(trim(state_name),core_subshell_count)
         io_status=0
         if (io_status /= 0) error stop "Transition descriptor load failed"
@@ -54,23 +43,17 @@ contains
         initial_transition_block_count=transition_block_count
         initial_cumulative_csf_counts=0
         initial_cumulative_csf_counts(:transition_block_count)=cumulative_csf_counts(:transition_block_count)
-        !
-        !   Check if the core should be redefined
-        !
+        ! Keep the closed-core count from the descriptor basis.
         initial_core_subshell_count = core_subshell_count
-        !
-        !   Copy data to reference arrays
-        !
+        ! Copy data to reference arrays
         left_electron_count = electron_count
         initial_electron_count = electron_count
         left_csf_count = csf_count
         left_orbital_count = orbital_count
-        !
         allocate(left_occupations(max_orbitals,csf_count),stat=io_status)
         if (io_status == 0) allocate(left_subshell_quantum_codes(max_orbitals,3,csf_count),stat=io_status)
         if (io_status == 0) allocate(left_angular_codes(csf_angular_code_count,csf_count),stat=io_status)
         call require_collective_success(io_status)
-        !
         do i = 1,csf_count
             do j = 1,max_orbitals
                 left_occupations(j,i) = csf_subshell_occupations(j,i)
@@ -79,7 +62,6 @@ contains
                 left_subshell_quantum_codes(j,3,i) = csf_subshell_quantum_codes(j,3,i)
             end do
         end do
-        !
         left_angular_codes(:,:) = csf_angular_codes
         initial_orbital_count=orbital_count
         initial_csf_count=csf_count
@@ -93,14 +75,10 @@ contains
             left_kappa(i) = orbital_kappa(i)
             left_orbital_labels(i) = orbital_symmetry_labels(i)
         end do
-        !
-        !   Deallocate storage so that LODCSL can restart correctly
-        !
+        ! Deallocate storage so that LODCSL can restart correctly
         call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "load_initial_transition_basis")
         call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "load_initial_transition_basis")
         call dalloc (csf_angular_codes, "csf_angular_codes", "load_initial_transition_basis")
-        !
-
 
         return
     end subroutine load_initial_transition_basis

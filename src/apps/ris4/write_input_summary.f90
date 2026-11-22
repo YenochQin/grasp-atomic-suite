@@ -6,21 +6,15 @@ module write_input_summary_interface
     public :: write_input_summary
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !    Generates the first part of  grasp92.sum  (on stream 24).
+    !
+    ! Written by Farid A. Parpia. Last revision: 09 Dec 1992
+    ! Modified by Xinghong He. Last revision: 22 Dec 1997
+    !
+    ! Translated by Gediminas Gaigalas 11/18/19
     subroutine write_input_summary
         ! Module dependencies
         use calculation_file_units, only: summary_output_unit
-        !                                                                      *
-        !   Generates the first part of  grasp92.sum  (on stream 24).          *
-        !                                                                      *
-        !   Call(s) to: [LIB92] CALEN, convrt2.                                *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 09 Dec 1992   *
-        !   Modified by Xinghong He               Last revision: 22 Dec 1997   *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Gediminas Gaigalas 11/18/19
         use, intrinsic :: iso_fortran_env, only: real64
         use hamiltonian_correction_flags, only: use_first_order_csf_perturbation
         use atomic_calculation_state, only: electron_count, nuclear_charge, speed_of_light_au
@@ -44,13 +38,9 @@ contains
         ! Local declarations
         integer   :: lenth, iccut, orbital_index
         character :: record*256
-        !-----------------------------------------------
+        ! Write a timestamp in the summary header.
         !
-        !   Get the date and time of day; make this information the
-        !   header of the summary file
-        !
-        !   Write out the basic dimensions of the electron cloud
-        !
+        ! Report the electron, orbital, and CSF counts.
         write (summary_output_unit, *)
         call format_integer_with_context (electron_count, record, lenth, "write_input_summary: electron_count")
         write (summary_output_unit, *) "There are "//record(1:lenth)//" electrons in the cloud"
@@ -58,18 +48,13 @@ contains
         write (summary_output_unit, *) " in "//record(1:lenth)//" relativistic CSFs"
         call format_integer_with_context (orbital_count, record, lenth, "write_input_summary: orbital_count")
         write (summary_output_unit, *) " based on "//record(1:lenth)//" relativistic subshells."
-        !
-        !   If the CSFs are not treated uniformly, write out an
-        !   informative message
-        !
+        ! Report the first-order cutoff when the calculation restricts CSF interactions.
         if (use_first_order_csf_perturbation) then
             call format_integer_with_context (iccut, record, lenth, "write_input_summary: iccut")
             write (summary_output_unit, *) " CSFs 1--"//record(1:lenth)//" constitute"//   &
                 " the zero-order space;"
         end if
-        !
-        !   Write out the nuclear parameters
-        !
+        ! Report the nuclear model and isotope parameters.
         write (summary_output_unit, *)
         write (summary_output_unit, '("The atomic number is ",1f14.10,";")') nuclear_charge
         if (nuclear_model_parameter_count == 2) then
@@ -83,14 +68,10 @@ contains
         else
             write (summary_output_unit, *) " point nucleus."
         end if
-        !
-        !   Write out the physical effects specifications
-        !
+        ! Report the enabled Hamiltonian corrections.
         write (summary_output_unit, *)
         write (summary_output_unit, '("Speed of light = ",1pd19.12," atomic units.")') speed_of_light_au
-        !
-        !   Write out the parameters of the radial grid
-        !
+        ! Report the radial grid parameters.
         write (summary_output_unit, *)
         if (asymptotic_grid_step == 0.0_real64) then
             write (summary_output_unit, '("Radial grid: R(I) = RNT*(exp((I-1)*H)-1),"," I = 1, ..., N;"//" RNT  = ",1p,d19.12,&
@@ -104,9 +85,7 @@ contains
         end if
         write (summary_output_unit, '(" R(1) = ",1p,1d19.12," Bohr radii;"/" R(2) = ",1d19.12," Bohr radii;"/" R(N) = ",1d19.12,&
             &" Bohr radii.")') radial_grid(1), radial_grid(2), radial_grid(radial_point_count)
-        !
-        !   Write out the orbital properties
-        !
+        ! Write out the orbital properties
         write (summary_output_unit, *)
         write (summary_output_unit, *) "Subshell radial wavefunction summary:"
         write (summary_output_unit, *)
@@ -121,15 +100,11 @@ contains
                 & radial_small_components(2,orbital_index), &
                 orbital_last_grid_index(orbital_index)
         end do
-        !
-        !   Write the list of eigenpair indices
-        !
+        ! Write the list of eigenpair indices
         write (summary_output_unit,*)
         call write_level_energies (hamiltonian_energy_shift,shifted_eigenvalues,level_two_j_plus_one,level_parity_signs, &
             active_level_indices,active_level_count,3)
-        !
         return
-        !
-        !
+
     end subroutine write_input_summary
 end module write_input_summary_interface

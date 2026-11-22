@@ -1,3 +1,4 @@
+! Calculate hyperfine constants and Landé factors for selected relativistic states.
 !***********************************************************************
 !***********************************************************************
 !***********************************************************************
@@ -40,21 +41,11 @@
 !***********************************************************************
 !***********************************************************************
 !***********************************************************************
+! Written by Farid A. Parpia. Last revision: 24 Dec 1992
+! Modified by Gediminas Gaigalas for new spin-angular integration.
+! Last revision: Nov 2017
 program rhfs_main
     ! Module dependencies
-    !                                                                      *
-    !   Entry routine for HFS92. Controls the entire computation.          *
-    !                                                                      *
-    !   Call(s) to: [LIB92]: GETMIX, SETCSL, SETMC, SETCON.                *
-    !               [HFS92]: CHKPLT, GETHFD, HFS, SETDBG, SETSUM,          *
-    !                        STRSUM.                                       *
-    !               [NJGRAF]: FACTT.                                       *
-    !                                                                      *
-    !   Written by Farid A. Parpia            Last revision: 24 Dec 1992   *
-    !   Modified by Gediminas Gaigalas for new spin-angular integration.   *
-    !                                         Last revision:    Nov 2017   *
-    !                                                                      *
-    !***********************************************************************
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
     use calculation_state_files, only: read_state_name
@@ -87,8 +78,6 @@ program rhfs_main
     integer   :: mixing_file_kind, unused_core_subshell_count
     logical   :: prompt_answer
     character :: name*24
-    !-----------------------------------------------
-    !
 
     write (stderr_unit, *)
     write (stderr_unit, *) "RHFS"
@@ -115,67 +104,27 @@ program rhfs_main
     else
         mixing_file_kind = 1
     end if
-    !
-    !   Check compatibility of plant substitutions
-    !
-    !GG      CALL CHKPLT
-    !
-    !   Determine if there is to be any debug printout; this will be
-    !   made on the  .dbg  file
-    !
     call configure_debug_output
-    !
-    !   Perform machine- and installation-dependent setup
-    !
+    ! Initialize machine-dependent constants.
     call initialize_machine_constants
-    !
-    !   Set up the physical constants
-    !
+    ! Initialize physical constants.
     call initialize_physical_constants
-    !
-    !   Open the  .sum  file
-    !
+    ! Open the  .sum  file
     call open_summary_file (name, mixing_file_kind)
-    !
-    !   Open, check, load data from, and close, the  .csl  file
-    !
+    ! Load the configuration state functions from the descriptor pair.
     call load_angular_csf_basis (name, unused_core_subshell_count)
-    !
-    !   Get the remaining information
-    !
+    ! Get the remaining information
     call read_hyperfine_options (name)
-    !
-    !   Get the eigenvectors
-    !
-    !GG      WRITE (ISTDE, *) 'Block format?'
-    !GG      YES = GETYN()
-    !GG      WRITE (ISTDE, *)
-    !GG      IF (YES) THEN
+    !    Get the eigenvectors
     call read_mixing_blocks (name, mixing_file_kind)
-    !GG      ELSE
-    !GG         IF (NCI == 0) THEN
-    !GG            CALL GETMIXC (NAME)
-    !GG         ELSE
-    !GG            CALL GETMIXA (NAME)
-    !GG         ENDIF
-    !GG      ENDIF
-    !
-    !   Append a summary of the inputs to the  .sum  file
-    !
+    ! Record the input settings in the calculation report.
     call write_input_summary
-    !
-    !   Set up the table of logarithms of factorials
-    !
+    ! Initialize the log-factorial table for angular algebra.
     call initialize_log_factorial_table
-    !
-    !   Proceed with the HFS calculation
-    !
+    ! Proceed with the HFS calculation
     call calculate_hyperfine_matrix_elements
-    !
-    !   Print completion message
-    !
+
     write (stderr_unit, *)
     write (stderr_unit, *) "RHFS: Execution complete."
-    !
     stop
 end program rhfs_main

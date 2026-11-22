@@ -6,16 +6,11 @@ module read_specific_mass_shift_mpi_interface
     public :: read_specific_mass_shift_mpi
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! MPI version of SMSREAD. Each rank scans the full angular file but
+    ! only accumulates records whose IC belongs to its strided subset.
     subroutine read_specific_mass_shift_mpi(vinti_integrals,recoil_corrected_vinti_integrals)
         ! Module dependencies
         use calculation_file_units, only: two_body_cache_unit
-        !                                                                      *
-        !   MPI version of SMSREAD. Each rank scans the full angular file but  *
-        !   only accumulates records whose IC belongs to its strided subset.    *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: orbital_index_radix, max_orbitals
         use selected_level_indices, only: active_level_count

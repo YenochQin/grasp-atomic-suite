@@ -1,3 +1,4 @@
+! Open the MCP channels and handle the symmetry-block metadata used by the calculation.
 module connect_mcp_files_interface
     implicit none (type, external)
 
@@ -6,41 +7,16 @@ module connect_mcp_files_interface
     public :: connect_mcp_files
 contains
 
-    !***********************************************************************
-
+    ! Channel 30 records the sparse Hamiltonian structure and symmetry-block metadata.
+    ! Channel 31 stores one-electron T coefficients. Channels 32 and above store V(k).
+    ! Each channel records the generating rank, process count, basis size, and interaction settings.
+    ! Written by Farid A. Parpia. Last revision: 19 Dec 1992
+    ! Modified by Xinghong He. Last revision: 06 Aug 1998
+    ! Modified by G. Gaigalas. Last revision: 07 Sep 2021
+    !    Spin-angular coefficiants have been put on memory
     subroutine connect_mcp_files(core_subshell_count, input_symmetry_block_count, block_labels, file_prefix)
         ! Module dependencies
         use mcp_file_metadata, only: mcp_input_units
-        !
-        !   Open, read, check the header of all .mcp files. Info for each
-        !   block is not accessed here.
-        !   File 30 stores the structure of H(DC) ;
-        !   file 31 stores the  T  coefficients;  files 32, 33, ...,
-        !   store V(0), V(1), ...
-        !
-        !   This version works in both serial/parallel(mpi) environment. The
-        !   difference comes from parameters filehead (in the arg list), myid
-        !   and nprocs (in common/mpi/).
-        !
-        !   The following items are read from mcp files. myid and nprocs
-        !   read from the files are checked against the ones in COMMON/mpi/
-        !
-        !       ncore, nblock, kmaxf             mcp.30 only
-        !       ncfblk(i), i=1, nblock)          mcp.30 only
-        !       idblk(i), i=1, nblock)             mcp.30 only
-        !
-        !       MCPLAB, nblock, myid, nprocs     all mcp files
-        !       nelec, ncf, nw               all mcp files
-        !       DIAG, ICCUT, LFORDR                all mcp files
-        !
-        !   Call(s) to: [LIB92]: CONVRT, OPENFL.
-        !
-        !   Written by Farid A. Parpia            Last revision: 19 Dec 1992   *
-        !   Modified by Xinghong He               Last revision: 06 Aug 1998   *
-        !   Modified by G. Gaigalas               Last revision: 07 Sep 2021   *
-        !      Spin-angular coefficiants have been put on memory               *
-        !                                                                      *
-        !***********************************************************************
         use array_memory_management, only: alloc
         use input_error_handling, only: fail_input_io
         use atomic_calculation_state, only: electron_count
@@ -70,8 +46,7 @@ contains
         logical :: found, found1
         character :: number_text*2, mcp_channel_label*3
         character(len=len(file_prefix)+3) :: file_path
-        !-----------------------------------------------
-        !
+
         file_prefix_length = len_trim(file_prefix)
 
         file_path = file_prefix(1:file_prefix_length)//".30"
@@ -80,7 +55,7 @@ contains
             position="asis")
         if (io_status /= 0) call fail_input_io(io_status, sparse_input_unit, "MCP connect_mcp_files open "//trim(file_path))
 
-        !  Check each record before using its contents.
+        ! Check each record before using its contents.
 
         read (sparse_input_unit, iostat=ios) core_subshell_count, symmetry_block_count, max_mcp_file_multipole_rank
         if (ios /= 0) call fail_input_io(ios, sparse_input_unit, "MCP connect_mcp_files global header")
@@ -89,10 +64,8 @@ contains
             call fail_input_io(0, sparse_input_unit, "MCP connect_mcp_files invalid block count")
         end if
 
-        !cjb allocate ncfblk(0:*)
-        !cjb  CALL ALLOC (NCFBLK, NBLOCK + 1, 'NCFBLK', 'SETMCP')
+        ! cjb allocate ncfblk(0:*)
         call alloc (csf_counts_by_block, 0, symmetry_block_count , "csf_counts_by_block", "connect_mcp_files")
-        !cjb
         csf_counts_by_block(0) = 0
 
         read (sparse_input_unit, iostat=ios) (csf_counts_by_block(i),i=1,symmetry_block_count)
@@ -100,7 +73,7 @@ contains
         read (sparse_input_unit, iostat=ios) (block_labels(i),i=1,symmetry_block_count)
         if (ios /= 0) call fail_input_io(ios, sparse_input_unit, "MCP connect_mcp_files block labels")
 
-        !  Look for other mcp files
+        ! Look for other mcp files
 
         found = .true.
         do k = 31, 32 + max_mcp_file_multipole_rank
@@ -115,7 +88,7 @@ contains
             call fail_input_io(0, sparse_input_unit, "MCP connect_mcp_files missing channel file")
         end if
 
-        !  Open the files; check file headers
+        ! Open the files; check file headers
 
         allocate(mcp_input_units(30:32 + max_mcp_file_multipole_rank))
         mcp_input_units = -1

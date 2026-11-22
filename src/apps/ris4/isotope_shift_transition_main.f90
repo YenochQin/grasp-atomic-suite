@@ -1,3 +1,4 @@
+! Combine two RIS4 state reports and nuclear data into a line isotope shift.
 program isotope_shift_transition_main
     ! Module dependencies
     use calculation_state_files, only: read_state_name
@@ -70,7 +71,6 @@ program isotope_shift_transition_main
     headerfpmevlsj = '(1X,a,5X,a,5X,"Energy (cm-1)" &
         &,3X,"F0 (meV fm-2)",5X,"F2 (meV fm-4)",5X,"F4 (meV fm-6)",5X,"F6 (meV fm-8)")'
 
-
     headerfp2ghz = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)" &
         &,1X,"F0VED0 (GHz fm-2)",1X,"F0VED1 (GHz fm-4)",3X,"Lin. dep. (per mille)")'
     headerfp2ghzlsj = '(1X,a,5X,a,5X,"Energy (cm-1)" &
@@ -84,7 +84,6 @@ program isotope_shift_transition_main
     headerfp2mevlsj = '(1X,a,5X,a,5X,"Energy (cm-1)" &
         &,1X,"F0VED0 (meV fm-2)",1X,"F0VED1 (meV fm-4)")'
 
-
     headereghz = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (GHz)",9X,"FS (GHz)",10X,"IS (GHz)")'
     headereghzlsj = '(1X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (GHz)",9X,"FS (GHz)",10X,"IS (GHz)")'
     headeremhz = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (MHz)",9X,"FS (MHz)",10X,"IS (MHz)")'
@@ -92,10 +91,10 @@ program isotope_shift_transition_main
     headeremev = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",6X,"MS (meV)",9X,"FS (meV)",10X,"IS (meV)")'
     headeremevlsj = '(1X,a,5X,a,5X,"Energy (cm-1)",6X,"MS (meV)",9X,"FS (meV)",10X,"IS (meV)")'
 
-    !  format1a = '(i4,a13,i3,a12,f12.2,1P,4d16.7)'
-    !  format1b = '(i4,a13,i3,a12,f12.2,1P,4d16.7)'
-    !  format1c = '(i4,a13,i3,a12,f12.2,1P,2d16.7)'
-    !  format2 = '(i4,a13,i3,a12,f12.2,1P,3d16.7)'
+    ! format1a = '(i4,a13,i3,a12,f12.2,1P,4d16.7)'
+    ! format1b = '(i4,a13,i3,a12,f12.2,1P,4d16.7)'
+    ! format1c = '(i4,a13,i3,a12,f12.2,1P,2d16.7)'
+    ! format2 = '(i4,a13,i3,a12,f12.2,1P,3d16.7)'
 
     format1a = "(i4,a13,i3,a12,f12.2,1P,4d18.7)"
     format1alsj = "(a,a10,a,a10,f12.2,1P,4d18.7)"
@@ -119,7 +118,7 @@ program isotope_shift_transition_main
     write(*,*) "Input files: <state1>.(c)i, <state2>.(c)i"
     write(*,*) "Output file: <state1>.<state2>.(c)fi"
 
-    ! READ IN USER DEFINED PARAMETERS
+    ! Read the requested units and options.
     write(*,*)
     write(*,*) "Default settings (y/n)?: "
     read(*,*) def
@@ -202,7 +201,7 @@ program isotope_shift_transition_main
         end if
     end if
 
-    ! NAME INPUT AND OUTPUT FILES
+    ! Resolve the two state reports and the transition output path.
 
     file5 = trim(state1)//".lsj.lbl"
     file6 = trim(state2)//".lsj.lbl"
@@ -216,7 +215,7 @@ program isotope_shift_transition_main
         file3 = trim(state1)//"."//trim(state2)//".fi"
     end if
 
-    ! DEFINE CERTAIN FLAGS
+    ! Select the output units and the supported field-shift terms.
 
     if(rel=="y") then
         relflag = 1
@@ -230,7 +229,7 @@ program isotope_shift_transition_main
         efacflag = 0
     end if
 
-    ! OPEN AND READ IN DATA FROM INPUT FILES
+    ! Load the electronic factors for each state.
 
     lsjpresent = 0
     nveclsj1 = 0
@@ -253,7 +252,7 @@ program isotope_shift_transition_main
 
     call read_isotope_data("isodata",file3,z)
 
-    ! WRITE INPUT ISOTOPE DATA TO OUPTPUT FILE
+    ! Write the nuclear input data to the report.
     if(typeflag/="para") then
         write(isotope_shift_output_unit,"(a)") " INPUT ISOTOPE DATA"
         if(soph=="n") then
@@ -313,7 +312,7 @@ program isotope_shift_transition_main
             end do
         end do
 
-        ! WRITE NUCLEAR RADIAL MOMENTS TO OUPTPUT FILE
+        ! Write the nuclear radial moments to the report.
         if(typeflag/="para") then
             write(isotope_shift_output_unit,"(a)") " NUCLEAR RADIAL MOMENTS"
             write(isotope_shift_output_unit,*) "               Isotope 1    Isotope 2     Isotope 1 - Isotope 2"
@@ -330,8 +329,7 @@ program isotope_shift_transition_main
 
     end if
 
-
-    ! COMPUTE AND WRITE LINE ISOTOPE SHIFT PARAMETERS TO FILE
+    ! Subtract the state factors to obtain line isotope-shift parameters.
 
     if((typeflag=="para").or.(typeflag=="both")) then
         write(isotope_shift_output_unit,*) "LINE MASS SHIFT PARAMETERS"
@@ -422,7 +420,6 @@ program isotope_shift_transition_main
                 end if
             end do
         end do
-        !     if(efacflag.eq.1) then
         write(isotope_shift_output_unit,*)
         write(isotope_shift_output_unit,*) "LINE FIELD SHIFT PARAMETERS"
         write(isotope_shift_output_unit,*)
@@ -533,11 +530,6 @@ program isotope_shift_transition_main
             end do
         end do
 
-        ! end if
-        !end if
-
-        !     write(7,*)
-        !     write(7,*) 'LINE FIELD SHIFT PARAMETERS 2' ! JE
         write(isotope_shift_output_unit,*)
         if(unit=="GHz") then
             if(lsjpresent==0) then
@@ -645,10 +637,9 @@ program isotope_shift_transition_main
             end do
         end do
 
-        ! end if
     end if
 
-    ! COMPUTE AND WRITE LINE ISOTOPE SHIFT ENERGIES TO FILE
+    ! Combine the line factors with the nuclear data to obtain isotope shifts.
 
     write(isotope_shift_output_unit,*)
     if((typeflag=="ener").or.(typeflag=="both")) then
@@ -733,7 +724,6 @@ program isotope_shift_transition_main
                         if(soph=="y") then
                             fieldshift = fieldshift2(j)-fieldshift1(i)
                         else if(soph=="n") then
-                            !write(*,*) 'm1 larger than m2'
                             fieldshift = (fshift2(j)-fshift1(i))*dr2 + (fshift22(j)-fshift11(i))*dr2**2.0_real64
                         end if
                     else
@@ -741,8 +731,7 @@ program isotope_shift_transition_main
                         if(soph=="y") then
                             fieldshift = -1.0_real64*(fieldshift2(j)-fieldshift1(i))
                         else if(soph=="n") then
-                            !write(*,*) 'm1 smaller than m2'
-                            !write(*,*) fshift2(j)-fshift1(i),fshift22(j)-fshift11(i)
+
                             fieldshift = -1.0_real64*(fshift2(j)-fshift1(i))*dr2 + (fshift22(j)-fshift11(i))*dr2**2.0_real64
                         end if
                     end if
@@ -993,7 +982,7 @@ contains
         a = t/(4.0_real64*log(3.0_real64))
 
         rmax = 100.0_real64
-        !  h = 0.1d0
+        ! h = 0.1d0
         h = 0.01_real64
         m = int(rmax/h)
         m = m + mod(m,2)
@@ -1036,7 +1025,6 @@ contains
                         inte = inte + dinte
                     end do
                     rho(i) = 2.0_real64*pi*inte
-                    !write(*,*) r(i), rho(i)
                 end do
             end if
 
@@ -1100,7 +1088,6 @@ contains
         character(len=200) :: string
         character(len=200) :: csflabel(500)
 
-
         open (newunit=lsj_label_input_unit,file=name,status="unknown",form="formatted")
 
         lmax = 0
@@ -1111,28 +1098,19 @@ contains
             if (io_status == iostat_end) exit
             if (io_status /= 0) error stop trim(io_message)
             if(spinpar(i)(10:10)=="+".or.spinpar(i)(10:10)=="-") then
-                !read(7,'(i4,a10)') level(i),spinpar(i)
                 spin(i) = spinpar(i)(1:4)
                 par(i) = spinpar(i)(10:10)
                 read(lsj_label_input_unit,"(a36,a)") dummy,csflabel(i)
                 if(len(trim(csflabel(i)))>lmax) lmax = len(trim(csflabel(i)))
-                !write(*,*) level(i),spin(i),' ',par(i),' ',trim(csflabel(i))
                 i = i + 1
-                !else
-                !   spin(i) = spinpar(i)(1:4)
-                !   par(i) = spinpar(i)(10:10)
+                !    spin(i) = spinpar(i)(1:4)
+                !    par(i) = spinpar(i)(10:10)
             end if
-            !write(*,*) level(i),spin(i),par(i)
 
-            !read(7,'(a36,a)') dummy,csflabel(i)
-            !if(len(trim(csflabel(i))).gt.lmax) lmax = len(trim(csflabel(i)))
-            !write(*,*) level(i),spin(i),par(i),csflabel(i)
-
-            !i = i + 1
+            ! i = i + 1
         end do
         close(lsj_label_input_unit)
         nvec = i-1
-        !write(*,*) nvec
     end subroutine read_lsj_report
 
 end program isotope_shift_transition_main

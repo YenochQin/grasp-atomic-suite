@@ -6,21 +6,14 @@ module read_ci_mixing_coefficients_interface
     public :: read_ci_mixing_coefficients
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Determines the eigenpairs required;  this information is written
+    ! to the head of the  .mix  file.
+    !
+    ! Written by Farid A. Parpia. Last revision: 24 Nov 1992
+    ! Block version by Xinghong He. Last revision:  9 Jun 1998
     subroutine read_ci_mixing_coefficients (block_labels)
         ! Module dependencies
         use calculation_file_units, only: mixing_output_unit
-        !                                                                      *
-        !   Determines the eigenpairs required;  this information is written   *
-        !   to the head of the  .mix  file.                                    *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, lodstate                               *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 24 Nov 1992   *
-        !   Block version by Xinghong He          Last revision:  9 Jun 1998   *
-        !                                                                      *
-        !***********************************************************************
         use array_memory_management, only: alloc
         use atomic_calculation_state, only: electron_count, selected_level_count
         use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, &
@@ -35,7 +28,6 @@ contains
 
         ! Local declarations
         integer :: total_csf_count, noffset, vector_size, symmetry_block_index, level_index
-        !-----------------------------------------------
 
         ! lodstate generates
         !    nevblk(), ncmaxblk()
@@ -46,16 +38,11 @@ contains
             "read_ci_mixing_coefficients")
         call alloc (eigenvector_counts_by_block, symmetry_block_count, "eigenvector_counts_by_block", "read_ci_mixing_coefficients")
 
-        !      print *, ' LODMIX: change lodstate arg-list - see rscf2/getold.f90 '
-        !      stop
         call read_block_level_selection (block_labels)
-        !     CALL lodstate (nblock, ncfblk(1), idblk, nevblk, ncmaxblk)
+        ! Determine other auxiliary arrays, parameters
         !
-        !   Determine other auxiliary arrays, parameters
-        !
-        !    idxblk() is the block number of an eigenstate
-        !    nvecsiz  is the total size of the eigenvector array
-        !
+        !  idxblk() is the block number of an eigenstate
+        !  nvecsiz  is the total size of the eigenvector array
         call alloc (level_block_indices, selected_level_count, "level_block_indices", "read_ci_mixing_coefficients")
         total_csf_count = 0
         noffset = 0
@@ -70,12 +57,9 @@ contains
                 & symmetry_block_index)
         end do
         if (noffset /= selected_level_count) stop "read_ci_mixing_coefficients: selected level count mismatch"
-        !
-        !   Write header data to the  .mix  file
-        !
+        ! Write header data to the  .mix  file
         write (mixing_output_unit) electron_count, total_csf_count, orbital_count, selected_level_count, vector_size, &
             symmetry_block_count
-        !
         return
     end subroutine read_ci_mixing_coefficients
 end module read_ci_mixing_coefficients_interface

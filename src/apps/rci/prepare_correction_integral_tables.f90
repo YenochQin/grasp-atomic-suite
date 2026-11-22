@@ -1,3 +1,4 @@
+! Prepare radial integral tables for the selected Hamiltonian corrections.
 module prepare_correction_integral_tables_interface
     implicit none (type, external)
 
@@ -6,10 +7,8 @@ module prepare_correction_integral_tables_interface
     public :: prepare_correction_integral_tables
 contains
 
-    !************************************************************************
     subroutine prepare_correction_integral_tables(max_orbital_two_j, atwinv)
         ! Module dependencies
-        !************************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_orbitals
         use hamiltonian_correction_flags, only: include_normal_mass_shift, include_specific_mass_shift, &
@@ -37,13 +36,12 @@ contains
 
         ! Local declarations
         integer :: i
-        !-----------------------------------------------
-        !
+
         first_coulomb_integral_lookup = .true.
         coulomb_integral_count = 0
 
         if (include_transverse_interaction) then
-            !        ...Check the maximum numbers of orbtitals allowed in brint.f
+            ! ...Check the maximum numbers of orbtitals allowed in brint.f
             i = max_orbitals
             select case (max_orbital_two_j)
             case (11)
@@ -77,9 +75,7 @@ contains
             first_breit_integral_lookup = .true.
             breit_integral_counts = 0
         end if
-        !
-        !   Initialisations for the vacuum polarisation corrections
-        !
+        ! Initialisations for the vacuum polarisation corrections
         if (include_vacuum_polarization) then
             call build_nuclear_charge_distribution
             call build_vacuum_polarization
@@ -87,9 +83,7 @@ contains
             first_vacuum_polarization_lookup = .true.
             vacuum_polarization_integral_count = 0
         end if
-        !
-        !   Initialisations for nuclear translational energy corrections
-        !
+        ! Initialisations for nuclear translational energy corrections
         if (nuclear_mass_in_electron_masses > 0.0_real64) then
             atwinv = 1.0_real64/nuclear_mass_in_electron_masses
             if (include_normal_mass_shift) then

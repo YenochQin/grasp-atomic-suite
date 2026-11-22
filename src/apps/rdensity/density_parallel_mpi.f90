@@ -1,3 +1,4 @@
+! Provide MPI option broadcasts, density reductions, and error handling for rdensity_mpi.
 ! MPI processes isolate the mutable angular-library module state.
 module density_parallel
     ! Module dependencies

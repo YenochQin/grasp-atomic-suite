@@ -1,3 +1,4 @@
+! Restore the saved CI matrix blocks for diagonalization.
 module assemble_ci_matrix_from_restart_interface
     implicit none (type, external)
 
@@ -6,18 +7,13 @@ module assemble_ci_matrix_from_restart_interface
     public :: assemble_ci_matrix_from_restart
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   Get eav and do writings to the summary file .csum
+    !   The mpi version (genmat2mpi) also gets nelmnt_a and elsto
+    !
+    ! Xinghong He 98-06-15
     subroutine assemble_ci_matrix_from_restart(restart_header_status, nelmnt_a, closed_shell_breit_shift)
         ! Module dependencies
         use calculation_file_units, only: summary_output_unit
-        !
-        !   Get eav and do writings to the summary file .csum
-        !   The mpi version (genmat2mpi) also gets nelmnt_a and elsto
-        !
-        ! Xinghong He 98-06-15
-        !
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use sparse_hamiltonian_storage, only: block_matrix_element_cutoff, block_assembly_csf_count, &
             block_coulomb_one_body_coefficient_count, block_coulomb_one_body_integral_count, &
@@ -42,31 +38,14 @@ contains
             ncore_a, nvpi_a, nkei_a, nvinti_a,     &
             ncoec_a
         real(real64)          :: eav_a
-        !-----------------------------------------------
-        !-----------------------------------------------------------------------
         ! Transfer parameters around and print out on node-0.
         !  .Temporary variables (ending with "_a") are used to store the
         !   sums over nodes;
         !  .Outputs to stream 24 are done on node-0;
         ! The following parameters are accumulated in setham which will not
         ! contain the correct values in restart mode. And thus is skipped.
-        !-----------------------------------------------------------------------
         if (restart_header_status /= 0) then                    ! non-restart mode
-            !         WRITE (24, 301) CUTOFFTMP
-            !         WRITE (24, 302) NCOEITMP
-            !         WRITE (24, 303) NCOECTMP
-            !         WRITE (24, 304) NCTEITMP
-            !         WRITE (24, 305) NCTECTMP
-            !         IF (LTRANS) THEN
-            !            WRITE (24, 306) NTPITMP
-            !            WRITE (24, 307) NMCBPTMP
-            !            WRITE (24, 308) NCORETMP
-            !         ENDIF
-            !         IF (LVP) WRITE (24, 309) NVPITMP
-            !         IF (LNMS) WRITE (24, 310) NKEITMP
-            !         IF (LSMS) WRITE (24, 311) NVINTITMP
-            !      ELSE
-            !         WRITE (24, *) 'Restart mode --- no report on radial integrals'
+
             call mpi_reduce (block_coulomb_one_body_integral_count, ncoei_a, 1, mpi_integer, mpi_sum, 0,  &
                 mpi_comm_world, mpi_error_code)
             call mpi_reduce (block_coulomb_one_body_coefficient_count, ncoec_a, 1, mpi_integer, mpi_sum, 0,  &
@@ -118,22 +97,18 @@ contains
             end if
         end if                                      !(irestart .NE. 0) ! non-restart mode
 
-
-
-        !-----------------------------------------------------------------------
         ! ELSTO, EAV are not only for print-out, but also used later.
         ! density of the Hamiltonian matrix is only for print-out.
         ! At this place Hamiltonian matrix elements (EMT on each node) do
         !   _not_ contain ELSTO. ELSTO will be added to the total energy
         !  later with EAV.
-        !-----------------------------------------------------------------------
 
         call mpi_allreduce (block_stored_element_count, nelmnt_a, 1, mpi_integer8,  &
-            !AK:      MPI_INTEGER8 required to match the sizes of NELMNT_a and NELMNTtmp
-            !CFF &    MPI_SUM, MPI_COMM_WORLD, ierr) ! want MAX not SUM
+            ! AK:      MPI_INTEGER8 required to match the sizes of NELMNT_a and NELMNTtmp
+            ! CFF &    MPI_SUM, MPI_COMM_WORLD, ierr) ! want MAX not SUM
             &    mpi_max, mpi_comm_world, mpi_error_code)
-        !cjb  NELMNT_a decides between sparse and dense
-        !cjb  see comments in maneig.f90
+        ! NELMNT_a decides between sparse and dense
+        ! see comments in maneig.f90
 
         call mpi_bcast (closed_shell_breit_shift, 1, mpi_double_precision, 0,         &
             mpi_comm_world, mpi_error_code)
@@ -147,8 +122,7 @@ contains
             write (summary_output_unit, '("Average energy = ",1p,d19.12," Hartrees.")') hamiltonian_energy_shift
         end if
 
-        !cjb 1I8 -> 1I16
-        ! 307 FORMAT('MCBP coefficients that exceed CUTOFF: ',1I8)
+        ! cjb 1I8 -> 1I16
 
         return
     end subroutine assemble_ci_matrix_from_restart

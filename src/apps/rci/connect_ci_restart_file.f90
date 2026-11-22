@@ -1,3 +1,4 @@
+! Open and validate the CI restart file, or initialize its records for a new run.
 module connect_ci_restart_file_interface
     implicit none (type, external)
 
@@ -6,19 +7,12 @@ module connect_ci_restart_file_interface
     public :: connect_ci_restart_file
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   Open, check, load data from the  .res  file.
+    !
+    ! Written by Farid A. Parpia. Last revision: 06 Oct 1992
+    ! Modified by Xinghong. Last revision: 23 Jun 1998
     subroutine connect_ci_restart_file(isotope_file_path, radial_file_path, block_labels)
         ! Module dependencies
-        !                                                                      *
-        !   Open, check, load data from the  .res  file.                       *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: GETYN, OPENFL.
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 06 Oct 1992   *
-        !   Modified by Xinghong                  Last revision: 23 Jun 1998   *
-        !                                                                      *
-        !***********************************************************************
         use array_memory_management, only: alloc
         use calculation_input_defaults, only: nondefault_options_flag
         use ci_restart_units, only: restart_matrix_unit
@@ -47,60 +41,44 @@ contains
         integer :: open_status, io_status
         logical :: found, is_restart
         character :: r92res*6, file_path*11
-        !-----------------------------------------------
-        !
         ! Compose the "rci.res" file name
-        !
         file_path = "rci.res"
-        !
         ! Ask if this is a restart
-        !
         if (nondefault_options_flag /= 0) then
             write (stderr_unit, *) "Restarting RCI90 ?"
             is_restart = read_yes_no()
         else
             is_restart = .false.
         end if
-        !      IF (RESTRT) THEN
-        !        WRITE(734,'(a)') 'y            ! Restarting RCI90 ?'
-        !      ELSE
-        !        WRITE(734,'(a)') 'n            ! Restarting RCI90 ?'
-        !      END IF
-        !
         ! Do some settings and checks
-        !
         if (is_restart) then
-            !         ...Restart, make sure file exist
+            ! ...Restart, make sure file exist
             inquire(file=file_path, exist=found)
             if (.not.found) stop "connect_ci_restart_file: .res does not exist"
         end if
-        !
         ! Open the .res file
-        !
         call open_calculation_file (restart_matrix_unit, file_path, form, status, open_status)
         if (open_status /= 0) stop "connect_ci_restart_file: Error openning .res file"
-        !
         ! If restart, load the contents. Otherwise generate them via getcid
         !
         ! But first of all, iccutblk() is needed in both cases
-        !
         call alloc (csf_cutoff_by_block, symmetry_block_count, "csf_cutoff_by_block", "connect_ci_restart_file")
 
         if (is_restart) then
-            !        ...Check the signature of the file
+            ! ...Check the signature of the file
             read (restart_matrix_unit, iostat=io_status) r92res
             if (io_status/=0 .or. r92res/=restitle) then
                 close(restart_matrix_unit)
                 stop "connect_ci_restart_file: Not RCI92 .res file"
             end if
 
-            !         ...Read and check restart information
+            ! ...Read and check restart information
             call read_ci_restart
 
         else
 
-            !         ...Write the file header
-            !         ...Generate the first part of the .res file
+            ! ...Write the file header
+            ! ...Generate the first part of the .res file
             write (restart_matrix_unit) restitle
             call read_ci_options (isotope_file_path, radial_file_path, block_labels)
 

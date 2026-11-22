@@ -6,22 +6,15 @@ module read_initial_radial_wavefunctions_interface
     public :: read_initial_radial_wavefunctions
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This subroutine loads  radial wavefunctions from the  .rwf  file
+    ! and performs some related setup.
+    !
+    ! Written by Per Jonsson                              June 1996
     subroutine read_initial_radial_wavefunctions(state_name, global_trace_level)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         use calculation_state_files, only: orbital_input_path
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This subroutine loads  radial wavefunctions from the  .rwf  file   *
-        !   and performs some related setup.                                   *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, DALLOC, INTRPQ, ORTHSC.                *
-        !                                                                      *
-        !   Written by Per Jonsson                              June 1996      *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_orbitals, max_radial_points
         use array_memory_management, only: alloc, dalloc
@@ -52,46 +45,30 @@ contains
         real(real64), pointer :: pa(:), qa(:), ra(:)
         character  :: nh(max_orbitals)*2
         character :: radial_file_signature*6
-        !-----------------------------------------------
-        !
-        !  Common relevant for the initial state
-        !
-        !
+        ! Common relevant for the initial state
         local_trace_level = 0
         trace_level = max0(local_trace_level,global_trace_level)
         trace_level = 0
 
-        !
-        !   Write entry message
-        !
         write (output_unit, *) "Loading Radial WaveFunction File for initial state..."
-        !
-        !   Open the radial wave function file
-        !
+        ! Open the radial wave function file
         open(newunit=wavefunction_input_unit, file=orbital_input_path(state_name), form="UNFORMATTED", status="OLD", &
             position="asis")
-        !
-        !   Save NAK, NP and NH
-        !
+        ! Save NAK, NP and NH
         nak(:initial_orbital_count) = initial_orbital_kappa(:initial_orbital_count)
         np(:initial_orbital_count) = initial_orbital_principal_n(:initial_orbital_count)
         nh(:initial_orbital_count) = initial_orbital_symmetry_labels(:initial_orbital_count)
-        !
-        !   Allocate storage to orbital arrays
-        !
+        ! Allocate storage to orbital arrays
         call alloc (initial_radial_large_components, max_radial_points,initial_orbital_count, "initial_radial_large_components", &
             "read_initial_radial_wavefunctions")
         call alloc (initial_radial_small_components, max_radial_points,initial_orbital_count, "initial_radial_small_components", &
             "read_initial_radial_wavefunctions")
 
-        !
         con = nuclear_charge/speed_of_light_au
         con = con*con
-        !
         do j = 1, initial_orbital_count
             initial_radial_large_components(:max_radial_points,j) = 0.0_real64
             initial_radial_small_components(:max_radial_points,j) = 0.0_real64
-            !
             k = abs(nak(j))
             if (nuclear_model_parameter_count /= 0) cycle
             fkk = dble(k*k)
@@ -104,11 +81,8 @@ contains
                 write (output_unit, *) " is inappropriate for Z > ", speed_of_light_au, "."
                 stop
             end if
-            !
         end do
-        !
-        !   Read orbital information from Read Orbitals File;
-        !
+        ! Read orbital information from Read Orbitals File;
         nwin = 0
         read (wavefunction_input_unit, iostat=io_status) radial_file_signature
         if (io_status/=0 .or. radial_file_signature/="G92RWF") then
@@ -130,9 +104,7 @@ contains
             call alloc (ra, my, "RA", "read_initial_radial_wavefunctions")
             read (wavefunction_input_unit) pzy, (pa(i),i=1,my), (qa(i),i=1,my)
             read (wavefunction_input_unit) (ra(i),i=1,my)
-            !
-            !    Orbital order as defined in kapdata
-            !
+            ! Orbital order as defined in kapdata
             jj = 0
             do k = 1, kappa_group_count
                 if (k > 1) jj = initial_orbital_counts_by_group(k-1) + jj
@@ -168,9 +140,7 @@ contains
             call ensure_debug_output()
             write (angular_debug_unit, *) " orbitals renormalised;"
         end if
-        !
-        !   Stop with an error message if all orbitals are not known
-        !
+        ! Stop with an error message if all orbitals are not known
         if (nwin < initial_orbital_count) then
             write (output_unit, *) "read_initial_radial_wavefunctions: All required orbitals not"
             write (output_unit, *) " found."
@@ -192,8 +162,6 @@ contains
         end if
 
         return
-        !
         return
-        !
     end subroutine read_initial_radial_wavefunctions
 end module read_initial_radial_wavefunctions_interface

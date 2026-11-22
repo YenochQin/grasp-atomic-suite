@@ -1,3 +1,4 @@
+! Evaluate a vacuum-polarization contribution to the Hamiltonian.
 module vacuum_polarization_integral_interface
     implicit none (type, external)
 
@@ -6,20 +7,15 @@ module vacuum_polarization_integral_interface
     public :: vacuum_polarization_integral
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !    Computes nuclear vacuum polarization integrals.
+    !
+    ! Last update: 09 Oct 1992
+    !
+    ! Translated by Charlotte Froese Fischer
+    !                        Gediminas Gaigalas  10/05/17
     real(real64)  function vacuum_polarization_integral (first_orbital,second_orbital)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   Computes nuclear vacuum polarization integrals.                    *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: QUAD.                                         *
-        !                                           Last update: 09 Oct 1992   *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Charlotte Froese Fischer
-        !                       Gediminas Gaigalas  10/05/17
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: orbital_index_radix
         use debug_output_settings, only: rmcdhf_debug_flags
@@ -37,10 +33,8 @@ contains
 
         ! Local declarations
         integer :: k
-        !------------------------------------------------
-        !
+
         integration_last_index = min (orbital_last_grid_index(first_orbital),orbital_last_grid_index(second_orbital))
-        !TA(1) = 0.0D 00  !! Why would this be wrong?!!
         radial_workspace_a(1)  = 0
         do k = 2,integration_last_index
             radial_workspace_a(k) = (radial_large_components(k,first_orbital)*radial_large_components(k,second_orbital)+ &
@@ -50,16 +44,13 @@ contains
                 *zdist(k)
         end do
         call integrate_radial_grid (vacuum_polarization_integral)
-        !
         if (rmcdhf_debug_flags(9)) then
             call ensure_debug_output()
             write (angular_debug_unit,'(/"vacuum_polarization_integral: V (",1i2,1a2,",",1i2,1a2,") = ",1pd19.12)') &
                 orbital_principal_n(first_orbital),orbital_symmetry_labels(first_orbital),orbital_principal_n(second_orbital), &
                 & orbital_symmetry_labels(second_orbital),vacuum_polarization_integral
         end if
-        !
         return
-        !
-        !
+
     end function vacuum_polarization_integral
 end module vacuum_polarization_integral_interface

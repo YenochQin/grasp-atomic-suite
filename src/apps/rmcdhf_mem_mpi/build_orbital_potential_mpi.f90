@@ -1,3 +1,4 @@
+! Assemble an orbital potential from the contributions distributed across MPI ranks.
 module build_orbital_potential_mpi_interface
     implicit none (type, external)
 
@@ -8,7 +9,6 @@ contains
 
     subroutine build_orbital_potential_mpi(extended_optimal_level, orbital_index, radial_point_count)
         ! Module dependencies
-        !************************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use scf_radial_potentials, only: large_exchange_source, small_exchange_source, orbital_y_potential
         use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_process_count, mpi_sum
@@ -33,7 +33,6 @@ contains
 
         ! Local declarations
         real(real64) :: radial_reduction_buffer(radial_point_count)
-        !-----------------------------------------------------------------------
 
         call assemble_orbital_potential_coefficients (extended_optimal_level, orbital_index)
         call build_direct_radial_potential (orbital_index)

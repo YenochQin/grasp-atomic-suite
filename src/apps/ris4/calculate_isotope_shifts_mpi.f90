@@ -1,3 +1,4 @@
+! Coordinate the MPI calculation of electronic factors for relativistic isotope shifts.
 module calculate_isotope_shifts_mpi_interface
     implicit none (type, external)
 
@@ -6,17 +7,12 @@ module calculate_isotope_shifts_mpi_interface
     public :: calculate_isotope_shifts_mpi
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! MPI version of RIS_CAL. Each rank accumulates a strided subset of
+    ! configuration-pair contributions and the partial sums are reduced
+    ! before the root rank writes the final output.
     subroutine calculate_isotope_shifts_mpi (name)
         ! Module dependencies
         use calculation_file_units, only: one_body_cache_unit, summary_output_unit, two_body_cache_unit
-        !                                                                      *
-        !   MPI version of RIS_CAL. Each rank accumulates a strided subset of  *
-        !   configuration-pair contributions and the partial sums are reduced   *
-        !   before the root rank writes the final output.                       *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: max_orbitals
         use array_memory_management, only: alloc, dalloc

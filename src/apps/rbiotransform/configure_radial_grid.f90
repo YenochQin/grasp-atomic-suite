@@ -1,3 +1,4 @@
+! Set default radial-grid parameters and apply the available input overrides.
 module configure_radial_grid_interface
     implicit none (type, external)
 
@@ -6,16 +7,12 @@ module configure_radial_grid_interface
     public :: configure_radial_grid
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This subroutine sets the parameters controlling the radial grid
+    !
+    ! Last revision: June 1996
     subroutine configure_radial_grid
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: input_unit, output_unit
-        !                                                                      *
-        !   This subroutine sets the parameters controlling the radial grid    *
-        !                                                                      *
-        !   Last revision: June 1996                                           *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_radial_points
         use atomic_calculation_state,           only: speed_of_light_au, vacuum_speed_of_light_au, nuclear_charge, working_tolerance
@@ -27,14 +24,13 @@ contains
 
         ! Local declarations
         logical   :: yes
-        !-----------------------------------------------
-        !
+
         if (nuclear_model_parameter_count == 0) then
             radial_grid_scale = exp((-65.0_real64/16.0_real64))/nuclear_charge
             transformed_grid_step = 0.5_real64**4
             radial_point_count = min(220,max_radial_points)
         else
-            !cff     .. Should be Z-dependent
+            ! .. Should be Z-dependent
             radial_grid_scale = 2.0e-6_real64/nuclear_charge
             transformed_grid_step = 5.0e-2_real64
             radial_point_count = max_radial_points
@@ -60,11 +56,8 @@ contains
                 read (input_unit, *) radial_point_count
             end if
         end if
-        !
-        !   ACCY is an estimate of the accuracy of the numerical procedures
-        !
+        ! ACCY is an estimate of the accuracy of the numerical procedures
         working_tolerance = transformed_grid_step**6
-        !
 
         if (nondefault_options_flag /= 0) then
             write (output_unit, *) "The physical speed of light in"

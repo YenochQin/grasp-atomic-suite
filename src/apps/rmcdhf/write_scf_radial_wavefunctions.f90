@@ -1,3 +1,4 @@
+! Save the optimized radial orbitals for subsequent CI and property calculations.
 module write_scf_radial_wavefunctions_interface
     implicit none (type, external)
 
@@ -6,10 +7,8 @@ module write_scf_radial_wavefunctions_interface
     public :: write_scf_radial_wavefunctions
 contains
 
-    !***********************************************************************
     subroutine write_scf_radial_wavefunctions(output_wavefunction_path)
         ! Module dependencies
-        !***********************************************************************
         use radial_grid_state, only: radial_grid
         use orbital_csf_basis, only: orbital_count, orbital_energy_parameters, orbital_kappa, orbital_principal_n
         use radial_wavefunctions, only: orbital_last_grid_index, orbital_origin_parameters, radial_large_components, &
@@ -20,8 +19,7 @@ contains
         integer :: wavefunction_output_unit
         character , intent(in) :: output_wavefunction_path*(*)
         integer :: orbital_index, last_radial_index, radial_index
-        !-----------------------------------------------
-        !
+
         open(newunit=wavefunction_output_unit, file=output_wavefunction_path, status="UNKNOWN", form="UNFORMATTED", position=&
             "asis")
         write (wavefunction_output_unit) "G92RWF"

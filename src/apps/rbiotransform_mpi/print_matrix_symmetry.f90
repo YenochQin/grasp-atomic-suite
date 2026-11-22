@@ -6,16 +6,11 @@ module print_matrix_symmetry_interface
     public :: print_matrix_symmetry
 contains
 
-    !     ------------------------------------------------------------------
-    !     P R S Y M
-    !     ------------------------------------------------------------------
-    !
     subroutine print_matrix_symmetry(a, matdim)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         ! PRINT LOWER HALF OF A SYMMETRIC MATRIX OF DIMENSION MATDIM.
         ! THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
-        !-----------------------------------------------
         use, intrinsic :: iso_fortran_env, only: real64
         implicit none (type, external)
 
@@ -25,7 +20,6 @@ contains
 
         ! Local declarations
         integer :: jstart, jstop, i, j
-        !-----------------------------------------------
         jstart = 1
         jstop = 0
         do i = 1, matdim

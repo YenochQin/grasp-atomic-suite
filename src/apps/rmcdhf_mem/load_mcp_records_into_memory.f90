@@ -1,3 +1,4 @@
+! Read a cached integral label and its contribution count from the selected MCP channel.
 module load_mcp_records_into_memory_interface
     implicit none (type, external)
 
@@ -6,15 +7,9 @@ module load_mcp_records_into_memory_interface
     public :: load_mcp_records_into_memory
 contains
 
-    !*******************************************************************
-    !                                                                  *
+    ! Written by  G. Gaigalas               Vilnius, September 2021
     subroutine load_mcp_records_into_memory(nfile, total_secondary_contribution_count, lab, ncontr)
         ! Module dependencies
-        !                                                                  *
-        !   Written by  G. Gaigalas               Vilnius, September 2021  *
-        !                                                                  *
-        !*******************************************************************
-        !
         use, intrinsic :: iso_fortran_env, only: int64
         use rmcdhf_mcp_memory, only: lab_31, lab_32, lab_33, lab_34, lab_35, lab_36, lab_37, lab_38, lab_39, lab_40, &
             & lab_41, lab_42, lab_43, lab_44, lab_45, lab_46, lab_47, lab_48, lab_49, lab_50, &
@@ -35,7 +30,6 @@ contains
         integer, intent(in) :: nfile
         integer, intent(out) :: lab, ncontr
         integer(int64), intent(in) :: total_secondary_contribution_count
-        !-----------------------------------------------
 
         if(nfile == 31) then
             lab    = lab_31(total_secondary_contribution_count)

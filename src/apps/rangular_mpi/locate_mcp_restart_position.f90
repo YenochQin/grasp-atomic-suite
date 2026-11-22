@@ -1,3 +1,4 @@
+! Find a stored position in the MCP calculation files for restart handling.
 module locate_mcp_restart_position_interface
     implicit none (type, external)
 
@@ -6,14 +7,11 @@ module locate_mcp_restart_position_interface
     public :: locate_mcp_restart_position
 contains
 
-    !***********************************************************************
-    !                                                                      *
     subroutine locate_mcp_restart_position(first_bra_csf_index, first_ket_csf_index, matrix_element_position, &
         & one_electron_coefficient_count, &
         & two_electron_counts_by_rank)
         ! Module dependencies
         use mcp_generation_options, only: mcp_temporary_units
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use mcp_generation_options, only: max_coulomb_multipole_rank
         use orbital_csf_basis, only: csf_count
@@ -32,13 +30,10 @@ contains
         integer, save :: sms_restart_unit = -1
         real(real64) :: stored_coefficient
         character :: sort_status_label*8, mcp_channel_label*3
-        !-----------------------------------------------
+        ! Begin by examining file 30; this is the last to be updated by
+        ! SUBROUTINE MCP
         !
-        !   Begin by examining file 30; this is the last to be updated by
-        !   SUBROUTINE MCP
-        !
-        !   Read and check the character part of the file header
-        !
+        ! Read and check the character part of the file header
         rewind (mcp_temporary_units(30))
         read (mcp_temporary_units(30)) mcp_channel_label, sort_status_label
         if (sort_status_label == "  SORTED") then

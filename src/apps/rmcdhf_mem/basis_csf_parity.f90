@@ -1,3 +1,4 @@
+! Return the parity of a CSF in the loaded MCDHF basis.
 module basis_csf_parity_interface
     implicit none (type, external)
 

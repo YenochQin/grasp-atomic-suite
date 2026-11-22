@@ -1,4 +1,5 @@
-! Optional wall-clock diagnostics. Calls to profile_emit are coordinator-only.
+! Collect optional wall-clock timings for the conversion and label-writing stages.
+! Call profile_emit from the coordinator thread.
 module jj2lsj_profile
     ! Module dependencies
     use iso_fortran_env, only: int64, real64, error_unit

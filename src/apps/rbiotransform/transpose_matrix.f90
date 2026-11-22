@@ -6,16 +6,9 @@ module transpose_matrix_interface
     public :: transpose_matrix
 contains
 
-    !
-    !     ------------------------------------------------------------------
-    !     T R P M A T
-    !     ------------------------------------------------------------------
-    !
+    ! XOUT(I,J) = XIN(J,I)
     subroutine transpose_matrix(xin, nrow, ncol, xout)
         ! Module dependencies
-        !
-        ! XOUT(I,J) = XIN(J,I)
-        !************************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         implicit none (type, external)
 
@@ -26,10 +19,7 @@ contains
         real(real64) , intent(out) :: xout(ncol,nrow)
 
         ! Local declarations
-        !-----------------------------------------------
-        !
         xout = transpose(xin)
-        !
         return
     end subroutine transpose_matrix
 end module transpose_matrix_interface

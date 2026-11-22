@@ -6,14 +6,9 @@ module tabulate_slater_integrals_mpi_interface
     public :: tabulate_slater_integrals_mpi
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Written by     Xinghong He. Last revision: 12 Jun 1998
     subroutine tabulate_slater_integrals_mpi(mpi_rank, mpi_process_count, max_orbital_two_j)
         ! Module dependencies
-        !
-        !   Written by     Xinghong He            Last revision: 12 Jun 1998   *
-        !                                                                      *
-        !***********************************************************************
         use distributed_slater_integrals, only: local_slater_integral_indices, local_slater_integral_values
 
         ! Procedure interfaces
@@ -31,7 +26,6 @@ contains
 
         ! Local declarations
         integer      :: slater_integral_count
-        !-----------------------------------------------
 
         call tabulate_slater_integrals (mpi_rank, mpi_process_count, slater_integral_count, max_orbital_two_j)
 

@@ -6,20 +6,13 @@ module write_input_summary_interface
     public :: write_input_summary
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Generates the first part of  grasp92.sum  (on stream 24).
+    !
+    ! Written by Farid A. Parpia. Last revision: 09 Dec 1992
+    ! Modified by Xinghong He. Last revision: 22 Dec 1997
     subroutine write_input_summary
         ! Module dependencies
         use calculation_file_units, only: summary_output_unit
-        !                                                                      *
-        !   Generates the first part of  grasp92.sum  (on stream 24).          *
-        !                                                                      *
-        !   Call(s) to: [LIB92] CALEN, convrt2.                                *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 09 Dec 1992   *
-        !   Modified by Xinghong He               Last revision: 22 Dec 1997   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use hamiltonian_correction_flags, only: use_first_order_csf_perturbation, include_normal_mass_shift, &
             estimate_self_energy, include_specific_mass_shift, include_transverse_interaction, include_vacuum_polarization
@@ -41,17 +34,10 @@ contains
         ! Local declarations
         integer   :: lenth, symmetry_block_index, iccut, i, ntmp
         character :: record*256
-        !-----------------------------------------------
-        !     POINTER (pncfblk, ncfblk(0:*))
-        !
-        !     POINTER (piccutblk, iccutblk(1))
 
+        ! Write a timestamp in the summary header.
         !
-        !   Get the date and time of day; make this information the
-        !   header of the summary file
-        !
-        !   Write out the basic dimensions of the electron cloud
-        !
+        ! Report the electron, orbital, and CSF counts.
         write (summary_output_unit, *)
         call format_integer_with_context (electron_count, record, lenth, "write_input_summary: electron_count")
         write (summary_output_unit, *) "There are "//record(1:lenth)//" electrons in the cloud"
@@ -59,10 +45,7 @@ contains
         write (summary_output_unit, *) " in "//record(1:lenth)//" relativistic CSFs"
         call format_integer_with_context (orbital_count, record, lenth, "write_input_summary: orbital_count")
         write (summary_output_unit, *) " based on "//record(1:lenth)//" relativistic subshells."
-        !
-        !   If the CSFs are not treated uniformly, write out an
-        !   informative message
-        !
+        ! Report the first-order cutoff when the calculation restricts CSF interactions.
         if (use_first_order_csf_perturbation) then
             write (summary_output_unit, *)
             do symmetry_block_index = 1, symmetry_block_count
@@ -72,9 +55,7 @@ contains
                     " the zero-order space;  nb = ", symmetry_block_index, " ncf = ", csf_counts_by_block(symmetry_block_index)
             end do
         end if
-        !
-        !   Write out the nuclear parameters
-        !
+        ! Report the nuclear model and isotope parameters.
         write (summary_output_unit, *)
         write (summary_output_unit, '("The atomic number is ",1f14.10,";")') nuclear_charge
         if (nuclear_mass_in_electron_masses == 0.0_real64) then
@@ -94,12 +75,9 @@ contains
         else
             write (summary_output_unit, *) " point nucleus."
         end if
-        !
-        !   Write out the physical effects specifications
-        !
+        ! Report the enabled Hamiltonian corrections.
         write (summary_output_unit, *)
         write (summary_output_unit, '("Speed of light = ",1p,d19.12," atomic units.")') speed_of_light_au
-        !
         write (summary_output_unit, *)
         if (include_transverse_interaction .or. include_vacuum_polarization .or. include_normal_mass_shift .or. &
             include_specific_mass_shift) then
@@ -114,15 +92,12 @@ contains
         else
             write (summary_output_unit, *) "H (Dirac Coulomb) will be diagonalised by itself."
         end if
-        !
         if (estimate_self_energy) then
             write (summary_output_unit, *) &
                 "Diagonal contributions from H (Self Energy) will be estimated"
             write (summary_output_unit, *) " from a screened hydrogenic approximation."
         end if
-        !
-        !   Write out the parameters of the radial grid
-        !
+        ! Report the radial grid parameters.
         write (summary_output_unit, *)
         if (asymptotic_grid_step == 0.0_real64) then
             write (summary_output_unit, '("Radial grid: R(I) = RNT*(exp((I-1)*H)-1),"," I = 1, ..., N;"/,/," RNT  = ",1p,d19.12,&
@@ -135,9 +110,7 @@ contains
         end if
         write (summary_output_unit, '(" R(1) = ",1p,1d19.12," Bohr radii;"/," R(2) = ",1d19.12," Bohr radii;"/," R(N) = ",1d19.12,&
             &" Bohr radii.")') radial_grid(1), radial_grid(2), radial_grid(radial_point_count)
-        !
-        !   Write out the orbital properties
-        !
+        ! Write out the orbital properties
         write (summary_output_unit, *)
         write (summary_output_unit, *) "Subshell radial wavefunction summary:"
         write (summary_output_unit, *)
@@ -150,13 +123,9 @@ contains
                 & radial_small_components(2,i), &
                 orbital_last_grid_index(i)
         end do
-        !
-        !   Write the list of eigenpair indices
-        !
+        ! Write the list of eigenpair indices
         write (summary_output_unit, *)
-        !
-        !   Find total number of eigenstates and print corresponding info
-        !
+        ! Find total number of eigenstates and print corresponding info
         ntmp = 0
         do i = 1, symmetry_block_count
             ntmp = ntmp + eigenvector_counts_by_block(i)
@@ -165,8 +134,6 @@ contains
         write (summary_output_unit,*) ntmp, " levels will be computed"
 
         return
-        !
         return
-        !
     end subroutine write_input_summary
 end module write_input_summary_interface

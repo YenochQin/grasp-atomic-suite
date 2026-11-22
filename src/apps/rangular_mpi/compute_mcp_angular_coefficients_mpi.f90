@@ -1,3 +1,4 @@
+! Generate this rank's angular contributions to one MCP symmetry block.
 module compute_mcp_angular_coefficients_mpi_interface
     implicit none (type, external)
 
@@ -6,36 +7,26 @@ module compute_mcp_angular_coefficients_mpi_interface
     public :: compute_mcp_angular_coefficients_mpi
 contains
 
-    !***********************************************************************
-    !                                                                      *
-    !cjb  myid, nprocs = NOT args
+    ! This routine controls the computation  and storage of the values
+    ! and all indices of the angular coefficients
+    !
+    !                                     k
+    !                 T  (ab)            V  (abcd)
+    ! rs
+    !
+    ! k is the multipolarity of a two-particle Coulomb integral. a, b,
+    ! c and d are orbital sequence numbers.  r and s are configuration
+    ! state function indices.
+    !
+    ! Written by Farid A. Parpia. Last revision: 28 Sep 1993
+    ! Modified by C. Froese Fischer for block computation.
+    ! Modified by G. Gaigalas and J. Bieron for new spin-angular
+    ! integration                                        01 April 2012
     subroutine compute_mcp_angular_coefficients_mpi (nb, is_restart, output_file_prefix)
         ! Module dependencies
         use mcp_generation_options, only: mcp_temporary_units
         use calculation_file_units, only: summary_output_unit
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This routine controls the computation  and storage of the values   *
-        !   and all indices of the angular coefficients                        *
-        !                                                                      *
-        !                                       k                              *
-        !                   T  (ab)            V  (abcd)                       *
-        !                    rs                 rs                             *
-        !                                                                      *
-        !   k is the multipolarity of a two-particle Coulomb integral. a, b,   *
-        !   c and d are orbital sequence numbers.  r and s are configuration   *
-        !   state function indices.                                            *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALCBUF, ALLOC, CONVRT, DALLOC, RKCO_GG,       *
-        !                        TNSRJJ.                                       *
-        !               [GENMCP]: FNDBEG, SETSDA, SORT.                        *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 28 Sep 1993   *
-        !   Modified by C. Froese Fischer for block computation.               *
-        !   Modified by G. Gaigalas and J. Bieron for new spin-angular         *
-        !   integration                                        01 April 2012   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use iso_fortran_env, only: int64
         use rangular_profile, only: stage_clock, record_stage
@@ -69,16 +60,13 @@ contains
 
         ! Arguments
         integer  :: nb
-        !     INTEGER  :: MYID
-        !     INTEGER  :: NPROCS
+
         logical , intent(in) :: is_restart
         character(len=*), intent(in) :: output_file_prefix
 
         ! Local constants
         integer, parameter :: orbital_index_radix_squared = orbital_index_radix*orbital_index_radix
-        !GG      REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-10
-        !GG      REAL(DOUBLE), PARAMETER :: CUTOFF = 0.0D0
-        !cjb  REAL(DOUBLE), PARAMETER :: CUTOFF = 1.0D-08
+
         real(real64), parameter :: cutoff = 1.0e-10_real64
 
         ! Local declarations
@@ -91,23 +79,15 @@ contains
         real(real64) :: vcoeff
         logical :: f0int, lincr
         integer(int64) :: stage_start_count
-        !-----------------------------------------------
-        !
-        !cjb           PRINT *, ' mcpmpi_gg.f90 FHEAD '
-        !cjb           PRINT *, ' mcpmpi_gg.f90 FHEAD = ', FHEAD
-        !
-        !   Allocate storage to the array that stores the lengths
-        !   of the lists of V coefficients of each multipolarity
-        !
+        !    Allocate storage to the array that stores the lengths
+        !    of the lists of V coefficients of each multipolarity
         stage_start_count = stage_clock()
         call alloc(two_electron_counts_by_rank, 0, max_coulomb_multipole_rank, "two_electron_counts_by_rank", &
             "compute_mcp_angular_coefficients_mpi")
-        !
-        !   If this is a restart, determine the pair of CSFs with which
-        !   the computation should begin.
-        !   If not restart, initialize the counters for the total number of
-        !   T coefficients and V coefficients of each multipolarity.
-        !
+        ! If this is a restart, determine the pair of CSFs with which
+        ! the computation should begin.
+        ! If not restart, initialize the counters for the total number of
+        ! T coefficients and V coefficients of each multipolarity.
         if (is_restart) then
             print *, "Not ready for RESTART"
             stop
@@ -121,21 +101,15 @@ contains
                 two_electron_counts_by_rank(k) = 0
             end do
         end if
-        !
-        !   Allocate storage for the arrays in BUFFER
-        !
+        ! Allocate storage for the arrays in BUFFER
         call manage_angular_coefficient_buffer (1)
-        !
-        !   Write header to  .dbg  file if appropriate
-        !
+        ! Write header to  .dbg  file if appropriate
         if (ldbpa(2) .or. ldbpa(3)) then
             call ensure_debug_output()
             write (angular_debug_unit,'(/"From compute_mcp_angular_coefficients_mpi:")')
         end if
-        !
-        !   JA and JB respectively refer to the initial and final states
-        !   in the list of NCF configurations
-        !
+        ! JA and JB respectively refer to the initial and final states
+        ! in the list of NCF configurations
         call record_stage("coefficient_buffer_allocation",nb,stage_start_count)
         stage_start_count = stage_clock()
         do csf_index = first_bra_csf_index, csf_count, mpi_process_count
@@ -144,10 +118,8 @@ contains
                 if (diagonal_only .or. (use_first_order_restriction .and. (ket_csf_index > active_csf_cutoffs(nb))) ) then
                     if (ket_csf_index /= csf_index) cycle
                 end if
-                !
-                !   LINCR is .TRUE. if npos is to be incremented by 1; there
-                !   is always a diagonal element in each column
-                !
+                ! LINCR is .TRUE. if npos is to be incremented by 1; there
+                ! is always a diagonal element in each column
                 if (ket_csf_index /= csf_index) then
                     lincr = .true.
                 else
@@ -155,7 +127,7 @@ contains
                     lincr = .false.
                 end if
                 if (ket_csf_index /= csf_index) then
-                    !   Compute T coefficients
+                    ! Compute T coefficients
                     call calculate_one_electron_scalar_coefficients(csf_index,ket_csf_index,bra_orbital_index,ket_orbital_index, &
                         & shell_coefficients)
                     if (bra_orbital_index /= 0 .and. bra_orbital_index /= ket_orbital_index .and.       &
@@ -170,13 +142,10 @@ contains
                             & shell_coefficients(1)
                     end if
                 end if
-                !
-                !   Call the MCP package to generate V coefficients; ac and bd
-                !   are the density pairs. NVCOEF is initialized here but changed
-                !   in /rkco/cor[d] via COMMON.
-                !
+                ! Call the MCP package to generate V coefficients; ac and bd
+                ! are the density pairs. NVCOEF is initialized here but changed
+                ! in /rkco/cor[d] via COMMON.
                 angular_coefficient_count = 0
-                !            CALL RKCO_GG (JA, JB, 0, 1)
                 call calculate_two_electron_angular_coefficients (csf_index, ket_csf_index, calculate_closed_shell_mcp, 0, 1)
                 do i = 1, angular_coefficient_count
                     vcoeff = angular_coefficients(i)
@@ -221,10 +190,8 @@ contains
                         end if
                     end if
                 end do
-                !
-                !   All angular coefficients for this pair of CSFs have been
-                !   generated; update file 30
-                !
+                ! All angular coefficients for this pair of CSFs have been
+                ! generated; update file 30
                 if ((ket_csf_index == csf_index) .or. (.not. lincr))   &
                     write (mcp_temporary_units(30)) csf_index, ket_csf_index, matrix_element_position
             end do
@@ -234,17 +201,13 @@ contains
         call record_stage("pair_generation_and_buffering",nb,stage_start_count, &
             int(one_electron_coefficient_count,int64)+sum(int(two_electron_counts_by_rank,int64)),storage="disk")
         stage_start_count = stage_clock()
-        !
-        !   Deallocate storage that is no longer required
-        !
+        ! Deallocate storage that is no longer required
         call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "compute_mcp_angular_coefficients_mpi")
         call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "compute_mcp_angular_coefficients_mpi")
         call dalloc (csf_angular_codes, "csf_angular_codes", "compute_mcp_angular_coefficients_mpi")
         call manage_angular_coefficient_buffer (3)
         call record_stage("csf_and_pair_buffer_release",nb,stage_start_count)
-        !
-        !   Write out a report for this run
-        !
+        ! Write out a report for this run
         if (nondefault_options_flag /= 0 .and. mpi_rank == 0) then
             write (summary_output_unit,*)
             write (summary_output_unit,*) one_electron_coefficient_count, " T coefficients generated;"
@@ -252,9 +215,7 @@ contains
                 write (summary_output_unit,*) two_electron_counts_by_rank(k)," V(k=",k,") coefficients generated;"
             end do
         end if
-        !
-        !   Set up sparse structure definition arrays in file 30
-        !
+        ! Set up sparse structure definition arrays in file 30
 
         stage_start_count = stage_clock()
         rewind (mcp_temporary_units(30))
@@ -263,10 +224,9 @@ contains
             & output_file_prefix)
         close (mcp_temporary_units(30), status = "DELETE")
         call record_stage("sparse_structure_and_output",nb,stage_start_count,int(matrix_element_position,int64),storage="disk")
+        ! Sort MCP coefficients into integral-based lists
         !
-        !   Sort MCP coefficients into integral-based lists
-        !
-        !   1) the T coefficient
+        ! 1) the T coefficient
         stage_start_count = stage_clock()
         rewind (mcp_temporary_units(31))
         call sort_mcp_coefficients (31, (one_electron_coefficient_count), distinct_radial_integral_count, ldbpa(2), nb, &
@@ -276,7 +236,7 @@ contains
         end if
         close (mcp_temporary_units(31), status = "DELETE")
         call record_stage("sort_and_output",nb,stage_start_count,int(one_electron_coefficient_count,int64),31,"disk")
-        !   2) the V coefficient
+        ! 2) the V coefficient
         do k = 0, max_coulomb_multipole_rank
             stage_start_count = stage_clock()
             rewind (mcp_temporary_units(k+32))

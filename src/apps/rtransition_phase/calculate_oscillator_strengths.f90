@@ -1,3 +1,4 @@
+! Contract the multipole operator with the initial and final states and report transition strengths.
 module calculate_oscillator_strengths_interface
     implicit none (type, external)
 
@@ -6,17 +7,14 @@ module calculate_oscillator_strengths_interface
     public :: calculate_oscillator_strengths
 contains
 
-    !                                                                      *
+    ! This routine controls the main sequence of routine calls for the
+    ! calculation  of  data for transitions between multiconfiguration
+    ! Dirac-Fock energy levels.
     subroutine calculate_oscillator_strengths(name)
         ! Module dependencies
         use transition_matrix_workspace, only: final_mixing_unit, initial_mixing_unit
         use calculation_file_units, only: lsj_transition_output_unit, summary_output_unit
         use, intrinsic :: iso_fortran_env, only: real32
-        !   This routine controls the main sequence of routine calls for the   *
-        !   calculation  of  data for transitions between multiconfiguration   *
-        !   Dirac-Fock energy levels.                                          *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use array_memory_management, only: alloc, dalloc
         use transition_basis_blocks, only: initial_transition_block_count, final_transition_block_count
@@ -78,18 +76,13 @@ contains
         real(real64), pointer :: et(:), et1(:), ipr(:), ipr1(:), next(:)
         logical :: same_initial_and_final_state
         character :: iunits*4, mixing_file_signature*6
-        !-----------------------------------------------
-        !
         ! NCFI(I): the end position of the Ith block for the initial states in the globle CSF list
         ! NCFF(I): the end position of the Ith block for the final states in the globle CSF list
         !
         ! for the case that the inital file and final file are same
-        !
         same_initial_and_final_state = trim(name(1)) == trim(name(2))
         if (same_initial_and_final_state) call prepare_transition_mixing_coefficients (name, input_mixing_file_kind)
-        !
         ! write header for the result file
-        !
         if (same_initial_and_final_state) then
             write(summary_output_unit,*) "Transition in file:"
             write(summary_output_unit,*) "f = ",trim(name(1))
@@ -98,72 +91,48 @@ contains
             write(summary_output_unit,*) "f1 = ",trim(name(1))
             write(summary_output_unit,*) "f2 = ",trim(name(2))
         end if
-        !
         call resize_transition_matrix_arrays (jja, jjb, hb1, hb2, hc1, hc2, hm1, &
             hm2, packed_transition_integral_labels, transition_integral_coefficient_offsets, transition_matrix_capacity, 1)
         call resize_transition_integral_arrays (transition_bra_csf_indices, transition_ket_csf_indices, &
             transition_angular_coefficients, transition_coefficient_capacity, 1)
-        !
-        !   Make a connection between the orbitals of the
-        !   merged list and the initial and final state lists
-        !
+        ! Make a connection between the orbitals of the
+        ! merged list and the initial and final state lists
         call map_merged_orbitals
-        !
-        !   Set up units for printing transition energy
-        !
+        ! Set up units for printing transition energy
         if (transition_option_flags(1)) then
-            !
-            !   Print transition energies in Angstroms
-            !
+            ! Print transition energies in Angstroms
             factor = hartree_to_wavenumber_cm
             factor = 1.0e8_real64/factor
             iunits = angstrom_unit_label
-        !
         else if (transition_option_flags(2)) then
-            !
-            !   Print energies in eV
-            !
+            ! Print energies in eV
             factor = hartree_to_ev
             iunits = electronvolt_unit_label
-        !
         else if (transition_option_flags(3)) then
-            !
-            !   Print transition energies in Hartree Atomic Units
-            !
+            ! Print transition energies in Hartree Atomic Units
             factor = 1.0_real64
             iunits = hartree_unit_label
-        !
         else if (transition_option_flags(4)) then
-            !
-            !   Print transition energies in Hz
-            !
+            ! Print transition energies in Hz
             factor = hartree_to_wavenumber_cm
             factor = factor*speed_of_light_cm_per_s
             iunits = hertz_unit_label
-        !
         else if (transition_option_flags(5)) then
-            !
-            !   Print transition energies in Kaysers
-            !
+            ! Print transition energies in Kaysers
             factor = hartree_to_wavenumber_cm
             iunits = wavenumber_unit_label
-            !
         end if
+        ! Select type of transition
         !
-        !   Select type of transition
+        ! KK  =  0  for electric multipole.
+        !     =  1  for magnetic multipole.
         !
-        !   KK  =  0  for electric multipole.
-        !       =  1  for magnetic multipole.
-        !
-        !   CF:  IOPAR  =  (-1)**N      Electric N-pole
-        !               =  (-1)**(N+1)  Magnetic N-pole.
-        !                               N > 0
-        !
+        ! CF:  IOPAR  =  (-1)**N      Electric N-pole
+        !             =  (-1)**(N+1)  Magnetic N-pole.
+        !                             N > 0
         kka = 1
         do transition_type_index = 1, requested_multipole_count
-            !
             ! read the head of the file of mixing coef. for initial
-            !
             if (same_initial_and_final_state) name(1) = trim(name(2))//"_CP"
             if (input_mixing_file_kind == 0) then
                 open(newunit=initial_mixing_unit, file=trim(name(1))//".cbm", form="UNFORMATTED", &
@@ -185,18 +154,16 @@ contains
             write (*, *) "   nwi     = ", initial_orbital_count
             write (*, *) "   nblocki = ", initial_transition_block_count
             write (*, *)
-            !   lbl
+            ! lbl
             icount1 = 0
             call load_initial_lsj_labels (name(1))
             ! If not available generate angular coefficients for all pares of blocks
             call write_transition_angular_coefficients (iopar, transition_type_index, name, transition_angular_unit)
             do initial_block_index = 1, initial_transition_block_count
                 call read_transition_mixing_coefficients (name, input_mixing_file_kind, 1)
-                !   lbl
+                ! lbl
                 icount1 = initial_level_count + icount1
-                !
                 ! read the head of the file of mixing coef. for final
-                !
                 if (input_mixing_file_kind == 0) then
                     open(newunit=final_mixing_unit,file=trim(name(2))//".cbm",              &
                         form="UNFORMATTED",status="OLD")
@@ -216,7 +183,7 @@ contains
                 write (*, *) "   nwf     = ", final_orbital_count
                 write (*, *) "   nblockf = ", final_transition_block_count
                 write (*, *)
-                !GG  lbl
+                ! lbl
                 if(initial_block_index == 1) then
                     call load_final_lsj_labels (name(2))
                     if(iopen_status1==0 .and. iopen_status2 ==0) then
@@ -228,33 +195,26 @@ contains
                     end if
                 end if
                 icount2 = 0
-                !GG   lbl end
+                ! lbl end
                 do final_block_index = 1, final_transition_block_count
                     call read_transition_mixing_coefficients (name, input_mixing_file_kind, 2)
-                    !   lbl
+                    ! lbl
                     icount2 = final_level_count + icount2
-                    !
-                    !   Allocate storage
-                    !
+                    ! Allocate storage
                     call alloc (total_babushkin_probabilities, final_level_count, "total_babushkin_probabilities", &
                         "calculate_oscillator_strengths")
                     call alloc (total_coulomb_probabilities, final_level_count, "total_coulomb_probabilities", &
                         "calculate_oscillator_strengths")
-                    !
                     level_pair_count = initial_level_count*final_level_count
                     call alloc (et, level_pair_count, "ET", "calculate_oscillator_strengths" )
                     call alloc (et1, level_pair_count, "ET1","calculate_oscillator_strengths" )
                     call alloc (ipr, level_pair_count, "IPR", "calculate_oscillator_strengths" )
                     call alloc (ipr1, level_pair_count,"IPR1", "calculate_oscillator_strengths" )
                     call alloc (next, level_pair_count, "NEXT", "calculate_oscillator_strengths")
-                    !
-                    !   Initialization for total decay rate
-                    !
+                    ! Initialization for total decay rate
                     total_coulomb_probabilities(:final_level_count) = 0.0_real64
                     total_babushkin_probabilities(:final_level_count) = 0.0_real64
-                    !
                     call read_transition_angular_coefficients (iopar, transition_type_index, name, transition_angular_unit)
-                    !
                     if (transition_multipole_rank > 0) then
                         ielec = (-1)**transition_multipole_rank
                         if (ielec == iopar) then
@@ -264,10 +224,8 @@ contains
                             transition_multipole_type = 1
                             ielec = -ielec
                         end if
-                        !
-                        !   Set up list of levels for calculation of oscillator strengths
-                        !   sort list into increasing order of energy if option 6 set
-                        !
+                        ! Set up list of levels for calculation of oscillator strengths
+                        ! sort list into increasing order of energy if option 6 set
                         if (initial_block_index==1 .and. final_block_index==1) then
                             if (transition_multipole_type == 0) then
                                 write (summary_output_unit, '(/,/," Electric 2**(",i2,")-pole transitions")') &
@@ -303,16 +261,13 @@ contains
                                 end if
                             end if
                         end if
-                        !
                         do initial_level_index = 1, initial_level_count
-                            !   lbl
+                            ! lbl
                             inum_ii = icount1 - initial_level_count + initial_level_index
                             do final_level_index = 1, final_level_count
-                                !   lbl
+                                ! lbl
                                 inum_ff = icount2 - final_level_count + final_level_index
-                                !
-                                !   Check for consistent parity and J
-                                !
+                                ! Check for consistent parity and J
                                 itkpo = transition_multipole_rank + transition_multipole_rank + 1
                                 if (satisfies_angular_triangle(initial_level_two_j_plus_one(initial_level_index), &
                                     final_level_two_j_plus_one(final_level_index), itkpo) == 0) &
@@ -320,25 +275,19 @@ contains
                                 itest = initial_level_parity_signs(initial_level_index)* &
                                     final_level_parity_signs(final_level_index)*ielec
                                 if (itest < 0) cycle
-                                !
-                                !   Calculate and print transition probability data
-                                !
+                                ! Calculate and print transition probability data
                                 nlp = 70 - 8
                                 lines = nlp
-                                !
                                 if (lines >= nlp) lines = 0
-                                !
                                 m = final_level_index + final_level_count*(initial_level_index - 1)
-                                !             M = LEVFF+NVECII*(LEVII-1)
+                                ! M = LEVFF+NVECII*(LEVII-1)
                                 et(m) = final_shifted_eigenvalues(final_level_index) + final_hamiltonian_energy_shift - &
                                     initial_shifted_eigenvalues(initial_level_index) - initial_hamiltonian_energy_shift
                                 if (same_initial_and_final_state .and. et(m)<=0.0_real32) cycle
                                 transition_angular_frequency = -et(m)
                                 bessel_argument = transition_angular_frequency/speed_of_light_au
                                 call build_transition_bessel_functions (bessel_argument)
-                                !
-                                !  Calculate oscillator strength between the ASFs
-                                !
+                                ! Calculate oscillator strength between the ASFs
                                 call write_transition_csf_weights (coulomb_or_magnetic_amplitude, babushkin_amplitude, &
                                 & initial_level_index, final_level_index)
                                 call write_transition_probability (coulomb_or_magnetic_amplitude, babushkin_amplitude, &
@@ -350,24 +299,18 @@ contains
                                         transition_angular_frequency,factor)
                                 end if
 
-                                !              WRITE (24,317)
                             end do
                         end do
                     end if
-                    !
-                    !   Deallocate storage; this is local to OSCL
-                    !
+                    ! Deallocate storage; this is local to OSCL
                     call dalloc (total_babushkin_probabilities, "total_babushkin_probabilities", "calculate_oscillator_strengths")
                     call dalloc (total_coulomb_probabilities, "total_coulomb_probabilities", "calculate_oscillator_strengths")
-                    !
                     call dalloc (et, "ET", "calculate_oscillator_strengths")
                     call dalloc (et1, "et1", "calculate_oscillator_strengths")
                     call dalloc (ipr, "IPR", "calculate_oscillator_strengths")
                     call dalloc (ipr1, "IPR1", "calculate_oscillator_strengths")
                     call dalloc (next, "NEXT", "calculate_oscillator_strengths")
-                    !
-                    !   Deallocate storage; this is allocated in READMIX
-                    !
+                    ! Deallocate storage; this is allocated in READMIX
                     call dalloc (final_shifted_eigenvalues, "final_shifted_eigenvalues", "calculate_oscillator_strengths")
                     call dalloc (final_csf_mixing_coefficients, "final_csf_mixing_coefficients", "calculate_oscillator_strengths")
                     call dalloc (final_level_indices, "final_level_indices", "calculate_oscillator_strengths")
@@ -376,9 +319,7 @@ contains
 
                 end do
                 close(final_mixing_unit)
-                !
-                !   Deallocate storage; this is allocated in READMIX
-                !
+                ! Deallocate storage; this is allocated in READMIX
                 call dalloc (initial_shifted_eigenvalues, "initial_shifted_eigenvalues", "calculate_oscillator_strengths")
                 call dalloc (initial_csf_mixing_coefficients, "initial_csf_mixing_coefficients", "calculate_oscillator_strengths")
                 call dalloc (initial_level_indices, "initial_level_indices", "calculate_oscillator_strengths")
@@ -390,32 +331,22 @@ contains
             close(transition_angular_unit)
         end do
         call dalloc (requested_multipole_codes, "requested_multipole_codes", "calculate_oscillator_strengths")
-        !
         ! close and delete duplicated mixing file
         if (same_initial_and_final_state) then
             if (input_mixing_file_kind == 0) then
-                !GG            OPEN(68, FILE=TRIM(NAME(2))//'_CP.cbm', POSITION='asis')
                 open(newunit=copied_mixing_unit, file=trim(name(2))//"_CP.cbm")
             else
-                !GG            OPEN(68, FILE=TRIM(NAME(2))//'_CP.bm', POSITION='asis')
                 open(newunit=copied_mixing_unit, file=trim(name(2))//"_CP.bm")
             end if
             close(copied_mixing_unit, status="delete")
         end if
-        !
         call resize_transition_matrix_arrays (jja, jjb, hb1, hb2, hc1, hc2, hm1, hm2, packed_transition_integral_labels, &
             transition_integral_coefficient_offsets, transition_matrix_capacity, 3)
         call resize_transition_integral_arrays (transition_bra_csf_indices, transition_ket_csf_indices, &
             transition_angular_coefficients, transition_coefficient_capacity, 3)
-        !
-        !
-        !   Close all files
-        !
+        ! Close all files
         close(summary_output_unit)
-        !
         return
-        !
         return
-        !
     end subroutine calculate_oscillator_strengths
 end module calculate_oscillator_strengths_interface

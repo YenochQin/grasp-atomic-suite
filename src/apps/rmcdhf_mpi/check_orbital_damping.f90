@@ -1,3 +1,4 @@
+! Check the damping controls before applying orbital updates.
 module check_orbital_damping_interface
     implicit none (type, external)
 
@@ -6,19 +7,14 @@ module check_orbital_damping_interface
     public :: check_orbital_damping
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This subroutine determines the damping factor appropriate to the
+    !   present  orbital. The algorithm is taken from C Froese Fischer's
+    !   program MCHF.
+    !
+    ! Written by Farid A Parpia, at Oxford. Last update: 08 Dec 1992
+    ! Modified by C. Froese Fischer. Last update: 07 Apr 2009
     subroutine check_orbital_damping(ipr, orbital_index, previous_relative_energy_change, orbital_energy_change)
         ! Module dependencies
-        !                                                                      *
-        !   This subroutine determines the damping factor appropriate to the   *
-        !   present  orbital. The algorithm is taken from C Froese Fischer's   *
-        !   program MCHF.                                                      *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford    Last update: 08 Dec 1992   *
-        !   Modified by C. Froese Fischer           Last update: 07 Apr 2009   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use scf_damping_factors, only: orbital_damping_factors
         use orbital_csf_basis, only: orbital_energy_parameters
@@ -32,13 +28,9 @@ contains
 
         ! Local declarations
         logical :: adaptive_damping_enabled
-        !-----------------------------------------------
-        !
-        !   The damping is adaptive (i.e., can be modified by this SUBROUTINE)
-        !   if and only if ODAMP(J) .GE. 0.0
-        !
+        ! The damping is adaptive (i.e., can be modified by this SUBROUTINE)
+        ! if and only if ODAMP(J) .GE. 0.0
         adaptive_damping_enabled = orbital_damping_factors(orbital_index) >= 0.0_real64
-        !
         if (ipr /= orbital_index) then
             if (adaptive_damping_enabled) orbital_damping_factors(orbital_index) = &
                 & 0.75_real64*orbital_damping_factors(orbital_index)
@@ -52,13 +44,11 @@ contains
                 end if
             end if
         end if
-        !
         if (ipr == orbital_index) then
             previous_relative_energy_change = orbital_energy_change
         else
             previous_relative_energy_change = orbital_energy_change-orbital_energy_parameters(orbital_index)
         end if
-        !
         ipr = orbital_index
         return
     end subroutine check_orbital_damping

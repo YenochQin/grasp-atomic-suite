@@ -1,3 +1,4 @@
+! Tabulate the nuclear charge distribution for the radial potential integrals.
 module build_nuclear_charge_distribution_interface
     implicit none (type, external)
 
@@ -6,19 +7,12 @@ module build_nuclear_charge_distribution_interface
     public :: build_nuclear_charge_distribution
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This routine evaluates the nuclear charge density, and stores it
+    !   in the  common  array  ZDIST .
+    !
+    ! Written by Farid A Parpia, at Oxford. Last updated: 09 Oct 1992
     subroutine build_nuclear_charge_distribution
         ! Module dependencies
-        !                                                                      *
-        !   This routine evaluates the nuclear charge density, and stores it   *
-        !   in the  common  array  ZDIST .                                     *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ES.                                           *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford   Last updated: 09 Oct 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state,           only: pi, nuclear_charge, machine_precision
         use radial_grid_state, only: radial_point_count, radial_grid
@@ -33,15 +27,9 @@ contains
         real(real64) :: c, a, cba, pi2, abc, abc2, abc3, s2mcba, s3mcba, en, &
             znorm, extrm, zdisti
         logical :: form1, form2
-        !-----------------------------------------------
-        !
-        !
-        !   Initialize array to zero
-        !
+        ! Initialize array to zero
         zdist(:radial_point_count) = 0.0_real64
-        !
-        !   Fermi charge distribution
-        !
+        ! Fermi charge distribution
         if (nuclear_model_parameter_count == 2) then
             c = nuclear_model_parameters(1)
             a = nuclear_model_parameters(2)
@@ -74,8 +62,6 @@ contains
                 end if
             end do
         end if
-        !
         return
-        !
     end subroutine build_nuclear_charge_distribution
 end module build_nuclear_charge_distribution_interface

@@ -6,18 +6,11 @@ module read_al_level_weights_interface
     public :: read_al_level_weights
 contains
 
-    !***********************************************************************
+    !   Interactively determines the weights.
     !
+    ! Written by Xinghong He. Last revision: 19 Mar 1999
     subroutine read_al_level_weights(csf_count, level_weights)
         ! Module dependencies
-        !
-        !   Interactively determines the weights.
-        !
-        !   Call(s) to: [LIB92]: ITJPO
-        !
-        !   Written by Xinghong He                Last revision: 19 Mar 1999
-        !
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use standard_io_units, only: stderr_unit, stdin_unit
 
@@ -32,7 +25,6 @@ contains
         ! Local declarations
         integer :: i, weighting_mode
         real(real64) :: weight_sum, statistical_weight
-        !-----------------------------------------------
 
         ! Select a method to assign level weights for NCF > 1 case
 
@@ -49,8 +41,6 @@ contains
         end do
 
         if (i > 10) error stop "Must be running un-attended"
-
-        !------------------------------------------------------------------
 
         select case (weighting_mode)                         ! Equal weight
         case (1)

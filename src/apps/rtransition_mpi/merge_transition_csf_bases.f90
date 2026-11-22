@@ -1,3 +1,4 @@
+! Align the initial and final descriptor bases in memory for transition matrix elements.
 module merge_transition_csf_bases_interface
     implicit none (type, external)
 
@@ -6,14 +7,8 @@ module merge_transition_csf_bases_interface
     public :: merge_transition_csf_bases
 contains
 
-    !***********************************************************************
-    !                                                                      *
     subroutine merge_transition_csf_bases(state_name)
         ! Module dependencies
-        !                                                                      *
-        !   Entry routine for merging two csl lists                            *
-        !                                                                      *
-        !***********************************************************************
 
         ! Procedure interfaces
         use load_initial_transition_basis_interface, only: load_initial_transition_basis
@@ -26,23 +21,12 @@ contains
 
         ! Local declarations
         integer :: initial_core_subshell_count, final_core_subshell_count
-        !-----------------------------------------------
-        !
 
-        !      WRITE (6, *)
-        !      WRITE (6, *) 'MRGCSL: Execution begins ...'
-        !
-        !   Load the first  .csl  file
-        !
+        ! Load the initial-state CSF descriptors.
         call load_initial_transition_basis (initial_core_subshell_count, state_name(1))
-        !
-        !   Load the second  .csl  file
-        !
+        ! Load the final-state CSF descriptors.
         call load_final_transition_basis (final_core_subshell_count, state_name(2))
-        !
-        !   Merge the two  .csl  lists, observe that there may be doublets
-        !   among the CSF's
-        !
+        ! Merge the two orbital orders and remap the CSF records in memory.
         call merge_transition_basis_records (state_name, initial_core_subshell_count, final_core_subshell_count)
 
         return

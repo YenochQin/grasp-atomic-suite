@@ -1,3 +1,4 @@
+! Read the orbital and mixing data and dispatch the radial density calculation.
 ! Shared entry point for rdensity and rdensity_mpi.
 program rdensity
     ! Module dependencies

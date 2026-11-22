@@ -1,3 +1,4 @@
+! Prepare the mixing files used when both sides of a transition refer to the same state.
 module prepare_transition_mixing_coefficients_interface
     implicit none (type, external)
 
@@ -6,10 +7,8 @@ module prepare_transition_mixing_coefficients_interface
     public :: prepare_transition_mixing_coefficients
 contains
 
-    !************************************************************************
     subroutine prepare_transition_mixing_coefficients(name, inpci)
         ! Module dependencies
-        !************************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use array_memory_management, only: alloc, dalloc
         implicit none (type, external)
@@ -25,9 +24,6 @@ contains
         integer, pointer :: ivec(:)
         real(real64) :: hamiltonian_energy_shift
         character :: mixing_file_signature*6
-        !-----------------------------------------------
-
-
 
         name(2) = trim(name(1))//"_CP"
         if (inpci == 0) then

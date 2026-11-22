@@ -1,3 +1,4 @@
+! Distribute hyperfine and magnetic matrix-element evaluation across MPI ranks.
 module calculate_hyperfine_matrix_elements_mpi_interface
     implicit none (type, external)
 
@@ -6,17 +7,12 @@ module calculate_hyperfine_matrix_elements_mpi_interface
     public :: calculate_hyperfine_matrix_elements_mpi
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! MPI version of HFSGG. Each rank processes a strided subset of the
+    ! outer IC loop and the accumulated hyperfine constants are reduced
+    ! over all MPI ranks before the root rank writes the output files.
     subroutine calculate_hyperfine_matrix_elements_mpi
         ! Module dependencies
         use calculation_file_units, only: hyperfine_output_unit, summary_output_unit
-        !                                                                      *
-        !   MPI version of HFSGG. Each rank processes a strided subset of the  *
-        !   outer IC loop and the accumulated hyperfine constants are reduced   *
-        !   over all MPI ranks before the root rank writes the output files.    *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_orbitals
         use array_memory_management, only: alloc, dalloc
@@ -70,7 +66,7 @@ contains
             & max_orbitals), &
             lande_g_angular_factors(max_orbitals, max_orbitals), lande_g_correction_angular_factors(max_orbitals, max_orbitals), &
             lande_g_orbital_elements(max_orbitals, max_orbitals), lande_correction_orbital_elements(max_orbitals, max_orbitals)
-        !     .. Local pointer arrays
+        ! .. Local pointer arrays
         real(real64), pointer :: reduced_hyperfine_elements(:, :)
         real(real64), pointer :: reduced_lande_g_elements(:), reduced_lande_correction_elements(:)
         real(real64) ::  hyperfine_angular_factor, lande_g_angular_factor, lande_g_correction_angular_factor, &
@@ -84,34 +80,24 @@ contains
                 & quadrupole_racah_coefficient, dipole_hyperfine_element, quadrupole_hyperfine_element, &
                 & first_level_column_amplitude, first_level_row_amplitude,&
             second_level_column_amplitude, second_level_row_amplitude
-        !-----------------------------------------------
+        ! Matrix elements smaller than CUTOFF are not accumulated
         !
-        !
-        !   Matrix elements smaller than CUTOFF are not accumulated
-        !
-        !
-        !   Allocate storage for local arrays
-        !
+        ! Allocate storage for local arrays
         call alloc (reduced_hyperfine_elements, 5, active_level_count*active_level_count, "reduced_hyperfine_elements", &
             "calculate_hyperfine_matrix_elements_mpi")
         call alloc (reduced_lande_g_elements, active_level_count*active_level_count, "reduced_lande_g_elements", &
             "calculate_hyperfine_matrix_elements_mpi")
         call alloc (reduced_lande_correction_elements, active_level_count*active_level_count, "reduced_lande_correction_elements", &
             "calculate_hyperfine_matrix_elements_mpi")
-        !
-        !   Initialise
-        !
+        ! Initialise
         reduced_hyperfine_elements(:,:active_level_count*active_level_count) = 0.0_real64
-        !
         reduced_lande_g_elements(:active_level_count*active_level_count) = 0.0_real64
         reduced_lande_correction_elements(:active_level_count*active_level_count) = 0.0_real64
         lande_g_orbital_elements(:,:) = 0.0_real64
         lande_correction_orbital_elements(:,:) = 0.0_real64
 
-        !
-        !   Calculate and save the radial integrals and angular
-        !   matrix elements for the two multipolarities
-        !
+        ! Calculate and save the radial integrals and angular
+        ! matrix elements for the two multipolarities
         do tensor_rank = 1, 2
             do first_orbital_index = 1, orbital_count
                 do second_orbital_index = 1, orbital_count
@@ -148,53 +134,38 @@ contains
                                     & *radial_overlap_integrals(first_orbital_index,second_orbital_index)
             end do
         end do
-        !
-        !   Set the parity of the one-body operators
-        !
+        ! Set the parity of the one-body operators
         operator_parity = 1
-        !
-        !   Sweep through the Hamiltonian matrix to determine the
-        !   diagonal and off-diagonal hyperfine constants
-        !
+        ! Sweep through the Hamiltonian matrix to determine the
+        ! diagonal and off-diagonal hyperfine constants
         do column_csf_index = mpi_rank + 1, csf_count, mpi_process_count
             column_csf_j_code = csf_total_j_code(column_csf_index)
-            !
             do row_csf_index = 1, csf_count
-                !
-                !   If LFORDR is .TRUE., a `first order' calculation is indicated;
-                !   only the CSFs with serial numbers exceeding IC are treated specially
-                !   only diagonal elements are evaluated for the `first order' CSFs
-                !
+                ! If LFORDR is .TRUE., a `first order' calculation is indicated;
+                ! only the CSFs with serial numbers exceeding IC are treated specially
+                ! only diagonal elements are evaluated for the `first order' CSFs
                 if (use_first_order_csf_perturbation .and. column_csf_index>first_order_csf_cutoff .and. column_csf_index/= &
                 & row_csf_index) cycle
-                !
                 row_csf_j_code = csf_total_j_code(row_csf_index)
                 csf_j_code_difference = column_csf_j_code - row_csf_j_code
-                !
-                !   Loop over the multipolarities
-                !
+                ! Loop over the multipolarities
                 do tensor_rank = 1, 2
-                    !
-                    !   Initialise the accumulator
-                    !
+                    ! Initialise the accumulator
                     hyperfine_csf_matrix_element = 0.0_real64
                     lande_g_csf_matrix_element = 0.0_real64
                     lande_g_correction_csf_matrix_element = 0.0_real64
+                    ! Consider 3 cases
+                    !             (k)
+                    ! (1) < J || T   || J >    , k = 1,2  and IR >= IC
                     !
-                    !   Consider 3 cases
-                    !               (k)
-                    !   (1) < J || T   || J >    , k = 1,2  and IR >= IC
+                    !             (k)
+                    ! (2) < J || T   || J-1 >  , k = 1,2
                     !
-                    !               (k)
-                    !   (2) < J || T   || J-1 >  , k = 1,2
-                    !
-                    !               (k)
-                    !   (3) < J || T   || J-2 >  , k = 2
-                    !
+                    !             (k)
+                    ! (3) < J || T   || J-2 >  , k = 2
                     if (.not.(csf_j_code_difference==0 .and. row_csf_index>=column_csf_index .or. csf_j_code_difference==2 .or. &
                 & csf_j_code_difference==4&
                         .and. tensor_rank==2)) cycle
-                    !
                     if (satisfies_angular_triangle(column_csf_j_code, row_csf_j_code, 2*tensor_rank + 1) == 0) then
                         cycle
                     end if
@@ -239,10 +210,7 @@ contains
                     call calculate_one_electron_tensor_coefficients(tensor_rank,operator_parity,column_csf_index,row_csf_index, &
                 & bra_orbital_index, &
                         & ket_orbital_index,shell_coefficients)
-                    !GG               CALL TNSRJJ (KT, IPT, IC, IR, IA, IB, TSHELL)
-                    !
-                    !   Accumulate the contribution from the one-body operators;
-                    !
+                    !    Accumulate the contribution from the one-body operators;
                     if (bra_orbital_index /= 0) then
                         if (bra_orbital_index == ket_orbital_index) then
                             if (tensor_rank/=1 .or. csf_j_code_difference/=0) then
@@ -285,10 +253,8 @@ contains
                             end if
                         end if
                     end if
-                    !
-                    !   Multiply with the configuration expansion coefficients and add the
-                    !   contributions from the matrix elements to obtain total contributions
-                    !
+                    ! Multiply with the configuration expansion coefficients and add the
+                    ! contributions from the matrix elements to obtain total contributions
                     if (abs(hyperfine_csf_matrix_element) <= contribution_magnitude_cutoff .and. &
                         & abs(lande_g_csf_matrix_element) <= contribution_magnitude_cutoff .and. &
                         abs(lande_g_correction_csf_matrix_element) <= contribution_magnitude_cutoff) then
@@ -318,9 +284,7 @@ contains
                                 lande_g_correction_contribution = lande_g_correction_csf_matrix_element* &
                 & first_level_column_amplitude*second_level_row_amplitude
                             end if
-                            !
-                            !   Magnetic dipole and the two operators of the g_j factor
-                            !
+                            ! Magnetic dipole and the two operators of the g_j factor
                             if (tensor_rank == 1) then
                                 if (csf_j_code_difference == 0) then
                                     reduced_hyperfine_elements(1,active_level_count*(first_level_index-1)+ &
@@ -338,9 +302,7 @@ contains
                 & second_level_index) = reduced_hyperfine_elements(2,active_level_count*(first_level_index-1)+ &
                 & second_level_index) + hyperfine_contribution
                                 end if
-                            !
-                            !   Electric quadrupole
-                            !
+                            ! Electric quadrupole
                             else if (tensor_rank == 2) then
                                 select case (csf_j_code_difference)
                                 case (0)
@@ -359,47 +321,33 @@ contains
                             end if
                         end do
                     end do
-                    !
                 end do
-                !
             end do
         end do
-        !
         call reduce_mpi_real_sum_to_root(reduced_hyperfine_elements(:,:), 5*active_level_count*active_level_count)
         call reduce_mpi_real_sum_to_root(reduced_lande_g_elements(:), active_level_count*active_level_count)
         call reduce_mpi_real_sum_to_root(reduced_lande_correction_elements(:), active_level_count*active_level_count)
-        !
         if (mpi_rank == 0) then
-            !
-            !   These are the conversion factors to obtain the hyperfine
-            !   constants in MHz
-            !
+            ! These are the conversion factors to obtain the hyperfine
+            ! constants in MHz
             hartree_to_mhz = hartree_to_wavenumber_cm*speed_of_light_cm_per_s*1.0e-6_real64
             barn_to_bohr_squared = 1.0e-24_real64/bohr_radius_cm**2
             nuclear_magneton_au = electron_mass_u/(2.0_real64*vacuum_speed_of_light_au*proton_mass_u)
-            !
             magnetic_dipole_mhz_scale = hartree_to_mhz*nuclear_magneton_au*nuclear_magnetic_dipole_moment/nuclear_spin
             electric_quadrupole_mhz_scale = hartree_to_mhz*2.0_real64*nuclear_electric_quadrupole_moment*barn_to_bohr_squared
-            !
-            !   Output the hyperfine interaction constants
-            !
+            ! Output the hyperfine interaction constants
             write (summary_output_unit, '(/,/," Interaction constants:"/,/," Level1  J Parity  Level2  J Parity",8x,"A (MHz)",13x,&
                 &"B (MHz)"/)')
             write (hyperfine_output_unit, '(/,/," Interaction constants:"/,/," Level1  J Parity ",8x,"A (MHz)",13x,"B (MHz)",13x,&
                 &"g_J",14x,&
                 &"delta g_J",11x,"total g_J"/)')
-            !
             do first_output_level = 1, active_level_count
                 do second_output_level = 1, active_level_count
-                    !
                     first_level_two_j_plus_one = level_two_j_plus_one(first_output_level)
                     second_level_two_j_plus_one = level_two_j_plus_one(second_output_level)
-                    !
                     if (.not.(first_level_two_j_plus_one==second_level_two_j_plus_one .and. second_level_two_j_plus_one>1 .or. &
                 & first_level_two_j_plus_one>second_level_two_j_plus_one)) cycle
-                    !
                     electronic_j = 0.5_real64*dble(first_level_two_j_plus_one - 1)
-                    !
                     inverse_j_norm = sqrt(1.0_real64/(electronic_j*(electronic_j + 1.0_real64)))
 
                     dipole_same_j_scale = magnetic_dipole_mhz_scale*inverse_j_norm
@@ -427,14 +375,12 @@ contains
                 & (electronic_j - 1.0_real64)*(2.0_real64*electronic_j - 1.0_real64&
                             ))/(2.0_real64*electronic_j - 3.0_real64))
                     end if
-                    !
-                    !   Diagonal (J,J) A and B factors
-                    !
+                    ! Diagonal (J,J) A and B factors
                     select case (first_level_two_j_plus_one - second_level_two_j_plus_one)
                     case (0)
                         if (first_output_level <= second_output_level) then
-                            !                GJ = CVAC*GJA1*GJC(NVEC*(I-1)+II)
-                            !                DGJ = 0.001160D0*GJA1*DGJC(NVEC*(I-1)+II)
+                            ! GJ = CVAC*GJA1*GJC(NVEC*(I-1)+II)
+                            ! DGJ = 0.001160D0*GJA1*DGJC(NVEC*(I-1)+II)
 
                             write (summary_output_unit, '(1x,1i3,5x,2a,2x,1i3,5x,2a,1p,2d20.10)') active_level_indices( &
                 & first_output_level), &
@@ -445,9 +391,7 @@ contains
                 & reduced_hyperfine_elements(1,&
                                 active_level_count*(first_output_level-1)+second_output_level), quadrupole_same_j_scale* &
                 & reduced_hyperfine_elements(3,active_level_count*(first_output_level-1)+second_output_level)
-                            !
-                            !   Output diagonal hfs and g_j factors to file <name>.h or <name>.ch
-                            !
+                            ! Output diagonal hfs and g_j factors to file <name>.h or <name>.ch
                             if (first_output_level == second_output_level) then
                                 lande_g = vacuum_speed_of_light_au*inverse_j_norm*reduced_lande_g_elements(active_level_count* &
                 & (first_output_level-1)+second_output_level)
@@ -463,9 +407,7 @@ contains
                                     lande_g, lande_g_correction, lande_g + lande_g_correction
                             end if
                         end if
-                    !
-                    !   Off diagonal (J,J-1) A and B factors
-                    !
+                    ! Off diagonal (J,J-1) A and B factors
                     case (2)
                         write (summary_output_unit, '(1x,1i3,5x,2a,2x,1i3,5x,2a,1p,2d20.10)') &
                             active_level_indices(first_output_level), format_j_label(first_level_two_j_plus_one), &
@@ -476,9 +418,7 @@ contains
                                 active_level_count*(first_output_level-1&
                             )+second_output_level), quadrupole_delta_j_one_scale*reduced_hyperfine_elements(4, &
                 & active_level_count*(first_output_level-1)+second_output_level)
-                    !
-                    !   Off diagonal (J,J-2) B factor
-                    !
+                    ! Off diagonal (J,J-2) B factor
                     case (4)
                         write (summary_output_unit, '(1x,1i3,5x,2a,2x,1i3,5x,2a,1p,2d20.10)') &
                             active_level_indices(first_output_level), format_j_label(first_level_two_j_plus_one), &
@@ -488,13 +428,10 @@ contains
                                 quadrupole_delta_j_two_scale*reduced_hyperfine_elements(5,&
                             active_level_count*(first_output_level-1)+second_output_level)
                     end select
-                    !
                 end do
             end do
-            !
-            !   These are the factors needed to obtain the F-dependent hyperfine
-            !   matrix elements in Hartrees
-            !
+            ! These are the factors needed to obtain the F-dependent hyperfine
+            ! matrix elements in Hartrees
             reduced_nuclear_dipole = sqrt((nuclear_spin + &
                 1.0_real64)/nuclear_spin)*nuclear_magnetic_dipole_moment*0.5_real64*electron_mass_u/ &
                 (proton_mass_u*vacuum_speed_of_light_au)
@@ -507,34 +444,24 @@ contains
             else
                 reduced_nuclear_quadrupole = 0.0_real64
             end if
-            !
-            !     II = 2*I
-            !
+            ! II = 2*I
             two_nuclear_spin = nint(2.0_real64*nuclear_spin)
+            ! Calculate the F-dependent matrix elemnts
             !
-            !   Calculate the F-dependent matrix elemnts
-            !
-            !   Loop over the states
-            !
+            ! Loop over the states
             do first_recoupled_level = 1, active_level_count
                 do second_recoupled_level = 1, active_level_count
                     first_level_two_j = level_two_j_plus_one(first_recoupled_level) - 1
                     second_level_two_j = level_two_j_plus_one(second_recoupled_level) - 1
                     if (.not.(second_level_two_j==first_level_two_j .and. second_level_two_j>0 .or. first_level_two_j> &
                 & second_level_two_j)) cycle
-                    !
-                    !   Determine the possible F quantum numbers for the matrix element
-                    !
+                    ! Determine the possible F quantum numbers for the matrix element
                     lowest_two_f = max(abs(second_level_two_j - two_nuclear_spin),abs(first_level_two_j - two_nuclear_spin))
                     highest_two_f = min(second_level_two_j + two_nuclear_spin,first_level_two_j + two_nuclear_spin)
-                    !
-                    !   Loop over the possible F quantum numbers
-                    !
+                    ! Loop over the possible F quantum numbers
                     wrote_matrix_heading = 0
                     do two_f = lowest_two_f, highest_two_f, 2
-                        !
-                        !   Phase factor
-                        !
+                        ! Phase factor
                         if (mod((two_nuclear_spin + second_level_two_j - two_f)/2,2) == 1) then
                             recoupling_phase = -1.0_real64
                         else
@@ -542,18 +469,12 @@ contains
                         end if
                         recoupling_prefactor = recoupling_phase*sqrt((dble(first_level_two_j) + 1.0_real64)* &
                 & (dble(two_nuclear_spin) + 1.0_real64))
-                        !
-                        !   Determine the Racah W coefficients.
-                        !
-                        !GG               CALL DRACAH (II, JJA, II, JJB, FF, 2, RAC1)
+                        !    Determine the Racah W coefficients.
                         call scott_fischer_racah_coefficient (two_nuclear_spin,second_level_two_j,two_nuclear_spin, &
                 & first_level_two_j,two_f,2,dipole_racah_coefficient)
-                        !GG               CALL DRACAH (II, JJA, II, JJB, FF, 4, RAC2)
                         call scott_fischer_racah_coefficient (two_nuclear_spin,second_level_two_j,two_nuclear_spin, &
                 & first_level_two_j,two_f,4,quadrupole_racah_coefficient)
-                        !
-                        !   Obtain and output matrix elements for J,J
-                        !
+                        ! Obtain and output matrix elements for J,J
                         if (second_level_two_j - first_level_two_j == 0) then
                             dipole_hyperfine_element = recoupling_prefactor*dipole_racah_coefficient* &
                 & reduced_hyperfine_elements(1,active_level_count*(first_recoupled_level-1)+second_recoupled_level)* &
@@ -574,9 +495,7 @@ contains
                                         parity_labels((level_parity_signs(second_recoupled_level)+3)/2), &
                                     format_j_label(two_f+1), dipole_hyperfine_element + quadrupole_hyperfine_element
                             end if
-                        !
-                        !   Obtain and output matrix elements for J,J-1
-                        !
+                        ! Obtain and output matrix elements for J,J-1
                         else if (abs(second_level_two_j - first_level_two_j) == 2) then
                             dipole_hyperfine_element = recoupling_prefactor*dipole_racah_coefficient* &
                 & reduced_hyperfine_elements(2,active_level_count*(first_recoupled_level-1)+second_recoupled_level)* &
@@ -597,9 +516,7 @@ contains
                                         parity_labels((level_parity_signs(second_recoupled_level)+3)/2), &
                                     format_j_label(two_f+1), dipole_hyperfine_element + quadrupole_hyperfine_element
                             end if
-                        !
-                        !   Obtain and output matrix elements for J,J-2
-                        !
+                        ! Obtain and output matrix elements for J,J-2
                         else if (abs(second_level_two_j - first_level_two_j) == 4) then
                             dipole_hyperfine_element = 0.0_real64
                             quadrupole_hyperfine_element = recoupling_prefactor*quadrupole_racah_coefficient* &
@@ -625,15 +542,12 @@ contains
                     end do
                 end do
             end do
-            !
         end if
         call dalloc (reduced_hyperfine_elements, "reduced_hyperfine_elements", "calculate_hyperfine_matrix_elements_mpi")
         call dalloc (reduced_lande_g_elements, "reduced_lande_g_elements", "calculate_hyperfine_matrix_elements_mpi")
         call dalloc (reduced_lande_correction_elements, "reduced_lande_correction_elements", &
             "calculate_hyperfine_matrix_elements_mpi")
         return
-        !
         return
-        !
     end subroutine calculate_hyperfine_matrix_elements_mpi
 end module calculate_hyperfine_matrix_elements_mpi_interface

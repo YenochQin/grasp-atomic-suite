@@ -1,3 +1,4 @@
+! Coordinate the distributed Hamiltonian solve and successive orbital updates.
 module run_scf_iterations_mpi_interface
     implicit none (type, external)
 
@@ -6,28 +7,17 @@ module run_scf_iterations_mpi_interface
     public :: run_scf_iterations_mpi
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This  subroutine  performs  the SCF iterations. The procedure is
+    ! essentially algorithm 5.1 of C Froese Fischer, Comput Phys Rep 3
+    ! (1986) 290.
+    !
+    ! Written by Farid A Parpia, at Oxford. Last update: 22 Dec 1992
+    ! MPI version by Xinghong He. Last revision: 05 Aug 1998
+    ! ifort -i8 version by Alexander Kramida (AK) Last rev. 22 Mar 2016
+    ! Modified by G. Gaigalas. 05 Feb 2017
     subroutine run_scf_iterations_mpi(extended_optimal_level, output_wavefunction_path)
         ! Module dependencies
         use calculation_file_units, only: mixing_output_unit
-        !                                                                      *
-        !   This  subroutine  performs  the SCF iterations. The procedure is   *
-        !   essentially algorithm 5.1 of C Froese Fischer, Comput Phys Rep 3   *
-        !   (1986) 290.                                                        *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, DALLOC.                                *
-        !               [RSCF92]: improvmpi, matrixmpi, MAXARR, newcompi,      *
-        !                         ORBOUT, ORTHSC, setlagMpi.                   *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford    Last update: 22 Dec 1992   *
-        !   MPI version by Xinghong He            Last revision: 05 Aug 1998   *
-        !   ifort -i8 version by Alexander Kramida (AK) Last rev. 22 Mar 2016  *
-        !   Midified by G. Gaigalas                              05 Feb 2017   *
-        !      It was deleted the arrays:  JQSA(3*NNNWP*NCF),                  *
-        !                                  JCUPA(NNNWP*NCF)                    *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use array_memory_management, only: alloc, dalloc
         use transition_block_indices, only: level_block_indices
@@ -71,9 +61,8 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        !-----------------------------------------------
+        !
         !   G l o b a l   P a r a m e t e r s
-        !-----------------------------------------------
         logical, intent(in) :: extended_optimal_level
         character  :: output_wavefunction_path*(*)
 
@@ -82,21 +71,15 @@ contains
             & least_consistent_orbital, mpi_logical_type
         real(real64) :: weighted_average_energy, previous_weighted_average_energy, maximum_orbital_damping
         logical :: scf_converged, sort_by_self_consistency, first_davidson_solve
-        !-----------------------------------------------
-        !CFF   .. set the logical variable dvdfirst
+        ! .. set the logical variable dvdfirst
         first_davidson_solve = .true.
-        !-----------------------------------------------------------------------
-        !AK Handling the -i8 option of ifort and -fdefault-integer-8 option of gfortran
-        !      ISIZE = sizeof(NCF)
+        ! AK Handling the -i8 option of ifort and -fdefault-integer-8 option of gfortran
+        !       ISIZE = sizeof(NCF)
         mpi_logical_type = mpi_logical
-        !      if (ISIZE.EQ.8) L_MPI = MPI_LOGICAL8
 
         total_csf_count = csf_count
-        !IF (myid .EQ. 0) PRINT *, '===SCF==='
 
-        !=======================================================================
-        !   Determine Orthonomalization order --- lsort
-        !=======================================================================
+        ! Determine Orthonomalization order --- lsort
 
         if (nondefault_options_flag == 0) then
             sort_by_self_consistency = .false.
@@ -121,15 +104,9 @@ contains
             call mpi_bcast (sort_by_self_consistency, 1, mpi_logical_type, 0, mpi_comm_world, mpi_error_code)
         end if
 
-        !=======================================================================
-        !   Deallocate storage that will no longer be used
-        !=======================================================================
+        ! Deallocate storage that will no longer be used
 
-        !GG      CALL DALLOC (JQSA, 'JQSA', 'SCFmpi')
-
-        !=======================================================================
-        !   Allocate and fill in auxiliary arrays
-        !=======================================================================
+        ! Allocate and fill in auxiliary arrays
 
         call alloc (csf_offsets_by_block, symmetry_block_count, "csf_offsets_by_block", "run_scf_iterations_mpi")
         call alloc (eigenvalue_offsets_by_block, symmetry_block_count, "eigenvalue_offsets_by_block", "run_scf_iterations_mpi")
@@ -149,7 +126,7 @@ contains
                 & *csf_counts_by_block(symmetry_block_index - 1)
         end do
 
-        !*** Size of the eigenvector array for all blocks
+        ! Size of the eigenvector array for all blocks
         mixing_coefficient_storage_size = mixing_offsets_by_block(symmetry_block_count) + &
             & eigenvector_counts_by_block(symmetry_block_count)*csf_counts_by_block(symmetry_block_count)
 
@@ -161,16 +138,13 @@ contains
             call alloc (level_parity_signs, selected_level_count, "level_parity_signs", "run_scf_iterations_mpi")
         end if
 
-        !=======================================================================
-        !
-        !=======================================================================
         direct_coefficient_capacity = 64
         exchange_coefficient_capacity = 64
         y_potential_coefficient_capacity = 64
-        !      NDDIM = 0
-        !      NYDIM = 0
-        !      NYDIM = 0
-        !AK    Must initialize DA,XA,YA,... here since MPI routines rely on their existence in all processes
+        !       NDDIM = 0
+        !       NYDIM = 0
+        !       NYDIM = 0
+        ! AK    Must initialize DA,XA,YA,... here since MPI routines rely on their existence in all processes
         call alloc (direct_orbital_indices, direct_coefficient_capacity, "direct_orbital_indices","run_scf_iterations_mpi")
         call alloc (direct_coefficients, direct_coefficient_capacity, "direct_coefficients","run_scf_iterations_mpi")
         call alloc (exchange_coefficient_labels, exchange_coefficient_capacity, "exchange_coefficient_labels", &
@@ -180,13 +154,12 @@ contains
             "run_scf_iterations_mpi")
         call alloc (y_potential_coefficients, y_potential_coefficient_capacity, "y_potential_coefficients","run_scf_iterations_mpi")
 
-        !     This call should only be made AFTER the call to newco
-        !     CALL setlag (EOL)
+        ! This call should only be made AFTER the call to newco
 
-        !   For (E)OL calculations, determine the level energies and
-        !   mixing coefficients
+        ! For (E)OL calculations, determine the level energies and
+        ! mixing coefficients
 
-        !CFF   .. set the logical variable dvdfirst
+        ! .. set the logical variable dvdfirst
         if (extended_optimal_level) then
             call solve_hamiltonian_blocks_mpi (first_davidson_solve)
             call update_scf_mixing_mpi (weighted_average_energy)
@@ -196,12 +169,12 @@ contains
         do scf_iteration = 1, maximum_scf_iterations
             if (mpi_rank == 0) write (*, '(/," Iteration number ",1i3,/," --------------------")') scf_iteration
 
-            !   For all pairs constrained through a Lagrange multiplier, compute
-            !   the Lagrange multiplier
+            ! For all pairs constrained through a Lagrange multiplier, compute
+            ! the Lagrange multiplier
 
             call calculate_lagrange_multipliers_mpi (extended_optimal_level)
 
-            !   Improve all orbitals in turn
+            ! Improve all orbitals in turn
 
             maximum_orbital_damping = 0.0
             if (mpi_rank == 0) write (*, '(41x,"Self-            Damping"/,"Subshell    Energy    Method   P0    ",&
@@ -212,11 +185,8 @@ contains
                 call improve_orbital_mpi (extended_optimal_level, orbital_update_index, sort_by_self_consistency, &
                     & maximum_orbital_damping)
             end do
-            !
-            !   For KOUNT = 1 to NSIC: find the least self-consistent orbital;
-            !   improve it
-            !
-            !         write(istde,*) 'nsic=',nsic
+            ! For KOUNT = 1 to NSIC: find the least self-consistent orbital;
+            ! improve it
             do extra_orbital_update = 1, orbital_updates_per_scf_iteration
                 call find_least_consistent_orbital (least_consistent_orbital)
                 if (least_consistent_orbital == 0) then
@@ -248,9 +218,9 @@ contains
             end if
             if (rmcdhf_debug_flags(24) .and. mpi_rank==0) call print_radial_wavefunction (0)
 
-            !   Perform Gram-Schmidt process
-            !   For OL calculation, orthst is true and orbitals are orthonormalized
-            !   in subroutine improv. For AL calculation, orthst is false.
+            ! Perform Gram-Schmidt process
+            ! For OL calculation, orthst is true and orbitals are orthonormalized
+            ! in subroutine improv. For AL calculation, orthst is false.
             if (.not.enforce_orbital_orthogonality) call orthogonalize_radial_orbitals
 
             ! Write this iteration's radial wavefunctions to the selected output path.
@@ -261,21 +231,14 @@ contains
                 call solve_hamiltonian_blocks_mpi(first_davidson_solve)
                 call update_scf_mixing_mpi (weighted_average_energy)
             end if
-            !        Make this a relative convergence test
-            !        IF(ABS(WTAEV-WTAEV0).LT.1.0D-9.and.
-            !    &   DAMPMX.LT.1.0D-4) CONVG=.true.
-            !        PRINT *, 'WTAEV, WTAEV0', WTAEV, WTAEV0,
-            !    &             ABS((WTAEV-WTAEV0)/WTAEV)
-            !GG         IF (ABS((WTAEV - WTAEV0)/WTAEV) < 0.001*ACCY) CONVG = .TRUE.
-            !cjb unified convergence criteria in RMCDHF and RMCDHF_MPI
-            !cjb     IF(DABS(WTAEV-WTAEV0).LT.1.0D-8.and.              &
-            !cjb                   DAMPMX.LT.1.0D-2) CONVG=.true.
+            !         Make this a relative convergence test
+            ! cjb unified convergence criteria in RMCDHF and RMCDHF_MPI
+            ! DAMPMX.LT.1.0D-2) CONVG=.true.
             if (abs((weighted_average_energy - previous_weighted_average_energy)/weighted_average_energy) < &
                 & 0.001_real64*working_tolerance) scf_converged = .true.
             previous_weighted_average_energy = weighted_average_energy
             if (.not.scf_converged) cycle
             if (rmcdhf_debug_flags(25) .and. .not.rmcdhf_debug_flags(24) .and. mpi_rank==0) call print_radial_wavefunction (0)
-            !IF (EOL) CALL matrixmpi (dvdfirst)
             exit
 
         end do
@@ -291,13 +254,9 @@ contains
         if (mpi_rank == 0) then
             close(mixing_output_unit)                               ! The .mix file
         end if
-        !
-        !   Complete the summary - moved from rscf92 for easier alloc/dalloc
-        !
+        ! Complete the summary - moved from rscf92 for easier alloc/dalloc
         if (mpi_rank == 0) call finish_summary
-        !
-        !   Deallocate storage
-        !
+        ! Deallocate storage
         call dalloc (level_average_weights, "level_average_weights", "run_scf_iterations_mpi")                       !Either getold or getald
 
         if (lagrange_multiplier_count > 0) then
@@ -334,11 +293,9 @@ contains
             call dalloc (level_block_indices, "level_block_indices", "run_scf_iterations_mpi")     ! Allocated in getold.f
             call dalloc (requested_level_indices, "requested_level_indices", "run_scf_iterations_mpi")       ! Allocated in items.f<-getold.f
         end if
-        !
         call dalloc (csf_offsets_by_block, "csf_offsets_by_block", "run_scf_iterations_mpi")
         call dalloc (eigenvalue_offsets_by_block, "eigenvalue_offsets_by_block", "run_scf_iterations_mpi")
         call dalloc (mixing_offsets_by_block, "mixing_offsets_by_block", "run_scf_iterations_mpi")
-
 
         return
     end subroutine run_scf_iterations_mpi

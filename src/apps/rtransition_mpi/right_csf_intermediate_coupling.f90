@@ -1,3 +1,4 @@
+! Access the intermediate coupling of the final-state CSF in the active basis.
 module right_csf_intermediate_coupling_interface
     implicit none (type, external)
 

@@ -1,3 +1,4 @@
+! Parse descriptor and diagnostic options for the MPI angular-coefficient generator.
 ! Rank zero owns the descriptor stream; all ranks retain the ordinary CSF arrays.
 module rangular_mpi_input
     ! Module dependencies
@@ -28,7 +29,6 @@ module rangular_mpi_input
         type(descriptor_source) :: descriptors
     end type mpi_angular_input_options
 contains
-
 
     subroutine read_argument_text(argument_index, argument_text)
         ! Arguments

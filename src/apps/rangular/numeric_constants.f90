@@ -1,10 +1,6 @@
-!
-!***********************************************************************
-!                                                                      *
+! Provide named real constants for the application numerical kernels.
 module numeric_constants
     ! Module dependencies
-    !                                                                      *
-    !***********************************************************************
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
 

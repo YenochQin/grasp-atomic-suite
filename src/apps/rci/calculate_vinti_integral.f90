@@ -1,3 +1,4 @@
+! Evaluate the radial Vinti integral used in the specific mass shift.
 module calculate_vinti_integral_interface
     implicit none (type, external)
 
@@ -6,22 +7,16 @@ module calculate_vinti_integral_interface
     public :: calculate_vinti_integral
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This routine returns Vinti integrals.
+    !      A list of previously computed integrals is maintained. If the
+    !   required  integral is not already  available it is computed  and
+    !   stored in the list.
+    !
+    ! Written by Farid A Parpia. Last revision: 06 Jun 1992
+    !
+    !   Converted by CFF
     subroutine calculate_vinti_integral (first_orbital,second_orbital,radial_integral_value)
         ! Module dependencies
-        !                                                                      *
-        !   This routine returns Vinti integrals.                              *
-        !      A list of previously computed integrals is maintained. If the   *
-        !   required  integral is not already  available it is computed  and   *
-        !   stored in the list.                                                *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, RALLOC, VINTI.                         *
-        !                                                                      *
-        !   Written by Farid A Parpia             Last revision: 06 Jun 1992   *
-        !                                                                      *
-        !***********************************************************************
-        !   Converted by CFF
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: orbital_index_radix
         use array_memory_management, only: alloc, ralloc
@@ -42,40 +37,23 @@ contains
         logical :: found
         integer :: packed_integral_index, table_position, search_upper_index, search_lower_index, search_midpoint_index, &
             & new_integral_capacity, i
-        !------------------------------------------------
-        !
-        !   Compute the composite (packed) index
-        !
+        ! Pack the orbital indices and radial order into the integral label.
         packed_integral_index = first_orbital*orbital_index_radix+second_orbital
-        !
         if (.not. first_vinti_lookup) then
-            !
-            !   This branch is executed on all entries except the first
-            !
+            ! This branch is executed on all entries except the first
             if (packed_integral_index > vinti_integral_indices(vinti_integral_count)) then
-                !
-                !   The index is greater than the largest stored
-                !
+                ! The index is greater than the largest stored
                 found = .false.
                 table_position = vinti_integral_count
-            !
             else if (packed_integral_index < vinti_integral_indices(1)) then
-                !
-                !   The index is less than the smallest stored
-                !
+                ! The index is less than the smallest stored
                 found = .false.
                 table_position = 0
-            !
             else
-                !
-                !   The index is within the range of the indices stored; search
-                !   for it in the list of indices
-                !
+                ! Search the sorted labels for the requested integral.
                 search_upper_index = vinti_integral_count
                 search_lower_index = 1
-                !
                 do while (search_upper_index-search_lower_index > 1)
-                    !
                     search_midpoint_index = (search_upper_index+search_lower_index)/2
                     if (vinti_integral_indices(search_midpoint_index) > packed_integral_index) then
                         search_upper_index = search_midpoint_index
@@ -83,96 +61,59 @@ contains
                         search_lower_index = search_midpoint_index
                     end if
                 end do
-                !
-                !   The range is bracketed to the extent possible
-                !
+                ! The range is bracketed to the extent possible
                 if (packed_integral_index == vinti_integral_indices(search_upper_index)) then
-                    !
                     found = .true.
                     table_position = search_upper_index
-                !
                 else if (packed_integral_index == vinti_integral_indices(search_lower_index)) then
-                    !
                     found = .true.
                     table_position = search_lower_index
-                !
                 else
-                    !
                     found = .false.
                     table_position = search_lower_index
-                    !
                 end if
-                !
-                !
+
             end if
-            !
             if (found) then
-                !
-                !   Found the index in the list; return the value of the integral
-                !   from storage
-                !
+                ! Found the index in the list; return the value of the integral
+                ! from storage
                 radial_integral_value = vinti_integral_values(table_position)
-            !
             else
-                !
-                !   Index not found; compute the integral
-                !
+                ! Index not found; compute the integral
                 radial_integral_value = vinti_radial_integral (first_orbital,second_orbital)
-                !
-                !   Increment the integral counter
-                !
+                ! Reserve the next entry in the integral table.
                 vinti_integral_count = vinti_integral_count+1
-                !
-                !   Increase array length by half the present length if the latter
-                !   is inadequate to store another pair
-                !
+                ! Grow the table by half its current capacity when another pair will not fit.
                 if (vinti_integral_count > vinti_integral_capacity) then
                     new_integral_capacity = vinti_integral_capacity+vinti_integral_capacity/2
                     call ralloc (vinti_integral_indices,new_integral_capacity, "vinti_integral_indices", "calculate_vinti_integral")
                     call ralloc (vinti_integral_values,new_integral_capacity, "vinti_integral_values", "calculate_vinti_integral")
                     vinti_integral_capacity = new_integral_capacity
                 end if
-                !
                 do i = vinti_integral_count,table_position+2,-1
                     vinti_integral_indices(i) = vinti_integral_indices(i-1)
                     vinti_integral_values(i) = vinti_integral_values(i-1)
                 end do
-                !
-                !   Put the new index and value into storage
-                !
+                ! Cache the new packed label and its integral.
                 vinti_integral_indices(table_position+1) = packed_integral_index
                 vinti_integral_values(table_position+1) = radial_integral_value
-                !
             end if
-        !
         else
-            !
-            !   This branch is executed only once
-            !
+            ! This branch is executed only once
             first_vinti_lookup = .false.
-            !
-            !   Allocate the initial storage for arrays INDTEI and VALTEI;
-            !   NDVIN stores the array dimension
-            !
+            ! Allocate the initial storage for arrays INDTEI and VALTEI;
+            ! NDVIN stores the array dimension
             vinti_integral_capacity = 2
             call alloc (vinti_integral_indices,vinti_integral_capacity, "vinti_integral_indices", "calculate_vinti_integral")
             call alloc (vinti_integral_values,vinti_integral_capacity, "vinti_integral_values", "calculate_vinti_integral")
-            !
-            !   Compute the integral's value
-            !
+            ! Compute the integral's value
             radial_integral_value = vinti_radial_integral (first_orbital,second_orbital)
-            !
-            !   Initialise the integral counter
-            !
+            ! Initialise the integral counter
             vinti_integral_count = 1
-            !
-            !   Store the integral and its value
-            !
+            ! Save the integral and its packed label.
             vinti_integral_indices(1) = packed_integral_index
             vinti_integral_values(1) = radial_integral_value
-            !
         end if
-        !
         return
     end subroutine calculate_vinti_integral
 end module calculate_vinti_integral_interface

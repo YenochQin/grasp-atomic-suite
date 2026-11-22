@@ -1,3 +1,4 @@
+! Assemble the radial potentials needed to update one orbital in the SCF iteration.
 module build_orbital_potential_interface
     implicit none (type, external)
 
@@ -8,7 +9,6 @@ contains
 
     subroutine build_orbital_potential(extended_optimal_level, orbital_index, radial_point_count)
         ! Module dependencies
-        !-----------------------------------------------
         use serial_mpi_context, only: mpi_process_count
 
         ! Procedure interfaces
@@ -23,7 +23,6 @@ contains
         integer  :: orbital_index
         integer  :: radial_point_count
         logical  :: extended_optimal_level
-        !-----------------------------------------------------------------------
 
         call assemble_orbital_potential_coefficients (extended_optimal_level, orbital_index)
         call build_direct_radial_potential (orbital_index)

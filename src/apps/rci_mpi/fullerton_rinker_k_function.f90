@@ -1,3 +1,4 @@
+! Evaluate the Fullerton–Rinker K functions for the vacuum-polarization potential.
 module fullerton_rinker_k_function_interface
     implicit none (type, external)
 
@@ -6,17 +7,12 @@ module fullerton_rinker_k_function_interface
     public :: fullerton_rinker_k_function
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This  function  evaluates the KN(X) functions using the analytic
+    !   functions defined in tables 1 and 3 of Fullerton and Rinker.
+    !
+    ! Last update: 09 Oct 1992
     real(real64) function fullerton_rinker_k_function (x, n)
         ! Module dependencies
-        !                                                                      *
-        !   This  function  evaluates the KN(X) functions using the analytic   *
-        !   functions defined in tables 1 and 3 of Fullerton and Rinker.       *
-        !                                                                      *
-        !                                           Last update: 09 Oct 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         implicit none (type, external)
 
@@ -34,9 +30,6 @@ contains
         real(real64) :: xn, sum, x2, bsum, csum, dsum, esum, xm
 
         ! Initial values
-        !-----------------------------------------------
-        !
-        !
         data p/ 8.8357293375e-1_real64, -2.8259817381e-1_real64, -5.8904879578e-1_real64, &
             1.2500133434e-1_real64, -3.2729913852e-2_real64, 8.2888574511e-3_real64, &
             -1.0327765800e-5_real64, 6.3643668900e-5_real64, 0.0_real64, 0.0_real64, -7.1740181754e-1_real64&
@@ -49,32 +42,26 @@ contains
             2.1049413000e-6_real64, -2.6711271500e-5_real64, -1.3705236152e-1_real64, &
             -6.3476104090e-4_real64, -7.8739801501e-2_real64, -1.9641740173e-3_real64, &
             -3.4752369349e-3_real64,  - 7.3145316220e-4_real64/
-        !
         data b/ -3.19999594323e2_real64, 2.53900995981_real64, -6.40514843293e1_real64, &
             7.11722714285e-1_real64, 5.19010136460e3_real64, 8.28495496200e1_real64, &
             3.18150793824e2_real64, 4.33898867347e1_real64/
-        !
         data c/ -3.19999594333e2_real64, 2.53901020662_real64, 0.0_real64, 6.40514843287e1_real64&
             , -7.11722686403e-1_real64, 8.042207748e-4_real64, 2.76805406060e4_real64, &
             -3.27039477790e2_real64, 0.0_real64, 8.48402116837e2_real64, -2.56939867765e1_real64, &
             3.20844906346e-1_real64/
-        !
         data d/ 5.018065179_real64, 7.151891262e1_real64, 2.116209929e2_real64, &
             3.140327478e1_real64, -1.0_real64, 2.172386409e2_real64, 1.643364528e3_real64, &
             2.122244512e3_real64, -4.512004044e1_real64, 1.0_real64, 8.540770444_real64, &
             6.076242766e1_real64, 9.714630584e1_real64, 3.154973593e1_real64, 1.0_real64, &
             5.9243015865e-1_real64, 2.0596312871_real64, 3.7785190424_real64, 3.5614853214_real64, &
             1.0_real64/
-        !
         data e/ 2.669207401_real64, 5.172549669e1_real64, 2.969809720e2_real64, &
             5.364324164e2_real64, 1.535335924e2_real64, 1.155589983e2_real64, 1.292191441e3_real64, &
             3.831198012e3_real64, 2.904410075e3_real64, 0.0_real64, 4.543392478_real64, &
             3.514920169e1_real64, 6.019668656e1_real64, 8.468839579_real64, 0.0_real64, &
             3.1511867816e-1_real64, 3.473245222e-1_real64, 3.8791936870e-2_real64, -1.3059741497e-3_real64&
             , 0.0_real64/
-        !
         data np/ 8, 8, 9, 10/
-        !
         if (x /= 0.0_real64) then
             select case (n)
             case (0, 1)
@@ -91,9 +78,7 @@ contains
                 stop
             end select
             if (x <= 1.0_real64) then
-                !
-                !   Calculate function for X < = 1
-                !
+                ! Calculate function for X < = 1
                 nn = np(k)
                 sum = 0.0_real64
                 do i = 1, nn
@@ -109,9 +94,7 @@ contains
                 fullerton_rinker_k_function = sum
                 return
             end if
-            !
-            !   Calculate function for X > 1
-            !
+            ! Calculate function for X > 1
             xn = 1.0_real64
             dsum = 0.0_real64
             esum = 0.0_real64

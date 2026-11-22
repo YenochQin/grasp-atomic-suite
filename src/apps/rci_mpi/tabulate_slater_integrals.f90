@@ -31,13 +31,10 @@ contains
         ! Local declarations
         logical :: gen
         integer :: orbital_index_base, i, k, orbital_index, ib, ic, id
-        !-----------------------------------------------------------------------
 
         orbital_index_base = orbital_count + 1
         coulomb_integral_offsets_by_rank(0) = 1
-        !
-        !   Find 2*JMAX; it should not be greater than PARAMETER KMAX
-        !
+        ! Find 2*JMAX; it should not be greater than PARAMETER KMAX
         max_orbital_two_j = orbital_two_j(1)
         do i = 2, orbital_count
             if (orbital_two_j(i) > max_orbital_two_j) max_orbital_two_j = orbital_two_j(i)
@@ -46,10 +43,8 @@ contains
         if (max_orbital_two_j > maximum_coulomb_multipole_rank) then
             stop "tabulate_slater_integrals: maximum multipole rank is too small"
         end if
-        !
-        !   Make the RK integrals: IA <= IB, IA <= IC, IA <= ID, IB <= ID
-        !   When GEN is false, sweep through to find dimension
-        !
+        ! Make the RK integrals: IA <= IB, IA <= IC, IA <= ID, IB <= ID
+        ! When GEN is false, sweep through to find dimension
         gen = .false.
 
         do
@@ -77,9 +72,7 @@ contains
                 end do
                 coulomb_integral_offsets_by_rank(k+1) = slater_integral_count + 1
             end do
-            !
-            !     Allocate memory for integral book keeping
-            !
+            ! Allocate memory for integral book keeping
             if (gen) exit
             call alloc(local_slater_integral_indices, slater_integral_count, &
                 "local_slater_integral_indices", "tabulate_slater_integrals")
@@ -94,7 +87,7 @@ contains
             end do
 
             if (mpi_rank == 0)                                          &
-                print *, "Allocating space for ",slater_integral_count," Rk integrals"
+                print *, "Allocating space for ", slater_integral_count, " Rk integrals"
 
             gen = .true.
         end do

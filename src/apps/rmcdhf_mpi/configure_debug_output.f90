@@ -1,3 +1,4 @@
+! Set diagnostic output options for the calculation.
 module configure_debug_output_interface
     implicit none (type, external)
 
@@ -6,21 +7,14 @@ module configure_debug_output_interface
     public :: configure_debug_output
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This subroutine sets the arrays that control debug printout from
+    ! the radial and angular modules of the GRASP92 suite.
+    !
+    ! Written by Farid A Parpia. Last update: 10 Dec 1992
+    ! Modified bu Xinghong He. Last update: 06 Jul 1998
     subroutine configure_debug_output(debug_file_path)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit
-        !                                                                      *
-        !   This subroutine sets the arrays that control debug printout from   *
-        !   the radial and angular modules of the GRASP92 suite.               *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: OPENFL.                               *
-        !                                                                      *
-        !   Written by Farid A Parpia               Last update: 10 Dec 1992   *
-        !   Modified bu Xinghong He                 Last update: 06 Jul 1998   *
-        !                                                                      *
-        !***********************************************************************
         use debug_output_settings, only: ldbpa, ldbpg, rmcdhf_debug_flags
         use calculation_input_defaults, only: nondefault_options_flag
         use standard_io_units, only: stderr_unit
@@ -37,22 +31,17 @@ contains
 
         ! Local declarations
         integer :: debug_path_length, specified_path_length, open_status
-        !GG      CHARACTER(LEN=120) :: FILNAM
         character(len = len (debug_file_path)) :: file_path
-        !-----------------------------------------------
-        !
-        !   Initialise the arrays that control the debug printout
-        !   These serve as the default settings.
-        !
+        ! Initialize the diagnostic output flags.
+        ! These serve as the default settings.
         ldbpa = .false.
         ldbpg = .false.
 
         rmcdhf_debug_flags = .false.
-        !
         if (nondefault_options_flag == 0) return
 
-        !   Even in non-default, the user can choose not to have debug
-        !   print-out
+        ! Even in non-default, the user can choose not to have debug
+        ! print-out
 
         write (stderr_unit, "(A)") "Generate debug output?  (y/n) "
         if (.not.read_yes_no()) return
@@ -83,9 +72,7 @@ contains
                 exit
             end if
         end do
-        !
-        !   Set options for general printout
-        !
+        ! Read the general output options.
         write (stderr_unit, *) "Print out the machine constants used?"
         ldbpg(1) = read_yes_no()
         write (stderr_unit, *) "Print out the physical constants used?"
@@ -96,10 +83,7 @@ contains
         ldbpg(4) = read_yes_no()
         write (stderr_unit, *) "Print out the eigenvectors?"
         ldbpg(5) = read_yes_no()
-        !      LDBPG(1:5) = .TRUE.
-        !
-        !   Set options for printout from radial modules
-        !
+        ! Set options for printout from radial modules
         write (stderr_unit, *) "Printout from RADGRD?"
         rmcdhf_debug_flags(1) = read_yes_no()
         write (stderr_unit, *) "Printout from NUCPOT?"
@@ -132,17 +116,13 @@ contains
         write (stderr_unit, *) "Tabulate and make printer plots", &
             " of direct potentials?"
         rmcdhf_debug_flags(30) = read_yes_no()
-        !      LDBPR(1:30) = .TRUE.
-        !
-        !   Set options for printout of angular coefficients
-        !
+        ! Set options for printout of angular coefficients
         write (stderr_unit, *) " Printout from LODCSL?"
         ldbpa(1) = read_yes_no()
         write (stderr_unit, *) " Print out T coefficients?"
         ldbpa(2) = read_yes_no()
         write (stderr_unit, *) " Print out V coefficients?"
         ldbpa(3) = read_yes_no()
-        !      LDBPA(1:3) = .TRUE.
 
         return
     end subroutine configure_debug_output

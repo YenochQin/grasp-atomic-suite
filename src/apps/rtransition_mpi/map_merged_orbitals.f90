@@ -1,3 +1,4 @@
+! Map each state's orbital indices into the common orbital order.
 module map_merged_orbitals_interface
     implicit none (type, external)
 
@@ -6,17 +7,12 @@ module map_merged_orbitals_interface
     public :: map_merged_orbitals
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   The position of an orbital in the merged list is connected to
+    !   the positions in the initial and final state lists
+    !
+    ! Written by Per Jonsson
     subroutine map_merged_orbitals
         ! Module dependencies
-        !                                                                      *
-        !   The position of an orbital in the merged list is connected to      *
-        !   the positions in the initial and final state lists                 *
-        !                                                                      *
-        !   Written by Per Jonsson                                             *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use biorthogonal_orbital_sets, only: final_orbital_count, initial_orbital_count, final_orbital_principal_n, &
             final_orbital_kappa, initial_orbital_principal_n, initial_orbital_kappa, merged_to_final_orbital_index, &
@@ -26,19 +22,12 @@ contains
 
         ! Local declarations
         integer :: orbital_index, j
-        !-----------------------------------------------
+        ! INTEGER PNTRIQ
         !
-        !ww      INTEGER PNTRIQ
-        !     POINTER (PNTRIQ,RIQDUMMY)
-        !
-        !
-        !     Initialize
-        !
+        !      Initialize
         merged_to_initial_orbital_index(:orbital_count) = 0.0_real64
         merged_to_final_orbital_index(:orbital_count) = 0.0_real64
-        !
-        !   Loop over the orbitals in the merged list
-        !
+        ! Loop over the orbitals in the merged list
         do orbital_index = 1, orbital_count
             do j = 1, initial_orbital_count
                 if (orbital_principal_n(orbital_index)/=initial_orbital_principal_n(j) .or. &

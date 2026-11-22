@@ -6,26 +6,22 @@ module read_seltzer_field_shift_factors_interface
     public :: read_seltzer_field_shift_factors
 contains
 
-    !***********************************************************************
-    !                                                                      *
-    !JE   SUBROUTINE DENSREAD(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
+    ! JE   SUBROUTINE DENSREAD(DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
+    !    IF angular coefficients already exist
+    !    This routine controls combines the radial and angular parts for the*
+    !    calculation of the NMS parameter, the electron density at the
+    !    origin and radial expectation values.
+    !
+    ! Written by C\'edric Naz\'e
+    !
+    ! Last revision: Feb. 2011
+    !
+    ! Translated by Gediminas Gaigalas 11/18/19
     subroutine read_seltzer_field_shift_factors(contact_density_integrals,total_nms_integrals,radius_integrals, &
         radius_squared_integrals,inverse_radius_integrals,inverse_radius_squared_integrals,                           &
         leading_nms_integrals,orbital_density_profiles,level_density_profiles,nuclear_density_point_count)
         ! Module dependencies
         use calculation_file_units, only: one_body_cache_unit
-        !                                                                      *
-        !   IF angular coefficients already exist                              *
-        !   This routine controls combines the radial and angular parts for the*
-        !   calculation of the NMS parameter, the electron density at the      *
-        !   origin and radial expectation values.                              *
-        !                                                                      *
-        !   Written by C\'edric Naz\'e                                         *
-        !                                                                      *
-        !                                         Last revision: Feb. 2011     *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Gediminas Gaigalas 11/18/19
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters, only: orbital_index_radix, max_orbitals
         use selected_level_indices, only: active_level_count
@@ -62,9 +58,7 @@ contains
         real(real64) :: inverse_radius_squared_contribution, leading_nms_contribution
         integer :: previous_column_csf, previous_row_csf, io_status, ia, ib, column_csf, row_csf, i, level_index, l, &
             & level_mixing_offset, packed_orbital_label
-        !-----------------------------------------------
-        !
-        !
+
         level_density_profiles(:,:) = 0.0_real64                                     ! JE ADD
 
         previous_column_csf = 0
@@ -74,19 +68,19 @@ contains
         do
             read (one_body_cache_unit,iostat = io_status) column_csf,row_csf,coefficient_count
             if (io_status /= 0) exit
-            !*      print*, 'ic', IC,IR,NCOUNT
+            ! *      print*, 'ic', IC,IR,NCOUNT
             !
-            !   Read successful; decode the labels of I(ab)
+            !    Read successful; decode the labels of I(ab)
             !
-            !      Initialise
+            !       Initialise
             if ((column_csf/=previous_column_csf).or.(row_csf/=previous_row_csf)) then
-                !*            ISPARC = ISPAR (IC)
-                !*            ITJPOC = ITJPO (IC)
-                !*            ITJPOR = ITJPO (IR)
-                !*            IDIFF = ITJPOC - ITJPOR
+                ! *            ISPARC = ISPAR (IC)
+                ! *            ITJPOC = ITJPO (IC)
+                ! *            ITJPOR = ITJPO (IR)
+                ! *            IDIFF = ITJPOC - ITJPOR
                 previous_column_csf = column_csf
                 previous_row_csf = row_csf
-                !*        DO I = 1,NELMNT
+                ! *        DO I = 1,NELMNT
                 contact_density_element = 0.0_real64
                 total_nms_element = 0.0_real64
                 radius_element = 0.0_real64
@@ -95,13 +89,13 @@ contains
                 inverse_radius_squared_element = 0.0_real64
                 leading_nms_element = 0.0_real64
                 csf_pair_density_profile(:) = 0.0_real64                               ! JE ADD
-                !*        ENDDO
+                ! *        ENDDO
             end if
             do i= 1,coefficient_count
                 read(one_body_cache_unit) cached_shell_coefficients(i),packed_orbital_label
                 ia = packed_orbital_label/orbital_index_radix
                 ib = mod(packed_orbital_label,orbital_index_radix)
-                !*           LOC = INDEX(I)
+                ! *           LOC = INDEX(I)
                 contact_density_element = contact_density_element + contact_density_integrals(ia,ib)*cached_shell_coefficients(i)
                 do l = 2,nuclear_density_point_count                                                  ! JE ADD
                     csf_pair_density_profile(l) = csf_pair_density_profile(l) + orbital_density_profiles(ia,ib,l)*       &     ! JE ADD
@@ -115,14 +109,12 @@ contains
                     & cached_shell_coefficients(i)
                 leading_nms_element = leading_nms_element + leading_nms_integrals(ia,ib)*cached_shell_coefficients(i)
             end do
-            !
-            !   Return to the start of the loop
-            !
+            ! Return to the start of the loop
 
-            !*      ICI = 0
-            !*      DO 21 I = 1,NELMNT
-            !*        IRI = IROW(I)
-            !*         IF (I .GT. IENDC(ICI)) ICI = ICI+1
+            ! *      ICI = 0
+            ! *      DO 21 I = 1,NELMNT
+            ! *        IRI = IROW(I)
+            ! *         IF (I .GT. IENDC(ICI)) ICI = ICI+1
             do level_index = 1,active_level_count
                 level_mixing_offset = (level_index-1)*csf_count
                 contact_density_contribution = csf_mixing_coefficients(column_csf+level_mixing_offset)* &
@@ -167,7 +159,7 @@ contains
                     & inverse_radius_squared_contribution
                 leading_nms_by_level(level_index) = leading_nms_by_level(level_index) + leading_nms_contribution
             end do
-            !*   21 CONTINUE
+            ! *   21 CONTINUE
 
         end do
         return

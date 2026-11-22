@@ -6,15 +6,9 @@ module read_mcp_coefficients_into_memory_interface
     public :: read_mcp_coefficients_into_memory
 contains
 
-    !*******************************************************************
-    !                                                                  *
+    ! Written by  G. Gaigalas               Vilnius, September 2021
     subroutine read_mcp_coefficients_into_memory(mcp_channel,total_contribution_count,contribution_count)
         ! Module dependencies
-        !                                                                  *
-        !   Written by  G. Gaigalas               Vilnius, September 2021  *
-        !                                                                  *
-        !*******************************************************************
-        !
         use, intrinsic :: iso_fortran_env, only: int64
         use rmcdhf_mcp_memory, only: coeff, angular_contribution_coefficients_mcp_31, angular_contribution_coefficients_mcp_32, &
             & angular_contribution_coefficients_mcp_33, angular_contribution_coefficients_mcp_34, &
@@ -56,11 +50,9 @@ contains
 
         ! Local declarations
         integer :: i
-        !-----------------------------------------------
 
         do i = 1, contribution_count
-            !*** Read column index, sparse matrix index, and
-            !*** coefficient for all contributions from this integral
+            ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
             if(mcp_channel == 31) then
                 iclmn(i) = contribution_csf_column_indices_mcp_31(total_contribution_count+i)
                 indx(i) = contribution_sparse_matrix_indices_mcp_31(total_contribution_count+i)

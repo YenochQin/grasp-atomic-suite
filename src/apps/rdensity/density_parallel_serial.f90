@@ -1,3 +1,4 @@
+! Provide the serial counterparts of the rdensity parallel operations.
 ! Serial implementation of the rdensity process boundary.
 module density_parallel
     implicit none (type, external)

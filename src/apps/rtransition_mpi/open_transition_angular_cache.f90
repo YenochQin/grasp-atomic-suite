@@ -1,3 +1,4 @@
+! Open the cached angular coefficients for transition matrix elements.
 module open_transition_angular_cache_interface
     implicit none (type, external)
 
@@ -6,18 +7,13 @@ module open_transition_angular_cache_interface
     public :: open_transition_angular_cache
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Checks if the angular file name(1).name(2).T is available
+    ! and appropriate
+    !
+    ! Written by Per Jonsson. 6 March 1997
     subroutine open_transition_angular_cache(name, avail, jkp, transition_angular_unit)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
-        !                                                                      *
-        !   Checks if the angular file name(1).name(2).T is available          *
-        !   and appropriate                                                    *
-        !                                                                      *
-        !   Written by Per Jonsson                      6 March 1997           *
-        !                                                                      *
-        !***********************************************************************
         use orbital_csf_basis, only: orbital_count
         use transition_matrix_workspace, only: requested_multipole_count, requested_multipole_codes
         use mpi_state, only: mpi_process_count, mpi_rank
@@ -33,7 +29,6 @@ contains
         integer :: j1,j2,initial_block_index,final_block_index,nwd,nkpd,nprocsd,myidd
         logical :: found
         character :: s(-9:9)*2
-        !-----------------------------------------------
 
         s((-9)) = "-9"
         s((-8)) = "-8"
@@ -65,9 +60,7 @@ contains
             avail = .false.
             return
         else
-            !
-            !  Open the file and check if it is appropriate for the present case
-            !
+            ! Open the file and check if it is appropriate for the present case
             open(newunit=transition_angular_unit, file=name(1)(1:j1-1)//"."//name(2)(1:j2-1)//"."//s(&
                 requested_multipole_codes(jkp))//"T", status="OLD", form="UNFORMATTED", position="asis")
             rewind (transition_angular_unit)

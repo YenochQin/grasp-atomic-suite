@@ -1,43 +1,11 @@
+! Construct initial radial orbitals for an MCDHF calculation from orbital metadata and nuclear data.
 
-
-!***********************************************************************
-!***********************************************************************
-!***********************************************************************
-!**                                                                  ***
-!**               *******  *******   **    **  *******               ***
-!**               **       **    **  **    **  **                    ***
-!**               **       **    **  **    **  **                    ***
-!**               *****    *******   ** ** **  *****                 ***
-!**               **       **  **    ** ** **  **                    ***
-!**               **       **   **   ** ** **  **                    ***
-!**               *******  **    **   **  **   **                    ***
-!**                                                                  ***
-!**   Program to create a  .rwf  file for RSCF92 by merging one or   ***
-!**   more existing  .rwf  files or generating Thomas-Fermi or hy-   ***
-!**   drogenic functions.                                            ***
-!**                                                                  ***
-!**                              GRASP92                             ***
-!**           F. A. Parpia, C. F. Fischer, and I. P. Grant           ***
-!**                                                                  ***
-!**                                                                  ***
-!***********************************************************************
-!***********************************************************************
-!***********************************************************************
-!                                                                      *
+! Reuse saved orbitals or generate estimates in a Thomas–Fermi or hydrogenic potential.
+! GRASP92
+! F. A. Parpia, C. F. Fischer, and I. P. Grant
+! Written by Farid A. Parpia. Last revision: 15 Dec 1992
 program rwfnestimate_main
     ! Module dependencies
-    !                                                                      *
-    !   Entry routine for RCI92. Controls the entire computation.          *
-    !                                                                      *
-    !   Call(s) to: [LIB92]: SETMC, SETCON.                                *
-    !               [RCI92]: CHKPLT, MATRIX, SETCSL, SETDBG, SETMIX,       *
-    !                        SETRES, SETSUM, STRSUM.                       *
-    !               [NJGRAF]: FACTT.                                       *
-    !                                                                      *
-    !   Written by Farid A. Parpia            Last revision: 15 Dec 1992   *
-    !                                                                      *
-    !***********************************************************************
-    !
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
     use rwfnestimate_input, only: radial_input_options, parse_radial_options, load_radial_header
@@ -69,10 +37,8 @@ program rwfnestimate_main
     integer :: core_subshell_count
     logical :: yes
     type(radial_input_options) :: input_options
-    !-----------------------------------------------
 
-    !   Startup message
-    !
+    ! Startup message
     call parse_radial_options(input_options)
     write (stderr_unit, *) "RWFNESTIMATE"
     write (stderr_unit, *) "This program estimates radial wave functions"
@@ -92,64 +58,35 @@ program rwfnestimate_main
     write (stderr_unit, *) "Selected input: ", input_options%filename
     write (stderr_unit, *) "Output file: ", files%initial_orbitals
 
-
-    !
     if (yes) then
         nondefault_options_flag = 0
     else
         nondefault_options_flag = 1
     end if
 
-    !
-    !   Determine if there is to be any debug printout; this will be
-    !   made on the  .dbg  file
-    !
     call configure_debug_output(files%estimate_debug)
-    !
-    !   Perform machine- and installation-dependent setup
-    !
+    ! Initialize machine-dependent constants.
     call initialize_machine_constants
-    !
-    !   Set up the physical constants
-    !
+    ! Initialize physical constants.
     call initialize_physical_constants
-    !
-    !   Open the  .sum  file
-    !
+    ! Open the  .sum  file
     if (nondefault_options_flag /= 0) call open_summary_file(files%estimate_summary)
-    !
-    !   Load orbital metadata from the selected rCSFs header.
-    !
+    ! Load orbital metadata from the selected rCSFs header.
     call load_radial_header(input_options, core_subshell_count)
-    !
-    !   Hydrogenic screen parameters for all orbitals
-    !
+    ! Hydrogenic screen parameters for all orbitals
     call set_hydrogenic_screening (core_subshell_count)
-    !
-    !   Determine other relevant information
-    !
+    ! Determine other relevant information
     call read_calculation_options
-    !
-    !   Write the first part of the  .sum  file
-    !
+    ! Write the first part of the  .sum  file
     if (nondefault_options_flag /= 0) call write_input_summary
-    !
-    !   Generate the subshell radial wavefunctions
-    !
+    ! Generate the subshell radial wavefunctions
     if (state /= "") files%orbitals = orbital_input_path(state)
     call generate_initial_radial_wavefunctions(files%orbitals)
-    !
-    !   Orthogonalize the radial orbitals
-    !
+    ! Orthogonalize the radial orbitals
     call orthogonalize_radial_orbitals
-    !
-    !   Write the subshell radial wavefunctions out
-    !
+    ! Write the subshell radial wavefunctions out
     call write_initial_radial_wavefunctions(files%initial_orbitals)
-    !
-    !   Print completion message
-    !
+
     write (stderr_unit, *) "RWFNESTIMATE: Execution complete."
-    !
     stop
 end program rwfnestimate_main

@@ -1,3 +1,4 @@
+! Diagonalize one-body density blocks and rotate the radial orbitals to their natural basis.
 ! Density eigensystem and radial transformation, shared by serial/MPI targets.
 ! Algorithm derived from GRASP rdensity/natorbnew.f90 (488e875d).
 module natural_orbitals

@@ -6,28 +6,21 @@ module write_mcp_sparsity_interface
     public :: write_mcp_sparsity
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !  This routine examines lists
+    !                              (IC,IR,npos)
+    !  to set up the array  IENDC  required by the Davidson eigensolver
+    !  of Stathopoulos and Fischer.
+    !
+    ! Written by Farid A. Parpia. Last revision: 10 Dec 1992
+    !  Modified for block interactions by C. F. Fischer        May 1997
+    !  Modified for multi-processors   by Xinghong He       03 Jul 1998
+    !
+    ! Currently shared by mcpblk, mcpmpi
     subroutine write_mcp_sparsity(write_coefficient_callback,nonzero_element_count,print_details,symmetry_block_index,mpi_rank, &
         & mpi_process_count,output_file_prefix)
         ! Module dependencies
         use mcp_generation_options, only: mcp_temporary_units
         use, intrinsic :: iso_fortran_env, only: output_unit
-        !                                                                      *
-        !   This routine examines lists                                        *
-        !                               (IC,IR,npos)                           *
-        !   to set up the array  IENDC  required by the Davidson eigensolver   *
-        !   of Stathopoulos and Fischer.                                       *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, CONVRT, DALLOC.                        *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 10 Dec 1992   *
-        !   Modified for block interactions by C. F. Fischer        May 1997   *
-        !   Modified for multi-processors   by Xinghong He       03 Jul 1998   *
-        !
-        !  Currently shared by mcpblk, mcpmpi
-        !
-        !***********************************************************************
         use array_memory_management, only: alloc, dalloc
         use orbital_csf_basis, only: csf_count
         use standard_io_units, only: stderr_unit
@@ -50,7 +43,6 @@ contains
         integer, pointer :: column_end_positions(:)
         integer, pointer :: row_indices(:)
         character :: mcp_channel_label*3
-        !-----------------------------------------------
 
         if (mpi_rank == 0) write (output_unit, *) &
             "Analysing sparse matrix array definition file ...", 30
@@ -60,12 +52,9 @@ contains
             write (stderr_unit, *) "write_mcp_sparsity: nb = ", symmetry_block_index, ".NE. mb (=", file_block_index, ")"
             stop
         end if
-        !
-        !   Allocate storage for IENDC(0:NCF)
-        !
+        ! Allocate storage for IENDC(0:NCF)
         call alloc (column_end_positions, 0,  csf_count,"column_end_positions","write_mcp_sparsity"  )
         call alloc (row_indices, nonzero_element_count, "row_indices", "write_mcp_sparsity" )
-        !
         !   Analyse data on file 30; set up IENDC and IROW
         ! In multiprocessor environment, iendc of each node will have the
         ! same length (ncf+1); but will have its own part filled. irow is
@@ -81,12 +70,10 @@ contains
             end if
             previous_column_end = cumulative_nonzero_count
         end do
-        !xhh - changed to suits MPI environment as well
-        !      IENDC(NCF) = IEND
+        ! xhh - changed to suits MPI environment as well
+        !       IENDC(NCF) = IEND
         column_end_positions(column_index) = previous_column_end
-        !
-        !   Sorting complete; rewrite to mcpXXX.30 file
-        !
+        ! Sorting complete; rewrite to mcpXXX.30 file
         open(newunit=mcp_append_unit, file=output_file_prefix//".30", status="OLD", form="UNFORMATTED", iostat=io_status&
             , position="APPEND")
         if (io_status /= 0) then
@@ -99,13 +86,9 @@ contains
         write (mcp_append_unit) (column_end_positions(i),i=mpi_rank + 1,csf_count,mpi_process_count), &
             & (row_indices(i),i=1,nonzero_element_count)
         close(mcp_append_unit)
-        !cjb
-        !
-        !   Deallocate storage
-        !
+        !    Deallocate storage
         call dalloc (column_end_positions, "column_end_positions", "write_mcp_sparsity")
         call dalloc (row_indices, "row_indices", "write_mcp_sparsity")
-        !
         call write_coefficient_callback (print_details, nonzero_element_count, csf_count)
         return
     end subroutine write_mcp_sparsity

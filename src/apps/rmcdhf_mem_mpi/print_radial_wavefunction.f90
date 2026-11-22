@@ -6,24 +6,17 @@ module print_radial_wavefunction_interface
     public :: print_radial_wavefunction
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Makes a (debug) printout of wave functions. There are two modes:
+    !
+    !    (1) J>0  - Used as a debug option in SOLVE, wavefunctions for
+    !               orbital J are printed
+    !    (2) J=0  - A  printout  of the grid and all wave functions is
+    !               made
+    !
+    ! Written by Farid A Parpia, at Oxford  Last revision: 18 Dec 1992
     subroutine print_radial_wavefunction(orbital_index)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   Makes a (debug) printout of wave functions. There are two modes:   *
-        !                                                                      *
-        !      (1) J>0  - Used as a debug option in SOLVE, wavefunctions for   *
-        !                 orbital J are printed                                *
-        !      (2) J=0  - A  printout  of the grid and all wave functions is   *
-        !                 made                                                 *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: DRAW.                                         *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford  Last revision: 18 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: max_radial_points
         use atomic_calculation_state, only: max_radial_points, nuclear_charge, speed_of_light_au
@@ -32,7 +25,6 @@ contains
             trial_small_component
         use orbital_csf_basis, only: orbital_count, orbital_principal_n, orbital_symmetry_labels
         use radial_wavefunctions, only: orbital_last_grid_index, radial_large_components, radial_small_components
-        !      USE draw_I
         use radial_ascii_plot, only: plot_radial_orbital_ascii
         implicit none (type, external)
 
@@ -42,15 +34,10 @@ contains
         ! Local declarations
         integer :: nb2, row_count, ii, ii1, ii2, k, mfk
         real(real64) :: cbz
-        !-----------------------------------------------
-        !
-        !
+
         cbz = speed_of_light_au/nuclear_charge
-        !
         if (orbital_index > 0) then
-            !
-            !   Mode (1)
-            !
+            ! Mode (1)
             call ensure_debug_output()
             write (angular_debug_unit, '("1",1i2,1a2," orbital:"/,2(" --------- r --------- ------- P (r) -------",&
                 &" ------- Q (r) -------"))') orbital_principal_n(orbital_index), orbital_symmetry_labels(orbital_index)
@@ -76,11 +63,8 @@ contains
             end do
             call plot_radial_orbital_ascii (trial_large_component, 1.0_real64, trial_small_component, cbz, &
                 trial_orbital_last_grid_index)
-        !
         else
-            !
-            !   Mode (2)
-            !
+            ! Mode (2)
             do k = 1, orbital_count
                 call ensure_debug_output()
                 write (angular_debug_unit, '("1",1i2,1a2," orbital:"/,2(" --------- r --------- ------- P (r) -------",&
@@ -109,14 +93,9 @@ contains
                 end do
                 call plot_radial_orbital_ascii (radial_large_components(:max_radial_points,k), 1.0_real64, &
                     & radial_small_components(:max_radial_points,k), cbz, orbital_last_grid_index(k))
-                !
             end do
-            !
         end if
-        !
         return
-        !
         return
-        !
     end subroutine print_radial_wavefunction
 end module print_radial_wavefunction_interface

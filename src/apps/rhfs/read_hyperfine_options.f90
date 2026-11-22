@@ -1,3 +1,4 @@
+! Read the nuclear, radial-grid, and level-selection settings for a hyperfine calculation.
 module read_hyperfine_options_interface
     implicit none (type, external)
 
@@ -6,20 +7,12 @@ module read_hyperfine_options_interface
     public :: read_hyperfine_options
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Interactively determines the data governing the HFS problem.
+    !
+    ! Written by Farid A. Parpia. Last revision: 15 Dec 1992
     subroutine read_hyperfine_options(state_name)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: input_unit, output_unit
-        !                                                                      *
-        !   Interactively determines the data governing the HFS problem.       *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: NUCPOT, RADGRD, SETQIC.                       *
-        !               [RCI92]: SETISO, SETRWF.                               *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 15 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use calculation_state_files, only: orbital_input_path
         use hamiltonian_correction_flags, only: use_first_order_csf_perturbation
@@ -43,15 +36,10 @@ contains
         ! Local declarations
         logical            :: prompt_answer
         character(len=128) :: isotope_file_path
-        !-----------------------------------------------
-        !
-        !   Open, check, load data from, and close the  .iso  file
-        !
+        ! Read the nuclear parameters from isodata.
         isotope_file_path = "isodata"
         call read_isotope_data (isotope_file_path)
-        !
-        !   Determine the physical effects specifications
-        !
+        ! Determine the physical effects specifications
         if (nondefault_options_flag /= 0) then
             write (output_unit, *) "The physical speed of light in"
             write (output_unit, *) " atomic units is", vacuum_speed_of_light_au, ";"
@@ -66,9 +54,7 @@ contains
         else
             speed_of_light_au = vacuum_speed_of_light_au
         end if
-        !
         if (nondefault_options_flag /= 0) then
-            !
             write (output_unit, *) "Treat contributions of some CSFs"
             write (output_unit, *) " as first-order perturbations?"
             prompt_answer = read_yes_no()
@@ -87,15 +73,13 @@ contains
             use_first_order_csf_perturbation = .false.
             first_order_csf_cutoff = 0
         end if
-        !
-        !   Determine the parameters controlling the radial grid
-        !
+        ! Choose the radial grid parameters.
         if (nuclear_model_parameter_count == 0) then
             radial_grid_scale = exp((-65.0_real64/16.0_real64))/nuclear_charge
             transformed_grid_step = 0.5_real64**4
             radial_point_count = min(220,max_radial_points)
         else
-            !CFF     .. should be Z-dependent
+            ! The screening estimate could be refined to depend on nuclear charge Z.
             radial_grid_scale = 2.0e-6_real64/nuclear_charge
             transformed_grid_step = 5.0e-2_real64
             radial_point_count = max_radial_points
@@ -121,30 +105,18 @@ contains
                 read (input_unit, *) radial_point_count
             end if
         end if
-        !
-        !   ACCY is an estimate of the accuracy of the numerical procedures
-        !
+        ! ACCY is an estimate of the accuracy of the numerical procedures
         working_tolerance = transformed_grid_step**6
-        !
-        !   Set up the coefficients for the numerical procedures
-        !
+        ! Initialize the radial integration and derivative stencils.
         call initialize_radial_stencil_weights
-        !
-        !   Generate the radial grid and all associated arrays
-        !
+        ! Build the radial grid and its derivative arrays.
         call initialize_radial_grid
-        !
-        !   Generate $- r \times V_nuc (r)$
-        !
+        ! Generate $- r \times V_nuc (r)$
         call calculate_nuclear_coulomb_potential
-        !
-        !   Load the radial wavefunctions
-        !
-        !      CALL SETRWFA(NAME)
+        ! Load the radial wavefunctions
 
         call read_radial_wavefunction_file (orbital_input_path(state_name))
 
-        !
         return
     end subroutine read_hyperfine_options
 end module read_hyperfine_options_interface

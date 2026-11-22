@@ -6,16 +6,12 @@ module reduce_sparse_matrix_product_interface
     public :: reduce_sparse_matrix_product
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !  Used by dnimcv
+    !  Developed from dmerge. The only diff is: idy not needed here
+    !
+    !                     Gediminas Gaigalas  10/057
     subroutine reduce_sparse_matrix_product(n, db, dc, da, dconst, dl)
         ! Module dependencies
-        !
-        !  Used by dnimcv
-        !  Developed from dmerge. The only diff is: idy not needed here
-        !
-        !***********************************************************************
-        !                     Gediminas Gaigalas  10/057
         use, intrinsic :: iso_fortran_env, only: real64
         implicit none (type, external)
 
@@ -29,7 +25,6 @@ contains
 
         ! Local declarations
         real(real64) :: dsum
-        !-----------------------------------------------
 
         dsum = 0.0_real64
         dsum = dot_product(da,db(:n))

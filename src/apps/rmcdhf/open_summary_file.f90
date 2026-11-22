@@ -6,11 +6,9 @@ module open_summary_file_interface
     public :: open_summary_file
 contains
 
-    !***********************************************************************
     subroutine open_summary_file(file_path)
         ! Module dependencies
         use calculation_file_units, only: summary_output_unit
-        !***********************************************************************
         use standard_io_units, only: stderr_unit
         use file_open, only: open_calculation_file
         implicit none (type, external)
@@ -24,7 +22,6 @@ contains
 
         ! Local declarations
         integer :: open_status
-        !-----------------------------------------------
 
         call open_calculation_file (summary_output_unit, file_path, summary_file_format, summary_file_status, open_status)
         if (open_status /= 0) then

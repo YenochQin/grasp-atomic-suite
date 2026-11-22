@@ -1,21 +1,11 @@
-!***********************************************************************
-!                                                                      *
+! Calculate the electronic mass-shift and field-shift factors used in isotope shifts.
+! Written by Per Jonsson. Last revision: 17 Jan 1996
+!    Modify  by Gediminas Gaigalas                        26 Oct 2009
+! Modified by J. Ekman. 25 Nov 2013
+!
+! Translated by Gediminas Gaigalas 11/18/19
 program ris4_main
-    ! Module dependencies
-    !                                                                      *
-    !   Entry routine for RIS. Controls the entire computation.       *
-    !                                                                      *
-    !   Call(s) to: [LIB92]: GETMIX, SETCSL, SETMC, SETCON.                *
-    !               [SMS92]: CHKPLT, GETSMD, SETDBG, SETSUM                *
-    !                        STRSUM                                        *
-    !               [NJGRAF]: FACTT.                                       *
-    !                                                                      *
-    !   Written by Per Jonsson                Last revision: 17 Jan 1996   *
-    !   Modify  by Gediminas Gaigalas                        26 Oct 2009   *
-    !   Modified by J. Ekman                                 25 Nov 2013   *
-    !                                                                      *
-    !***********************************************************************
-    !...Translated by Gediminas Gaigalas 11/18/19
+    !  Module dependencies
     use, intrinsic :: iso_fortran_env, only: real64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
@@ -50,15 +40,10 @@ program ris4_main
     logical   :: yes
     character :: name*24
     integer :: mixing_file_kind, unused_core_subshell_count
-    !-----------------------------------------------
-    !
-    !   Matrix elements smaller than CUTOFF are not accumulated
-    !
+    ! Matrix elements smaller than CUTOFF are not accumulated
     matrix_element_screening_cutoff = 1.0e-10_real64
-    !
     write (stderr_unit, *)
     write (stderr_unit, *) "ris4_main: Execution begins ..."
-    !      CALL STARTTIME (ncount1, 'RIS')
 
     write (stderr_unit, *)
     write (stderr_unit, *) "Default settings?"
@@ -82,69 +67,28 @@ program ris4_main
     end if
     write (stderr_unit, *)
 
-    !
-    !   Check compatibility of plant substitutions
-    !
-    !GG      CALL CHKPLT
-    !
-    !   Determine if there is to be any debug printout; this will be
-    !   made on the  .dbg  file
-    !
     call configure_debug_output
-    !
-    !   Perform machine- and installation-dependent setup
-    !
+    ! Initialize machine-dependent constants.
     call initialize_machine_constants
-    !
-    !   Set up the physical constants
-    !
+    ! Initialize physical constants.
     call initialize_physical_constants
-    !
-    !   Open the  .i  file
-    !
+    ! Open the  .i  file
     call open_summary_file(name,mixing_file_kind)
-    !
-    !   Open, check, load data from, and close, the  .csl  file
-    !
+    ! Load the configuration state functions from the descriptor pair.
     call load_angular_csf_basis(name,unused_core_subshell_count)
-    !
-    !   Get the remaining information
-    !
+    ! Get the remaining information
     call prepare_isotope_calculation(name)
-    !
-    !   Get the eigenvectors
-    !
-    !      PRINT *, 'Block format?'
-    !      YES = GETYN ()
-    !      PRINT *
+    ! Get the eigenvectors
 
-    !      IF (YES) THEN
     call read_mixing_blocks(name,mixing_file_kind)
-    !      ELSE
-    !         IF (NCI.EQ.0) THEN
-    !            CALL GETMIXC(NAME)
-    !         ELSE
-    !            CALL GETMIXA(NAME)
-    !         ENDIF
-    !      ENDIF
+    ! Record the input settings in the calculation report.
     !
-    !   Append a summary of the inputs to the  .sum  file
-    !
-    !      CALL STRSUM
-    !
-    !   Set up the table of logarithms of factorials
-    !
+    ! Initialize the log-factorial table for angular algebra.
     call initialize_log_factorial_table
-    !
-    !   Proceed with the RIS calculation
-    !
+    ! Proceed with the RIS calculation
     call calculate_isotope_shifts(name)
-    !
-    !   Print completion message
-    !
+
     write (stderr_unit, *)
-    !      CALL STOPTIME (ncount1, 'RIS')
     write (stderr_unit, *) "ris4_main: Execution complete."
-    !
     stop
 end  program ris4_main

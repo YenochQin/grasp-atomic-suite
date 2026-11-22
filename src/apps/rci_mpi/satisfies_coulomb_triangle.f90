@@ -6,22 +6,15 @@ module satisfies_coulomb_triangle_interface
     public :: satisfies_coulomb_triangle
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Written by Per Jonsson
     logical function satisfies_coulomb_triangle (la, k, lb)
-        !                                                                      *
-        !   Written by Per Jonsson                                             *
-        !                                                                      *
-        !***********************************************************************
         implicit none (type, external)
 
         ! Arguments
         integer, intent(in) :: la
         integer, intent(in) :: k
         integer, intent(in) :: lb
-        !
-        !   Perform the triangularity check
-        !
+        ! Perform the triangularity check
         if (mod(k + la + lb,2) /= 0) then
             satisfies_coulomb_triangle = .false.
         else

@@ -1,3 +1,4 @@
+! Tabulate the radial Bessel kernels used in transverse Breit integrals.
 module build_breit_bessel_kernels_interface
     implicit none (type, external)
 
@@ -6,44 +7,38 @@ module build_breit_bessel_kernels_interface
     public :: build_breit_bessel_kernels
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This routine evaluates the functions
+    !
+    !                (2K+1)!!
+    !    BESSJ  =    --------  J  (w   r) - 1  =  PHI  (w   r) - 1
+    !                       K   K   ab               K   ab
+    !                (w   r)
+    !                  ab
+    ! and
+    !                       K+1
+    !                (w   r)
+    !                  ab
+    !    BESSN  =  - --------  N  (w   r) - 1  =  PSI  (w   r) - 1
+    !                (2K-1)!!   K   ab               K   ab
+    !
+    ! where J and N ARE spherical Bessel functions, and
+    !
+    !              w   = ABS ( E(IA) - E(IB) )/c
+    !               ab
+    !
+    ! where  E(I)  is the eigenvalue for orbital  I . The writeup (B J
+    ! McKenzie, I P Grant, and P H Norrington, Computer Phys Commun 21
+    ! (1980) 233-246) is incorrect in its description of the output of
+    ! this routine.
+    !
+    ! The  routine uses equations given in M Abramowitz and I A STegun
+    ! to evaluate the functions. Devices are used to reduce the number
+    ! of actual evaluations of these functions.
+    !
+    ! Last update: 09 Oct 1992
     subroutine build_breit_bessel_kernels(orbital_a, orbital_b, ik, iw, k)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This routine evaluates the functions                               *
-        !                                                                      *
-        !                  (2K+1)!!                                            *
-        !      BESSJ  =    --------  J  (w   r) - 1  =  PHI  (w   r) - 1       *
-        !                         K   K   ab               K   ab              *
-        !                  (w   r)                                             *
-        !                    ab                                                *
-        !   and                                                                *
-        !                         K+1                                          *
-        !                  (w   r)                                             *
-        !                    ab                                                *
-        !      BESSN  =  - --------  N  (w   r) - 1  =  PSI  (w   r) - 1       *
-        !                  (2K-1)!!   K   ab               K   ab              *
-        !                                                                      *
-        !                                                                      *
-        !   where J and N ARE spherical Bessel functions, and                  *
-        !                                                                      *
-        !                w   = ABS ( E(IA) - E(IB) )/c                         *
-        !                 ab                                                   *
-        !                                                                      *
-        !   where  E(I)  is the eigenvalue for orbital  I . The writeup (B J   *
-        !   McKenzie, I P Grant, and P H Norrington, Computer Phys Commun 21   *
-        !   (1980) 233-246) is incorrect in its description of the output of   *
-        !   this routine.                                                      *
-        !                                                                      *
-        !   The  routine uses equations given in M Abramowitz and I A STegun   *
-        !   to evaluate the functions. Devices are used to reduce the number   *
-        !   of actual evaluations of these functions.                          *
-        !                                                                      *
-        !                                           Last update: 09 Oct 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: orbital_index_radix
         use bessel_function_workspace, only: breit_spherical_bessel_values, breit_spherical_neumann_values, breit_bessel_frequencies
@@ -68,30 +63,20 @@ contains
         integer :: icode, iwkp, ikkp, i, nn, radial_index, jchan, irem, iswap
         real(real64) :: epsi, w, wa, xbess1, xbess2, s1, s2, dfnm, dfn, ssn, scn&
             , sn, cn, obwa, b, skeep
-        !-----------------------------------------------
-        !
+
         epsi = sqrt(0.1_real64*working_tolerance)
-        !
-        !   Form unique label symmetric in IA, IB
-        !
+        ! Form unique label symmetric in IA, IB
         icode = max(orbital_a,orbital_b) + orbital_index_radix*(min(orbital_a,orbital_b) + orbital_index_radix*k)
-        !
-        !   Function in position; return
-        !
+        ! Function in position; return
         if (icode == breit_bessel_kernel_keys(ik,iw)) return
-        !
-        !   Function not in position; is it available in BESS arrays?
-        !
+        ! Function not in position; is it available in BESS arrays?
         w = transverse_photon_frequency_scale* &
             abs(orbital_energy_parameters(orbital_a)-orbital_energy_parameters(orbital_b))/speed_of_light_au
         breit_bessel_frequencies(iw) = w
-        !
         do iwkp = 1, 2
             do ikkp = 1, 2
                 if (breit_bessel_kernel_keys(ikkp,iwkp) /= icode) cycle
-                !
-                !   Function found move into position
-                !
+                ! Function found move into position
                 breit_bessel_kernel_keys(ik,iw) = icode
                 if (rmcdhf_debug_flags(7)) then
                     call ensure_debug_output()
@@ -107,35 +92,24 @@ contains
                 return
             end do
         end do
-        !
-        !   Function not found; evaluate it
-        !
+        ! Function not found; evaluate it
         if (rmcdhf_debug_flags(7)) then
             call ensure_debug_output()
             write (angular_debug_unit, '(93x,i2,a2,2x,i2,a2,2x,i2,2x,"New",6x,"(",i2,",",i2,")")') &
                 orbital_principal_n(orbital_a), orbital_symmetry_labels(orbital_a), orbital_principal_n(orbital_b), &
                 & orbital_symmetry_labels(orbital_b), k, ik, iw
         end if
-        !
         breit_bessel_kernel_keys(ik,iw) = icode
-        !
         if (w < epsi**2) then
-            !
-            !   Negligible w
-            !
+            ! Negligible w
             breit_spherical_bessel_values(ik,iw,:radial_point_count) = 0.0_real64
             breit_spherical_neumann_values(ik,iw,:radial_point_count) = 0.0_real64
             return
-            !
         end if
-        !
         nn = k
-        !
         breit_spherical_bessel_values(ik,iw,1) = 0.0_real64
         breit_spherical_neumann_values(ik,iw,1) = 0.0_real64
-        !
-        !   Use a four-term power series for low w*r
-        !
+        ! Use a four-term power series for low w*r
         do radial_index = 2, radial_point_count
             wa = -0.5_real64*(radial_grid(radial_index)*w)**2
             xbess1 = 1.0_real64
@@ -155,16 +129,12 @@ contains
             breit_spherical_bessel_values(ik,iw,radial_index) = s1
             breit_spherical_neumann_values(ik,iw,radial_index) = s2
         end do
-        !
-        !   If here then calculated whole array using four-term power
-        !   series.  Hence return
-        !
+        ! If here then calculated whole array using four-term power
+        ! series.  Hence return
         if (radial_index > radial_point_count) return
         jchan = radial_index
-        !
-        !   Use sin/cos expansion when power series requires more than
-        !   four terms terms to converge
-        !
+        ! Use sin/cos expansion when power series requires more than
+        ! four terms terms to converge
         if (nn == 0) then
             dfnm = 1.0_real64
             dfn = 1.0_real64
@@ -176,44 +146,29 @@ contains
             dfn = dfnm*dble(2*nn + 1)
         end if
         dfnm = 1.0_real64/dfnm
-        !
         irem = mod(nn,4)
-        !
         select case (irem)
         case (1)
-            !
-            !   NN = 1, 5, 9, ...
-            !
+            ! NN = 1, 5, 9, ...
             ssn = -1.0_real64
             scn = 1.0_real64
             iswap = 1
-        !
         case (2)
-            !
-            !   N = 2, 6, 10, ....
-            !
+            ! N = 2, 6, 10, ....
             ssn = -1.0_real64
             scn = -1.0_real64
             iswap = 0
-        !
         case (3)
-            !
-            !   NN = 3, 7, 11,...
-            !
+            ! NN = 3, 7, 11,...
             ssn = 1.0_real64
             scn = -1.0_real64
             iswap = 1
-        !
         case default
-            !
-            !   NN = 0, 4, 8,...
-            !
+            ! NN = 0, 4, 8,...
             ssn = 1.0_real64
             scn = 1.0_real64
             iswap = 0
-            !
         end select
-        !
         do radial_index = jchan, radial_point_count
             wa = w*radial_grid(radial_index)
             if (iswap == 0) then
@@ -241,8 +196,6 @@ contains
             breit_spherical_neumann_values(ik,iw,radial_index) = s2
         end do
         return
-        !
         return
-        !
     end subroutine build_breit_bessel_kernels
 end module build_breit_bessel_kernels_interface

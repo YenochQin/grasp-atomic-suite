@@ -1,3 +1,4 @@
+! Select a hydrogenic self-energy factor for the requested orbital.
 module hydrogenic_self_energy_factor_interface
     implicit none (type, external)
 
@@ -6,19 +7,11 @@ module hydrogenic_self_energy_factor_interface
     public :: hydrogenic_self_energy_factor
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   An estimate of the function  F (Z*\alpha) is computed here.
+    !
+    ! Written by Farid A Parpia, at Oxford. Last update: 09 Oct 1990
     real(real64) function hydrogenic_self_energy_factor (principal_n, kappa, nuclear_charge)
         ! Module dependencies
-        !                                                                      *
-        !   An estimate of the function  F (Z*\alpha) is computed here.        *
-        !                                                                      *
-        !   Call(s) to: [RCI92]: KLAMAQ, MOHR.                                 *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford    Last update: 09 Oct 1990   *
-        !                                                                      *
-        !***********************************************************************
-        !
         use, intrinsic :: iso_fortran_env, only: real64
 
         ! Procedure interfaces
@@ -34,8 +27,7 @@ contains
         ! Local declarations
         integer :: effective_principal_n
         real(real64) :: unscaled_self_energy_factor
-        !-----------------------------------------------
-        !
+
         if (principal_n <= 2) then
             call mohr_self_energy_factor (principal_n, kappa, nuclear_charge, unscaled_self_energy_factor)
         else
@@ -46,9 +38,7 @@ contains
                 call klarsfeld_maquet_self_energy_factor (principal_n, kappa, nuclear_charge, unscaled_self_energy_factor)
             end if
         end if
-        !
         hydrogenic_self_energy_factor = unscaled_self_energy_factor
-        !
         return
     end function hydrogenic_self_energy_factor
 end module hydrogenic_self_energy_factor_interface

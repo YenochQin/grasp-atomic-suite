@@ -8,7 +8,7 @@
 程序将 `name.wfn`、SCF 摘要和 OL/EOL 计算的 `name.mix` 写入永久 I/O 目录，
 SCF 日志写入启动目录。
 
-[角系数程序](../rangular_mpi/) · [核极化输入](../../../docs/implemented/rmcdhf_nuclear_polarization.md) · [MCP 存储及实现差异](../../../docs/reviews/rmcdhf_mem_comparison_2026-11-11.md)
+[角系数程序](../rangular_mpi/README.md) · [核极化输入](../../../docs/implemented/rmcdhf_nuclear_polarization.md) · [MCP 存储及实现差异](../../../docs/reviews/rmcdhf_mem_comparison_2026-11-11.md)
 
 ## 计算流程
 

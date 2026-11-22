@@ -6,19 +6,15 @@ module satisfies_breit_group2_triangle_interface
     public :: satisfies_breit_group2_triangle
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !      Evaluate the triangle relations for Breit integrals of type 2
+    !      See Grant and McKenzier JPB 13 (1980), 2675-2681 formula 5
+    !
+    ! Written by Per Jonsson
+    !
+    ! Translated by Charlotte Froese Fischer
+    !                        Gediminas Gaigalas  10/05/17
     logical function satisfies_breit_group2_triangle (orbital_a,orbital_b,orbital_c,orbital_d,l)
-        ! Module dependencies
-        !                                                                      *
-        !     Evaluate the triangle relations for Breit integrals of type 2    *
-        !     See Grant and McKenzier JPB 13 (1980), 2675-2681 formula 5       *
-        !                                                                      *
-        !   Written by Per Jonsson                                             *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Charlotte Froese Fischer
-        !                       Gediminas Gaigalas  10/05/17
+        !  Module dependencies
         use orbital_csf_basis, only: orbital_l, orbital_two_j
         implicit none (type, external)
 
@@ -27,8 +23,7 @@ contains
 
         ! Local declarations
         integer :: la,lb,lc,ld,ja,jb,jc,jd
-        !-----------------------------------------------
-        !
+
         la = orbital_l(orbital_a)
         lb = orbital_l(orbital_b)
         lc = orbital_l(orbital_c)

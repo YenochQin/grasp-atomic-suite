@@ -6,17 +6,12 @@ module lookup_slater_integral_interface
     public :: lookup_slater_integral
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !                         k
+    !   This routine returns R (abcd) integrals.
+    !
+    ! Written by Per Jonsson
     subroutine lookup_slater_integral(orbital_a, orbital_b, orbital_c, orbital_d, multipole_rank, tegral)
         ! Module dependencies
-        !                                                                      *
-        !                         k                                            *
-        !   This routine returns R (abcd) integrals.                           *
-        !                                                                      *
-        !   Written by Per Jonsson                                             *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use distributed_slater_integrals, only: local_slater_integral_indices, local_slater_integral_values
         use orbital_csf_basis, only: orbital_count
@@ -31,14 +26,10 @@ contains
         ! Local declarations
         integer :: packing_radix, orbital_swap_temp, packed_integral_index, search_lower_index, search_upper_index, &
             & search_midpoint_index, table_position
-        !-----------------------------------------------
-        !
-        packing_radix = orbital_count + 1
-        !
-        !   Ensure that the indices are in `canonical' order
-        !   Compute the composite (packed) index
-        !
 
+        packing_radix = orbital_count + 1
+        ! Ensure that the indices are in `canonical' order
+        ! Pack the orbital indices and radial order into the integral label.
 
         if (orbital_a > orbital_c) then
             orbital_swap_temp = orbital_c
@@ -60,7 +51,6 @@ contains
         end if
 
         packed_integral_index = ((orbital_a*packing_radix + orbital_b)*packing_radix + orbital_c)*packing_radix + orbital_d
-        !
         search_lower_index = coulomb_integral_offsets_by_rank(multipole_rank)
         search_upper_index = coulomb_integral_offsets_by_rank(multipole_rank+1) - 1
 
@@ -69,10 +59,7 @@ contains
             write (*, *) "Something wrong in lookup_slater_integral"
             stop
         end if
-        !
-        !   The index is within the range of the indices stored; search
-        !   for it in the list of indices
-        !
+        ! Search the sorted labels for the requested integral.
         do while (search_upper_index - search_lower_index > 1)
             search_midpoint_index = (search_upper_index + search_lower_index)/2
             if (local_slater_integral_indices(search_midpoint_index) > packed_integral_index) then
@@ -81,9 +68,7 @@ contains
                 search_lower_index = search_midpoint_index
             end if
         end do
-        !
-        !   The range is bracketed to the extent possible
-        !
+        ! The range is bracketed to the extent possible
         if (packed_integral_index == local_slater_integral_indices(search_upper_index)) then
             table_position = search_upper_index
         else if (packed_integral_index == local_slater_integral_indices(search_lower_index)) then
@@ -93,12 +78,10 @@ contains
             write (*, *) "lookup_slater_integral Integral not found"
             stop
         end if
-        !
-        !   Return the value of the integral
-        !   from storage
+        ! Return the value of the integral
+        ! from storage
 
         tegral = local_slater_integral_values(table_position)
-        !
         return
     end subroutine lookup_slater_integral
 end module lookup_slater_integral_interface

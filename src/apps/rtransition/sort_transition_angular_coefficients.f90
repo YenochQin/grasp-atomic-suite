@@ -6,27 +6,20 @@ module sort_transition_angular_coefficients_interface
     public :: sort_transition_angular_coefficients
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Routine to sort angular coefficients into list based on integral
+    ! labels rather than CSF.  A tree sort is used. To save space, the
+    ! CSF pair labels and coefficients  are not read into arrays until
+    ! the sorting has been done.
+    !
+    ! Original author(s) unknown. Modifications for dynamic storage by
+    ! Farid A. Parpia.
+    !
+    ! Last update: 28 Dec 1992
     subroutine sort_transition_angular_coefficients(name, coefficient_scratch_unit, transition_angular_unit, print_details, &
         & transition_type_index, initial_block_index, final_block_index)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: iostat_end, output_unit
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   Routine to sort angular coefficients into list based on integral   *
-        !   labels rather than CSF.  A tree sort is used. To save space, the   *
-        !   CSF pair labels and coefficients  are not read into arrays until   *
-        !   the sorting has been done.                                         *
-        !                                                                      *
-        !   Call(s) to: [OSCL92]: ALCLLA, ALCNMA.                              *
-        !                                                                      *
-        !   Original author(s) unknown. Modifications for dynamic storage by   *
-        !   Farid A. Parpia.                                                   *
-        !                                                                      *
-        !                                           Last update: 28 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: orbital_index_radix
         use array_memory_management, only: alloc, dalloc, ralloc
@@ -64,15 +57,8 @@ contains
         character(len=256) :: io_message
         logical :: first
         character(len=2) :: s(-9:9)
-        !-----------------------------------------------
-        !
-        !
-        !     POINTER (PIBEG,IBEG(1)),(PILAB,ILAB(1)),(PILAST,ILAST(1)),
-        !    :        (PILEFT,ILEFT(1)),(PIPTCS,IPTCSF(1)),(PIRIGH,IRIGHT(1)),
-        !    :        (PLBLIN,LBLINT(1))
-        !     POINTER (PIPTR,IPTR(1))
-        !
-        !
+        ! :        (PILEFT,ILEFT(1)),(PIPTCS,IPTCSF(1)),(PIRIGH,IRIGHT(1)),
+        ! :        (PLBLIN,LBLINT(1))
         s((-9)) = "-9"
         s((-8)) = "-8"
         s((-7)) = "-7"
@@ -92,31 +78,22 @@ contains
         s(7) = "+7"
         s(8) = "+8"
         s(9) = "+9"
-        !
-        !   Position file at beginning of list of integrals
-        !
+        ! Position file at beginning of list of integrals
         rewind (coefficient_scratch_unit)
-        !
-        !   Initialize
-        !
+        ! Initialize
         first = .true.
         total_coefficient_count = 0
         distinct_integral_count = 0
-        !
-        !   Initial allocation of storage to local arrays
-        !
+        ! Initial allocation of storage to local arrays
         record_capacity = 1
         call alloc (record_integral_labels, record_capacity, "record_integral_labels", "sort_transition_angular_coefficients")
         call alloc (record_coefficients, record_capacity, "record_coefficients", "sort_transition_angular_coefficients")
-        !
         call resize_transition_label_arrays (first_coefficient_indices, node_integral_labels, parent_nodes, &
             & left_child_nodes, coefficient_end_offsets, right_child_nodes, sorted_integral_labels, &
             label_capacity, 1)
         call resize_transition_coefficient_arrays (coefficient_sort_links, initial_csf_index_workspace, final_csf_indices, &
             & sorted_angular_coefficients, coefficient_capacity, 1)
-        !
-        !   Now the rest of the elements
-        !
+        ! Now the rest of the elements
         m = 0
         do
             read (coefficient_scratch_unit, iostat=io_status, iomsg=io_message) initial_csf_index, final_csf_index, &
@@ -260,16 +237,14 @@ contains
                     k = coefficient_sort_links(original_coefficient_index)
                     initial_csf_index_workspace(k) = initial_csf_index
                     final_csf_indices(k) = final_csf_index
-                    !              ISLDR(K) = IR*NCA+IS
+                    ! ISLDR(K) = IR*NCA+IS
                     sorted_angular_coefficients(k) = record_coefficients(i)
                 end do
             end do
         end if
         rewind (coefficient_scratch_unit)
-        !
-        !  If first set of data open the file and print
-        !  some data to later be able to identify the file
-        !
+        ! If first set of data open the file and print
+        ! some data to later be able to identify the file
         if (initial_block_index==1 .and. final_block_index==1) then
             initial_name_end = index(name(1)," ")
             final_name_end = index(name(2)," ")
@@ -303,9 +278,9 @@ contains
                         & first_coefficient_index,last_coefficient_index)
                 if (print_details) then
                     do m = first_coefficient_index, last_coefficient_index
-                        !                  IS = MOD (ISLDR(M),NCA)
+                        ! IS = MOD (ISLDR(M),NCA)
                         final_csf_index = final_csf_indices(m)
-                        !                 IR = ISLDR(M)/NCA
+                        ! IR = ISLDR(M)/NCA
                         initial_csf_index = initial_csf_index_workspace(m)
                         call ensure_debug_output()
                         write (angular_debug_unit, '(14x,1i6,2x,1i6,2x,1p,1d22.15)') initial_csf_index, final_csf_index, &
@@ -314,11 +289,8 @@ contains
                 end if
                 first_coefficient_index = last_coefficient_index + 1
             end do
-            !
         end if
-        !
-        !   Deallocate storage for local arrays
-        !
+        ! Deallocate storage for local arrays
         call dalloc (record_integral_labels, "record_integral_labels", "sort_transition_angular_coefficients")
         call dalloc (record_coefficients, "record_coefficients", "sort_transition_angular_coefficients")
         call resize_transition_label_arrays (first_coefficient_indices, node_integral_labels, parent_nodes, &
@@ -326,8 +298,6 @@ contains
             label_capacity, 3)
         call resize_transition_coefficient_arrays (coefficient_sort_links, initial_csf_index_workspace, final_csf_indices, &
             & sorted_angular_coefficients, coefficient_capacity, 3)
-        !
         return
-        !
     end subroutine sort_transition_angular_coefficients
 end module sort_transition_angular_coefficients_interface

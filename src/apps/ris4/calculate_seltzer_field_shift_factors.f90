@@ -1,3 +1,4 @@
+! Evaluate the electronic factors in the Seltzer expansion of the field shift.
 module calculate_seltzer_field_shift_factors_interface
     implicit none (type, external)
 
@@ -6,33 +7,26 @@ module calculate_seltzer_field_shift_factors_interface
     public :: calculate_seltzer_field_shift_factors
 contains
 
-    !***********************************************************************
-    !                                                                      *
-    !JE   SUBROUTINE DENSNEW(DOIT,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
+    ! JE   SUBROUTINE DENSNEW(DOIT,DINT1,DINT2,DINT3,DINT4,DINT5,DINT6,DINT7)
+    !    IF angular coefficients must be calculated
+    !    This routine controls combines the radial and angular parts for the*
+    !    calculation of the NMS parameter, the electron density at the
+    !    origin and radial expectation values.
+    !
+    ! Written by Per Jonsson
+    !
+    ! Last revision: 10 Nov 1995
+    !
+    ! Modified by C. Naz\'e  Feb. 2012
+    ! Modified by J. Ekman   Nov. 2013
+    !
+    ! Translated by Gediminas Gaigalas 11/18/19
     subroutine calculate_seltzer_field_shift_factors(angular_cache_write_mode,contact_density_integrals, &
         & total_nms_integrals,radius_integrals, &
         radius_squared_integrals,inverse_radius_integrals,inverse_radius_squared_integrals,leading_nms_integrals, &
         orbital_density_profiles,level_density_profiles,nuclear_density_point_count)
         ! Module dependencies
         use calculation_file_units, only: one_body_cache_unit
-        !                                                                      *
-        !   IF angular coefficients must be calculated                         *
-        !   This routine controls combines the radial and angular parts for the*
-        !   calculation of the NMS parameter, the electron density at the      *
-        !   origin and radial expectation values.
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALCBUF, CONVRT, GETYN                         *
-        !                        ITJPO, ONESCALAR                              *
-        !                                                                      *
-        !   Written by Per Jonsson                                             *
-        !                                                                      *
-        !                                         Last revision: 10 Nov 1995   *
-        !                                                                      *
-        !   Modified by C. Naz\'e  Feb. 2012                                   *
-        !   Modified by J. Ekman   Nov. 2013                                   *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Gediminas Gaigalas 11/18/19
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters, only: orbital_index_radix, max_orbitals
         use debug_output_settings, only: matrix_element_screening_cutoff
@@ -79,45 +73,29 @@ contains
         integer :: operator_rank, operator_parity, include_closed_shell_terms, csf_index, text_length, &
             & column_two_j_plus_one, row_csf, orbital_index, &
             ket_orbital_index, i, level_index
-        !-----------------------------------------------
-        !
         ! DOIT: IF DOIT=1 angular coefficients will be stored after creation
-        !
         level_density_profiles(:,:) = 0.0_real64                                     ! JE ADD
-        !
-        !   Set the rank (zero) and parity (even) for the one-particle
-        !   coefficients
-        !
+        ! Set the rank (zero) and parity (even) for the one-particle
+        ! coefficients
         operator_rank = 0
         operator_parity = 1
         include_closed_shell_terms = 1
-        !
-        !   Allocate storage for the arrays in BUFFER
-        !
+        ! Allocate storage for the arrays in BUFFER
         call manage_angular_coefficient_buffer (1)
-        !
-        !   Sweep through the Hamiltonian matrix to determine the
-        !   sms parameter
-        !
+        ! Sweep through the Hamiltonian matrix to determine the
+        ! sms parameter
         do csf_index = 1,csf_count
-            !
-            !   Output IC on the screen to show how far the calculation has preceede
-            !
+            ! Output IC on the screen to show how far the calculation has preceede
             call format_integer (csf_index,number_text,text_length)
             if (mod(csf_index,100)==0) then
                 print *, "Column "//number_text(1:text_length)//" complete;"
             end if
-            !
             column_two_j_plus_one = csf_total_j_code (csf_index)
 
             do row_csf = csf_index,csf_count
-                !
-                !   Matrix elements are diagonal in J
-                !
+                ! Matrix elements are diagonal in J
                 if (csf_total_j_code(row_csf) == column_two_j_plus_one) then
-                    !
-                    !   Initialise the accumulator
-                    !
+                    ! Initialise the accumulator
                     contact_density_element = 0.0_real64
                     total_nms_element = 0.0_real64
                     radius_element = 0.0_real64
@@ -126,12 +104,9 @@ contains
                     inverse_radius_squared_element = 0.0_real64
                     leading_nms_element = 0.0_real64
                     csf_pair_density_profile(:) = 0.0_real64                                      ! JE ADD
-                    !
-                    !   Call the MCT package to compute T coefficients
-                    !
+                    ! Call the MCT package to compute T coefficients
                     call calculate_one_electron_scalar_coefficients(csf_index,row_csf,orbital_index,ket_orbital_index, &
                         & shell_coefficients)
-                    !GG            CALL TNSRJJ (KA,IOPAR,IC,IR,IA,IB,TSHELL)
                     if (orbital_index /= 0) then
                         if (orbital_index == ket_orbital_index) then
                             coefficient_count = 0
@@ -248,11 +223,9 @@ contains
             end do
         end do
         if (angular_cache_write_mode==1) write(one_body_cache_unit) -1
-        !
         ! Empty the buffer and close file
         if (angular_cache_write_mode==1) close(one_body_cache_unit)
-        !
-        !   Deallocate storage for the arrays in BUFFER
+        ! Deallocate storage for the arrays in BUFFER
         call manage_angular_coefficient_buffer (3)
         return
     end subroutine calculate_seltzer_field_shift_factors

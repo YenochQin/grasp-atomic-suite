@@ -1,3 +1,4 @@
+! Evaluate radial overlaps for orbitals in one subshell symmetry group.
 module calculate_subshell_overlap_interface
     implicit none (type, external)
 
@@ -6,17 +7,12 @@ module calculate_subshell_overlap_interface
     public :: calculate_subshell_overlap
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   This subroutine calculates the initial and final state
+    !   radial overlap matrix
+    !
+    ! Written by Per Jonsson
     subroutine calculate_subshell_overlap(overlap_matrix, initial_orbital_count, final_orbital_count)
         ! Module dependencies
-        !                                                                      *
-        !   This subroutine calculates the initial and final state             *
-        !   radial overlap matrix                                              *
-        !                                                                      *
-        !   Written by Per Jonsson                                             *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use radial_grid_state, only: radial_grid_derivative
         use radial_quadrature_workspace, only: integration_last_index, radial_workspace_a
@@ -38,19 +34,13 @@ contains
         ! Local declarations
         integer      :: initial_orbital_index, final_orbital_index, radial_index
         real(real64) :: radial_overlap
-        !-----------------------------------------------
-        !
+
         do initial_orbital_index = 1, initial_orbital_count
             do final_orbital_index = 1, final_orbital_count
-                !
-                !   Determine the maximum tabulation point for the integrand
-                !
+                ! Limit the integral to the supported radial grid points.
                 integration_last_index = min(initial_orbital_last_grid_index(initial_orbital_index), &
                     final_orbital_last_grid_index(final_orbital_index))
-                !
-                !   Tabulate the integrand as required for SUBROUTINE QUAD; the
-                !   value at the first tabulation point is arbitrary
-                !
+                ! Tabulate the weighted integrand for radial quadrature. The first grid value is unused.
                 radial_workspace_a(1) = 0.0_real64
                 do radial_index = 2, integration_last_index
                     radial_workspace_a(radial_index) = &
@@ -60,25 +50,17 @@ contains
                             final_radial_small_components(radial_index,final_orbital_index)) &
                         & *radial_grid_derivative(radial_index)
                 end do
-                !
-                !   Perform the quadrature
-                !
+                ! Integrate the tabulated radial integrand.
                 call integrate_radial_grid (radial_overlap)
                 overlap_matrix(initial_orbital_index,final_orbital_index) = radial_overlap
             end do
         end do
-        !
-        !   Print out
-        !
+        ! Print out
         if (mpi_rank == 0) then
-            !      WRITE (*, *) '********************'
-            !      WRITE (*, *) ' S matrix from GETS'
-            !      WRITE (*, *) '********************'
 
             call write_matrix (overlap_matrix, initial_orbital_count, final_orbital_count, initial_orbital_count, &
                 & final_orbital_count)
         end if
-        !
         return
     end subroutine calculate_subshell_overlap
 end module calculate_subshell_overlap_interface

@@ -6,20 +6,13 @@ module read_eol_level_weights_interface
     public :: read_eol_level_weights
 contains
 
-    !***********************************************************************
+    ! Interactively determines the weights for EOL calculation.
+    ! It's modified to always ask the question for the weight
     !
+    ! Written by Xinghong He. Last revision: 19 Mar 1999
     subroutine read_eol_level_weights(nondefault_options_flag, selected_level_count, level_weights)
         ! Module dependencies
         use calculation_file_units, only: calculation_log_unit
-        !
-        !   Interactively determines the weights for EOL calculation.
-        !   It's modified to always ask the question for the weight
-        !
-        !   Call(s) to: [LIB92]: GETYN.
-        !
-        !   Written by Xinghong He                Last revision: 19 Mar 1999
-        !
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use standard_io_units, only: stderr_unit, stdin_unit
         implicit none (type, external)
@@ -32,7 +25,6 @@ contains
         ! Local declarations
         integer :: i, weighting_mode
         real(real64) :: weight_sum
-        !-----------------------------------------------
 
         ! Standard weights: ncmin=1, OL calculation
 
@@ -60,8 +52,6 @@ contains
         end if
 
         if (i > 10) error stop
-
-        !------------------------------------------------------------------
 
         select case (weighting_mode)                         ! Equal weight
         case (1)

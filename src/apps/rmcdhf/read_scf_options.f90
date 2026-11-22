@@ -1,3 +1,4 @@
+! Read the radial, orbital, and level options for the SCF calculation.
 module read_scf_options_interface
     implicit none (type, external)
 
@@ -6,25 +7,16 @@ module read_scf_options_interface
     public :: read_scf_options
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   Interactively determines the data governing the SCF problem.
+    !
+    ! Written by Farid A. Parpia. Last revision: 27 Dec 1992
+    !
+    ! Xinghong He 98-08-06
     subroutine read_scf_options(extended_optimal_level, block_labels, isotope_file_path, radial_file_path, &
         & nuclear_polarization_file_path)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: input_unit
         use calculation_file_units, only: calculation_log_unit
-        !                                                                      *
-        !   Interactively determines the data governing the SCF problem.       *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: CONVRT, GETRSL, GETYN, NUCPOT, RADGRD,        *
-        !                        SETISO, SETQIC, SETRWF.                       *
-        !               [RSCF92]: GETALD, GETOLD
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 27 Dec 1992   *
-        !
-        ! Xinghong He 98-08-06
-        !
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,    only: max_orbitals
         use radial_node_count_settings, only: relative_extremum_cutoff
@@ -83,30 +75,23 @@ contains
         real(real64) :: odampu, cdampu
         logical :: yes
         character :: record*80, number_text*20
-        !-----------------------------------------------
-        !
-        !   Open, check, load data from, and close the  .iso  file
-        !
+        ! Read the nuclear parameters from isodata.
         call read_isotope_data (isotope_file_path)
-        !
-        !   Set default speed of light and grid parameters
-        !
+        ! Set default speed of light and grid parameters
         speed_of_light_au = vacuum_speed_of_light_au
         if (nuclear_model_parameter_count == 0) then
             radial_grid_scale = exp((-65.0_real64/16.0_real64))/nuclear_charge
             transformed_grid_step = 0.5_real64**4
             radial_point_count = min(220,max_radial_points)
         else
-            !         default comes here
-            !CFF     .. should be Z-dependent
+            !          default comes here
+            ! The screening estimate could be refined to depend on nuclear charge Z.
             radial_grid_scale = 2.0e-6_real64/nuclear_charge
             transformed_grid_step = 5.0e-2_real64
             radial_point_count = max_radial_points
         end if
         asymptotic_grid_step = 0.0_real64
-        !
-        !   ACCY is an estimate of the accuracy of the numerical procedures
-        !
+        ! ACCY is an estimate of the accuracy of the numerical procedures
         working_tolerance = transformed_grid_step**6
         if (nondefault_options_flag /= 0) then
 
@@ -120,9 +105,7 @@ contains
                     write (stderr_unit, *) "Enter the revised value:"
                     read (input_unit, *) speed_of_light_au
                 end if
-                !
-                !   Determine the parameters controlling the radial grid
-                !
+                ! Choose the radial grid parameters.
                 write (stderr_unit, *) "The default radial grid parameters for ",&
                     "this case are:"
                 write (stderr_unit, *) " RNT = ", radial_grid_scale
@@ -140,37 +123,30 @@ contains
                     read (input_unit, *) asymptotic_grid_step
                     write (stderr_unit, *) "Enter N:"
                     read (input_unit, *) radial_point_count
-                    !b Revised grid
+                    ! b Revised grid
                     write (stderr_unit,*) "Revised RNT = ", radial_grid_scale
                     write (stderr_unit,*) "Revised H   = ", transformed_grid_step
                     write (stderr_unit,*) "Revised HP  = ", asymptotic_grid_step
                     write (stderr_unit,*) "Revised N   = ", radial_point_count
                 end if
             end if
-            !
-            !b
-            !b read ACCY on input
-            !b
+            ! b
+            ! b read ACCY on input
+            ! b
             write (stderr_unit,*) "Revise the default ACCY = ", working_tolerance
             yes = read_yes_no ()
             if (yes) then
                 write (stderr_unit,*) "Enter ACCY:"
                 read *, working_tolerance
-                !b Revised ACCY
+                ! b Revised ACCY
                 write (stderr_unit,*) "Revised ACCY = ", working_tolerance
             end if
         end if
-        !
-        !   Set up the coefficients for the numerical procedures
-        !
+        ! Initialize the radial integration and derivative stencils.
         call initialize_radial_stencil_weights
-        !
-        !   Generate the radial grid and all associated arrays
-        !
+        ! Build the radial grid and its derivative arrays.
         call initialize_radial_grid
-        !
-        !   Generate $- r \times V_ (r)$
-        !
+        ! Generate $- r \times V_ (r)$
         call calculate_nuclear_coulomb_potential
         call npol_init(nuclear_polarization_file_path, nuclear_charge, radial_point_count, radial_grid, &
             & negative_radius_times_potential, &
@@ -179,19 +155,15 @@ contains
             write(stderr_unit,"(A)") trim(np_message)
             error stop 1
         end if
-        !
-        !   Load the subshell radial wavefunction estimates
-        !
+        ! Load the subshell radial wavefunction estimates
         call read_radial_wavefunction_file (radial_file_path)
-        !
-        !   Set some defaults
-        !
+        ! Set some defaults
         relative_extremum_cutoff = 0.05_real64
 
-        !      IORDER(I) = I    ! Completely determined in GETOLD
+        ! IORDER(I) = I    ! Completely determined in GETOLD
         radial_solution_methods(:orbital_count) = 3
         suppress_radial_inversion(:orbital_count) = .true.
-        !CFF      ODAMP(:NW) = 1.D0
+        ! ODAMP(:NW) = 1.D0
         orbital_damping_factors(:orbital_count) = 0.0_real64
         previous_orbital_energy_changes(:orbital_count)   = 0.0_real64
         orbital_self_consistency_errors(:orbital_count) = 0.0_real64
@@ -210,9 +182,7 @@ contains
             extended_optimal_level = .true.
             call read_eol_average_options (block_labels)                     ! EOL type calculation
         else
-            !GG         WRITE (ISTDE, '(A)', ADVANCE='NO') '(E)OL type calculation?  (y/n) '
             extended_optimal_level = .true.
-            !GG         EOL = GETYN()
             if (extended_optimal_level) then
                 call read_eol_average_options (block_labels)
             else
@@ -227,9 +197,7 @@ contains
         if (nondefault_options_flag==0) then
             write(calculation_log_unit,*) maximum_scf_iterations,"! Number of read_scf_options cycles"
         end if
-        !
-        !   Allow the user to modify other defaults
-        !
+        ! Allow the user to modify other defaults
         if (nondefault_options_flag /= 0) then
             write (stderr_unit, "(A)", advance="NO") "Modify other defaults?  (y/n) "
             yes = read_yes_no()
@@ -238,17 +206,11 @@ contains
         end if
 
         if (.not.yes) return
-        !=======================================================================
         ! From here to end, "other defaults" are handled. For simplicity
         ! We'll let node-0 do the job and then broadcast results to all
         ! nodes.
-        !=======================================================================
-        !-------------------------------------------
         if (mpi_rank == 0) then                        ! This is a _big_ IF
-            !-------------------------------------------
-            !
-            !   THRESH
-            !
+            ! THRESH
             write (stderr_unit,*)"An oscillation in the large-component of the ",&
                 "radial wavefunction is diregarded"
             write (stderr_unit, *) "for the purposes of node counting if its ", &
@@ -267,9 +229,7 @@ contains
                 end do
             end if
             yes = .false.
-            !
-            !   METHOD
-            !
+            ! METHOD
 
             ! Piece only for printing...
 
@@ -329,9 +289,7 @@ contains
                     end do
                 end do
             end if
-            !
-            !   NOINVT
-            !
+            ! NOINVT
             write (stderr_unit, *) "The first oscillation of the large component"
 
             if (any(suppress_radial_inversion(:orbital_count) .and. .not.is_orbital_fixed(:orbital_count))) then
@@ -377,9 +335,7 @@ contains
                     suppress_radial_inversion(loc) = .true.
                 end do
             end if
-            !
-            !   ODAMP
-            !
+            ! ODAMP
             if (any(orbital_damping_factors(:orbital_count)/=0.0_real64 .and. .not.is_orbital_fixed(:orbital_count))) then
                 write (stderr_unit, *) "Subshell accelerating parameters have ", &
                     "been set.   Revise these?"
@@ -431,9 +387,7 @@ contains
                     end do
                 end if
             end if
-            !
-            !   CDAMP
-            !
+            ! CDAMP
             write (stderr_unit, *) "Set accelerating parameters for the ", &
                 "eigenvectors?"
             yes = read_yes_no()
@@ -452,9 +406,7 @@ contains
                     mixing_damping_factors(:selected_level_count) = cdampu
                 end if
             end if
-            !
-            !   NSIC
-            !
+            ! NSIC
             write (stderr_unit, *) "Following the improvement of each of the ", &
                 "subshell radial wavefunctions in turn, "
             write (stderr_unit, *) "the ", orbital_updates_per_scf_iteration, " least self-consistent", &
@@ -466,9 +418,7 @@ contains
                 write (stderr_unit, *) "Enter the number of additional ", "improvements:"
                 read (*, *) orbital_updates_per_scf_iteration
             end if
-            !
-            !   NSOLV
-            !
+            ! NSOLV
             write (stderr_unit, *) "The maximum number of cycles in attempting ", &
                 "to solve each radial equation is "
             write (stderr_unit, *) minimum_radial_solver_iterations, " times the principal quantum", &
@@ -481,9 +431,7 @@ contains
                     "principal quantum number:"
                 read (*, *) minimum_radial_solver_iterations
             end if
-            !
-            !   Orthogonalisation
-            !
+            ! Orthogonalisation
             if (enforce_orbital_orthogonality) then
                 write (stderr_unit, *) "Subshell radial wavefunctions will be ", &
                     "Schmidt orthogonalised immediately"
@@ -499,9 +447,7 @@ contains
                 yes = read_yes_no()
                 if (yes) enforce_orbital_orthogonality = .true.
             end if
-            !-------------------------------------------
         end if                                      ! end of the _big_ IF
-        !-------------------------------------------
         return
     end subroutine read_scf_options
 end module read_scf_options_interface

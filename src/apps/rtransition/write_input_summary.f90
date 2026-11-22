@@ -6,19 +6,12 @@ module write_input_summary_interface
     public :: write_input_summary
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Generates the first part of  oscl92.sum  (on stream 24).
+    !
+    ! Written by Farid A. Parpia. Last revision: 28 Dec 1992
     subroutine write_input_summary(name, inpci, ilbl)
         ! Module dependencies
         use calculation_file_units, only: lsj_transition_output_unit, summary_output_unit
-        !                                                                      *
-        !   Generates the first part of  oscl92.sum  (on stream 24).           *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: CALEN, CONVRT, WGHTD5.                        *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 28 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
         use transition_lsj_labels, only: iopen_status1, iopen_status2
         implicit none (type, external)
 
@@ -30,8 +23,6 @@ contains
         ! Local declarations
         integer :: i, j
         character(len=:), allocatable :: lsj_transition_filename
-        !-----------------------------------------------
-
 
         i = index(name(1)," ")
         j = index(name(2)," ")
@@ -59,111 +50,41 @@ contains
                 end if
             end if
         end if
+        ! Write a timestamp in the summary header.
         !
-        !   Get the date and time of day; make this information the
-        !   header of the summary file
+        !    Write out the basic dimensions of the initial state electron cloud
         !
-        !ww      CALL CALEN (CTIME,CDATE)
-        !ww      WRITE (24,*) 'OSCL92 run at ',CTIME,' on ',CDATE,'.'
+        ! //' electrons in the initial state cloud'
+        ! //' relativistic CSFs'
+        ! //' relativistic subshells.'
         !
-        !   Write out the basic dimensions of the initial state electron cloud
+        !    Write out the basic dimensions of the final state electron cloud
         !
-        !ww      WRITE (24,*)
-        !ww      CALL CONVRT (NELECII,RECORD,LENTH)
-        !ww      WRITE (24,*) 'There are '//RECORD(1:LENTH)
-        !ww     :           //' electrons in the initial state cloud'
-        !ww      CALL CONVRT (NCFII,RECORD,LENTH)
-        !ww      WRITE (24,*) ' in '//RECORD(1:LENTH)
-        !ww     :           //' relativistic CSFs'
-        !ww      CALL CONVRT (NWII,RECORD,LENTH)
-        !ww      WRITE (24,*) ' based on '//RECORD(1:LENTH)
-        !ww     :           //' relativistic subshells.'
+        ! //' electrons in the final state cloud'
+        ! //' relativistic CSFs'
+        ! //' relativistic subshells.'
         !
-        !   Write out the basic dimensions of the final state electron cloud
+        ! Report the first-order cutoff when the calculation restricts CSF interactions.
         !
-        !ww      WRITE (24,*)
-        !ww      CALL CONVRT (NELECFF,RECORD,LENTH)
-        !ww      WRITE (24,*) 'There are '//RECORD(1:LENTH)
-        !ww     :           //' electrons in the final state cloud'
-        !ww      CALL CONVRT (NCFFF,RECORD,LENTH)
-        !ww      WRITE (24,*) ' in '//RECORD(1:LENTH)
-        !ww     :           //' relativistic CSFs'
-        !ww      CALL CONVRT (NWFF,RECORD,LENTH)
-        !ww      WRITE (24,*) ' based on '//RECORD(1:LENTH)
-        !ww     :           //' relativistic subshells.'
+        ! //' the zero-order space;'
         !
-        !   If the CSFs are not treated uniformly, write out an
-        !   informative message
+        ! Report the nuclear model and isotope parameters.
         !
-        !ww      IF (LFORDR) THEN
-        !ww         WRITE (24,*)
-        !ww         CALL CONVRT (ICCUT,RECORD,LENTH)
-        !ww         WRITE (24,*) ' CSFs 1--'//RECORD(1:LENTH)//' constitute'
-        !ww     :              //' the zero-order space;'
-        !ww      ENDIF
+        ! Report the enabled Hamiltonian corrections.
         !
-        !   Write out the nuclear parameters
+        ! Report the radial grid parameters.
         !
-        !ww      WRITE (24,*)
-        !ww      WRITE (24,300) Z
-        !ww      IF (NPARM .EQ. 2) THEN
-        !ww         WRITE (24,*) 'Fermi nucleus:'
-        !ww         WRITE (24,301) PARM(1),PARM(2)
-        !ww      ELSE
-        !ww         WRITE (24,*) ' point nucleus.'
-        !ww      ENDIF
+        !    Write out the orbital properties
         !
-        !   Write out the physical effects specifications
+        ! GAMAII(I),PFII(2,I),QFII(2,I),MFII(I)
         !
-        !ww      WRITE (24,*)
-        !ww      WRITE (24,305) C
+        ! GAMAFF(I),PFFF(2,I),QFFF(2,I),MFFF(I)
         !
-        !   Write out the parameters of the radial grid
+        !    Write the list of eigenpair indices for the initial state
         !
-        !ww      WRITE (24,*)
-        !ww      IF (HP .EQ. 0.0D 00) THEN
-        !ww         WRITE (24,306) RNT,H,N
-        !ww      ELSE
-        !ww         WRITE (24,307) RNT,H,HP,N
-        !ww      ENDIF
-        !ww      WRITE (24,308) R(1),R(2),R(N)
-        !
-        !   Write out the orbital properties
-        !
-        !ww      WRITE (24,*)
-        !ww      WRITE (24,*) 'Initial state subshell radial wavefunction summary:'
-        !ww      WRITE (24,*)
-        !ww      WRITE (24,309)
-        !ww      WRITE (24,*)
-        !ww      DO 1 I = 1,NWII
-        !ww         WRITE (24,310) NPII(I),NHII(I),EII(I),PZII(I),
-        !ww     :                  GAMAII(I),PFII(2,I),QFII(2,I),MFII(I)
-        !ww    1 CONTINUE
-        !
-        !ww      WRITE (24,*)
-        !ww      WRITE (24,*) 'Final state subshell radial wavefunction summary:'
-        !ww      WRITE (24,*)
-        !ww      WRITE (24,309)
-        !ww      WRITE (24,*)
-        !ww      DO 2 I = 1,NWFF
-        !ww         WRITE (24,310) NPFF(I),NHFF(I),EFF(I),PZFF(I),
-        !ww     :                  GAMAFF(I),PFFF(2,I),QFFF(2,I),MFFF(I)
-        !ww    2 CONTINUE
-        !
-        !   Write the list of eigenpair indices for the initial state
-        !
-        !     WRITE (24,*)
-        !     CALL ENGOUT1 (EAVII,EVALII,IATJPOII,IASPARII,IVECII,NVECII,3,1)
-        !
-        !   Write the list of eigenpair indices for the final state
-        !
-        !     WRITE (24,*)
-        !     CALL ENGOUT1 (EAVFF,EVALFF,IATJPOFF,IASPARFF,IVECFF,NVECFF,3,2)
-        !
+        !    Write the list of eigenpair indices for the final state
         return
-        !
 
         return
-        !
     end subroutine write_input_summary
 end module write_input_summary_interface

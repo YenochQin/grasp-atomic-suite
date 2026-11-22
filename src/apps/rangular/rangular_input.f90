@@ -1,3 +1,4 @@
+! Parse file and calculation options for the serial angular-coefficient generator.
 module rangular_input
     ! Module dependencies
     use calculation_state_files, only: named_angular_output

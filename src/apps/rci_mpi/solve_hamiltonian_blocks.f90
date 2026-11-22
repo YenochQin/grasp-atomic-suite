@@ -1,3 +1,4 @@
+! Assemble and solve Hamiltonian blocks using the current radial orbitals.
 module solve_hamiltonian_blocks_interface
     implicit none (type, external)
 
@@ -6,26 +7,17 @@ module solve_hamiltonian_blocks_interface
     public :: solve_hamiltonian_blocks
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This SUBROUTINE calls routines to  form the  Hamiltonian  matrix
+    ! and to diagonalise it.   The total angular momenta and parity of
+    ! the ASF are found;  the eigenvectors are chosen so that the sign
+    ! of the largest element is positive.
+    !
+    ! Last revision: 28 Dec 1992
+    ! Modified by Xinghong He. Last revision: 31 Dec 1997
+    ! Block version Xinghong He. Last revision: 12 Jun 1998
     subroutine solve_hamiltonian_blocks (unused_core_subshell_count, max_orbital_two_j)
         ! Module dependencies
         use calculation_file_units, only: mixing_output_unit, summary_output_unit
-        !                                                                      *
-        !   This SUBROUTINE calls routines to  form the  Hamiltonian  matrix   *
-        !   and to diagonalise it.   The total angular momenta and parity of   *
-        !   the ASF are found;  the eigenvectors are chosen so that the sign   *
-        !   of the largest element is positive.                                *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, CONVRT, DALLOC, HMOUT, IQ              *
-        !                        WGHTD5.                                       *
-        !               [RCI92]: MANEIG, QED, SETHAM.                          *
-        !                                                                      *
-        !                                         Last revision: 28 Dec 1992   *
-        !   Modified by Xinghong He               Last revision: 31 Dec 1997   *
-        !   Block version Xinghong He             Last revision: 12 Jun 1998   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use mpi_csf_collectives, only: allocate_descriptor_arrays
         use grasp_parameters,   only: max_orbitals
@@ -97,13 +89,10 @@ contains
         integer :: previous_block_index, local_csf_record_count, level_index, coefficient_csf_index, orbital_index
         integer :: restart_header_status, selected_level_offset, symmetry_block_index, csf_index, parity_label_index, &
             & energy_difference_mode
-        !-----------------------------------------------
-        !     ...Common to all blocks - place here to save CPU time
+        ! ...Common to all blocks - place here to save CPU time
         call prepare_correction_integral_tables (max_orbital_two_j, inverse_nuclear_mass)
 
-        !***************************************************************
-        !      Loop over blocks
-        !***************************************************************
+        ! Loop over blocks
         selected_level_offset = 0
 
         do symmetry_block_index = 1, symmetry_block_count
@@ -111,7 +100,7 @@ contains
             active_level_count   =   eigenvector_counts_by_block(symmetry_block_index)
             highest_active_level_index = highest_selected_level_by_block(symmetry_block_index)
             active_csf_cutoffs(1)  = csf_cutoff_by_block(symmetry_block_index)
-            !.. Determine position of the previous block in the .res file
+            ! .. Determine position of the previous block in the .res file
 
             nposition = 7 + orbital_count + orbital_count  ! File position of the previous block
             ! in the .res file
@@ -123,11 +112,11 @@ contains
                 nposition = nposition + local_csf_record_count + 1
             end do
 
-            !.. SETHAM does not handle this extrem case
+            ! .. SETHAM does not handle this extrem case
             if (mpi_process_count > csf_count)                                          &
                 call fail_input_io_mpi(0,0,"RCI requires at least one CSF per rank in every block")
 
-            !        ...Obtain ivec() from iccmin()
+            ! ...Obtain ivec() from iccmin()
             if (active_level_count > 0) then
                 call alloc (active_level_indices, active_level_count, "active_level_indices", "solve_hamiltonian_blocks")
                 do level_index = 1, active_level_count
@@ -136,9 +125,9 @@ contains
                 selected_level_offset = selected_level_offset + active_level_count
             end if
 
-            !        ...These 3 were allocated in lodcsh2 and deallocated at the end
-            !        ... of this routine and in the setham. In this block version,
-            !        ... both allocation and deallocation are placed here.
+            ! ...These 3 were allocated in lodcsh2 and deallocated at the end
+            ! ... of this routine and in the setham. In this block version,
+            ! ... both allocation and deallocation are placed here.
             call allocate_descriptor_arrays(csf_count,csf_subshell_occupations, &
                 csf_subshell_quantum_codes,csf_angular_codes)
             call alloc (csf_self_energies,csf_count,"csf_self_energies", "solve_hamiltonian_blocks")
@@ -147,9 +136,8 @@ contains
                 csf_self_energies(csf_index) = 0.0
             end do
 
-            !      ...Load CSF list of the current block
+            ! ...Load CSF list of the current block
             call load_csf_block_mpi (symmetry_block_index)
-            ! zou
 
             if (estimate_self_energy) then
                 if (mpi_rank == 0) then
@@ -177,11 +165,10 @@ contains
                 end if
             end if
 
-            ! zou
             if (active_level_count <= 0) then
                 if (mpi_rank == 0) write (mixing_output_unit) symmetry_block_index, csf_count, active_level_count, 999, 999
-                !           ...Generate H matrix of the current block and write to disk
-                !           ...eav, nelmnt are also obtained from genmat
+                ! ...Generate H matrix of the current block and write to disk
+                ! ...eav, nelmnt are also obtained from genmat
                 call assemble_ci_matrix (inverse_nuclear_mass, symmetry_block_index, mpi_rank, mpi_process_count, &
                     & closed_shell_breit_shift, restart_header_status,&
                     csf_self_energies)
@@ -194,10 +181,8 @@ contains
                     & closed_shell_breit_shift, restart_header_status,   &
                     csf_self_energies)
                 call assemble_ci_matrix_from_restart (restart_header_status, nelmnt_a, closed_shell_breit_shift)
-                !
-                !   Allocate and deallocate memory for the mixing coefficients
-                !   from the prerun
-                !
+                ! Allocate and deallocate memory for the mixing coefficients
+                ! from the prerun
                 if (prerun_stage==1) call alloc (previous_csf_mixing_coefficients,csf_count*active_level_count, &
                     "previous_csf_mixing_coefficients", "solve_hamiltonian_blocks")
                 if (prerun_stage==2) call dalloc (previous_csf_mixing_coefficients, "previous_csf_mixing_coefficients", &
@@ -206,18 +191,13 @@ contains
                 ! Since maneig needs both nelmnt and nelmnt_a, # of non-zero
                 ! matrix elements computed by current node and the total #
                 ! from all nodes, a new var nelmnt_a is created rathan than
-                ! using the one in the common block.
+                ! using the value from the shared symmetry-block state.
 
-                !        write (*,*) 'Matrix61,myid=',myid
                 call diagonalize_hamiltonian_block (block_two_j_plus_one, block_parity_sign, nelmnt_a)
-                !GG        CALL MANEIG (iiatjpo, iiaspar, nelmnt_a, imethod)
-                !GG         CALL MANEIG (iiatjpo, iiaspar)
-                !
-                !   Write out eigenvalues (ENGOUT), dominant components of the
-                !   eigenvectors (WGHTD5) to stream 24; write out ASF symmetries,
-                !   eigenvalues  and eigenvectors to RCI92 mixing coefficients file.
-                !   EAV and ELSTO are added back to energy here
-                !
+                !    Write out eigenvalues (ENGOUT), dominant components of the
+                !    eigenvectors (WGHTD5) to stream 24; write out ASF symmetries,
+                !    eigenvalues  and eigenvectors to RCI92 mixing coefficients file.
+                !    EAV and ELSTO are added back to energy here
                 if (mpi_rank == 0) then
                     ! ELSTO has never been in Hamiltonian matrix, yet it was
                     ! added to EAV which was later substracted from H. Thus at
@@ -234,8 +214,8 @@ contains
                         active_level_indices,active_level_count,3)
                     call read_ci_level_selection (block_two_j_plus_one, block_parity_sign)
 
-                    !          ...Write ASF symmetries, eigenvalues, and eigenvectors to RCI92
-                    !          ...MIXing coefficients File; close the file; print a report
+                    ! ...Write ASF symmetries, eigenvalues, and eigenvectors to RCI92
+                    ! ...MIXing coefficients File; close the file; print a report
                     write (mixing_output_unit) symmetry_block_index, csf_count, active_level_count, block_two_j_plus_one, &
                         & block_parity_sign
                     write (mixing_output_unit) (active_level_indices(level_index), level_index = 1, active_level_count)
@@ -248,9 +228,7 @@ contains
 
                     print *, "RCI90 MIXing coefficients File generated."
                 end if
-                !
-                !   Save the mixing coefficients from the prerun
-                !
+                ! Save the mixing coefficients from the prerun
                 if (prerun_stage == 1) then
                     do level_index = 1, active_level_count
                         do coefficient_csf_index = 1, csf_count
@@ -259,11 +237,9 @@ contains
                         end do
                     end do
                 end if
-                !
-                !   Estimate diagonal self-energy corrections; the stored
-                !   eigenvalues and eigenvectors are not modified by these
-                !   estimates
-                !
+                ! Estimate diagonal self-energy corrections; the stored
+                ! eigenvalues and eigenvectors are not modified by these
+                ! estimates
                 if (.not.estimate_self_energy) then
                     if (mpi_rank == 0)            print *, "Entering QED ..."
                     call alloc (corrected_level_energies,active_level_count,"corrected_level_energies", "solve_hamiltonian_blocks")
@@ -282,10 +258,9 @@ contains
                             self_energy_shift = &
                                 & self_energy_shift + orbital_occupation_weights(orbital_index) &
                                 & *orbital_self_energy_integrals(orbital_index)
-                            !              ELEMNT = ELEMNT+IQ (I,IC)*SLFINT(I)
+                            ! ELEMNT = ELEMNT+IQ (I,IC)*SLFINT(I)
                         end do
                         corrected_level_energies(level_index) = shifted_eigenvalues(level_index)+self_energy_shift
-                        !
                         energy_hartree = self_energy_shift
                         energy_wavenumber = energy_hartree*hartree_to_wavenumber_cm
                         energy_ev = energy_hartree*hartree_to_ev
@@ -295,7 +270,6 @@ contains
                                 & level_index,format_j_label(block_two_j_plus_one), &
                             & parity_labels(parity_label_index),energy_hartree, &
                             & energy_wavenumber,energy_ev
-                        !
                     end do
                     if (mpi_rank == 0) then
                         write (summary_output_unit,*)
@@ -306,20 +280,19 @@ contains
                             & (hamiltonian_energy_shift, corrected_level_energies, block_two_j_plus_one, &
                             block_parity_sign, active_level_indices, &
                             active_level_count,energy_difference_mode)
-                        ! zou       CALL ENGOUT (EAV+elsto,ETOT,IiATJPO,iIASPAR,IVEC,NVEC,MODE)
                     end if
                     call dalloc (corrected_level_energies, "corrected_level_energies", "solve_hamiltonian_blocks")
                 end if
 
-                !        ...Locals
+                ! ...Locals
                 call dalloc (active_level_indices, "active_level_indices", "solve_hamiltonian_blocks")
-                !        ...Allocated in maneig
+                ! ...Allocated in maneig
                 call dalloc (shifted_eigenvalues, "shifted_eigenvalues", "solve_hamiltonian_blocks")
                 call dalloc (csf_mixing_coefficients, "csf_mixing_coefficients", "solve_hamiltonian_blocks")
 
             end if
 
-            !        ...Locals
+            ! ...Locals
             call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "solve_hamiltonian_blocks")
             call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "solve_hamiltonian_blocks")
             call dalloc (csf_angular_codes, "csf_angular_codes", "solve_hamiltonian_blocks")
@@ -327,11 +300,9 @@ contains
             call dalloc (orbital_occupation_weights, "orbital_occupation_weights", "solve_hamiltonian_blocks")
 
         end do
-        !
-        !   Close the restart files; nothing will be added to them now
-        !
+        ! Close the restart files; nothing will be added to them now
         close (restart_matrix_unit)
-        !     ...Clean up
+        ! ...Clean up
         call dalloc (csf_counts_by_block, "csf_counts_by_block", "solve_hamiltonian_blocks")
         call dalloc (eigenvector_counts_by_block, "eigenvector_counts_by_block", "solve_hamiltonian_blocks")
         call dalloc (highest_selected_level_by_block, "highest_selected_level_by_block", "solve_hamiltonian_blocks")
@@ -340,20 +311,16 @@ contains
 
         call dalloc (local_slater_integral_values, "local_slater_integral_values", "solve_hamiltonian_blocks") ! allocated in genintrk
         call dalloc (local_slater_integral_indices, "local_slater_integral_indices", "solve_hamiltonian_blocks") ! allocated in genintrk
-        !
-        !   Deallocate storage for the integral lists from the
-        !   Dirac-Coulomb operator; the storage was allocated
-        !   in IABINT and RKINTC
-        !
+        ! Deallocate storage for the integral lists from the
+        ! Dirac-Coulomb operator; the storage was allocated
+        ! in IABINT and RKINTC
         if (coulomb_integral_count > 0) then
             call dalloc (coulomb_integral_indices, "coulomb_integral_indices", "solve_hamiltonian_blocks")
             call dalloc (coulomb_integral_values, "coulomb_integral_values", "solve_hamiltonian_blocks")
         end if
-        !
-        !   Deallocate storage for the integral lists from the
-        !   transverse photon interaction operator; this storage
-        !   was allocated in BRINT1, brint2,...brint6
-        !
+        ! Deallocate storage for the integral lists from the
+        ! transverse photon interaction operator; this storage
+        ! was allocated in BRINT1, brint2,...brint6
         if (include_transverse_interaction) then
             if (breit_integral_counts(1) > 0) then
                 call dalloc (breit_integral_indices_1, "breit_integral_indices_1", "solve_hamiltonian_blocks")
@@ -380,10 +347,8 @@ contains
                 call dalloc (breit_integral_values_6, "breit_integral_values_6", "solve_hamiltonian_blocks")
             end if
         end if
-        !
-        !   Deallocate storage for the nuclear motional energy integral
-        !   lists; this was allocated in KEINT and VINT
-        !
+        ! Deallocate storage for the nuclear motional energy integral
+        ! lists; this was allocated in KEINT and VINT
         if (include_normal_mass_shift) then
             if (kinetic_integral_count > 0) then
                 call dalloc (kinetic_integral_indices, "kinetic_integral_indices", "solve_hamiltonian_blocks")
@@ -396,10 +361,8 @@ contains
                 call dalloc (vinti_integral_values, "vinti_integral_values", "solve_hamiltonian_blocks")
             end if
         end if
-        !
-        !   Deallocate storage for the vacuum-polarisation integral list;
-        !   this was allocated in VPINT
-        !
+        ! Deallocate storage for the vacuum-polarisation integral list;
+        ! this was allocated in VPINT
         if (include_vacuum_polarization) then
             if (vacuum_polarization_integral_count > 0) then
                 call dalloc (vacuum_polarization_integral_indices, "vacuum_polarization_integral_indices", &

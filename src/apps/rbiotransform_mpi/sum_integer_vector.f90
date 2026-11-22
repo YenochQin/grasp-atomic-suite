@@ -6,16 +6,8 @@ module sum_integer_vector_interface
     public :: sum_integer_vector
 contains
 
-    !
-    !     ------------------------------------------------------------------
-    !     I E L S U M
-    !     ------------------------------------------------------------------
-    !
+    ! Sum elements of integer array
     integer function sum_integer_vector (ivec, nelmnt)
-        !
-        ! Sum elements of integer array
-        !
-        !************************************************************************
         implicit none (type, external)
 
         ! Arguments
@@ -24,13 +16,10 @@ contains
 
         ! Local declarations
         integer :: isum
-        !-----------------------------------------------
-        !
+
         isum = 0
         isum = sum(ivec(:nelmnt))
-        !
         sum_integer_vector = isum
-        !
         return
     end function sum_integer_vector
 end module sum_integer_vector_interface

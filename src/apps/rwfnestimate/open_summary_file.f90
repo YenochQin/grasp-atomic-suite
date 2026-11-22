@@ -6,21 +6,13 @@ module open_summary_file_interface
     public :: open_summary_file
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Open the  .sum  file on stream 24.
+    !
+    ! Written by Farid A. Parpia. Last revision: 15 Dec 1992
     subroutine open_summary_file(default_file_path)
         ! Module dependencies
         use calculation_file_units, only: summary_output_unit
         use standard_io_units, only: stderr_unit
-        !                                                                      *
-        !   Open the  .sum  file on stream 24.                                 *
-        !                                                                      *
-        !   Call(s) to: [LIB92]:  OPENFL.                                      *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 15 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
-        !
         use file_open, only: open_calculation_file
         implicit none (type, external)
 
@@ -30,21 +22,15 @@ contains
         ! Local declarations
         integer :: open_status
         character :: file_path*256, form*11, status*3
-        !-----------------------------------------------
-        !
-        !   File  erwf.sum  is FORMATTED
-        !
+        ! File  erwf.sum  is FORMATTED
         form = "FORMATTED"
         status = "NEW"
-        !
         write (stderr_unit, *) "File ", default_file_path, " will be created as the ", &
             "ERWF SUMmary File; "
         write (stderr_unit, *) "enter another file name if this is not ", &
             "acceptable; null otherwise:"
         read (*, "(A)") file_path
-        !
         if (len_trim(file_path) == 0) file_path = default_file_path
-        !
         do
             call open_calculation_file (summary_output_unit, file_path, form, status, open_status)
             if (open_status == 0) exit
@@ -55,7 +41,6 @@ contains
                 if (len_trim(file_path) > 0) exit
             end do
         end do
-        !
         return
     end subroutine open_summary_file
 end module open_summary_file_interface

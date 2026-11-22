@@ -6,25 +6,20 @@ module interpolate_initial_orbital_interface
     public :: interpolate_initial_orbital
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This  subprogram  interpolates  the  arrays  PA(1:MA), QA(1:MA),
+    ! tabulated on grid RA(1:MA) into the COMMON arrays PF(1:MF(J),J),
+    ! QF(1:MF(J),J). (Aitken's  algorithm is used. See F B Hildebrand,
+    ! Introduction  to  Numerical  Analysis, 2nd ed., McGraw-Hill, New
+    ! York, NY, 1974.) The orbital is renormalized.
+    !
+    ! SUBROUTINEs called: RINT.
+    !
+    ! Written by Farid A Parpia, at Oxford. Last update: 14 Oct 1992
     subroutine interpolate_initial_orbital(source_large_component, source_small_component, source_grid_size, &
         & source_radial_grid, orbital_index, &
         & original_norm_squared)
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This  subprogram  interpolates  the  arrays  PA(1:MA), QA(1:MA),   *
-        !   tabulated on grid RA(1:MA) into the COMMON arrays PF(1:MF(J),J),   *
-        !   QF(1:MF(J),J). (Aitken's  algorithm is used. See F B Hildebrand,   *
-        !   Introduction  to  Numerical  Analysis, 2nd ed., McGraw-Hill, New   *
-        !   York, NY, 1974.) The orbital is renormalized.                      *
-        !                                                                      *
-        !   SUBROUTINEs called: RINT.                                          *
-        !                                                                      *
-        !   Written by Farid A Parpia, at Oxford    Last update: 14 Oct 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_radial_points
         use debug_output_settings, only: rmcdhf_debug_flags
@@ -59,34 +54,24 @@ contains
                 & normalization_factor
         logical :: found_candidate
         logical :: selected_nodes(max_radial_points)
-        !-----------------------------------------------
+        ! MXORD is the maximum order of the interpolation
         !
-        !   MXORD is the maximum order of the interpolation
+        ! This function dispenses with the need for a two-dimensional
+        ! array
         !
-        !
-        !   This function dispenses with the need for a two-dimensional
-        !   array
-        !
-        !   Initialization
-        !
+        ! Initialization
         source_maximum_radius = source_radial_grid(source_grid_size)
         target_maximum_radius = radial_grid(radial_point_count)
-        !
-        !   This is always true in GRASP
-        !
+        ! This is always true in GRASP
         initial_radial_large_components(1,orbital_index) = 0.0_real64
         initial_radial_small_components(1,orbital_index) = 0.0_real64
-        !
-        !   Checks
-        !
+        ! Checks
         if (source_maximum_radius > target_maximum_radius) then
             write (*, '(/,"interpolate_initial_orbital: Grid of insufficient extent:"/," Present grid has R(N) = ",1p,1d19.12,&
                 &" Bohr radii"/,"          Require R(N) = ",1d19.12," Bohr radii")') target_maximum_radius, source_maximum_radius
             stop
         end if
-        !
-        !   Determine end of grid
-        !
+        ! Determine end of grid
         radial_index = radial_point_count
         do
             radial_index = radial_index - 1
@@ -94,41 +79,29 @@ contains
         end do
         last_target_index = radial_index
         initial_orbital_last_grid_index(orbital_index) = last_target_index
-        !
-        !   Overall initialization for interpolation
-        !
+        ! Overall initialization for interpolation
         lower_bracket_index = 0
         unconverged_point_count = 0
-        !
-        !   Perform interpolation
-        !
+        ! Perform interpolation
         do radial_index = 2, last_target_index
-            !
-            !   Initialization for interpolation
-            !
+            ! Initialization for interpolation
             target_radius = radial_grid(radial_index)
             stencil_row = 0
             previous_large_estimate = 0.0_real64
             previous_small_estimate = 0.0_real64
-            !
-            !   Determine the nearest two grid points bounding the present
-            !   grid point
-            !
+            ! Determine the nearest two grid points bounding the present
+            ! grid point
             do
                 search_or_table_index = lower_bracket_index + 1
                 if (.not. (source_radial_grid(search_or_table_index) < target_radius)) exit
                 lower_bracket_index = search_or_table_index
             end do
             upper_bracket_index = search_or_table_index
-            !
-            !   Clear relevant piece of use-indicator array
-            !
+            ! Clear relevant piece of use-indicator array
             search_lower_bound = max(lower_bracket_index - maximum_stencil_size,1)
             search_upper_bound = min(upper_bracket_index + maximum_stencil_size,source_grid_size)
             selected_nodes(search_lower_bound:search_upper_bound) = .false.
-            !
-            !   Determine next-nearest grid point
-            !
+            ! Determine next-nearest grid point
             do
                 stencil_row = stencil_row + 1
                 search_lower_bound = max(lower_bracket_index - stencil_row + 1,1)
@@ -151,9 +124,7 @@ contains
                 selected_nodes(nearest_unused_index) = .true.
                 stencil_nodes(stencil_row) = source_radial_grid(nearest_unused_index)
                 node_offsets(stencil_row) = nearest_offset
-                !
-                !   Fill table for this row
-                !
+                ! Fill table for this row
                 do search_or_table_index = 1, stencil_row
                     current_cell = packed_triangle_index(stencil_row,search_or_table_index)
                     if (search_or_table_index == 1) then
@@ -173,9 +144,7 @@ contains
                             & - small_component_table(previous_cell)*previous_node_offset)*inverse_node_separation
                     end if
                 end do
-                !
-                !   Check for convergence
-                !
+                ! Check for convergence
                 diagonal_cell = packed_triangle_index(stencil_row,stencil_row)
                 large_estimate = large_component_table(diagonal_cell)
                 small_estimate = small_component_table(diagonal_cell)
@@ -202,37 +171,27 @@ contains
                 end if
                 exit
             end do
-            !
         end do
-        !
-        !   Ensure that all points of the array are defined by setting the
-        !   tail to zero
-        !
+        ! Ensure that all points of the array are defined by setting the
+        ! tail to zero
         first_tail_index = last_target_index + 1
         initial_radial_large_components(first_tail_index:radial_point_count,orbital_index) = 0.0_real64
         initial_radial_small_components(first_tail_index:radial_point_count,orbital_index) = 0.0_real64
-        !
         if (rmcdhf_debug_flags(3) .and. unconverged_point_count>0) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,"interpolate_initial_orbital: Interpolation procedure not converged to",1p,1d19.12,&
                 &" for ",1i3," of ",1i3," tabulation points")') working_tolerance, unconverged_point_count, last_target_index
         end if
-        !
-        !   Normalization
-        !
+        ! Normalization
         original_norm_squared = initial_state_radial_integral(orbital_index,orbital_index,0)
-        !ww      WRITE(92,*) 'DNORM',DNORM
         normalization_factor = 1.0_real64/dsqrt(original_norm_squared)
         initial_radial_large_components(:last_target_index,orbital_index) = &
             initial_radial_large_components(:last_target_index,orbital_index)*normalization_factor
         initial_radial_small_components(:last_target_index,orbital_index) = &
             initial_radial_small_components(:last_target_index,orbital_index)*normalization_factor
-        !
         return
-        !
         return
     contains
-
 
         integer function packed_triangle_index (row_index, column_index)
             ! Arguments
@@ -241,6 +200,5 @@ contains
             packed_triangle_index = (row_index*(row_index - 1))/2 + column_index
             return
         end function packed_triangle_index
-        !
     end subroutine interpolate_initial_orbital
 end module interpolate_initial_orbital_interface

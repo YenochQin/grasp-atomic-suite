@@ -1,3 +1,4 @@
+! Collect and report optional timing details for MCP coefficient generation.
 module rangular_profile
     ! Module dependencies
     use iso_fortran_env, only: int64, real64

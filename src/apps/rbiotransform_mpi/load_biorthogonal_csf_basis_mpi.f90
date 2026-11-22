@@ -1,3 +1,4 @@
+! Load and broadcast the descriptor basis used for one biorthogonal state.
 module load_biorthogonal_csf_basis_mpi_interface
     implicit none (type, external)
 

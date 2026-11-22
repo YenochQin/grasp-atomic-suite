@@ -6,22 +6,15 @@ module read_al_average_options_mpi_interface
     public :: read_al_average_options_mpi
 contains
 
-    !***********************************************************************
+    !   Interactively determines the data governing AL problem.
     !
+    !   Quantities to be determined:
+    !     ncmin, wt(1:ncf), ucf(1:nw), nscf, nsic, orthst
+    !
+    ! Written by Farid A. Parpia. Last revision: 19 Dec 1992
+    ! Block version by Xinghong He. Last revision: 13 Jul 1998
     subroutine read_al_average_options_mpi
         ! Module dependencies
-        !
-        !   Interactively determines the data governing AL problem.
-        !
-        !   Quantities to be determined:
-        !     ncmin, wt(1:ncf), ucf(1:nw), nscf, nsic, orthst
-        !
-        !   Call(s) to: [LIB92]: ALLOC, IQ.
-        !
-        !   Written by Farid A. Parpia            Last revision: 19 Dec 1992
-        !   Block version by Xinghong He          Last revision: 13 Jul 1998
-        !
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use array_memory_management, only: alloc
 
@@ -44,8 +37,7 @@ contains
         ! Local declarations
         integer      :: orbital_index, csf_index
         real(real64) :: sum
-        !-----------------------------------------------
-        !
+
         if (mpi_rank == 0) then
             write (stderr_unit, *) "(E)AL type calculation; H(DC) will not be ", &
                 "diagonalised;"

@@ -1,3 +1,4 @@
+! Assemble and solve Hamiltonian blocks using the current radial orbitals.
 module solve_hamiltonian_blocks_interface
     implicit none (type, external)
 
@@ -6,31 +7,20 @@ module solve_hamiltonian_blocks_interface
     public :: solve_hamiltonian_blocks
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   Calls routines to form the Hamiltonian matrix and to diagonalise
+    !   it. The total angular momenta and parity of each  ASF  is found;
+    !   the eigenvectors are normalised so  that the sign of the largest
+    !   element is positive.
+    !
+    ! Last revision: 24 Dec 1992
+    ! Block version by Xinghong He. 07 Aug 1998
+    ! Modified by G. Gaigalas. 05 Feb 2017
+    ! Modified by G. Gaigalas. Last revision: 07 Sep 2021
+    !      Spin-angular coefficiants have been put on memory
     subroutine solve_hamiltonian_blocks(first_davidson_solve)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         use calculation_file_units, only: mixing_output_unit
-        !                                                                      *
-        !   Calls routines to form the Hamiltonian matrix and to diagonalise   *
-        !   it. The total angular momenta and parity of each  ASF  is found;   *
-        !   the eigenvectors are normalised so  that the sign of the largest   *
-        !   element is positive.                                               *
-        !                                                                      *
-        !   Call(s) to: [LIB92] ALLOC, DALLOC.                                 *
-        !               [RSCF92]: SETHAM, HMOUT.                               *
-        !               [BLAS]: DCOPY/SCOPY, DSCAL/SSCAL                       *
-        !                                                                      *
-        !                                         Last revision: 24 Dec 1992   *
-        ! Block version by Xinghong He                           07 Aug 1998   *
-        !   Midified by G. Gaigalas                              05 Feb 2017   *
-        !      It was deleted the arrays:  JQSA(3*NNNW*NCF),                   *
-        !                                  JCUPA(NNNW*NCF)                     *
-        !   Modified by G. Gaigalas               Last revision: 07 Sep 2021   *
-        !      Spin-angular coefficiants have been put on memory               *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use array_memory_management, only: alloc, dalloc
         use scf_damping_factors, only: mixing_damping_factors
@@ -72,17 +62,12 @@ contains
         save first
 
         ! Initial values
-        !
         data first/ .true./
-        !
-        !     POINTER (cmvl(1))
-        !
-        !-----------------------------------------------------------------------
 
         if (mpi_rank == 0) write (output_unit, *)
 
-        !   Allocate memory for CMVL once (the maximum size)
-        !   Save previous estimate of eigenvectors
+        ! Allocate memory for CMVL once (the maximum size)
+        ! Save previous estimate of eigenvectors
 
         if (.not.first) then
             call alloc (cmvl, mixing_coefficient_storage_size, "CMVL", "solve_hamiltonian_blocks")
@@ -90,7 +75,7 @@ contains
         end if
 
         ! To put in ncmin and nvecsiz. Values read here are the same
-        ! as those from elsewhere (shch as common blocks)
+        ! as the values already loaded in the shared modules.
         if (mpi_rank == 0) then
             rewind (mixing_output_unit)
             read (mixing_output_unit)                               ! 'G92MIX'
@@ -102,35 +87,28 @@ contains
                 symmetry_block_count
         end if
 
-        !=======================================================================
-        !   Do the job block by block
-        !=======================================================================
+        ! Do the job block by block
 
         total_contribution_count = 0
         total_secondary_contribution_count = 0
-        !------------------------------------------------
         do symmetry_block_index = 1, symmetry_block_count                      ! block do-loop
-            !------------------------------------------------
 
-            !=======================================================================
             !   Read indeces of non-zero elements from mcp.30 file. Note the
             !   format has been changed to lower-triangle-by-rows.
             ! Length of iendc can be reduced
-            !=======================================================================
 
             nelmntgg = imax2_30(symmetry_block_index) - imin2_30(symmetry_block_index)
             stored_matrix_element_count = int(nelmntgg,kind=int64)
             call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", "solve_hamiltonian_blocks")
             call alloc (hamiltonian_values, stored_matrix_element_count, "hamiltonian_values", "solve_hamiltonian_blocks")
-            !cjb          ALLOC (IENDC, NCF + 1,...)  ->  ALLOC (IENDC, 0, NCF,...)
-            !cjb     CALL ALLOC (IENDC, NCF + 1, 'IENDC', 'MATRIX' )
+            ! ALLOC (IENDC, NCF + 1,...)  ->  ALLOC (IENDC, 0, NCF,...)
             csf_count = imax1_30(symmetry_block_index) - imin1_30(symmetry_block_index)
             call alloc (stored_segment_end_offsets, 0, csf_count, "stored_segment_end_offsets", "solve_hamiltonian_blocks" )
 
-            !        ! may not be necessary if iendc is ALWAYS used
+            ! ! may not be necessary if iendc is ALWAYS used
             stored_segment_end_offsets(0:csf_count) = 0                        ! the way it is assigned here.
 
-            !...EMT will be accumulated in setham
+            ! ...EMT will be accumulated in setham
             hamiltonian_values(:stored_matrix_element_count) = 0.0_real64
             call read_mcp_coefficients_from_memory(symmetry_block_index)
 
@@ -138,9 +116,7 @@ contains
             block_eigenvalue_offset = eigenvalue_offsets_by_block(symmetry_block_index)
             block_mixing_offset = mixing_offsets_by_block(symmetry_block_index)
 
-            !=======================================================================
-            !   Skip current block if no eigenlaue is required
-            !=======================================================================
+            ! Skip current block if no eigenlaue is required
 
             if (eigenvector_counts_by_block(symmetry_block_index) == 0) then
                 do mcp_channel = 31, 32 + max_mcp_file_multipole_rank
@@ -162,35 +138,27 @@ contains
 
             end if
 
-            !=======================================================================
-            !   Generate the Hamiltonian matrix - average energy is removed here
-            !=======================================================================
+            ! Generate the Hamiltonian matrix - average energy is removed here
 
             call assemble_hamiltonian_block (symmetry_block_index, mpi_rank, mpi_process_count, total_contribution_count, &
                 & total_secondary_contribution_count)
-            !
-            !   Determine average energy
-            !
+            ! Determine average energy
             hamiltonian_energy_shift = 0.0_real64
             do csf_index = mpi_rank + 1, csf_count, mpi_process_count
                 hamiltonian_energy_shift = hamiltonian_energy_shift + hamiltonian_values(stored_segment_end_offsets(csf_index))
             end do
-            !         DO IR = 1, (NCF - (MYID + 1) + NPROCS)/NPROCS
-            !            EAV = EAV + EMT(IENDC(NPROCS*(IR-1)+MYID+1))
-            !         END DO
+            !    EAV = EAV + EMT(IENDC(NPROCS*(IR-1)+MYID+1))
 
             hamiltonian_energy_shift = hamiltonian_energy_shift/csf_count
             mean_energy_by_block(symmetry_block_index) = hamiltonian_energy_shift
 
-            ! Print Hamiltonian matrix and average energy
-            ! hmout is not general
-            !call hmout (0, 1, ncf)
+            !  Print Hamiltonian matrix and average energy
+            !  hmout is not general
 
             if (mpi_rank == 0) write (*, '(" Average energy = ",1p,d18.10," Hartrees")') hamiltonian_energy_shift
 
             ! Subtract the average energy from the diagonal elements
             ! to reduce the condition number of the matrix
-            !         DO I = 1, (NCF - (MYID + 1) + NPROCS)/NPROCS
             !            EMT(IENDC(NPROCS*(I-1)+MYID+1)) = EMT(IENDC(NPROCS*(I-1)+MYID+1))&
             !                - EAV
             do i = mpi_rank + 1, csf_count, mpi_process_count
@@ -198,16 +166,12 @@ contains
                 hamiltonian_values(idiag) = hamiltonian_values(idiag) - hamiltonian_energy_shift
             end do
 
-            !=======================================================================
-            !   Compute and store eigenpairs
-            !=======================================================================
+            ! Compute and store eigenpairs
 
             call diagonalize_hamiltonian_block (first_davidson_solve, ldbpg(3),                      &
                 symmetry_block_index, block_csf_offset, block_eigenvalue_offset, block_mixing_offset, total_csf_count)
 
-            !=======================================================================
-            !   Damp and Schmidt orthogonalise eigenvectors for OL calculations
-            !=======================================================================
+            ! Damp and Schmidt orthogonalise eigenvectors for OL calculations
 
             if (.not.first) then
 
@@ -222,7 +186,7 @@ contains
 
                     omcdaj = 1.0_real64 - cdampj
 
-                    !...Damp eigenvector and determine the new dominant component
+                    ! ...Damp eigenvector and determine the new dominant component
                     do
                         amax = 0.0_real64
                         do i = 1, csf_count
@@ -234,18 +198,18 @@ contains
                             ia = i
                         end do
 
-                        !...compute the normalization factor
+                        ! ...compute the normalization factor
                         sum = 0.0_real64
                         do i = 1, csf_count
                             sum = sum + csf_mixing_coefficients(i+iofset)**2
                         end do
                         dnfac = 1.0_real64/sqrt(sum)
 
-                        !...Renormalize and invert as necessary
+                        ! ...Renormalize and invert as necessary
                         if (csf_mixing_coefficients(ia+iofset) < 0.0_real64) dnfac = -dnfac
                         call dscal (csf_count, dnfac, csf_mixing_coefficients(iofset+1:iofset+(csf_count)), 1)
 
-                        !...Schmidt orthogonalise
+                        ! ...Schmidt orthogonalise
                         do
                             jother = jother - 1
                             if (jother < 1) exit
@@ -265,26 +229,25 @@ contains
                 end do
             end if
 
-            !   Write out the eigenpair information: ASF symmetries, eigenvalues,
-            !   and eigenvectors to GRASP92 mixing coefficients File
+            ! Write out the eigenpair information: ASF symmetries, eigenvalues,
+            ! and eigenvectors to GRASP92 mixing coefficients File
 
             if (eigenvector_counts_by_block(symmetry_block_index) == 0) then
                 iattmp = 999
                 iastmp = 999
             else
-                !GGGG
                 iattmp = iabs(packed_block_symmetries(symmetry_block_index))
                 if(packed_block_symmetries(symmetry_block_index) >= 0) then
-                    !cjb iastmp error corrected by Pawel Syty
-                    !PS            iastmp = 2
+                    ! cjb iastmp error corrected by Pawel Syty
+                    ! PS            iastmp = 2
                     iastmp = 1
                 else
-                    !cjb iastmp error corrected by Pawel Syty
-                    !PS            iastmp = 1
+                    ! cjb iastmp error corrected by Pawel Syty
+                    ! PS            iastmp = 1
                     iastmp = -1
                 end if
-                !GG            IATTMP = IATJPO(NCMINPAT + 1)
-                !GG            IASTMP = IASPAR(NCMINPAT + 1)
+                ! IATTMP = IATJPO(NCMINPAT + 1)
+                ! IASTMP = IASPAR(NCMINPAT + 1)
             end if
 
             if (mpi_rank == 0) then
@@ -305,18 +268,13 @@ contains
             call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "solve_hamiltonian_blocks")
             call dalloc (matrix_partner_indices, "matrix_partner_indices", "solve_hamiltonian_blocks")
 
-            !----------------------
         end do
-        !----------------------
-        !
-        !   Deallocate the temporary storage
-        !
+        ! Deallocate the temporary storage
         if (.not.first) then
             call dalloc (cmvl, "CMVL", "solve_hamiltonian_blocks")
         else
             first = .false.
         end if
-
 
         return
     end subroutine solve_hamiltonian_blocks

@@ -1,3 +1,4 @@
+! Merge the two loaded CSF bases and report any incompatibility with both state names.
 module merge_transition_basis_records_interface
     implicit none (type, external)
 

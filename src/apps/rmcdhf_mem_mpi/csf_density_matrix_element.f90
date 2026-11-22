@@ -1,3 +1,4 @@
+! Evaluate the density matrix element between two configuration state functions.
 module csf_density_matrix_element_interface
     implicit none (type, external)
 
@@ -6,38 +7,28 @@ module csf_density_matrix_element_interface
     public :: csf_density_matrix_element
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !   The coefficients d   for  I = r, J = s  are calculated here.
+    !
+    !                         NCMIN
+    !                          Sum     w     c          c
+    !                         t = 1     t     r Gamma    s Gamma
+    !                                                t          t
+    !    EOL:          d   = -------------------------------------
+    ! NCMIN
+    !                                   Sum     w
+    !                                  t = 1     t
+    !
+    !                                           /  NCF
+    !    EAL:             d   =  delta     w   /   Sum   w
+    ! rs    r /   t = 1   t
+    !
+    ! Written by Farid A Parpia. Last update: 18 Dec 1992
+    !
+    !   This routine assumes (and does not check) that I and J belong
+    !   the same block and the job is done within the block specified
+    !   by parameter jblock
     real(real64) function csf_density_matrix_element (extended_optimal_level, bra_csf_index, ket_csf_index, symmetry_block_index)
         ! Module dependencies
-        !                                                                      *
-        !   The coefficients d   for  I = r, J = s  are calculated here.       *
-        !                     rs                                               *
-        !                                                                      *
-        !                         NCMIN                                        *
-        !                          Sum     w     c          c                  *
-        !                         t = 1     t     r Gamma    s Gamma           *
-        !                                                t          t          *
-        !    EOL:          d   = -------------------------------------         *
-        !                   rs             NCMIN                               *
-        !                                   Sum     w                          *
-        !                                  t = 1     t                         *
-        !                                                                      *
-        !                                                                      *
-        !                                           /  NCF                     *
-        !    EAL:             d   =  delta     w   /   Sum   w                 *
-        !                      rs         rs    r /   t = 1   t                *
-        !                                                                      *
-        !                                                                      *
-        !   Written by Farid A Parpia               Last update: 18 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
-        !
-        !   This routine assumes (and does not check) that I and J belong
-        !   the same block and the job is done within the block specified
-        !   by parameter jblock
-        !
-        !************************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use atomic_calculation_state, only: level_average_weights
         use eigenstate_expansions, only: csf_mixing_coefficients
@@ -53,7 +44,6 @@ contains
 
         ! Local declarations
         integer :: level_index, kcmin, ik, jk
-        !-----------------------------------------------
 
         if (extended_optimal_level) then
             csf_density_matrix_element = 0.0_real64

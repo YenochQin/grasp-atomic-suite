@@ -6,15 +6,9 @@ module vector_inner_product_interface
     public :: vector_inner_product
 contains
 
-    !
-    !     ------------------------------------------------------------------
-    !     I N P R O D
-    !     ------------------------------------------------------------------
-    !
+    !      CALCULATE SCALAR PRODUCT BETWEEN TO VECTORS A,B
     real(real64) function vector_inner_product (a, b, ndim)
         ! Module dependencies
-        !      CALCULATE SCALAR PRODUCT BETWEEN TO VECTORS A,B
-        !************************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         implicit none (type, external)
 
@@ -24,10 +18,7 @@ contains
         real(real64), intent(in) :: b(*)
 
         ! Local declarations
-        !-----------------------------------------------
-        !
         vector_inner_product = dot_product(a(:ndim),b(:ndim))
-        !
         return
     end function vector_inner_product
 end module vector_inner_product_interface

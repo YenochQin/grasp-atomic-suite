@@ -6,22 +6,15 @@ module combine_upper_lower_factors_interface
     public :: combine_upper_lower_factors
 contains
 
+    ! Obtain U L decomposition of matrix A
+    !   A = U L
     !
-    !     ------------------------------------------------------------------
-    !     U L L A
-    !     ------------------------------------------------------------------
+    ! Note that L and U are returned in full matrix form
     !
+    ! Quick and dirty routine, Jeppe Olsen, November 1991
     subroutine combine_upper_lower_factors(input_matrix, upper_factor, lower_factor, matrix_order, workspace)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
-        !
-        ! Obtain U L decomposition of matrix A
-        !   A = U L
-        !
-        ! Note that L and U are returned in full matrix form
-        !
-        ! Quick and dirty routine, Jeppe Olsen, November 1991
-        !************************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
 
         ! Procedure interfaces
@@ -40,9 +33,6 @@ contains
         ! Local declarations
         integer :: next_workspace_index, reversed_matrix_start, row_index, packed_lower_start, packed_upper_start, outer_index, &
             inner_index, trace_level
-        !-----------------------------------------------
-        !
-        !
         ! In order to change into LU form introduce the orthogonal matrix
         !    p(i,j) = delta(i,ndim-i)
         ! and rewrite
@@ -51,11 +41,9 @@ contains
         ! tringular AND PUP is lower traingular we have obtained the goal
         !
         ! 1 : PAP in scr(klPAP)
-        !
         next_workspace_index = 1
         reversed_matrix_start = next_workspace_index
         next_workspace_index = next_workspace_index + matrix_order**2
-        !
         do row_index = 1, matrix_order
             workspace(reversed_matrix_start-1+row_index:matrix_order*(matrix_order-1)+reversed_matrix_start-1+ &
                 & row_index:matrix_order) = input_matrix(matrix_order+1-row_index,matrix_order:1:(-1))
@@ -63,20 +51,18 @@ contains
         ! 2 : Lu decompose PAP
         packed_lower_start = next_workspace_index
         next_workspace_index = next_workspace_index + matrix_order*(matrix_order + 1)/2
-        !
         packed_upper_start = next_workspace_index
         next_workspace_index = next_workspace_index + matrix_order*(matrix_order + 1)/2
         call factor_lower_upper (workspace(reversed_matrix_start), workspace(packed_lower_start), workspace(packed_upper_start), &
                 & matrix_order)
-        !          LULU(A,L,U,NDIM)
-        ! Storage modes
-        !   L(I,J) = L(I*(I-1)/2 + J ) ( I .GE. J )
-        !   U(I,J) = U(J*(J-1)/2 + I ) ( J .GE. I )
+        !           LULU(A,L,U,NDIM)
+        !  Storage modes
+        !    L(I,J) = L(I*(I-1)/2 + J ) ( I .GE. J )
+        !    U(I,J) = U(J*(J-1)/2 + I ) ( J .GE. I )
         !
-        !. 3 : Obtain U as PLP and L as PUP
+        ! . 3 : Obtain U as PLP and L as PUP
         call fill_vector (upper_factor, 0.0_real64, matrix_order**2)
         call fill_vector (lower_factor, 0.0_real64, matrix_order**2)
-        !
         do outer_index = 1, matrix_order
             do inner_index = 1, outer_index
                 upper_factor(inner_index,outer_index) = workspace(packed_lower_start-1+(matrix_order+1-inner_index)* &
@@ -87,14 +73,12 @@ contains
                     outer_index))
             end do
         end do
-        !
         trace_level = 0
         if (trace_level /= 0) then
             write (output_unit, *) " U and L from combine_upper_lower_factors "
             call write_matrix (upper_factor, matrix_order, matrix_order, matrix_order, matrix_order)
             call write_matrix (lower_factor, matrix_order, matrix_order, matrix_order, matrix_order)
         end if
-        !
 
         return
     end subroutine combine_upper_lower_factors

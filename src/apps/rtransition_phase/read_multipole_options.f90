@@ -1,3 +1,4 @@
+! Parse the requested electric and magnetic multipoles and the level selection restrictions.
 module read_multipole_options_interface
     implicit none (type, external)
 
@@ -6,20 +7,13 @@ module read_multipole_options_interface
     public :: read_multipole_options
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Interactively  determines the  list of radiation multipolarities
+    ! and parities. This is loadad into COMMON/OSC6/.
+    !
+    ! Written by Farid A. Parpia. Last revision: 28 Dec 1992
     subroutine read_multipole_options
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
-        !                                                                      *
-        !   Interactively  determines the  list of radiation multipolarities   *
-        !   and parities. This is loadad into COMMON/OSC6/.                    *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, RALLOC.                                *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 28 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
         use array_memory_management, only: alloc, ralloc
         use transition_off_diagonal_flags, only: m1_different_j_only_flag, e2_different_j_only_flag
         use transition_matrix_workspace, only: requested_multipole_count, requested_multipole_codes
@@ -31,25 +25,17 @@ contains
         integer :: ndkp, istart, i, iend, lenth, io_status, mult
         logical :: lelec, lmagn, yes
         character :: record*256, reci
-        !-----------------------------------------------
-        !
-        !
-        !   Initial allocation for PNTRKP
-        !
+        ! Reserve space for the first requested multipole code.
         ndkp = 1
         call alloc (requested_multipole_codes, ndkp, "requested_multipole_codes", "read_multipole_options" )
-        !
-        !   Entry message
-        !
+
         do
             write (output_unit, *) "Enter the list of transition specifications"
             write (output_unit, *) " e.g.,  E1,M2  or  E1 M2  or  E1;M2 :"
             do
                 read (*, "(A)") record
                 requested_multipole_count = 0
-                !
-                !   Parse RECORD from left to right
-                !
+                ! Scan multipole tokens from left to right.
                 istart = 0
                 do i = 1, len(record)
                     reci = record(i:i)
@@ -104,15 +90,10 @@ contains
             end do
             if (requested_multipole_count /= 0) exit
         end do
-        !
-        !   Trim array to the exact size
-        !
+        ! Trim the multipole array to the number of accepted requests.
         if (ndkp /= requested_multipole_count) call ralloc (requested_multipole_codes, requested_multipole_count, &
             "requested_multipole_codes", "read_multipole_options")
-        !
-        !   If M1 or E2 inquire if the transitions are between levels
-        !   with different J quantum numbers.
-        !
+        ! For M1 and E2, ask whether the two levels must have different J.
         do i = 1, requested_multipole_count
             if (requested_multipole_codes(i) == 1) then
                 write (*, *) "M1 transitions only between levels with different J?"
@@ -132,7 +113,6 @@ contains
                 e2_different_j_only_flag = 0
             end if
         end do
-        !
         return
     end subroutine read_multipole_options
 end module read_multipole_options_interface

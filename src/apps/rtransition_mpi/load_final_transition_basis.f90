@@ -1,3 +1,4 @@
+! Load the final-state descriptor basis and retain its original orbital and block metadata.
 module load_final_transition_basis_interface
     implicit none (type, external)
 
@@ -6,21 +7,12 @@ module load_final_transition_basis_interface
     public :: load_final_transition_basis
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! Written by Farid A. Parpia. Last revision: 23 Dec 1992
+    !
+    ! Translated by Charlotte Froese Fischer
+    !                        Gediminas Gaigalas  10/05/17
     subroutine load_final_transition_basis(final_core_subshell_count, state_name)
-        ! Module dependencies
-        !                                                                      *
-        !   Open, check, load data from and close the  .csl  file. This file   *
-        !   is always attached to stream 21.                                   *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: IQ, LENGTH, LODCSL, OPENFL.                   *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 23 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
-        !...Translated by Charlotte Froese Fischer
-        !                       Gediminas Gaigalas  10/05/17
+        !  Module dependencies
         use atomic_calculation_state, only: electron_count, final_electron_count
         use orbital_csf_basis, only: csf_count, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, &
             orbital_symmetry_labels, orbital_two_j
@@ -38,14 +30,8 @@ contains
 
         ! Local declarations
         integer :: io_status, ncorer
-        !-----------------------------------------------
         !
-        !
-        !     Common relevant for the radial wave functions of the final state.
-        !
-        !
-        !   The  .csl  file is FORMATTED; it must exist
-        !
+        ! Load the descriptor pair for this state.
         call load_csf_basis_mpi(trim(state_name),ncorer)
         io_status=0
         if (io_status /= 0) error stop "Transition descriptor load failed"
@@ -53,21 +39,8 @@ contains
         final_transition_block_count=transition_block_count
         final_cumulative_csf_counts=0
         final_cumulative_csf_counts(:transition_block_count)=cumulative_csf_counts(:transition_block_count)
-        !
-        !   Check if the core should be redefined
-        !
+        ! Keep the closed-core count from the descriptor basis.
         final_core_subshell_count = ncorer
-        !      DO 3 I = NCORER+1,NW
-        !         IFULLI = NKJ(I)+1
-        !         DO 2 J = 1,NCF
-        !    2    CONTINUE
-        !         CALL CONVRT (NP(I),RECORD,LENTH)
-        !         PRINT *, 'Subshell '//RECORD(1:LENTH)//NH(I)//' is full'
-        !         PRINT *, ' in all CSFs; including this'
-        !         PRINT *, ' subshell in the core;'
-        !         NCORE = NCORE+1
-        !    3 CONTINUE
-        !
         final_electron_count = electron_count
         final_orbital_count = orbital_count
         final_csf_count = csf_count

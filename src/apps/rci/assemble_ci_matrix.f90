@@ -1,3 +1,4 @@
+! Assemble a CI matrix and record the sparse entries used for diagonalization.
 module assemble_ci_matrix_interface
     implicit none (type, external)
 
@@ -6,24 +7,19 @@ module assemble_ci_matrix_interface
     public :: assemble_ci_matrix
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    !        Generate Hamiltonian matrix for all blocks
+    !        This routine calls setham to do the computation. It makes
+    !        sure that the hamiltonian matrix is complete.
+    !  Only node-0 has the correct, non-zero elsto. And in any case, elsto
+    !  is not added to the matrix elements in files *.res
+    !  This routine has been re-written to work in both single- and
+    !  multi- processors.
+    !
+    ! Xinghong He 1998-06-23
     subroutine assemble_ci_matrix(inverse_nuclear_mass, symmetry_block_index, mpi_rank, mpi_process_count, &
         & closed_shell_breit_shift, restart_header_status, slf_en)
         ! Module dependencies
         use calculation_file_units, only: summary_output_unit
-        !
-        !        Generate Hamiltonian matrix for all blocks
-        !        This routine calls setham to do the computation. It makes
-        !        sure that the hamiltonian matrix is complete.
-        !  Only node-0 has the correct, non-zero elsto. And in any case, elsto
-        !  is not added to the matrix elements in files *.res
-        !  This routine has been re-written to work in both single- and
-        !  multi- processors.
-        !
-        ! Xinghong He 1998-06-23
-        !
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use eigenstate_expansions, only: hamiltonian_energy_shift
         use csf_block_cutoffs, only: active_csf_cutoffs
@@ -51,8 +47,7 @@ contains
         integer :: restart_rows_read, io_status, file_csf_count, file_csf_cutoff, file_mpi_rank, file_mpi_process_count, i, &
             ios2, nelc, ir, irowdum, ipos, row_count, j, first_unrestored_csf_index
         real(real64) :: stored_closed_shell_breit_shift, dum, eav0
-        !-----------------------------------------------
-        !
+
         stored_matrix_element_count = 0                      ! Counting continues in setham
         hamiltonian_energy_shift    = 0.0_real64
         closed_shell_breit_shift  = 0.0_real64
@@ -120,7 +115,7 @@ contains
 
         if (restart_rows_read < row_count) then
             first_unrestored_csf_index = restart_rows_read*mpi_process_count + mpi_rank + 1
-            !     ...Generate the rest of the Hamiltonian matrix
+            ! ...Generate the rest of the Hamiltonian matrix
             call assemble_hamiltonian_block (mpi_rank, mpi_process_count, symmetry_block_index, closed_shell_breit_shift, &
                 & first_unrestored_csf_index, &
                 & stored_matrix_element_count, inverse_nuclear_mass, &

@@ -6,32 +6,25 @@ module sort_mcp_coefficients_in_memory_interface
     public :: sort_mcp_coefficients_in_memory
 contains
 
-    !***********************************************************************
-    !                                                                      *
+    ! This routine sorts lists
+    !
+    !                   (ICLMN,INDEX,LABEL,COEFF)
+    ! into lists
+    !                   (LABEL,ICLMN,INDEX,COEFF)
+    !
+    ! using Heapsort. File NFILE is closed by this routine.  NCOEFF is
+    ! the number of triads (INDEX, ...) and is an input. NTGRAL is the
+    ! number of different values of LABEL, and is an output. If LPRINT
+    ! is  .TRUE. , the contents of the sorted file are interpreted and
+    ! printed to unit 99.
+    !
+    ! Written by Farid A. Parpia. Last revision: 21 Dec 1992
     subroutine sort_mcp_coefficients_in_memory(mcp_channel_index,sort_capacity_per_channel,coefficient_count, &
         & distinct_integral_count,print_details, &
         & symmetry_block_index,output_file_prefix)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
-        !                                                                      *
-        !   This routine sorts lists                                           *
-        !                                                                      *
-        !                     (ICLMN,INDEX,LABEL,COEFF)                        *
-        !   into lists                                                         *
-        !                     (LABEL,ICLMN,INDEX,COEFF)                        *
-        !                                                                      *
-        !   using Heapsort. File NFILE is closed by this routine.  NCOEFF is   *
-        !   the number of triads (INDEX, ...) and is an input. NTGRAL is the   *
-        !   number of different values of LABEL, and is an output. If LPRINT   *
-        !   is  .TRUE. , the contents of the sorted file are interpreted and   *
-        !   printed to unit 99.                                                *
-        !                                                                      *
-        !   Call(s) to: [LIB92]: ALLOC, CONVRT, DALLOC.                        *
-        !                                                                      *
-        !   Written by Farid A. Parpia            Last revision: 21 Dec 1992   *
-        !                                                                      *
-        !***********************************************************************
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: orbital_index_radix
         use array_memory_management, only: alloc, dalloc
@@ -57,9 +50,7 @@ contains
         ! Local constants
 
         ! Local declarations
-        !      INTEGER, DIMENSION(:), pointer :: ICLMN, INDEX, LABEL, NSWAP
         integer, pointer :: nswap(:)
-        !      REAL(DOUBLE), DIMENSION(:), pointer :: COEFF
         integer :: text_length, lck, io_status, i, heap_root_index, heap_end_index, saved_csf_column, saved_matrix_position, &
             & lab, nsw, j, last, ibeg, iend, &
             & ncontr, ia, ib, k, id, ic, &
@@ -67,16 +58,14 @@ contains
         real(real64) :: saved_angular_coefficient
         character :: number_text*20, ck*2
         character (len = len (output_file_prefix) + 3):: file_path
-        !-----------------------------------------------
-        !
+
         if(mcp_channel_index == 31) then
             channel_array_index = 1
         else
             channel_array_index = mcp_channel_index - 30
         end if
-        !      IGG = IGGMAX_K*(IGG-1)
-        !   Message
-        !
+        !    IGG = IGGMAX_K*(IGG-1)
+        ! Message
         call format_integer (coefficient_count, number_text, text_length)
         if (mcp_channel_index > 31) then
             call format_integer (mcp_channel_index - 32, ck, lck)
@@ -85,7 +74,6 @@ contains
         else
             write (output_unit, *) "Sorting "//number_text(1:text_length)//" T coefficients ...", mcp_channel_index
         end if
-        !
         call format_integer (mcp_channel_index, ck, lck)
         if (lck > 2) then
             write (stderr_unit, *) "sort_mcp_coefficients_in_memory: nfile > 99; check fullname"
@@ -100,20 +88,14 @@ contains
             write (stderr_unit, *) " Error when opening the file ", file_path
             stop
         end if
-        !
-        !   Sort the list
-        !
+        ! Sort the list
         if (coefficient_count > 0) then
-            !
-            !   Allocate storage for all required arrays
-            !
+            ! Allocate storage for all required arrays
             if (mcp_channel_index == 33) call alloc (nswap, coefficient_count,"NSWAP", "sort_mcp_coefficients_in_memory")
         end if
-        !
-        !   Sort LABEL into ascending order using the heapsort algorithm;
-        !   move the associated members of COEFF and INDEX in the same
-        !   manner; the code below is adapted from Press et al.
-        !
+        ! Sort LABEL into ascending order using the heapsort algorithm;
+        ! move the associated members of COEFF and INDEX in the same
+        ! manner; the code below is adapted from Press et al.
         if (mcp_channel_index==33 .and. coefficient_count>1) then
 
             heap_root_index = coefficient_count/2 + 1
@@ -180,11 +162,9 @@ contains
             end do
 
         else if (mcp_channel_index/=33 .and. coefficient_count>1) then
-            !
-            !   Sort LABEL into ascending order using the heapsort algorithm;
-            !   move the associated members of COEFF and INDEX in the same
-            !   manner; the code below is adapted from Press et al.
-            !
+            ! Sort LABEL into ascending order using the heapsort algorithm;
+            ! move the associated members of COEFF and INDEX in the same
+            ! manner; the code below is adapted from Press et al.
             heap_root_index = coefficient_count/2 + 1
             heap_end_index = coefficient_count
             do
@@ -243,86 +223,55 @@ contains
             end do
 
         end if
-        !
-        !   Sorting complete; rewrite the file header
-        !
-        !
+        ! Sorting complete; rewrite the file header
         write (mcp_append_unit) "MCP", symmetry_block_index, csf_count, coefficient_count
-        !GG      WRITE (9999,*) 'MCP', NB, NCF, NCOEFF, NFILE
-        !
-        !   Write the sorted list to mcp.xx
-        !
+        !    Write the sorted list to mcp.xx
         if (coefficient_count > 0) then
-            !
             last = channel_packed_orbital_labels(1,channel_array_index)
             ibeg = 1
             iend = 1
             distinct_integral_count = 1
-            !
             do i = 2, coefficient_count
                 if (channel_packed_orbital_labels(i,channel_array_index) == last) then
                     iend = iend + 1
                 else
                     write (mcp_append_unit) last, iend - ibeg + 1
-                    !GG               WRITE (9999,*) LAST, IEND - IBEG + 1
                     write (mcp_append_unit) (channel_csf_columns(j,channel_array_index),channel_matrix_positions(j, &
                         & channel_array_index),channel_coefficients( &
                         & j,channel_array_index), &
                         j=ibeg,iend)
-                    !cjb-GG              DO J = IBEG,IEND
-                    !GG               WRITE (9999,'(2I12,E25.15)') ICLMN(J),INDEX(J),COEFF(J)
-                    !cjb-GG              END DO
+                    ! GG              DO J = IBEG,IEND
+                    ! GG              END DO
 
-                    !              IF (NFILE.EQ.33) WRITE (20) (NSWAP(J),J = IBEG,IEND)
                     distinct_integral_count = distinct_integral_count + 1
                     last = channel_packed_orbital_labels(i,channel_array_index)
                     ibeg = iend + 1
                     iend = ibeg
                 end if
             end do
-            !
             if (ibeg <= coefficient_count) then
                 write (mcp_append_unit) last, coefficient_count - ibeg + 1
-                !GG            WRITE (9999,*) LAST, NCOEFF - IBEG + 1
                 write (mcp_append_unit) (channel_csf_columns(j,channel_array_index),channel_matrix_positions(j, &
                     & channel_array_index),channel_coefficients(j, &
                     & channel_array_index),       &
                     j=ibeg,coefficient_count)
-                !GG          DO J=IBEG,NCOEFF
-                !GG            WRITE (9999,'(2I12,E25.15)') ICLMN(J),INDEX(J),COEFF(J)
-                !GG          END DO
 
-                !           IF (NFILE.EQ.33) WRITE (20) (NSWAP(J),J = IBEG,NCOEFF)
             end if
-        !
         else
-            !
             distinct_integral_count = 0
-            !
         end if
-        !
-        !     write the terminator record for this block
-        !
+        ! write the terminator record for this block
         write (mcp_append_unit) 0, 0
-        !GG      WRITE (9999,*) 0, 0
         close(mcp_append_unit)
-        !
-        !   Completion message
-        !
-        !PRINT *, ' ... sort complete; ', ntgral, ' integrals;'
-        !
-        !   Debug printout
-        !
+        !    Completion message
         if (print_details) then
             call ensure_debug_output()
             write (angular_debug_unit, '(/,"From sort_mcp_coefficients_in_memory:")')
             write (output_unit, '(/,"From sort_mcp_coefficients_in_memory:")')
             if (coefficient_count > 0) then
-                !
                 last = channel_packed_orbital_labels(1,channel_array_index)
                 ibeg = 1
                 iend = 1
-                !
                 do i = 2, coefficient_count
                     if (channel_packed_orbital_labels(i,channel_array_index) == last) iend = iend + 1
                     do
@@ -374,13 +323,10 @@ contains
             call ensure_debug_output()
             write (angular_debug_unit, '("  Number of integrals is ",1i4)') distinct_integral_count
         end if
-        !
-        !   Deallocate storage
-        !
+        ! Deallocate storage
         if (coefficient_count > 0) then
             if (mcp_channel_index == 33) call dalloc (nswap, "NSWAP", "sort_mcp_coefficients_in_memory")
         end if
-
 
         return
     end subroutine sort_mcp_coefficients_in_memory

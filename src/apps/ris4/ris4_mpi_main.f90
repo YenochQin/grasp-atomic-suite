@@ -1,11 +1,6 @@
-!***********************************************************************
-!                                                                      *
+! Calculate the electronic isotope-shift factors across MPI ranks.
 program ris4_mpi_main
     ! Module dependencies
-    !                                                                      *
-    !   Entry routine for the MPI RIS program.                             *
-    !                                                                      *
-    !***********************************************************************
     use, intrinsic :: iso_fortran_env, only: real64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
