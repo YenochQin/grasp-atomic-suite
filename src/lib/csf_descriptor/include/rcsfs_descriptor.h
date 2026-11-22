@@ -5,7 +5,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* ABI v2: status 0 is success. Errors write a NUL-terminated message if
+/* ABI v3: status 0 is success. Errors write a NUL-terminated message if
  * capacity > 0. Handles are exclusive, independent, and closed by address.
  * Initialize an open() handle slot to NULL; close before reopening. A live
  * slot is rejected unchanged. Paths are UTF-8, NUL terminated.
@@ -32,7 +32,7 @@ int32_t rcsfs_descriptor_open(
     void **output_handle,
     char *error_buffer,
     size_t error_buffer_capacity);
-/* Check the spin-angular kernel's occupation limits after the opening scan. */
+/* Check high-j occupations before starting a whole-basis spin-angular calculation. */
 int32_t rcsfs_descriptor_check_spin_angular(void *handle, char *error_buffer, size_t error_buffer_capacity);
 int32_t rcsfs_descriptor_info(
     void *handle,
@@ -55,6 +55,8 @@ int32_t rcsfs_descriptor_zero_order_counts(
     size_t block_capacity,
     char *error_buffer,
     size_t error_buffer_capacity);
+/* Select a zero-based block. Reads stop at its end. Blocks may be revisited. */
+int32_t rcsfs_descriptor_select_block(void *handle, size_t block, char *error_buffer, size_t error_buffer_capacity);
 int32_t rcsfs_descriptor_read(
     void *handle,
     int8_t *descriptor_rows,

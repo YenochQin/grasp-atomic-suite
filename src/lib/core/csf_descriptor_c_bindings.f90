@@ -1,4 +1,4 @@
-! Declare the C ABI v2 used to call the Rust CSF descriptor reader.
+! Declare the C ABI v3 used to call the Rust CSF descriptor reader.
 module csf_descriptor_c_bindings
     ! Module dependencies
     use iso_c_binding, only: c_ptr, c_char, c_int32_t, c_int8_t, c_int64_t, c_size_t
@@ -10,7 +10,7 @@ module csf_descriptor_c_bindings
     public :: rust_descriptor_tables, rust_descriptor_read, rust_descriptor_close
     public :: rust_descriptor_zero_order_counts, rust_descriptor_format_version
     public :: rust_descriptor_read_radial_header
-    public :: rust_descriptor_check_spin_angular
+    public :: rust_descriptor_select_block, rust_descriptor_check_spin_angular
 
     ! Procedure interfaces
     interface
@@ -94,6 +94,14 @@ module csf_descriptor_c_bindings
             integer(c_int64_t), intent(out) :: zero_order_counts(*)
             character(kind=c_char), intent(out) :: error_message(*)
             integer(c_size_t), value :: message_capacity, block_capacity
+            integer(c_int32_t) :: status
+        end function
+        function rust_descriptor_select_block(handle, block, error_message, message_capacity) &
+            bind(C, name="rcsfs_descriptor_select_block") result(status)
+            import c_ptr, c_char, c_size_t, c_int32_t
+            type(c_ptr), value :: handle
+            integer(c_size_t), value :: block, message_capacity
+            character(kind=c_char), intent(out) :: error_message(*)
             integer(c_int32_t) :: status
         end function
         function rust_descriptor_read(handle, row_values, value_capacity, row_count, error_message, message_capacity) &

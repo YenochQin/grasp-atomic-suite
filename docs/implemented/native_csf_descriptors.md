@@ -1,6 +1,6 @@
 # Rust 原生 CSF 描述符输入
 
-2026-11-21。V3 实施基于 Suite `a2ce6c6`，原迁移基于 suite `5806884`、rCSFs `fea061f`。
+2026-11-22。块索引及文件双向校验基于 Suite `72eaa7b0`、rCSFs `e45b6b3` 工作树。V3 实施基于 Suite `a2ce6c6`，原迁移基于 suite `5806884`、rCSFs `fea061f`。
 本地库构建调整基于 suite `80f6e76`：reader 源码复制自 rCSFs
 `f17a862d77c45164a6d31ae1e9cfeb4efbd04cf6`，现由 suite 自己保存、编译和维护。
 生产迁移已提交为 `8cf6b1d`，rdensity 输入补全为 `80f6e76`；已完成的迁移计划由 Git 历史保存。
@@ -33,7 +33,13 @@ serial I/O 目录为基准。其他应用原有状态名及 MPI CPATH 长度限�
 
 `rwfnestimate` 的 header-only 检查不证明 payload 合法。旧 header 没有电子数时，需要重新生成
 配套产物，不能修改 header 后继续搭配旧 Parquet：注释、空白及换行变化也会改变绑定哈希。
-完整 CSF reader 也要求声明电子数，并核对所有行。
+完整 CSF reader 要求声明电子数，读取每条 CSF 时核对其物理量。
+
+索引版 V3 的 TOML 首行固定为 `descriptor_sha256 = "<64 位小写十六进制>"`，以 LF 结束。
+它记录最终 Parquet 全文件的 SHA-256。Parquet 中的 `source_header_sha256` 覆盖首行之后的所有 TOML 字节。
+打开时核对两个哈希及块表覆盖范围。每条 `[[block_info.blocks]]` 记录含物理 `two_j`、`parity`、
+零基逻辑 `start_row` 和 `length`。读取器按块序号定位涉及的 row group，截取对应行，可跳块或重读。
+旧 V3 文件须从 CSF 文本或生成输入重建。
 
 `rangular_mpi` 和新启动的 `rci_mpi` 通过标准输入询问
 `Use zero-first partition from descriptor header? (y/n)`。回答 `y` 时，rank 0 读取
@@ -63,8 +69,8 @@ RCI 的能级表、性质程序及 SCF 输出使用相同的 J 格式。
 | 层 | 归属/实现 |
 | --- | --- |
 | V3 格式 | Suite `src/lib/csf_descriptor/src/descriptor_transport.rs` 定义本地读取布局，与 rCSFs 的 V3 磁盘契约一致 |
-| Rust I/O | 同目录 `descriptor_reader.rs`：同一 header 字节快照的哈希和 TOML 解析、footer/schema/空值检查、有界批次读取、电子数、宇称、子壳层态和累计耦合链预扫描 |
-| C ABI 2 | 同目录 `descriptor_ffi.rs`、库内 `include/rcsfs_descriptor.h`：独立句柄、明确容量的调用方缓冲、状态码及 UTF-8 错误信息。独立的 `rcsfs_descriptor_format_version()` 返回 3 |
+| Rust I/O | 同目录 `descriptor_reader.rs`：同一 header 字节快照的哈希和 TOML 解析、footer/schema/空值检查、目标块有界批次读取，逐行核对电子数、宇称、子壳层态和累计耦合链 |
+| C ABI 3 | 同目录 `descriptor_ffi.rs`、库内 `include/rcsfs_descriptor.h`：独立句柄、明确容量的调用方缓冲、状态码及 UTF-8 错误信息。独立的 `rcsfs_descriptor_format_version()` 返回 3 |
 | 径向初猜 | [rwfnestimate](rwfnestimate_header_input.md) 复用 Rust 的 TOML 解析，通过只读 header 的 C 接口获取轨道表和总电子数 |
 | Fortran 适配 | [csf_descriptor_c_bindings.f90](../../src/lib/core/csf_descriptor_c_bindings.f90)、[csf_descriptor_reader.f90](../../src/lib/core/csf_descriptor_reader.f90)：`ISO_C_BINDING`、安装 V3 占据、态、累计耦合和对称性，或仅安装占据 |
 | 应用状态 | `csf_basis_input`、`csf_block_input`、`rmcdhf_descriptor_input`；区分性质程序、RCI、MCP 已安装状态的生命周期 |
@@ -151,7 +157,7 @@ rcsfs convert original.c Zn_odd_AS1_desc.parquet
   生产程序不再接受其输出。旧计时报告描述的是当时的交换格式，不能套用到当前原生 Parquet 路径。
 - JJ2LSJ 等用于互操作的文本输出、普通日志，以及核数据、mixing、MCP、径向文件不属于本次删除范围。
   双基组程序之间不再需要文本 CSF 中间产物。
-- header 哈希只绑定 header；MCP/mixing 仍没有完整的逐 CSF 身份摘要。现有元数据核对不能证明
+- header 与 Parquet 通过双向哈希绑定。MCP/mixing 仍没有完整的逐 CSF 身份摘要。现有元数据核对不能证明
   任意旧产物与当前行序一致。对照使用固定输入和程序哈希；来源不明的 MCP 应重新生成。
 
 ## 验证记录

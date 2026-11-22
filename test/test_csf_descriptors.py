@@ -76,6 +76,14 @@ def text_record(record: Record) -> str:
     )
 
 
+def seal_fixture(parquet_path: Path, header_path: Path) -> None:
+    body = header_path.read_bytes()
+    if body.startswith(b"descriptor_sha256 = "):
+        body = body.split(b"\n", 1)[1]
+    digest = hashlib.sha256(parquet_path.read_bytes()).hexdigest()
+    header_path.write_bytes(f'descriptor_sha256 = "{digest}"\n'.encode() + body)
+
+
 def write_fixture(
     root: Path, core: list[str], peel: list[str], blocks: list[list[Record]],
     *, zero_order_counts: list[int] | None = None,
@@ -116,6 +124,14 @@ def write_fixture(
             else ""
         )
     )
+    start_row = 0
+    with header_path.open("a", encoding="ascii", newline="\n") as stream:
+        for block in blocks:
+            stream.write(
+                f"[[block_info.blocks]]\ntwo_j = {block[0].total_two_j}\n"
+                f"parity = {block[0].parity}\nstart_row = {start_row}\nlength = {len(block)}\n"
+            )
+            start_row += len(block)
     names = [
         f"sub{shell_index}_{channel}"
         for shell_index in range(len(peel))
@@ -174,6 +190,7 @@ def write_fixture(
     parquet.write_table(
         table, parquet_path, row_group_size=2, compression="zstd", use_dictionary=True
     )
+    seal_fixture(parquet_path, header_path)
     return parquet_path, header_path, text_path
 
 
@@ -235,8 +252,10 @@ class DescriptorTests(unittest.TestCase):
                 parquet.write_table(
                     original.replace_schema_metadata(metadata), self.parquet_path
                 )
+                seal_fixture(self.parquet_path, self.header_path)
                 self.assertNotEqual(self.native().returncode, 0)
         parquet.write_table(original, self.parquet_path)
+        seal_fixture(self.parquet_path, self.header_path)
         self.header_path.write_text(self.header_path.read_text() + "# changed\n")
         result = self.native()
         self.assertNotEqual(result.returncode, 0)
@@ -262,6 +281,7 @@ class DescriptorTests(unittest.TestCase):
                     arrow.array(values, type=arrow.int8()),
                 )
                 parquet.write_table(changed, self.parquet_path)
+                seal_fixture(self.parquet_path, self.header_path)
                 self.assertNotEqual(self.native().returncode, 0)
         changed = original.cast(
             arrow.schema(
@@ -273,11 +293,13 @@ class DescriptorTests(unittest.TestCase):
             )
         )
         parquet.write_table(changed, self.parquet_path)
+        seal_fixture(self.parquet_path, self.header_path)
         result = self.native()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Int8", result.stderr)
         reordered = original.select([*original.column_names[:-2], "parity", "total_two_j_plus_one"])
         parquet.write_table(reordered, self.parquet_path)
+        seal_fixture(self.parquet_path, self.header_path)
         self.assertNotEqual(self.native().returncode, 0)
 
     def test_text_array_equality(self) -> None:
@@ -294,6 +316,7 @@ class DescriptorTests(unittest.TestCase):
         ) as writer:
             writer.add_key_value_metadata(original.schema.metadata)
             writer.write_table(unbound_schema_table)
+        seal_fixture(self.parquet_path, self.header_path)
         self.assertIsNone(parquet.ParquetFile(self.parquet_path).schema_arrow.metadata)
         verify_descriptors(ARGUMENTS.verifier, self.parquet_path, self.text_path)
 
@@ -310,6 +333,7 @@ class DescriptorTests(unittest.TestCase):
         parquet.write_table(arrow.Table.from_arrays(
             [arrow.array(values, type=arrow.int8()) for values in columns], schema=table.schema
         ), self.parquet_path)
+        seal_fixture(self.parquet_path, self.header_path)
         result = self.native()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("array mismatch", result.stderr)
@@ -392,6 +416,7 @@ class DescriptorTests(unittest.TestCase):
                 parquet.write_table(arrow.Table.from_arrays(
                     [arrow.array(v, type=arrow.int8()) for v in columns], schema=original.schema
                 ), self.parquet_path)
+                seal_fixture(self.parquet_path, self.header_path)
                 self.assertNotEqual(self.native().returncode, 0)
         # j=9/2, q=4, v=4, J=4 needs a w label absent from descriptors.
         self.parquet_path, self.header_path, self.text_path = write_fixture(

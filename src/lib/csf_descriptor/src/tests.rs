@@ -38,15 +38,38 @@ fn fixture_metadata(
     .collect())
 }
 
+fn seal_fixture(path: &Path, header: &Path) -> Result<()> {
+    let hash = format!("{:x}", Sha256::digest(std::fs::read(path)?));
+    let body = std::fs::read_to_string(header)?;
+    std::fs::write(header, format!("descriptor_sha256 = \"{hash}\"\n{body}"))?;
+    Ok(())
+}
+
 fn fixture(
     root: &Path,
     mutate: impl FnOnce(&mut Vec<parquet::file::metadata::KeyValue>),
+) -> Result<(std::path::PathBuf, std::path::PathBuf)> {
+    fixture_with_index(
+        root,
+        "[{two_j=0,parity=1,start_row=0,length=1},{two_j=0,parity=1,start_row=1,length=1}]",
+        1,
+        mutate,
+    )
+}
+
+fn fixture_with_index(
+    root: &Path,
+    blocks: &str,
+    group_size: usize,
+    mutate: impl FnOnce(&mut Vec<KeyValue>),
 ) -> Result<(std::path::PathBuf, std::path::PathBuf)> {
     let header = root.join("basis_header.toml");
     let path = root.join("basis_descriptors.parquet");
     std::fs::write(
         &header,
-        "[header_info]\nheader_lines = ['Core subshells:', '1s', 'Peel subshells:', '2s 2p', 'CSF(s):']\nelectron_count=4\n[block_info]\nblock_count=2\nblock_lengths=[1,1]\n",
+        format!(
+            "[header_info]\nheader_lines = ['Core subshells:', '1s', 'Peel subshells:', '2s 2p', 'CSF(s):']\nelectron_count=4\n[block_info]\nblock_count=2\nblock_lengths=[1,1]\nblocks={blocks}\n"
+        ),
     )?;
     let layout = DescriptorLayout { subshell_count: 2 };
     let schema = Arc::new(layout.schema());
@@ -54,7 +77,7 @@ fn fixture(
     mutate(&mut metadata);
     let properties = WriterProperties::builder()
         .set_key_value_metadata(Some(metadata))
-        .set_max_row_group_row_count(Some(1))
+        .set_max_row_group_row_count(Some(group_size))
         .build();
     let mut writer = ArrowWriter::try_new(File::create(&path)?, schema.clone(), Some(properties))?;
     let rows = [
@@ -66,6 +89,7 @@ fn fixture(
         .collect();
     writer.write(&RecordBatch::try_new(schema, columns)?)?;
     writer.close()?;
+    seal_fixture(&path, &header)?;
     Ok((path, header))
 }
 
@@ -133,6 +157,54 @@ fn strict_footer_keys_and_ordered_batches() -> Result<()> {
 }
 
 #[test]
+fn reads_only_the_requested_rows_and_checks_their_indexed_symmetry() -> Result<()> {
+    let directory = tempfile::tempdir()?;
+    // A fully hash-bound pair, but the first block declares odd for an even CSF.
+    // The second block is readable even when the two share a row group.
+    let blocks =
+        "[{two_j=0,parity=-1,start_row=0,length=1},{two_j=0,parity=1,start_row=1,length=1}]";
+    for group_size in [1, 2] {
+        let (path, header) = fixture_with_index(directory.path(), blocks, group_size, |_| {})?;
+        let mut reader = DescriptorReader::open(&path, &header, 16)?;
+        let mut values = Vec::new();
+        for _ in 0..2 {
+            reader.select_block(1)?;
+            assert_eq!(reader.read_batch(&mut values)?, 1);
+            assert_eq!(values, [0, 0, 1, 1, 2, 0, 1, 1, 1, 1]);
+            assert_eq!(reader.read_batch(&mut values)?, 0);
+        }
+        reader.select_block(0)?;
+        let error = reader.read_batch(&mut values).unwrap_err();
+        assert!(format!("{error:#}").contains("block 1, CSF 1"));
+        assert!(format!("{error:#}").contains("symmetry"));
+    }
+    Ok(())
+}
+
+#[test]
+fn rejects_another_valid_parquet_with_the_same_header_body() -> Result<()> {
+    let directory = tempfile::tempdir()?;
+    let (_, original_header) = fixture(directory.path(), |_| {})?;
+    let original_bytes = std::fs::read(original_header)?;
+    let (path, header) = fixture(directory.path(), |kv| {
+        kv.push(KeyValue::new("extra".into(), Some("changed".into())))
+    })?;
+    std::fs::write(&header, &original_bytes)?;
+    assert!(
+        DescriptorReader::open(&path, &header, 1)
+            .err()
+            .unwrap()
+            .to_string()
+            .contains("descriptor_sha256")
+    );
+    let (_, legacy_body) =
+        original_bytes.split_at(original_bytes.iter().position(|&b| b == b'\n').unwrap() + 1);
+    std::fs::write(&header, legacy_body)?;
+    assert!(DescriptorReader::open(&path, &header, 1).is_err());
+    Ok(())
+}
+
+#[test]
 fn rejects_corrupt_payload_and_header_semantics() -> Result<()> {
     let directory = tempfile::tempdir()?;
     for replacement in [
@@ -170,7 +242,7 @@ fn ffi_buffers_errors_and_independent_handles() -> Result<()> {
     let mut handles = [std::ptr::null_mut::<c_void>(); 2];
     let mut error = [0 as c_char; 512];
     unsafe {
-        assert_eq!(rcsfs_descriptor_abi_version(), 2);
+        assert_eq!(rcsfs_descriptor_abi_version(), 3);
         assert_eq!(rcsfs_descriptor_format_version(), 3);
         for handle in &mut handles {
             assert_eq!(
@@ -269,6 +341,25 @@ fn ffi_buffers_errors_and_independent_handles() -> Result<()> {
             0
         );
         assert_eq!(other, rows[..10]);
+        // The sequential reader buffered both CSFs. Seeking must discard its unread tail.
+        for block in [0, 1, 0] {
+            assert_eq!(
+                rcsfs_descriptor_select_block(handles[1], block, error.as_mut_ptr(), 512),
+                0
+            );
+            assert_eq!(
+                rcsfs_descriptor_read(
+                    handles[1],
+                    other.as_mut_ptr(),
+                    10,
+                    1,
+                    error.as_mut_ptr(),
+                    512
+                ),
+                0
+            );
+            assert_eq!(other, rows[10 * block..10 * (block + 1)]);
+        }
         other.fill(-99);
         for _ in 0..2 {
             assert_ne!(
@@ -307,7 +398,7 @@ fn closed_core_batches_and_header_binding() -> Result<()> {
     let dir = tempfile::tempdir()?;
     let header = dir.path().join("header.toml");
     let path = dir.path().join("descriptors.parquet");
-    let text = "[header_info]\nheader_lines = ['Core subshells:', '1s', 'Peel subshells:', '', 'CSF(s):']\nelectron_count = 2\n[block_info]\nblock_lengths = [1]\n";
+    let text = "[header_info]\nheader_lines = ['Core subshells:', '1s', 'Peel subshells:', '', 'CSF(s):']\nelectron_count = 2\n[block_info]\nblock_lengths = [1]\nblocks=[{two_j=0,parity=1,start_row=0,length=1}]\n";
     std::fs::write(&header, text)?;
     let layout = DescriptorLayout { subshell_count: 0 };
     let schema = Arc::new(layout.schema());
@@ -324,6 +415,7 @@ fn closed_core_batches_and_header_binding() -> Result<()> {
         ],
     )?)?;
     writer.close()?;
+    seal_fixture(&path, &header)?;
     let mut reader = DescriptorReader::open(&path, &header, 1)?;
     let mut values = Vec::new();
     assert_eq!(reader.read_batch(&mut values)?, 1);

@@ -6,7 +6,7 @@ use parquet::arrow::arrow_reader::{
     ParquetRecordBatchReaderBuilder,
 };
 use sha2::{Digest, Sha256};
-use std::{fs::File, path::Path, sync::LazyLock};
+use std::{fs::File, io::Seek, path::Path, sync::LazyLock};
 
 use crate::descriptor_schema::{
     CHANNELS_PER_SUBSHELL, DESCRIPTOR_VERSION, DescriptorLayout, MAX_TWO_J,
@@ -15,7 +15,13 @@ use crate::descriptor_schema::{
 const ORBITAL_LETTERS: &str = "spdfghiklmn";
 
 pub struct DescriptorReader {
-    reader: ParquetRecordBatchReader,
+    reader: Option<ParquetRecordBatchReader>,
+    file: File,
+    metadata: ArrowReaderMetadata,
+    batch_size: usize,
+    // Cumulative logical row offsets, including the end sentinel.
+    row_group_offsets: Vec<u64>,
+    block_starts: Vec<u64>,
     pub header_lines: [String; 5],
     pub block_lengths: Vec<u64>,
     pub zero_order_counts: Option<Vec<i64>>,
@@ -27,7 +33,7 @@ pub struct DescriptorReader {
     pub block_symmetries: Vec<(i32, i32)>,
     pub electron_count: i32,
     // Physical states may be readable by consumers that do not use the spin-angular library.
-    pub(crate) spin_angular_error: Option<String>,
+    require_spin_angular: bool,
     block_index: usize,
     block_rows: u64,
 }
@@ -181,7 +187,22 @@ impl DescriptorReader {
             "batch size must be in 1..=8192"
         );
         let (bytes, document) = read_header(header)?;
-        let digest = format!("{:x}", Sha256::digest(&bytes));
+        let expected = document
+            .get("descriptor_sha256")
+            .and_then(toml::Value::as_str)
+            .context("missing descriptor_sha256; regenerate the indexed descriptor pair")?;
+        ensure!(
+            expected.len() == 64
+                && expected
+                    .bytes()
+                    .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)),
+            "invalid descriptor_sha256"
+        );
+        let prefix = format!("descriptor_sha256 = \"{expected}\"\n");
+        let body = bytes
+            .strip_prefix(prefix.as_bytes())
+            .context("invalid descriptor_sha256 header line")?;
+        let digest = format!("{:x}", Sha256::digest(body));
         let info = header_info(&document)?;
         let header_lines = header_lines(info)?;
         for (i, expected) in HEADER_LABELS {
@@ -224,9 +245,39 @@ impl DescriptorReader {
                 }).collect::<Result<Vec<_>>>()
             })
             .transpose()?;
-        let total = block_lengths.iter().try_fold(0u64, |sum, n| {
-            sum.checked_add(*n).context("row count overflow")
-        })?;
+        let blocks = document["block_info"]
+            .get("blocks")
+            .and_then(toml::Value::as_array)
+            .context("missing block_info.blocks index")?;
+        ensure!(
+            blocks.len() == block_lengths.len(),
+            "block index count mismatch"
+        );
+        let mut block_starts = Vec::with_capacity(blocks.len());
+        let mut block_symmetries = Vec::with_capacity(blocks.len());
+        let mut total = 0u64;
+        for (block, &length) in blocks.iter().zip(&block_lengths) {
+            let integer = |name: &str| {
+                block
+                    .get(name)
+                    .and_then(toml::Value::as_integer)
+                    .with_context(|| format!("missing or invalid block {name}"))
+            };
+            let start = u64::try_from(integer("start_row")?)?;
+            ensure!(
+                start == total && u64::try_from(integer("length")?)? == length,
+                "invalid block index range"
+            );
+            let two_j = i32::try_from(integer("two_j")?)?;
+            let parity = i32::try_from(integer("parity")?)?;
+            ensure!(
+                (0..=MAX_TWO_J).contains(&two_j) && matches!(parity, -1 | 1),
+                "invalid indexed symmetry"
+            );
+            block_starts.push(start);
+            block_symmetries.push((two_j, parity));
+            total = total.checked_add(length).context("row count overflow")?;
+        }
         for (section, key, expected) in [
             ("block_info", "block_count", block_lengths.len() as u64),
             ("conversion_stats", "csf_count", total),
@@ -238,7 +289,7 @@ impl DescriptorReader {
                 );
             }
         }
-        let file = File::open(path)?;
+        let mut file = File::open(path)?;
         // Derive the logical types from the Parquet schema, not an embedded Arrow schema.
         let arrow_metadata = ArrowReaderMetadata::load(
             &file,
@@ -303,9 +354,34 @@ impl DescriptorReader {
             );
         }
         let electron_count = declared_electrons(info)?;
-        let reader = builder.with_batch_size(batch_size).build()?;
-        let mut source = Self {
-            reader,
+        file.rewind()?;
+        let mut file_digest = Sha256::new();
+        std::io::copy(&mut file, &mut file_digest)?;
+        ensure!(
+            format!("{:x}", file_digest.finalize()) == expected,
+            "descriptor_sha256 does not match the final Parquet file"
+        );
+        file.rewind()?;
+        let mut row_group_offsets = vec![0u64];
+        for group in builder.metadata().row_groups() {
+            let end = row_group_offsets
+                .last()
+                .unwrap()
+                .checked_add(u64::try_from(group.num_rows())?)
+                .context("row group count overflow")?;
+            row_group_offsets.push(end);
+        }
+        ensure!(
+            row_group_offsets.last() == Some(&total),
+            "row group count mismatch"
+        );
+        Ok(Self {
+            reader: None,
+            file,
+            metadata: arrow_metadata,
+            batch_size,
+            row_group_offsets,
+            block_starts,
             header_lines: header_lines.map(str::to_owned),
             block_lengths,
             zero_order_counts,
@@ -314,30 +390,116 @@ impl DescriptorReader {
             failed: false,
             core_count,
             orbitals,
-            block_symmetries: Vec::new(),
+            block_symmetries,
             electron_count,
             block_index: 0,
-            spin_angular_error: None,
+            require_spin_angular: false,
             block_rows: 0,
-        };
-        // Scan once to validate the rows and establish each block's symmetry before Fortran
-        // installs the basis header. Reopen the stream for delivery with the tables in place.
-        let mut values = Vec::new();
-        while source.read_batch(&mut values)? != 0 {}
-        ensure!(
-            source.remaining == 0
-                && source.block_index == source.block_lengths.len()
-                && source.block_rows == 0
-                && source.block_symmetries.len() == source.block_lengths.len(),
-            "incomplete descriptor block table"
-        );
-        source.reader = ParquetRecordBatchReaderBuilder::new_with_metadata(file, arrow_metadata)
-            .with_batch_size(batch_size)
-            .build()?;
-        source.remaining = total;
-        source.block_index = 0;
-        source.block_rows = 0;
-        Ok(source)
+        })
+    }
+
+    /// Whole-basis angular programs need this decision before creating MCP files.
+    /// Check only high-j shells whose occupation statistics overlap the unsupported range.
+    pub fn check_spin_angular(&mut self) -> Result<()> {
+        use parquet::arrow::ProjectionMask;
+        use parquet::file::statistics::Statistics;
+
+        let metadata = self.metadata.metadata();
+        for (shell, &(n, kappa)) in self.orbitals[self.core_count..].iter().enumerate() {
+            let capacity = 2 * kappa.abs();
+            if capacity < 10 {
+                continue;
+            }
+            let occupation_column = shell * CHANNELS_PER_SUBSHELL;
+            for (group_id, group) in metadata.row_groups().iter().enumerate() {
+                if let Some(Statistics::Int32(stats)) = group.column(occupation_column).statistics()
+                    && (stats.max_opt().is_some_and(|&max| max <= 2)
+                        || stats.min_opt().is_some_and(|&min| min >= capacity))
+                {
+                    continue;
+                }
+                let projection = ProjectionMask::leaves(
+                    metadata.file_metadata().schema_descr(),
+                    occupation_column..occupation_column + 3,
+                );
+                let batches = ParquetRecordBatchReaderBuilder::new_with_metadata(
+                    self.file.try_clone()?,
+                    self.metadata.clone(),
+                )
+                .with_projection(projection)
+                .with_row_groups(vec![group_id])
+                .with_batch_size(self.batch_size)
+                .build()?;
+                let mut start = self.row_group_offsets[group_id];
+                for batch in batches {
+                    let batch = batch?;
+                    let column = |i| {
+                        batch
+                            .column(i)
+                            .as_any()
+                            .downcast_ref::<Int8Array>()
+                            .context("non-Int8 high-j column")
+                    };
+                    let occupations = column(0)?;
+                    for (i, value) in occupations.iter().enumerate() {
+                        let occupation = i32::from(value.context("null high-j occupation")?);
+                        if (3..capacity).contains(&occupation) {
+                            let ordinal = start + i as u64;
+                            let block =
+                                self.block_starts.partition_point(|&row| row <= ordinal) - 1;
+                            let row = ordinal - self.block_starts[block] + 1;
+                            let seniority = i32::from(column(1)?.value(i));
+                            let two_j = decode_angular(column(2)?.value(i))?;
+                            validate_subshell(kappa.abs(), occupation, seniority, two_j)
+                                .with_context(|| {
+                                    format!(
+                                        "block {}, CSF {row}, orbital n={n}, kappa={kappa}",
+                                        block + 1
+                                    )
+                                })?;
+                            anyhow::bail!(
+                                "block {}, CSF {row}, orbital n={n}, kappa={kappa}: open j={}/2 shell with occupation {occupation} exceeds the spin-angular term table",
+                                block + 1,
+                                capacity - 1
+                            );
+                        }
+                    }
+                    start += batch.num_rows() as u64;
+                }
+            }
+        }
+        self.require_spin_angular = true;
+        Ok(())
+    }
+
+    pub fn select_block(&mut self, index: usize) -> Result<()> {
+        ensure!(!self.failed, "reader failed; close and reopen it");
+        let &start = self
+            .block_starts
+            .get(index)
+            .context("block index out of range")?;
+        let length = self.block_lengths[index];
+        let first = self
+            .row_group_offsets
+            .partition_point(|&offset| offset <= start)
+            - 1;
+        let end = self
+            .row_group_offsets
+            .partition_point(|&offset| offset < start + length);
+        let reader = ParquetRecordBatchReaderBuilder::new_with_metadata(
+            self.file.try_clone()?,
+            self.metadata.clone(),
+        )
+        .with_row_groups((first..end).collect())
+        .with_offset(usize::try_from(start - self.row_group_offsets[first])?)
+        .with_limit(usize::try_from(length)?)
+        .with_batch_size(self.batch_size)
+        .build()?;
+        self.reader = Some(reader);
+        self.remaining = length;
+        self.block_index = index;
+        self.block_rows = 0;
+        Ok(())
     }
 
     /// Returns rows copied into caller-owned channel-major Fortran storage
@@ -346,8 +508,20 @@ impl DescriptorReader {
         output.clear();
         ensure!(!self.failed, "reader failed; close and reopen it");
         self.failed = true;
+        // The sequential C/Rust API still starts at row zero if no block was selected.
+        if self.reader.is_none() {
+            self.reader = Some(
+                ParquetRecordBatchReaderBuilder::new_with_metadata(
+                    self.file.try_clone()?,
+                    self.metadata.clone(),
+                )
+                .with_batch_size(self.batch_size)
+                .build()?,
+            );
+        }
+        let reader = self.reader.as_mut().expect("initialized descriptor reader");
         let batch = loop {
-            let Some(batch) = self.reader.next() else {
+            let Some(batch) = reader.next() else {
                 ensure!(self.remaining == 0, "premature end of descriptors");
                 self.failed = false;
                 return Ok(0);
@@ -415,9 +589,6 @@ impl DescriptorReader {
         let parity = i32::from(globals[1]);
         let symmetry = (total_two_j, parity);
         ensure!(matches!(parity, 1 | -1), "invalid parity code");
-        if self.block_symmetries.len() == self.block_index {
-            self.block_symmetries.push(symmetry);
-        }
         ensure!(
             self.block_symmetries[self.block_index] == symmetry,
             "mixed block symmetry"
@@ -454,14 +625,14 @@ impl DescriptorReader {
                 validate_shell().with_context(|| format!("orbital n={n}, kappa={kappa}"))?;
             if kappa.abs() >= 5
                 && (3..2 * kappa.abs()).contains(&occupation)
-                && self.spin_angular_error.is_none()
+                && self.require_spin_angular
             {
-                self.spin_angular_error = Some(format!(
+                anyhow::bail!(
                     "block {}, CSF {}, orbital n={n}, kappa={kappa}: open j={}/2 shell with occupation {occupation} exceeds the spin-angular term table",
                     self.block_index + 1,
                     self.block_rows + 1,
                     2 * kappa.abs() - 1
-                ));
+                );
             }
             electrons += occupation;
             parity_exponent += occupation * if kappa > 0 { kappa } else { -kappa - 1 };

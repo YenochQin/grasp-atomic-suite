@@ -23,7 +23,7 @@ program descriptor_lifecycle
    if (status /= 0 .or. first%format_version /= 3) error stop "valid V3 open failed"
    call open_descriptor_source(second,trim(filename),50,status=status)
    if (status /= 0) error stop "second handle open failed"
-   do b=1,first%block_count
+   do b=first%block_count,1,-1
       n=first%block_lengths(b)
       allocate(occupations(max_orbitals,n),other(max_orbitals,n),quantum(max_orbitals,3,n),couplings(csf_angular_code_count,n))
       call read_descriptor_block(first,b,occupations,quantum,couplings,status)
@@ -38,6 +38,8 @@ program descriptor_lifecycle
       end if
       call read_descriptor_block(second,b,other,status=status)
       if (status /= 0 .or. any(other /= occupations)) error stop "occupation-only block differs"
+      call read_descriptor_block(first,b,other,status=status)
+      if (status /= 0 .or. any(other /= occupations)) error stop "rereading block differs"
       deallocate(occupations,other,quantum,couplings)
    end do
    call close_descriptor_source(first)

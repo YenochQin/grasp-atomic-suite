@@ -1,4 +1,4 @@
-//! C ABI v2. Callers must provide valid, aligned buffers for the stated sizes.
+//! C ABI v3. Callers must provide valid, aligned buffers for the stated sizes.
 //! Output buffers are caller-owned, exclusively writable during the call, and
 //! disjoint from handle-owned storage.
 //! An error buffer must be writable for its capacity when non-null and capacity > 0.
@@ -48,7 +48,7 @@ unsafe fn invoke(error: *mut c_char, capacity: usize, action: impl FnOnce() -> R
 
 #[unsafe(no_mangle)]
 pub extern "C" fn rcsfs_descriptor_abi_version() -> i32 {
-    2
+    3
 }
 
 /// The on-disk format accepted and returned by this reader.
@@ -161,11 +161,8 @@ pub unsafe extern "C" fn rcsfs_descriptor_check_spin_angular(
     let action = || {
         ensure!(!handle.is_null(), "null descriptor handle");
         // SAFETY: the caller supplies a live, exclusively accessed handle from open.
-        let reader = unsafe { &(*handle.cast::<Handle>()).reader };
-        if let Some(message) = &reader.spin_angular_error {
-            anyhow::bail!("{message}");
-        }
-        Ok(())
+        let h = unsafe { &mut *handle.cast::<Handle>() };
+        h.reader.check_spin_angular()
     };
     // SAFETY: the caller supplies a writable error buffer for capacity bytes.
     unsafe { invoke(error, capacity, action) }
@@ -287,6 +284,31 @@ pub unsafe extern "C" fn rcsfs_descriptor_zero_order_counts(
         Ok(())
     };
     // SAFETY: The caller provides an optional error buffer valid for capacity bytes.
+    unsafe { invoke(error, capacity, action) }
+}
+
+/// Select a zero-based explicit block. Discard any buffered rows from an earlier selection.
+///
+/// # Safety
+/// Handle must be live and exclusively borrowed. The optional error buffer follows
+/// the module's capacity contract.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rcsfs_descriptor_select_block(
+    handle: *mut c_void,
+    block: usize,
+    error: *mut c_char,
+    capacity: usize,
+) -> i32 {
+    let action = || {
+        ensure!(!handle.is_null(), "null descriptor handle");
+        // SAFETY: the caller provides exclusive access to a live handle.
+        let h = unsafe { &mut *handle.cast::<Handle>() };
+        h.reader.select_block(block)?;
+        h.batch.clear();
+        h.offset = 0;
+        Ok(())
+    };
+    // SAFETY: the caller supplies a writable error buffer for capacity bytes.
     unsafe { invoke(error, capacity, action) }
 }
 

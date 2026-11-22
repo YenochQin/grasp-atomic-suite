@@ -16,14 +16,14 @@ module csf_descriptor_reader
     public :: read_descriptor_zero_order_counts
 
     ! Derived types
-    ! Owns a forward-only Rust stream. Close the source explicitly and avoid copying a live handle.
+    ! Owns an indexed Rust descriptor reader. Close the source explicitly and avoid copying a live handle.
     type :: descriptor_source
         ! Components
         type(c_ptr) :: handle = c_null_ptr
         logical :: is_open = .false., header_loaded = .false.
         integer :: core_count = 0, peel_count = 0, orbital_count = 0, block_count = 0
         integer :: format_version = 0
-        integer :: row_width = 0, total_csf_count = 0, electron_count = 0, next_block_index = 1
+        integer :: row_width = 0, total_csf_count = 0, electron_count = 0
         integer, allocatable :: principal_numbers(:), relativistic_kappas(:)
         integer, allocatable :: orbital_momenta(:), single_electron_two_j(:)
         character(len=2), allocatable :: orbital_labels(:)
@@ -98,7 +98,7 @@ contains
         reader_message = c_null_char
         call close_descriptor_source(source)
         source = descriptor_source()
-        if (.not. require_descriptor(rust_descriptor_abi_version() == 2, "unsupported Rust ABI", status)) return
+        if (.not. require_descriptor(rust_descriptor_abi_version() == 3, "unsupported Rust ABI", status)) return
         if (.not. require_descriptor(rust_descriptor_format_version() == 3, "unsupported descriptor format", status)) return
         path_length = len_trim(filename)
         if (.not. require_descriptor(path_length > 8, "expected descriptor Parquet path", status)) return
@@ -324,8 +324,8 @@ contains
         integer :: batch_capacity, batch_row_count, row_offset, last_row, read_status, allocation_status
         reader_message = c_null_char
         if (.not. require_descriptor(source%is_open .and. source%header_loaded, "descriptor source is not open", status)) return
-        if (.not. require_descriptor(block_index == source%next_block_index .and. block_index <= source%block_count, &
-            "blocks must be loaded once in original order", status)) return
+        if (.not. require_descriptor(block_index >= 1 .and. block_index <= source%block_count, &
+            "block index out of range", status)) return
         if (.not. require_descriptor(size(occupations,1) == max_orbitals .and. &
             size(occupations,2) == source%block_lengths(block_index),  &
             & "occupation array shape mismatch", status)) return
@@ -338,7 +338,8 @@ contains
                 size(subshell_quantum_numbers,2) == 3 .and. &
                 size(subshell_quantum_numbers,3) == size(occupations,2), "quantum shape", status)) return
         end if
-        ! Read bounded batches from the current block, in the same order as the file.
+        read_status = rust_descriptor_select_block(source%handle, int(block_index-1,c_size_t), reader_message, 1024_c_size_t)
+        if (.not. require_descriptor(read_status == 0, reader_message(:max(0,index(reader_message,c_null_char)-1)), status)) return
         batch_capacity = min(8192, source%block_lengths(block_index))
         ! Fortran column j contains all channels of descriptor row j, contiguous across the ABI.
         allocate(batch_values(source%row_width,batch_capacity), stat=allocation_status)
@@ -359,6 +360,5 @@ contains
                 batch_quantum,batch_angular)
             row_offset = last_row
         end do
-        source%next_block_index = source%next_block_index + 1
     end subroutine read_descriptor_block_impl
 end module csf_descriptor_reader
