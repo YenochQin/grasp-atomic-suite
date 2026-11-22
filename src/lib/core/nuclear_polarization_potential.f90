@@ -94,13 +94,25 @@ contains
 
         ! Local declarations
         real(real64) :: radius_scale, potential_mantissa, denominator
+        real(real64) :: radius_squared, cutoff_squared, fraction_squared, fraction_power
         integer :: potential_exponent
         status = 0
         channel_potential = 0
         if (channel_strength == 0) return
         radius_scale = max(radius,cutoff_radius)
-        denominator = (radius/radius_scale)**denominator_power + (cutoff_radius/radius_scale)**denominator_power
-        potential_mantissa = fraction(channel_strength)/(fraction(radius_scale)**denominator_power*denominator)
+        ! The two channels use powers 4 and 6. GNU 16's AArch64 runtime can
+        ! evaluate a reciprocal for a variable exponent and trap at radius zero.
+        radius_squared = (radius/radius_scale)**2
+        cutoff_squared = (cutoff_radius/radius_scale)**2
+        fraction_squared = fraction(radius_scale)**2
+        if (denominator_power == 4) then
+            denominator = radius_squared**2 + cutoff_squared**2
+            fraction_power = fraction_squared**2
+        else
+            denominator = radius_squared**2*radius_squared + cutoff_squared**2*cutoff_squared
+            fraction_power = fraction_squared**2*fraction_squared
+        end if
+        potential_mantissa = fraction(channel_strength)/(fraction_power*denominator)
         potential_exponent = exponent(channel_strength) - denominator_power*exponent(radius_scale) + &
             & exponent(potential_mantissa)
         if (potential_exponent > maxexponent(channel_potential)) then
