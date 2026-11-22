@@ -119,7 +119,8 @@ if(Python3_Interpreter_FOUND)
     add_test(NAME mcp_compare
         COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/test_mcp_compare.py")
-    set_tests_properties(mcp_compare PROPERTIES TIMEOUT 120 SKIP_RETURN_CODE 77)
+    set_tests_properties(mcp_compare PROPERTIES TIMEOUT 120 SKIP_RETURN_CODE 77
+        ENVIRONMENT "FC=${CMAKE_Fortran_COMPILER}")
     add_test(NAME rmcdhf_mpi_sampler
         COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/test_sample_rmcdhf_mpi.py")

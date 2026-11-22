@@ -7,6 +7,11 @@ if(GRASP_CAPTURE_WARNINGS OR GRASP_STRICT_ACCEPTANCE)
     # The test subdirectory's discovery variables are scoped to that directory.
     find_package(Python3 REQUIRED COMPONENTS Interpreter)
 endif()
+if(CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 16)
+    set(grasp_diagnostic_format json)
+else()
+    set(grasp_diagnostic_format sarif-stderr)
+endif()
 function(grasp_acceptance_directory directory)
     get_property(targets DIRECTORY "${directory}" PROPERTY BUILDSYSTEM_TARGETS)
     foreach(target IN LISTS targets)
@@ -24,7 +29,7 @@ function(grasp_acceptance_directory directory)
                 set(warning_launcher "${Python3_EXECUTABLE}"
                     "${PROJECT_SOURCE_DIR}/test/f2018/warning_inventory.py" capture
                     --source "${PROJECT_SOURCE_DIR}" --build "${PROJECT_BINARY_DIR}"
-                    --compiler "${CMAKE_Fortran_COMPILER}" --)
+                    --compiler "${CMAKE_Fortran_COMPILER}" --format "${grasp_diagnostic_format}" --)
                 if(existing_launcher)
                     list(APPEND warning_launcher ${existing_launcher})
                 endif()

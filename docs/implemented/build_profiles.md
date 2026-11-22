@@ -17,7 +17,9 @@ OFF 和 `--no-csfg` 仅保留旧命令兼容性。普通构建检查继续拒绝
 | `f2018-check` | Debug | 标准/接口/边界等验证：`-std=f2018 -pedantic-errors -Wall -Wextra -Werror=implicit-interface -Werror=implicit-procedure -O0 -g -fcheck=all -fbacktrace -ffpe-trap=invalid,zero,overflow`。 |
 | `f2018-audit` | Release | 优化后诊断：上述标准/接口/警告选项配 `-O2`；无隐式 SAVE、无运行时检查。 |
 
-所有构建配置的 CMake 门槛为 GNU Fortran 15 或更新版本。正式验收使用 GNU Fortran 15.3.0。
+所有构建配置的 CMake 门槛为 GNU Fortran 15 或更新版本。严格 F2018 验收使用 GNU Fortran 16，
+默认告警预算覆盖 16.2 系列的补丁版本，包括服务器上的 16.2.1。编译器以 SARIF 输出诊断，
+验收按配置、目标、文件、位置、选项和消息核查告警增量。运行方式见 [F2018 验收说明](../../test/f2018/README.md)。
 `legacy` 配置已移除，所有配置拒绝
 `-std=legacy`、`-fno-automatic`、`-fallow-argument-mismatch`、`-fall-intrinsics` 及全局默认 kind 扩宽。
 没有引入 `-ffast-math` 或 `-Ofast` 等会改变数值假设的选项。
@@ -43,8 +45,8 @@ CMake 的范围核查与测试设施需要 Python；生成的 Fortran 数值程�
 生产串行 rangular 构建，使用新目录：
 
 ```fish
-set -gx FC /usr/bin/gfortran-15
-set -gx OMPI_FC $FC
+set -gx FC (command -v gfortran)
+$FC -dumpfullversion
 ./configure.sh --serial --no-mpi --no-csfg \
     --profile f2018-release --build-dir build-rangular-production \
     -DGRASP_JJ2LSJ_OPENMP=OFF
@@ -58,8 +60,8 @@ cmake --build build-rangular-production \
 
 普通验证矩阵独立覆盖 serial、MPI 和 jj2lsj OpenMP，每种 profile 有 8 种组合，
 三种 profile 共 24 种配置；CSFG 始终关闭。rangular OpenMP 已于 2026-11-16 移除。
-16 个 Check/Audit 组合沿用历史基线中关闭 angular OpenMP 的预算 ID（部分带 `-a0`），
-回归测试检查保留配置的预算覆盖；历史预算及其旧源码范围不代表当前代码通过告警验收。
+当前 [GNU Fortran 16 告警基线](../reference/f2018/gfortran16-warning-baseline.md)覆盖 16 个
+Check/Audit 组合。预算 ID 沿用关闭 angular OpenMP 的历史命名（部分带 `-a0`）。
 生产结果明确标记未采集警告，不能以生产构建
 没有诊断输出宣称告警已清零。矩阵工具仍需实际运行全部组合后才能报告完整矩阵验收。
 

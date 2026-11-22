@@ -39,24 +39,27 @@ ACCY when changing H in restart inputs. Grid experiments belong in separate copi
 
 ## Build, Test, and Development Commands
 
-Use **GNU Fortran 15** for builds and validation. Set Open MPI's `OMPI_FC`
-explicitly to `/usr/bin/gfortran-15`. Initialize any compiler, MPI, and BLAS
-modules first, then set both exported compiler variables as shown below. Verify that
-`/usr/bin/gfortran-15 -dumpversion` reports major version 15 and
-`mpifort --showme:command` reports `/usr/bin/gfortran-15`.
-For direct CMake configuration, pass `-DCMAKE_Fortran_COMPILER=/usr/bin/gfortran-15`;
-use a fresh build directory if an existing cache selected another compiler.
+Use **GNU Fortran 16** for server builds and F2018 acceptance. Load the matching
+compiler, MPI, and BLAS/LAPACK environment before configuring. Use `gfortran-16`
+in place of `gfortran` on hosts with a versioned command. Verify that the compiler
+and Open MPI's `mpifort` report major version 16. For direct CMake configuration,
+pass `-DCMAKE_Fortran_COMPILER=$FC`. Choose a fresh directory when switching compilers.
 
-Prefer the out-of-source CMake flow:
+Use an out-of-source build under the workspace's `temp/tests/`:
 
 ```fish
-set -gx FC /usr/bin/gfortran-15
-set -gx OMPI_FC /usr/bin/gfortran-15
-./configure.sh
-cmake --build build --target install -j4
+set -gx FC (command -v gfortran)
+set -gx OMPI_FC $FC
+$FC -dumpfullversion
+mpifort -dumpfullversion
+set build_dir ../temp/tests/suite-gf16
+./configure.sh --build-dir "$build_dir"
+cmake --build "$build_dir" --parallel 4
 ```
 
-Use `./configure.sh --debug` for a debug build in `build-debug/`. Use `./scripts/clean-build-artifacts.sh` to remove CMake build directories and installed build outputs.
+Use `./configure.sh --debug --build-dir ../temp/tests/suite-gf16-debug` for a
+debug build. The [strict F2018 acceptance runner](test/f2018/README.md) uses the
+GNU Fortran 16.2 warning budget for both 16.2.0 and the server's 16.2.1.
 
 Enable `-DGRASP_BUILD_SERIAL_APPS=ON` to build the original serial RMCDHF programs
 alongside serial and MPI property programs. In this workspace, run Python
@@ -77,10 +80,11 @@ Use lowercase snake_case for application source files and Fortran symbols. Keep 
 
 ## Testing Guidelines
 CI uses the CMake workflow. Run tests covering the affected programs, using a
-CTest name filter when appropriate:
+CTest name filter when appropriate. For descriptor fixtures, configure with a
+V3-capable `rcsfs` on `PATH` or set `-DRCSFS_TEST_CLI=/path/to/rcsfs`.
 
 ```fish
-ctest --test-dir build --output-on-failure
+ctest --test-dir ../temp/tests/suite-gf16 --output-on-failure
 ```
 
 Broaden validation for shared parameters, libraries, numerical routines, or build
@@ -93,4 +97,4 @@ the affected program or under `tests/`, and document required inputs.
 Recent history favors short, imperative commit subjects, optionally with an issue reference, for example `Update README.md` or `Bug fix in librang (#112)`. Keep commits scoped to one change. Pull requests should explain the scientific or numerical impact, list the build/test commands you ran, link related issues, and include sample output or input-file changes when behavior or results change.
 
 ## Configuration Tips
-Use CMake cache variables, compiler environment variables, or `CMakeLists.user` for local build customization. The required `/usr/bin/gfortran-15` path above is the repository toolchain contract; keep other machine-local settings and generated build directories out of commits.
+Use CMake cache variables, compiler environment variables, or `CMakeLists.user` for local build customization. Keep machine-local settings and generated build directories out of commits.

@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import os
 import shutil
 import struct
 import subprocess
@@ -347,9 +348,9 @@ class MCPTests(unittest.TestCase):
         json.dumps(report, allow_nan=False)
 
     def test_fortran_generated_records(self) -> None:
-        compiler = shutil.which("gfortran-15")
+        compiler = shutil.which(os.environ.get("FC") or "gfortran")
         if compiler is None:
-            self.skipTest("GNU Fortran 15 unavailable")
+            self.skipTest("GNU Fortran unavailable")
         source = self.root / "writer.f90"
         source.write_text(
             """program writer

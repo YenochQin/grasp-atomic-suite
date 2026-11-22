@@ -65,14 +65,14 @@ Next commands (fish; usable from any working directory)
 1. $compile_description:
    cmake --build $build_arg --parallel 4
 
-2. Validate the build and run all registered tests:
+2. Run all registered tests.
+   ctest --test-dir $build_arg --output-on-failure
+
+   The GNU Fortran 16 acceptance runner also checks compiler flags and targets.
+   Use the f2018-check or f2018-audit profile for strict acceptance.
    $(fish_quote "$python_executable") $(fish_quote "$GRASP/test/f2018/check.py") $build_arg --jobs 4
-   This also performs an incremental build and checks compiler flags and targets.
    Result:   $build_abspath/audit/acceptance/summary.json
    Test log: $build_abspath/audit/acceptance/ctest.log
-
-   To rerun only the tests after building:
-   ctest --test-dir $build_arg --output-on-failure
 
 3. Point generated Tools jobs to the built programs:
    set -gx SUITE_BINDIR $(fish_quote "$build_abspath/bin")
@@ -110,10 +110,14 @@ Usage: ./configure.sh [options] [-DNAME=VALUE ...]
   --pic             Enable position-independent code
   -h, --help        Show this help
 
-All ordinary programs, with MPI and jj2lsj OpenMP (fish):
-  set -gx FC /usr/bin/gfortran-15
-  set -gx OMPI_FC /usr/bin/gfortran-15
-  ./configure.sh$python_option
+Configure all ordinary programs with MPI and jj2lsj OpenMP on a GNU 16 server.
+  set -gx FC (command -v gfortran)
+  set -gx OMPI_FC \$FC
+  \$FC -dumpfullversion
+  mpifort -dumpfullversion
+  ./configure.sh --build-dir build-gf16$python_option
+
+Use gfortran-16 if the server installs a versioned command.
 
 GNU Fortran >= 15, Rust >= 1.99.0, Cargo, CMake >= 3.31 and BLAS/LAPACK are required.
 The bundled CSF reader builds into lib/libcsf_descriptor.a with the other libraries.
@@ -121,6 +125,7 @@ Cargo uses a C compiler to build the reader's Zstd dependency.
 Cargo uses --locked and downloads missing dependencies by default.
 Set -DGRASP_CSF_READER_OFFLINE=ON to use only cached dependencies.
 Python is used for development tests, not production CSF input.
+For descriptor fixture tests, put a V3-capable rcsfs on PATH or set -DRCSFS_TEST_CLI=PATH.
 MPI programs also require a compatible MPI Fortran environment.
 Load the compiler/MPI environment before configuring.
 Use --debug with --profile f2018-check. Release/audit use Release builds.

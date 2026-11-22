@@ -92,7 +92,8 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
-| [gfortran15-warning-baseline.md](reference/f2018/gfortran15-warning-baseline.md) | 已更新，剩余正确性复核待完成；普通 Check/Audit 的 24 个配置、1,874 文件、2,200 条诊断身份，其中 337 条正确性复核身份；包含两条既有 QED 警告在本机的不同定位，不代表新增或已解决的缺陷数。 |
+| [gfortran16-warning-baseline.md](reference/f2018/gfortran16-warning-baseline.md) | 当前 GNU Fortran 16.2 告警基线，覆盖 16 个普通 Check/Audit 配置。每条诊断的正确性复核状态独立于验收结果。 |
+| [gfortran15-warning-baseline.md](reference/f2018/gfortran15-warning-baseline.md) | GNU Fortran 15.3.0 的历史告警记录，包含当时 24 个配置的编译覆盖与诊断。 |
 | [lande_g.md](reference/lande_g.md) | 理论参考；概念、ASF 与 LS 近似的参考草稿，不能划为功能实施计划。算符规范与系数尚未完整独立核对。 |
 | [nuclear_polarization_parameters.md](reference/nuclear_polarization_parameters.md) | 参数参考；2026-10-24 核对 Flambaum 2021 的 E1/E2 强度、50 keV 修正极化率、截断参数与原子单位换算；记录拟合系数内部差异，未建立生产核素参数库或物理精度结论。 |
 

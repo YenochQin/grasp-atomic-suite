@@ -16,8 +16,9 @@ import re
 import shlex
 import subprocess
 import sys
+from urllib.parse import unquote, urlsplit
 
-BASELINE = Path(__file__).resolve().parents[2] / "docs/reference/f2018/gfortran15-warning-baseline.json"
+BASELINE = Path(__file__).resolve().parents[2] / "docs/reference/f2018/gfortran16-warning-baseline.json"
 AXES = ("serial", "mpi", "csfg", "openmp")
 
 
@@ -65,21 +66,59 @@ def record_path(build: Path, object_name: str) -> Path:
     return build / "audit/warning-records" / (hashlib.sha256(object_name.encode()).hexdigest() + ".json")
 
 
-def parse_diagnostics(stderr: str) -> list[dict]:
-    # gfortran emits JSON arrays, possibly more than one from its subprocesses.
+def sarif_diagnostic(result: dict, cwd: Path) -> dict:
+    diagnostic = {
+        "kind": result["level"],
+        "message": result["message"]["text"],
+        "option": result.get("ruleId", ""),
+    }
+    locations = result.get("locations", [])
+    if locations:
+        physical = locations[0].get("physicalLocation", {})
+        artifact = physical.get("artifactLocation", {})
+        region = physical.get("region", {})
+        caret = {"line": region.get("startLine", 0), "column": region.get("startColumn", 0)}
+        if "uri" in artifact:
+            path = artifact["uri"]
+            if artifact.get("uriBaseId", "PWD") != "PWD":
+                raise ValueError(f"Unexpected compiler diagnostic URI base for {path}")
+            if path.startswith("file://"):
+                uri = urlsplit(path)
+                if uri.netloc:
+                    raise ValueError(f"Unexpected compiler diagnostic URI: {path}")
+                path = unquote(uri.path)
+            # GCC emits raw filenames for its ordinary POSIX paths.
+            caret["file"] = path if path.startswith("<") else str(cwd / path)
+        diagnostic["locations"] = [{"caret": caret}]
+    return diagnostic
+
+
+def parse_diagnostics(stderr: str, diagnostic_format: str = "json") -> list[dict]:
+    # The driver and its subprocesses can emit separate diagnostic documents.
     decoder = json.JSONDecoder()
+    cwd = Path.cwd()
     remaining = stderr.strip()
     result = []
+    if diagnostic_format == "sarif-stderr" and not remaining:
+        raise ValueError("Missing compiler SARIF output")
     while remaining:
         value, end = decoder.raw_decode(remaining)
-        if not isinstance(value, list) or any(not isinstance(item, dict) or "kind" not in item for item in value):
+        if diagnostic_format == "sarif-stderr":
+            if not isinstance(value, dict) or value.get("version") != "2.1.0" or not value.get("runs"):
+                raise ValueError("Expected a SARIF 2.1.0 diagnostic log")
+            for run in value["runs"]:
+                result.extend(sarif_diagnostic(item, cwd) for item in run["results"])
+                for invocation in run.get("invocations", []):
+                    result.extend(sarif_diagnostic(item, cwd) for item in invocation.get("toolExecutionNotifications", []))
+        elif isinstance(value, list) and all(isinstance(item, dict) and "kind" in item for item in value):
+            result.extend(value)
+        else:
             raise ValueError("Unexpected compiler diagnostic JSON")
-        result.extend(value)
         remaining = remaining[end:].strip()
     return result
 
 
-def capture(source: Path, build: Path, compiler: Path, command: list[str]) -> int:
+def capture(source: Path, build: Path, compiler: Path, command: list[str], diagnostic_format: str) -> int:
     """CMake compiler launcher; compile normally, retaining every diagnostic."""
     source, build = source.resolve(), build.resolve()
     cwd = Path.cwd()
@@ -89,19 +128,22 @@ def capture(source: Path, build: Path, compiler: Path, command: list[str]) -> in
     filename, obj, normalized = command_parts(compiler_command, cwd, source, build)
     record = record_path(build, obj)
     record.unlink(missing_ok=True)
-    result = subprocess.run([*command, "-fdiagnostics-format=json", "-fdiagnostics-color=never"],
+    result = subprocess.run([*command, f"-fdiagnostics-format={diagnostic_format}", "-fdiagnostics-color=never"],
                             capture_output=True, text=True, env=os.environ | {"LC_ALL": "C"})
     sys.stdout.write(result.stdout)
-    sys.stderr.write(result.stderr)
-    try:
-        diagnostics = parse_diagnostics(result.stderr)
-    except (ValueError, json.JSONDecodeError) as error:
-        (build / obj).unlink(missing_ok=True)
-        print(f"Warning inventory: unparsed compiler output: {error}", file=sys.stderr)
-        return result.returncode or 1
     if result.returncode:
+        sys.stderr.write(result.stderr)
         (build / obj).unlink(missing_ok=True)
         return result.returncode
+    try:
+        diagnostics = parse_diagnostics(result.stderr, diagnostic_format)
+    except (ValueError, KeyError, TypeError) as error:
+        (build / obj).unlink(missing_ok=True)
+        sys.stderr.write(result.stderr)
+        print(f"Warning inventory: unparsed compiler output: {error}", file=sys.stderr)
+        return 1
+    if diagnostics:
+        print(json.dumps(diagnostics, ensure_ascii=False), file=sys.stderr)
     write_json(record, {"schema_version": 1, "source": filename, "object": obj,
                        "command": normalized, "source_sha256": digest(source / filename),
                        "object_sha256": digest(build / obj), "diagnostics": diagnostics})
@@ -194,7 +236,12 @@ def compare(observation: dict, baseline: dict) -> dict:
     case = observation["case"]
     if baseline.get("schema_version") != 1:
         raise ValueError("Unsupported warning baseline schema")
-    if observation["compiler_version"] != baseline["compiler_version"]:
+    version = observation["compiler_version"]
+    recorded_version = baseline["compiler_version"]
+    series = baseline.get("compiler_series")
+    if series and recorded_version.rsplit(".", 1)[0] != series:
+        raise ValueError("Invalid warning baseline compiler series")
+    if version != recorded_version and (series is None or version.rsplit(".", 1)[0] != series):
         raise ValueError("Warning baseline compiler version differs; establish a separate reviewed baseline")
     if case not in baseline["cases"]:
         raise ValueError(f"No reviewed warning baseline for {case}")
@@ -238,14 +285,15 @@ def make_baseline(observations: list[dict]) -> dict:
             "diagnostics": dict(sorted(diagnostics.items())), "cases": dict(sorted(cases.items()))}
 
 
-def render_report(baseline: dict, output: Path) -> None:
+def render_report(baseline: dict, baseline_path: Path, output: Path) -> None:
     """Human-readable per-file index, including sources with zero warnings."""
     by_file = {name: {} for name in baseline["source_files"]}
     for key, diagnostic in baseline["diagnostics"].items():
         by_file.setdefault(diagnostic["file"], {})[key] = diagnostic
-    lines = ["# GNU Fortran 15 逐文件警告基线", "",
+    baseline_link = Path(os.path.relpath(baseline_path.resolve(), output.resolve().parent)).as_posix()
+    lines = [f"# GNU Fortran {baseline['compiler_version'].split('.')[0]} 逐文件警告基线", "",
              f"编译器：{baseline['compiler_version']}；配置数：{len(baseline['cases'])}。", "",
-             "机器可读清单见 [gfortran15-warning-baseline.json](gfortran15-warning-baseline.json)。",
+             f"机器可读清单见 [{baseline_path.name}]({baseline_link})。",
              "该表由 `test/f2018/warning_inventory.py report` 生成，包含无警告源文件。",
              "唯一诊断按目标/文件/行/列/选项/消息区分；O0/O2 次数为已登记 Check/Audit 配置中的预算最大次数，",
              "包含同一源文件编入多个目标的重复。正确性复核项尚未逐条解决，登记不是豁免。", "",
@@ -273,6 +321,7 @@ def main() -> int:
     launcher.add_argument("--source", type=Path, required=True)
     launcher.add_argument("--build", type=Path, required=True)
     launcher.add_argument("--compiler", type=Path, required=True)
+    launcher.add_argument("--format", choices=("json", "sarif-stderr"), default="json")
     launcher.add_argument("command", nargs=argparse.REMAINDER)
     audit = sub.add_parser("audit")
     audit.add_argument("build", type=Path)
@@ -288,7 +337,7 @@ def main() -> int:
     try:
         if args.action == "capture":
             command = args.command[1:] if args.command[:1] == ["--"] else args.command
-            return capture(args.source, args.build, args.compiler, command)
+            return capture(args.source, args.build, args.compiler, command, args.format)
         if args.action == "record":
             from matrix import cases
             observations = [inventory(args.matrix_root / case["id"]) for case in cases()
@@ -302,7 +351,7 @@ def main() -> int:
             write_json(args.output, baseline)
             print(f"Recorded {len(observations)} configurations in {args.output}")
         elif args.action == "report":
-            render_report(json.loads(args.baseline.read_text()), args.output)
+            render_report(json.loads(args.baseline.read_text()), args.baseline, args.output)
         else:
             observation = inventory(args.build)
             write_json(args.build / "audit/warnings.json", observation)

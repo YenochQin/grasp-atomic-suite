@@ -65,23 +65,33 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 
 ## 构建
 
-推荐使用 out-of-source CMake 流程（GNU Fortran 15）：
+服务器的 `gfortran` 已升级至 GNU Fortran 16.2.1（Red Hat 16.2.1-3），可以直接编译 Suite。
+先加载配套的 MPI 和 BLAS/LAPACK 环境，再从 Suite 根目录运行以下命令，确认
+`gfortran` 和 Open MPI 的 `mpifort` 都报告主版本 16。
 
 ```fish
-set -gx FC /usr/bin/gfortran-15
+set -gx FC (command -v gfortran)
 set -gx OMPI_FC $FC
-./configure.sh
-cmake --build build --parallel 4
+$FC -dumpfullversion
+mpifort -dumpfullversion
+./configure.sh --build-dir build-gf16
+cmake --build build-gf16 --parallel 4
 ```
+
+如果服务器使用带版本号的命令名，将 `gfortran` 换成 `gfortran-16`。
+从旧工具链切换时使用新构建目录。在 GraspKit 工作区中，将构建目录放在
+`../temp/tests/` 下。直接调用 CMake 时传入 `-DCMAKE_Fortran_COMPILER=$FC`。
 
 CMake 只启用 Fortran，并用它探测 BLAS 和 LAPACK。
 Cargo 使用 Rust 1.99.0 或更新版本构建内置 reader，并调用 C 编译器构建其 Zstd 依赖。
 Cargo 始终使用 `--locked`，默认允许下载缺失的依赖。设置
 `-DGRASP_CSF_READER_OFFLINE=ON` 可仅使用本地缓存构建。
 `RCSFS_TEST_CLI` 只用于开发测试离线生成夹具，不参与 reader 构建和生产读取。
+运行包含描述符夹具的 CTest 前，将支持描述符 V3 的 `rcsfs` 加入 `PATH`，
+或在配置时传入 `-DRCSFS_TEST_CLI=/path/to/rcsfs`。
 
 默认安装前缀为 `<build>/install`；可用 `--prefix PATH` 或 `-DCMAKE_INSTALL_PREFIX=PATH` 指定独立位置。
-普通构建不安装，也不覆盖源码 `bin/`。严格验收入口见 [F2018 测试说明](test/f2018/README.md)。
+普通构建不安装，也不覆盖源码 `bin/`。
 
 `configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后会得到 `bin/gj_mpi`、`bin/rhfs_mpi`、`bin/ris4_mpi`、新复制的 `rmcdhf_mpi`、`rmcdhf_mem_mpi`以及对应库文件。
 
@@ -89,7 +99,7 @@ Cargo 始终使用 `--locked`，默认允许下载缺失的依赖。设置
 
 ```fish
 cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON \
-  -DRCSFS_TEST_CLI=/path/to/rcsfs
+  -DCMAKE_Fortran_COMPILER=$FC -DRCSFS_TEST_CLI=/path/to/rcsfs
 cmake --build build-all --parallel 4
 ctest --test-dir build-all --output-on-failure
 cmake --install build-all
@@ -107,7 +117,7 @@ cmake --build build-debug --target install -j4
 ```fish
 mkdir build-serial
 cmake -S . -B build-serial -DGRASP_ENABLE_MPI=OFF -DGRASP_BUILD_SERIAL_APPS=ON \
-  -DRCSFS_TEST_CLI=/path/to/rcsfs
+  -DCMAKE_Fortran_COMPILER=$FC -DRCSFS_TEST_CLI=/path/to/rcsfs
 cmake --build build-serial --target install -j4
 ```
 
@@ -119,12 +129,28 @@ cmake --build build-serial --target install -j4
 ./scripts/clean-build-artifacts.sh
 ```
 
+### 严格 F2018 验收
+
+沿用上面的 `FC` 和 `OMPI_FC` 设置，把支持 V3 的 `rcsfs` 加入 `PATH`，然后在
+GraspKit 工作区内的 Suite 根目录配置独立的 Check 构建。服务器现有的 GNU Fortran 16.2.1
+可直接使用默认告警基线。
+
+```fish
+set build_dir ../temp/tests/suite-gf16-check
+./configure.sh --debug --profile f2018-check --build-dir "$build_dir" \
+  -DRCSFS_TEST_CLI=(command -v rcsfs)
+../graspkit-tools/.venv/bin/python test/f2018/check.py "$build_dir" --jobs 4
+```
+
+优化后的严格验收使用 `--profile f2018-audit`，省略 `--debug`，并另建构建目录。
+验收会核查实际编译选项、目标和告警预算，然后运行注册的 CTest。[F2018 测试说明](test/f2018/README.md)
+
 ## 依赖与配置
 
 构建需要 Fortran 编译器、CMake 3.31 或更新版本、BLAS 和 LAPACK。MPI 目标还需要 MPI Fortran 编译环境，例如 `mpifort`。
 
 CMake 会自动查找 BLAS/LAPACK，并要求 GNU Fortran 15 或更新版本。
-正式验收基线使用 GNU Fortran 15.3.0。
+严格验收默认使用 GNU Fortran 16.2 系列的告警基线。
 默认 `f2018-release` 使用 O2；`f2018-check` 和 `f2018-audit` 分别提供
 标准/接口/运行时检查与优化后诊断。legacy、隐式 SAVE 及参数不匹配放行选项已移除。
 现行约束见[构建策略](docs/implemented/build_profiles.md)和
@@ -194,7 +220,7 @@ data/test.gj
 
 ```fish
 set suite_root (pwd)
-set suite_bin (realpath build/bin)
+set suite_bin (realpath build-gf16/bin)
 mkdir -p ../temp/tests
 set gj_work (mktemp -d ../temp/tests/gj-example.XXXXXXXX)
 cp data/isodata data/test.c data/test.m data/test.w "$gj_work/"

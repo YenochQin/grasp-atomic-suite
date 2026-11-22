@@ -13,11 +13,11 @@ for trials of the retired programs.
 
 CMake registers the original-program tests under `test/f2018`. The fixed-sweep
 comparison driver owns its stdin fixture and has no dependency on retired solvers.
-Use gfortran 15 with `FC` and `OMPI_FC` set to
-`/usr/bin/gfortran-15`. Run registered tests with:
+Configure and compile using the [Suite build instructions](../../README.md#build).
+Use CTest to run the registered regressions.
 
 ```fish
-ctest --test-dir build-program-names-release \
+ctest --test-dir build-gf16 \
   -R 'f2018_first_sweep_driver|f2018_ci_damping_rmcdhf' --output-on-failure
 ```
 

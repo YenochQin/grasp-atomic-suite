@@ -130,7 +130,7 @@ def main() -> int:
     parser.add_argument("--features", default="")
     parser.add_argument("--inventory-only", action="store_true", help="Check registration and commands without running tests")
     parser.add_argument("--jobs", type=int, default=4)
-    parser.add_argument("--warning-baseline", type=Path, help="Reviewed GNU 15 per-file warning budget")
+    parser.add_argument("--warning-baseline", type=Path, help="Reviewed GNU Fortran 16 per-file warning budget")
     args = parser.parse_args()
     build = args.build.resolve()
     targets = set((build / "f2018-targets.txt").read_text().splitlines())
@@ -158,8 +158,8 @@ def main() -> int:
             raise ValueError("Use f2018-release for production or f2018-check/audit for validation")
         cache = cache_values(build)
         version = subprocess.check_output([str(compiler), "-dumpfullversion"], text=True).strip()
-        if version.split(".")[0] != "15":
-            raise ValueError(f"GNU 15 required, found {version}")
+        if version.split(".")[0] != "16":
+            raise ValueError(f"GNU Fortran 16 required for F2018 acceptance, found {version}")
         summary.update(profile=profile, compiler=str(compiler), compiler_version=version,
                        compiler_sha256=hashlib.sha256(compiler.read_bytes()).hexdigest(), features=features,
                        required_manifest_sha256=hashlib.sha256(REQUIRED.read_bytes()).hexdigest())

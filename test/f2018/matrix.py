@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -108,9 +109,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("root", type=Path)
     parser.add_argument("--stage", choices=("build", "validate"), default="validate")
-    parser.add_argument("--compiler", type=Path, default=Path("/usr/bin/gfortran-15"))
-    parser.add_argument("--mpi-compiler", type=Path, default=Path("/usr/bin/mpifort"))
-    parser.add_argument("--mpiexec", type=Path, default=Path("/usr/bin/mpiexec"))
+    parser.add_argument("--compiler", default=os.environ.get("FC") or "gfortran")
+    parser.add_argument("--mpi-compiler", type=Path, default=Path(shutil.which("mpifort") or "mpifort"))
+    parser.add_argument("--mpiexec", type=Path, default=Path(shutil.which("mpiexec") or "mpiexec"))
     parser.add_argument("--jobs", type=int, default=3, help="Build parallelism per configuration")
     parser.add_argument("--parallel-configs", type=int, default=2)
     parser.add_argument("--case", action="append", choices=[case["id"] for case in cases()])
@@ -123,7 +124,10 @@ def main() -> int:
     args.root.mkdir(parents=True, exist_ok=True)
     # Keep the versioned compiler pathname: resolving its symlink can change
     # wrapper/toolchain identification on distributions with parallel GCCs.
-    args.compiler = args.compiler.absolute()
+    compiler = shutil.which(args.compiler)
+    if compiler is None:
+        parser.error(f"Fortran compiler not found or executable: {args.compiler}")
+    args.compiler = Path(compiler).absolute()
     baseline = json.loads(args.baseline.read_text()) if args.stage == "validate" else None
     selected = [case for case in cases() if not args.case or case["id"] in args.case]
     outcomes = {}

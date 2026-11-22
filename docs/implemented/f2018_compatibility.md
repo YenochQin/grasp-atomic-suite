@@ -7,7 +7,7 @@
 
 ## 标准、存储与平台接口
 
-- 正式验收基线为 GNU Fortran 15.3.0。默认生产配置为 `f2018-release`。
+- 严格验收使用 GNU Fortran 16，默认告警基线覆盖 16.2 系列。默认生产配置为 `f2018-release`。
   `f2018-check` 和 `f2018-audit` 分别用于运行时及优化后诊断。
   所有配置已移除 legacy、隐式 SAVE 和参数不匹配放行选项。
 - 显式数值 kind 直接从 `iso_fortran_env` 导入，例如 `real64`、`int64` 和 `int8`。
@@ -94,7 +94,7 @@ Ni/Zn 初始轨道有浮点末位变化，不能据此宣称所有输出逐字�
 
 历史告警预算覆盖缺口仍单列，不能以 CTest 通过代替告警门禁或物理验收。
 后续事项见[静态诊断清单](../plans/static_diagnostics_remaining_2026-11-17.md)。
-[警告基线](../reference/f2018/gfortran15-warning-baseline.md)登记风险，不将已有诊断视为安全豁免。
+[警告基线](../reference/f2018/gfortran16-warning-baseline.md)登记风险，不将已有诊断视为安全豁免。
 
 ## 来源校验
 

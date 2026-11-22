@@ -71,14 +71,24 @@ Fortran MPI environment. Direct CMake configuration still requires
 
 ## Build
 
-The recommended build flow is out-of-source CMake with GNU Fortran 15:
+Suite can build directly with GNU Fortran 16. The servers provide `gfortran`
+16.2.1 (Red Hat 16.2.1-3). Load compatible MPI and BLAS/LAPACK first.
+Run these commands from the Suite root and check that both the Fortran compiler
+and Open MPI's `mpifort` report major version 16.
 
 ```fish
-set -gx FC /usr/bin/gfortran-15
+set -gx FC (command -v gfortran)
 set -gx OMPI_FC $FC
-./configure.sh
-cmake --build build --parallel 4
+$FC -dumpfullversion
+mpifort -dumpfullversion
+./configure.sh --build-dir build-gf16
+cmake --build build-gf16 --parallel 4
 ```
+
+Use `gfortran-16` if the server installs a versioned command. Choose a fresh
+build directory when switching compilers. In the GraspKit workspace, put build
+directories under `../temp/tests/`. For direct CMake configuration, pass
+`-DCMAKE_Fortran_COMPILER=$FC`.
 
 CMake enables only Fortran and uses it to find BLAS and LAPACK.
 Cargo builds the bundled reader with Rust 1.99.0 or newer and uses a C
@@ -86,12 +96,15 @@ compiler for its Zstd dependency.
 Cargo uses `--locked` and downloads missing dependencies by default.
 Set `-DGRASP_CSF_READER_OFFLINE=ON` to build from the local cache.
 `RCSFS_TEST_CLI` is only an offline test-fixture producer.
+For CTest cases that generate descriptor fixtures, put a V3-capable `rcsfs`
+on `PATH` or pass `-DRCSFS_TEST_CLI=/path/to/rcsfs` during configuration.
 
 The default install prefix is `<build>/install`; use `--prefix PATH` or
 `-DCMAKE_INSTALL_PREFIX=PATH` for another destination. A normal build does not
-install or overwrite source `bin/`. See the [strict validation runner](test/f2018/README.md).
+install or overwrite source `bin/`. Use `f2018-check` or `f2018-audit` to run
+[strict acceptance on GNU Fortran 16](test/f2018/README.md).
 
-The resulting executables are in `build/bin`, including `rwfnestimate`, the four
+The resulting executables are in `<build>/bin`, including `rwfnestimate`, the four
 ordinary RMCDHF programs, MPI property programs, `rangular`, `rangular_mpi` and `jj2lsj_omp`.
 CSFG stays off by default. Explicit `--no-serial`, `--no-mpi` or `--no-openmp`
 options select a smaller build; `--serial` remains accepted for compatibility.
@@ -100,7 +113,7 @@ To build the four original RMCDHF programs and all property programs together:
 
 ```fish
 cmake -S . -B build-all -DGRASP_ENABLE_MPI=ON -DGRASP_BUILD_SERIAL_APPS=ON \
-  -DRCSFS_TEST_CLI=/path/to/rcsfs
+  -DCMAKE_Fortran_COMPILER=$FC -DRCSFS_TEST_CLI=/path/to/rcsfs
 cmake --build build-all --parallel 4
 ctest --test-dir build-all --output-on-failure
 cmake --install build-all
@@ -118,7 +131,7 @@ To disable MPI and build the serial applications, configure CMake directly:
 ```fish
 mkdir build-serial
 cmake -S . -B build-serial -DGRASP_ENABLE_MPI=OFF -DGRASP_BUILD_SERIAL_APPS=ON \
-  -DRCSFS_TEST_CLI=/path/to/rcsfs
+  -DCMAKE_Fortran_COMPILER=$FC -DRCSFS_TEST_CLI=/path/to/rcsfs
 cmake --build build-serial --target install -j4
 ```
 
@@ -136,8 +149,8 @@ artifacts explicitly, run:
 
 The build requires a Fortran compiler, CMake 3.31 or newer, BLAS, and LAPACK. MPI targets additionally require an MPI Fortran environment such as `mpifort`.
 
-CMake finds BLAS/LAPACK and requires GNU Fortran 15 or newer. The formal
-validation baseline uses GNU Fortran 15.3.0. The default
+CMake finds BLAS/LAPACK and requires GNU Fortran 15 or newer. The default strict
+acceptance budget covers GNU Fortran 16.2 releases, including 16.2.1. The default
 `f2018-release` profile uses O2; `f2018-check` and `f2018-audit` provide
 standard, interface and runtime or optimized diagnostics. Legacy profiles,
 implicit-SAVE flags and argument-mismatch allowances have been removed.
@@ -231,7 +244,7 @@ header. The sample's `test.m` and `test.w` use the supported archived suffixes.
 
 ```fish
 set suite_root (pwd)
-set suite_bin (realpath build/bin)
+set suite_bin (realpath build-gf16/bin)
 mkdir -p ../temp/tests
 set gj_work (mktemp -d ../temp/tests/gj-example.XXXXXXXX)
 cp data/isodata data/test.c data/test.m data/test.w "$gj_work/"

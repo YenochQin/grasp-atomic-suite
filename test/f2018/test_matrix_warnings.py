@@ -26,7 +26,7 @@ class MatrixWarningTests(unittest.TestCase):
                 self.assertEqual({(f["serial"], f["openmp"]) for f in enabled},
                                  {(False, False), (False, True), (True, False), (True, True)})
         for case in configurations:
-            command = configure_command(case, Path("/build space"), Path("/compiler/gfortran-15"),
+            command = configure_command(case, Path("/build space"), Path("/compiler/gfortran-16"),
                                         Path("/mpi/fort"), Path("/mpi/exec"))
             for axis, flag in (("serial", "GRASP_BUILD_SERIAL_APPS"), ("mpi", "GRASP_ENABLE_MPI"),
                                ("csfg", "GRASP_BUILD_CSFG"), ("openmp", "GRASP_JJ2LSJ_OPENMP")):
@@ -36,15 +36,13 @@ class MatrixWarningTests(unittest.TestCase):
         baseline = json.loads(BASELINE.read_text())
         diagnostic_cases = {case["id"]: case for case in cases()
                             if case["profile"] != "f2018-release"}
-        retained_budgets = {name: entry for name, entry in baseline["cases"].items()
-                            if not entry["features"].get("rangular_openmp", False)}
-        self.assertEqual(set(retained_budgets), set(diagnostic_cases))
+        self.assertTrue(baseline["compiler_version"].startswith("16."))
+        self.assertEqual(set(baseline["cases"]), set(diagnostic_cases))
         for case_id, case in diagnostic_cases.items():
             with self.subTest(case=case_id):
-                self.assertEqual(baseline["cases"][case_id]["profile"], case["profile"])
-                historical_features = dict(retained_budgets[case_id]["features"])
-                historical_features.pop("rangular_openmp", None)
-                self.assertEqual(historical_features, case["features"])
+                budget = baseline["cases"][case_id]
+                self.assertEqual(budget["profile"], case["profile"])
+                self.assertEqual(budget["features"], case["features"])
 
     def test_parser_never_silently_discards_output(self) -> None:
         self.assertEqual(parse_diagnostics("[]\n[]\n"), [])
@@ -52,6 +50,27 @@ class MatrixWarningTests(unittest.TestCase):
         for text in ('warning text', '[{"message":"no kind"}]', '{}', '[]\ntrailing output'):
             with self.subTest(text=text), self.assertRaises(ValueError):
                 parse_diagnostics(text)
+
+    def test_sarif_retains_warnings_and_locations(self) -> None:
+        warning = {
+            "level": "warning", "ruleId": "-Wunused-variable", "message": {"text": "Unused variable"},
+            "locations": [{"physicalLocation": {
+                "artifactLocation": {"uri": "file:///src/with%20space.f90"},
+                "region": {"startLine": 4, "startColumn": 3},
+            }}],
+        }
+        notification = {"level": "warning", "message": {"text": "Driver warning"}}
+        document = json.dumps({"version": "2.1.0", "runs": [{
+            "results": [warning], "invocations": [{"toolExecutionNotifications": [notification]}],
+        }]})
+        self.assertEqual(parse_diagnostics(document, "sarif-stderr"), [
+            {"kind": "warning", "option": "-Wunused-variable", "message": "Unused variable",
+             "locations": [{"caret": {"file": "/src/with space.f90", "line": 4, "column": 3}}]},
+            {"kind": "warning", "option": "", "message": "Driver warning"},
+        ])
+        for invalid in ("", "[]", document + "\nunparsed warning"):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                parse_diagnostics(invalid, "sarif-stderr")
 
     def observation(self) -> dict:
         return {"case": "check-s1-m1-c1-o1", "profile": "f2018-check",
@@ -100,6 +119,17 @@ class MatrixWarningTests(unittest.TestCase):
         changed["files"]["src/a.f90"] = "modified"
         with self.assertRaisesRegex(ValueError, "Source changed"):
             make_baseline([observation, changed])
+
+    def test_gnu16_patch_releases_still_enforce_the_same_budget(self) -> None:
+        observation = {**self.observation(), "compiler_version": "16.2.0"}
+        baseline = {**make_baseline([observation]), "compiler_series": "16.2"}
+        server = {**observation, "compiler_version": "16.2.1"}
+        self.assertEqual(compare(server, baseline)["status"], "passed")
+        with self.assertRaisesRegex(ValueError, "New/increased"):
+            compare({**server, "counts": {"known": 2}}, baseline)
+        for version in ("15.2.1", "16.3.0"):
+            with self.subTest(version=version), self.assertRaisesRegex(ValueError, "compiler version differs"):
+                compare({**server, "compiler_version": version}, baseline)
 
     def test_warning_categories_keep_correctness_separate(self) -> None:
         for option, text in (("-Warray-bounds", "bad index"), ("", "INTENT mismatch in argument"),

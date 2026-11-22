@@ -1,8 +1,9 @@
 # F2018 compatibility regressions
 
 These are software checks. They do not establish atomic-model convergence or
-physical accuracy. Use gfortran 15 and set `FC` and `OMPI_FC` to
-`/usr/bin/gfortran-15` before configuration and validation.
+physical accuracy. The strict `check.py` runner requires GNU Fortran 16 and
+ships a warning budget for the 16.2 series, including the server's 16.2.1.
+For toolchain setup, see the [Suite build instructions](../../README.md#build).
 
 The regular CMake/CTest flow registers:
 
@@ -89,22 +90,25 @@ from a demonstrated numerical bug in the [compatibility guide](../../docs/implem
 
 ## Acceptance profiles and mandatory runner (2026-11-09)
 
-Resolve the installed GNU 15 compiler on the current host; the Linux reference
-uses `/usr/bin/gfortran-15`, while a local macOS installation may use a different
-path. Set both `FC` and `OMPI_FC` to that exact executable. All profiles require
-GNU 15; keep builds from other compilers separate.
+Load GNU Fortran 16.2, the compatible MPI and BLAS/LAPACK environment, and put a
+V3-capable `rcsfs` on `PATH`. Set `FC` and `OMPI_FC` to the same compiler and
+configure a new directory. Use `gfortran-16` if the host uses versioned names.
 
 ```fish
-set -gx FC (command -v gfortran-15)
+set -gx FC (command -v gfortran)
 set -gx OMPI_FC $FC
-./configure.sh --debug --profile f2018-check --serial \
-  --build-dir build-gf15-check
-../graspkit-tools/.venv/bin/python test/f2018/check.py build-gf15-check
+$FC -dumpfullversion
+mpifort -dumpfullversion
+set build_dir ../temp/tests/suite-gf16-check
+./configure.sh --debug --profile f2018-check --build-dir "$build_dir" \
+  -DRCSFS_TEST_CLI=(command -v rcsfs)
+../graspkit-tools/.venv/bin/python test/f2018/check.py "$build_dir" --jobs 4
 ```
 
 Current production defaults to `f2018-release` with O2 and target OpenMP only.
 Use `f2018-check`/Debug for standard/interface/runtime diagnostics and
 `f2018-audit`/Release for optimized standard/interface/warning diagnostics.
+For Audit, omit `--debug`, use `--profile f2018-audit`, and configure a separate build directory.
 All use automatic local storage; the legacy profile, implicit-SAVE switches and
 the former `check.py --audit` compatibility mode are retired. CSFG is isolated
 and off by default. See [current build policy](../../docs/implemented/build_profiles.md).
@@ -143,17 +147,17 @@ is `<build>/install`, or the explicit prefix. Validation does not install.
 **24 ordinary builds**, with eight combinations per profile. The rangular OpenMP
 implementation and its matrix axis were removed on 2026-11-16. Warning budgets
 retain their historical IDs with angular OpenMP disabled (`-a0` where needed).
-Historical enabled-angular budgets remain as evidence, outside the active matrix;
-their source coverage is not a current warning acceptance result.
+The active GNU 16 baseline covers all 16 Check/Audit configurations.
 `GRASP_BUILD_CSFG=OFF` in every active matrix case. Serial/MPI both disabled still
 builds the shared libraries, jj2lsj and their applicable tests. A partial
 `--case` selection never reports full-matrix acceptance.
 
 ```fish
-set -gx FC /usr/bin/gfortran-15
-set -gx OMPI_FC /usr/bin/gfortran-15
-../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix \
-    --rcsfs-cli /path/to/rcsfs \
+set -gx FC (command -v gfortran)
+set -gx OMPI_FC $FC
+set matrix_dir ../temp/tests/suite-gf16-matrix
+../graspkit-tools/.venv/bin/python test/f2018/matrix.py "$matrix_dir" \
+  --rcsfs-cli (command -v rcsfs) \
   --parallel-configs 2 --jobs 3
 ```
 
@@ -164,20 +168,24 @@ reports the full result. MPI execution requires local process communication.
 The run is a correctness regression, not a performance benchmark.
 
 Diagnostic profiles default to `GRASP_CAPTURE_WARNINGS=ON`; production uses OFF. A diagnostic compiler launcher
-records GNU JSON diagnostics separately for every object, including zero-warning
+records GNU SARIF diagnostics separately for every object, including zero-warning
 compilations, and preserves any existing compiler launcher. Records contain the
 command and source/object hashes. Parallel log interleaving cannot attach a
 warning to the wrong file. `check.py` rejects missing/stale records; after enabling
 capture on an older build, use a fresh directory or rebuild with `--clean-first`.
 The launcher adds only diagnostic-format flags, preserving numerical options.
 
-The portable [JSON baseline](../../docs/reference/f2018/gfortran15-warning-baseline.json)
-has a [per-file index](../../docs/reference/f2018/gfortran15-warning-baseline.md).
+The [GNU 16.2 JSON baseline](../../docs/reference/f2018/gfortran16-warning-baseline.json)
+was collected with GNU Fortran 16.2.0 on macOS arm64 and has a
+[per-file index](../../docs/reference/f2018/gfortran16-warning-baseline.md).
 Diagnostic identity includes target, source, position, warning option and message;
 counts are separate for each configuration. A new diagnostic cannot be offset by
-removing another, or by removing it from another target. Source/target coverage and
-the exact compiler version are checked too. `-w` and `-Wno-*` cannot hide warnings
-in strict acceptance.
+removing another, or by removing it from another target. The default budget
+accepts 16.2 patch releases, including 16.2.1, and applies the same source,
+target, and warning checks on each. If a platform or compiler introduces a
+diagnostic beyond the budget, review it before adopting a candidate baseline
+for that toolchain. The runner records the exact compiler version used.
+`-w` and `-Wno-*` cannot hide warnings in strict acceptance.
 
 `correctness-review` flags potential uninitialized values, bounds, narrowing,
 truncation, interface mismatch and implicit static-storage risks. These are
@@ -195,18 +203,18 @@ Linker diagnostics and compiler calls made inside disposable Python test fixture
 remain in their logs and are outside this CMake Fortran compilation baseline.
 
 To explicitly establish a replacement candidate, first collect all builds without
-claiming test acceptance. The recorder requires all 24 ordinary diagnostic cases and refuses to
+claiming test acceptance. The recorder requires all 16 ordinary diagnostic cases and refuses to
 overwrite an existing baseline:
 
 ```fish
-../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix \
-    --rcsfs-cli /path/to/rcsfs \
+../graspkit-tools/.venv/bin/python test/f2018/matrix.py "$matrix_dir" \
+  --rcsfs-cli (command -v rcsfs) \
   --stage build --parallel-configs 2 --jobs 3
 ../graspkit-tools/.venv/bin/python test/f2018/warning_inventory.py record \
-  build-gf15-matrix --output build-gf15-matrix/candidate-warnings.json
-../graspkit-tools/.venv/bin/python test/f2018/matrix.py build-gf15-matrix \
-    --rcsfs-cli /path/to/rcsfs \
-  --baseline build-gf15-matrix/candidate-warnings.json
+  "$matrix_dir" --output "$matrix_dir/candidate-warnings.json"
+../graspkit-tools/.venv/bin/python test/f2018/matrix.py "$matrix_dir" \
+  --rcsfs-cli (command -v rcsfs) \
+  --baseline "$matrix_dir/candidate-warnings.json"
 ```
 
 Review source/diagnostic differences before intentionally replacing the checked-in
@@ -220,7 +228,7 @@ without running atomic calculations.
 
 ```fish
 ../graspkit-tools/.venv/bin/python test/f2018/warning_inventory.py report \
-  --output docs/reference/f2018/gfortran15-warning-baseline.md
+  --output docs/reference/f2018/gfortran16-warning-baseline.md
 ```
 
 ## Production CI damping branch
