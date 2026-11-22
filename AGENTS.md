@@ -25,7 +25,7 @@ introduce a second copy of these libraries. Preserve suite MPI helpers.
 For shared module names and external migration, see [shared library naming](docs/implemented/shared_library_naming.md).
 In `src/lib/grasp_shared/`, use one lowercase module per matching `.f90` filename.
 Keep `grasp_parameters` as the public capacity re-export interface.
-Define shared capacities only in `compile_time_capacities.f90` and re-export their
+Define shared capacities only in `cal_constants.f90` and re-export their
 descriptive names unchanged through `grasp_parameters`. Preserve upstream defaults
 of 215 for `orbital_index_radix`, 590 for `max_radial_points`, and 127 for
 `max_orbitals`. Derive `radial_workspace_capacity` by adding 10 and derive the two

@@ -75,7 +75,7 @@ Python 辅助脚本使用工作区现有 `graspkit-tools/.venv`；不创建新�
 - 实现、`*_I.f90`、USE/ONLY、宿主关联、关键字实参、类型字段和有效 OpenMP 子句同步修改。
 - 保留普通注释、字符串、输出标签、文件字段、CLI/TOML 和外部 MPI/BLAS/LAPACK 符号。
   历史文字中的旧名称不算未改引用；确需调整说明文字时独立记录。
-- 六个容量现由 `compile_time_capacities` 定义，调用者通过 `grasp_parameters` 导入语义名称。
+- 六个容量现由 `cal_constants` 定义，调用者通过 `grasp_parameters` 导入语义名称。
 - 函数结果名与外部函数符号分开处理，不能因为结果变量候选而意外改变外部过程名称。
 - 每个核实后保留的名字给出理由；无法确认含义的条目继续明确标记待核实，不编造解释。
 

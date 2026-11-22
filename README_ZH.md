@@ -215,7 +215,7 @@ ctest --test-dir build-all --output-on-failure
 
 ## 径向网格与仓库迁移
 
-公共容量集中定义在 [`compile_time_capacities.f90`](src/lib/grasp_shared/compile_time_capacities.f90)，
+公共容量集中定义在 [`cal_constants.f90`](src/lib/grasp_shared/cal_constants.f90)，
 经 [`grasp_parameters.f90`](src/lib/grasp_shared/grasp_parameters.f90) 转导。库名及模块名的完整对照见[共享库命名](docs/implemented/shared_library_naming.md)。Suite 的默认值为
 `max_radial_points=590`、`radial_workspace_capacity=600`、`max_orbitals=127`、
 `max_orbitals_minus_one=126`、`max_orbitals_minus_two=125` 和 `orbital_index_radix=215`。

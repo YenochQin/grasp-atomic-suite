@@ -7,8 +7,8 @@
 
 ## 参数归属
 
-[`compile_time_capacities.f90`](../../src/lib/grasp_shared/compile_time_capacities.f90) 是容量常量的唯一来源；
-[`grasp_parameters.f90`](../../src/lib/grasp_shared/grasp_parameters.f90) 用 `USE compile_time_capacities, ONLY: ...`
+[`cal_constants.f90`](../../src/lib/grasp_shared/cal_constants.f90) 是容量常量的唯一来源；
+[`grasp_parameters.f90`](../../src/lib/grasp_shared/grasp_parameters.f90) 用 `USE cal_constants, ONLY: ...`
 直接转导六个语义名称。共享库和各串行/MPI 程序继续 `USE grasp_parameters`，
 修改配置不需要逐个修改调用方。配置模块默认值与参考原版相同。
 网格的 `radial_grid_defaults` 集中初始化模块不使用，各入口保留原版初始化。
@@ -22,7 +22,7 @@
 | `max_orbitals_minus_one` | 126 | 轨道容量减一 |
 | `max_orbitals_minus_two` | 125 | 轨道容量减二 |
 
-在 `compile_time_capacities.f90` 修改表中第一列的基础常量；工作区容量和两个轨道容量派生量自动计算。
+在 `cal_constants.f90` 修改表中第一列的基础常量；工作区容量和两个轨道容量派生量自动计算。
 无需修改转导模块。修改后须全量重编译。`max_radial_points` 与运行时点数 `radial_point_count` 不同。
 
 ## 各入口的原版默认值
@@ -59,7 +59,7 @@ CSFG 的专用源码、构建和测试已于 `4c17db6` 移除，该提交保留�
 ## 网格实验与重编译
 
 在独立 Suite 源码副本上使用 [网格脚本](../../scripts/README.md)。脚本根据自己的位置定位该副本的 `src/`，
-按需修改 `compile_time_capacities.f90` 和十五个普通入口；显式 ACCY 修改也覆盖两个普通 RCI 续算入口。
+按需修改 `cal_constants.f90` 和十五个普通入口；显式 ACCY 修改也覆盖两个普通 RCI 续算入口。
 命令行 `--nnnp` 和 TOML `nnnp` 都设置中央配置的编译期容量 `max_radial_points`，工作区容量自动派生；
 `--n` 单独选择实际点数，其他网格参数仍修改各入口。脚本检查六项定义与完整转导接口。
 

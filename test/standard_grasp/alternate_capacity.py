@@ -10,7 +10,7 @@ import tempfile
 
 
 STATE_SOURCES = (
-    "lib/grasp_shared/compile_time_capacities.f90",
+    "lib/grasp_shared/cal_constants.f90",
     "lib/grasp_shared/grasp_parameters.f90",
     "lib/grasp_shared/radial_grid_state.f90",
     "lib/grasp_shared/scf_radial_potentials.f90",

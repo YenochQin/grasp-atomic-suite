@@ -19,7 +19,7 @@
 
 库名和模块名是链接接口的一部分。外部 Fortran 调用方需要按下表更新 `USE`，
 使用新的 `.mod` 文件重新编译，并链接 `libgrasp_shared.a`。原模块中的数据和过程接口继续使用原有名称。
-`grasp_parameters` 转导 `compile_time_capacities` 中的六个语义容量常量。
+`grasp_parameters` 转导 `cal_constants` 中的六个语义容量常量。
 `npar_C.f90` 中的两个独立模块各自迁移到同名文件。
 备用的内存分析源码沿用新模块名，文件为 `array_memory_management.f90_PROFILING`。
 
@@ -128,7 +128,7 @@ GNU Fortran 15.3 构建通过。Release 启用串行、MPI 和 jj2lsj OpenMP，1
 | `stat_C.f90` | `stat_c` | [`csf_coupling_data`](../../src/lib/grasp_shared/csf_coupling_data.f90) | Stored subshell and total CSF coupling codes |
 | `stor_C.f90` | `stor_c` | [`breit_bessel_cache_keys`](../../src/lib/grasp_shared/breit_bessel_cache_keys.f90) | Orbital-pair keys for cached Breit Bessel arrays |
 | `storage_bytes.f90` | `suite_storage` | [`array_storage_size`](../../src/lib/grasp_shared/array_storage_size.f90) | Reports array storage in bytes |
-| `suite_parameters_M.f90` | `suite_parameters` | [`compile_time_capacities`](../../src/lib/grasp_shared/compile_time_capacities.f90) | Compile-time capacities and orbital packing radix |
+| `suite_parameters_M.f90` | `suite_parameters` | [`cal_constants`](../../src/lib/grasp_shared/cal_constants.f90) | Shared array capacities, orbital packing radix, and CSF encoding constants |
 | `syma_C.f90` | `syma_c` | [`level_symmetry_metadata`](../../src/lib/grasp_shared/level_symmetry_metadata.f90) | Total angular momentum and parity of selected levels |
 | `tatb_C.f90` | `tatb_c` | [`radial_quadrature_workspace`](../../src/lib/grasp_shared/radial_quadrature_workspace.f90) | Radial integration work arrays and their active extent |
 | `terms_C.f90` | `terms_c` | [`subshell_term_table`](../../src/lib/grasp_shared/subshell_term_table.f90) | Allowed jj-coupled terms indexed by subshell and occupation |

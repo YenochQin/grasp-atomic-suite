@@ -253,7 +253,7 @@ Orbital regression runners live in [test/rmcdhf](test/rmcdhf/README.md). Large c
 
 ## Radial Grid And Migration
 
-Shared limits live in [`compile_time_capacities.f90`](src/lib/grasp_shared/compile_time_capacities.f90)
+Shared limits live in [`cal_constants.f90`](src/lib/grasp_shared/cal_constants.f90)
 and are re-exported by [`grasp_parameters.f90`](src/lib/grasp_shared/grasp_parameters.f90).
 See [shared library naming](docs/implemented/shared_library_naming.md) for the library and module mapping.
 The Suite defaults are `max_radial_points=590`, `radial_workspace_capacity=600`, `max_orbitals=127`,

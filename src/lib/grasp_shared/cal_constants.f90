@@ -1,5 +1,5 @@
-! Defines the orbital packing radix and capacities used to dimension shared arrays.
-module compile_time_capacities
+! Defines shared array capacities, the orbital packing radix, and CSF encoding constants.
+module cal_constants
     implicit none (type, external)
 
     ! Module interface
@@ -19,4 +19,4 @@ module compile_time_capacities
     integer, parameter, public :: csf_total_j_slot = max_orbitals + 1
     integer, parameter, public :: csf_parity_slot = max_orbitals + 2
     integer, parameter, public :: csf_angular_code_count = csf_parity_slot
-end module compile_time_capacities
+end module cal_constants

@@ -49,7 +49,7 @@ SUITE_RESTART_FILES = (
     "src/apps/rci/read_ci_restart.f90",
     "src/apps/rci_mpi/read_ci_restart.f90",
 )
-SUITE_CONFIG_FILE = "src/lib/grasp_shared/compile_time_capacities.f90"
+SUITE_CONFIG_FILE = "src/lib/grasp_shared/cal_constants.f90"
 SUITE_EXPORT_FILE = "src/lib/grasp_shared/grasp_parameters.f90"
 PATCHABLE_FILES = (SUITE_CONFIG_FILE, *SUITE_GRID_FILES, *SUITE_RESTART_FILES)
 SUITE_PARAMETER_NAMES = (
@@ -283,7 +283,7 @@ def validate_suite_exports(config: str, wrapper: str) -> None:
             visible = explicit_public if access[1] == "public" else explicit_private
             visible.update(item.strip() for item in access[2].split(","))
             continue
-        match = re.fullmatch(r"use\s*(?:::\s*|\s+)compile_time_capacities\s*,\s*only\s*:\s*(.+)", line)
+        match = re.fullmatch(r"use\s*(?:::\s*|\s+)cal_constants\s*,\s*only\s*:\s*(.+)", line)
         if not match:
             raise ValueError("grasp_parameters may contain only direct capacity re-exports")
         imported.update(item.strip() for item in match[1].split(","))
@@ -295,11 +295,11 @@ def validate_suite_exports(config: str, wrapper: str) -> None:
         raise ValueError("grasp_parameters must use the semantic capacity names directly")
     exported = (imported if default_public else explicit_public) - explicit_private
     if not names <= imported & exported:
-        raise ValueError("grasp_parameters must re-export all six compile_time_capacities limits")
+        raise ValueError("grasp_parameters must re-export all six cal_constants limits")
 
     legacy_name = LEGACY_CAPACITY_RE.search(config_code)
     if legacy_name:
-        raise ValueError(f"legacy capacity name {legacy_name[0]} in compile_time_capacities")
+        raise ValueError(f"legacy capacity name {legacy_name[0]} in cal_constants")
     for name in SUITE_PARAMETER_NAMES:
         if len(re.findall(rf"\b{name}\s*=(?!>)", config_code)) != 1:
             raise ValueError(f"expected one central definition of {name}")

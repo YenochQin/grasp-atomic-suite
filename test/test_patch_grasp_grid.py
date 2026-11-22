@@ -610,7 +610,7 @@ class PatchGridTests(unittest.TestCase):
         wrapper = root / grid.SUITE_EXPORT_FILE
         original = wrapper.read_text()
         for obsolete_export, message in (
-            ("use compile_time_capacities, only: nnnp => max_radial_points", "semantic capacity names directly"),
+            ("use cal_constants, only: nnnp => max_radial_points", "semantic capacity names directly"),
             ("integer, parameter :: nnnp = max_radial_points", "only direct capacity re-exports"),
         ):
             with self.subTest(obsolete_export=obsolete_export):
@@ -638,7 +638,7 @@ class PatchGridTests(unittest.TestCase):
         fixture(root)
         source = SCRIPT.parents[1] / "src/lib/grasp_shared"
         module_names = [
-            "compile_time_capacities.f90",
+            "cal_constants.f90",
             "grasp_parameters.f90",
             "radial_grid_state.f90",
             "scf_radial_potentials.f90",

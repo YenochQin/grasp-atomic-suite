@@ -35,7 +35,7 @@ strict/diag 后续也已[移除](rejected_rmcdhf_variants.md)，当前 suite 为
 
 与 RMCDHF 相同，所有程序继续 `USE grasp_parameters`，由
 [`grasp_parameters.f90`](../../src/lib/grasp_shared/grasp_parameters.f90) 转导
-[`compile_time_capacities.f90`](../../src/lib/grasp_shared/compile_time_capacities.f90) 的六个常量：
+[`cal_constants.f90`](../../src/lib/grasp_shared/cal_constants.f90) 的六个共享容量与打包常量：
 
 | 参数 | suite 默认值 |
 | --- | --- |

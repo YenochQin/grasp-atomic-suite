@@ -56,7 +56,7 @@ save_rmcdhf --io-dir /path/to/serial-io results/Zn_odd_AS1
 
 `patch_grasp_grid.py` 根据脚本文件的实际位置找到与 `scripts/` 同级的 `src/`。
 要修改某个 Suite 副本，请运行该副本 `scripts/` 中的脚本。命令行 `--nnnp` 和 TOML
-`nnnp` 都设置 [compile_time_capacities.f90](../src/lib/grasp_shared/compile_time_capacities.f90)
+`nnnp` 都设置 [cal_constants.f90](../src/lib/grasp_shared/cal_constants.f90)
 中的编译期容量 `max_radial_points`。工作区容量按 `max_radial_points + 10` 自动派生。
 只传容量时，脚本只修改该中央定义。有限核默认点数引用 `max_radial_points`，因此会随容量改变。
 如需指定有限核运行时的默认点数，使用 `--n` 或 TOML `n`。

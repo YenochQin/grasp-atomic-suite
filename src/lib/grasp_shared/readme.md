@@ -56,7 +56,7 @@ $$
 
 ### 编译期容量
 
-[compile_time_capacities.f90](compile_time_capacities.f90) 定义径向数组容量 $N_{\max}=590$、轨道容量 $W_{\max}=127$ 和轨道索引打包进制 215。派生容量为
+[cal_constants.f90](cal_constants.f90) 定义径向数组容量 $N_{\max}=590$、轨道容量 $W_{\max}=127$ 和轨道索引打包进制 215。派生容量为
 
 $$
 N_{\mathrm{work}}=N_{\max}+10,\qquad

@@ -1,6 +1,6 @@
 ! Use an independent module so the expected values come directly from the central definitions.
 module shared_grid_capacity_reference
-    use compile_time_capacities, only: max_radial_points, radial_workspace_capacity, orbital_index_radix, max_orbitals, &
+    use cal_constants, only: max_radial_points, radial_workspace_capacity, orbital_index_radix, max_orbitals, &
         max_orbitals_minus_one, max_orbitals_minus_two
     implicit none (type, external)
     private

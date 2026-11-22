@@ -1,7 +1,7 @@
 add_library(grasp_shared STATIC
     input_error_handling.f90
     nuclear_polarization_state.f90
-    compile_time_capacities.f90
+    cal_constants.f90
     grasp_parameters.f90
     blas_lapack_interfaces.f90
     array_storage_size.f90
