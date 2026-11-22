@@ -165,11 +165,12 @@ MPI 版本由 rank 0 询问状态名。各 rank 在各自的临时目录交接 `
 - `rhfs`：`name.h/name.ch` 和 `name.hoffd/name.choffd`。
 - `ris4`：`name.i/name.ci`，并可能生成 `name.IOB`、`name.ITB` 等角向中间文件。
 
-`gj_mpi` 支持命令行方式：
+`gj_mpi` 接受状态名和 `--nonci` 或 `--ci`。从计算目录运行，并将
+`suite_bin` 设为构建目录下 `bin` 的绝对路径。CI 模式需要 `name.cimix` 或归档的 `name.cm`。
 
 ```fish
-mpiexec -n 2 ./bin/gj_mpi test --nonci
-mpiexec -n 2 ./bin/gj_mpi test --ci
+mpiexec -n 2 "$suite_bin/gj_mpi" name --nonci
+mpiexec -n 2 "$suite_bin/gj_mpi" name --ci
 ```
 
 不带参数时，程序回到交互式输入流程。
@@ -186,7 +187,25 @@ data/test.w
 data/test.gj
 ```
 
-这些文件可用于核对 `gj` 的 `g_J` 输出。CTest 已接入公共库积分、MPI 稀疏缓冲区、轨道事务/轮次逻辑和网格修改脚本测试：
+复现 `data/test.gj` 时，从 Suite 根目录运行下列命令，并将支持 V3 的
+`rcsfs` 加入 `PATH`。按实际构建目录设置 `suite_bin`。
+`rcsfs convert` 会生成 Parquet 描述符和配套的 TOML 头文件。样本中的 `test.m`
+和 `test.w` 使用兼容的归档后缀。
+
+```fish
+set suite_root (pwd)
+set suite_bin (realpath build/bin)
+mkdir -p ../temp/tests
+set gj_work (mktemp -d ../temp/tests/gj-example.XXXXXXXX)
+cp data/isodata data/test.c data/test.m data/test.w "$gj_work/"
+cd "$gj_work"
+rcsfs convert test.c test_desc.parquet
+printf '%s\n' y test n | "$suite_bin/gj"
+diff -u "$suite_root/data/test.gj" test.gj
+cd "$suite_root"
+```
+
+CTest 覆盖描述符输入、计算流程、公共库、MPI 稀疏缓冲区和网格修改脚本。
 
 ```fish
 ctest --test-dir build-all --output-on-failure
@@ -238,7 +257,7 @@ ctest --test-dir build-all --output-on-failure
 ## 开发注意事项
 
 - 保持 Fortran 文件的本地风格，不要大规模重排旧代码格式。
-- 新的接口/helper 单元继续使用 `*_I.f90` 命名，共享模块继续使用 `*_C.f90` 或现有目录约定。
+- 应用源码文件和 Fortran 符号按职责使用小写 `snake_case`。迁移后的模块可保留 `*_interface` 后缀，文件按实现命名。`src/lib/grasp_shared/` 中每个文件定义一个同名模块。[仓库规范](AGENTS.md#coding-style--naming-conventions)
 - 涉及数值行为的改动应附带输入数据、输出差异或回归说明。
 - 修改 MPI 版本时，应同步检查串行版本和 MPI 版本的输入文件、输出文件与数值一致性。
 

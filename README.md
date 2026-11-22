@@ -201,11 +201,13 @@ Common output files:
 - `rdensity`: `name.nw` and `name.d/name.cd`.
 - `ris4`: `name.i/name.ci`, and possibly angular intermediate files such as `name.IOB` and `name.ITB`.
 
-`gj_mpi` also supports command-line arguments:
+`gj_mpi` accepts a state name with `--nonci` or `--ci`. Run it from the
+calculation directory and set `suite_bin` to the absolute path of the build's
+`bin` directory. CI mode requires `name.cimix` or the archived `name.cm`.
 
-```sh
-mpiexec -n 2 ./bin/gj_mpi test --nonci
-mpiexec -n 2 ./bin/gj_mpi test --ci
+```fish
+mpiexec -n 2 "$suite_bin/gj_mpi" name --nonci
+mpiexec -n 2 "$suite_bin/gj_mpi" name --ci
 ```
 
 Without arguments, it falls back to the interactive input flow.
@@ -222,9 +224,28 @@ data/test.w
 data/test.gj
 ```
 
-These files can be used to compare `gj` Landé-factor output. CTest covers shared-library integration, sparse MPI buffers, orbital transaction/round logic, and the grid patcher:
+To reproduce `data/test.gj`, run the following from the Suite root with a
+V3-capable `rcsfs` on `PATH`. Use your actual build directory in `suite_bin`.
+`rcsfs convert` creates both the Parquet descriptor and its matching TOML
+header. The sample's `test.m` and `test.w` use the supported archived suffixes.
 
-```sh
+```fish
+set suite_root (pwd)
+set suite_bin (realpath build/bin)
+mkdir -p ../temp/tests
+set gj_work (mktemp -d ../temp/tests/gj-example.XXXXXXXX)
+cp data/isodata data/test.c data/test.m data/test.w "$gj_work/"
+cd "$gj_work"
+rcsfs convert test.c test_desc.parquet
+printf '%s\n' y test n | "$suite_bin/gj"
+diff -u "$suite_root/data/test.gj" test.gj
+cd "$suite_root"
+```
+
+CTest covers descriptor input, calculation workflows, shared-library routines,
+sparse MPI buffers, and the grid patcher.
+
+```fish
 ctest --test-dir build-all --output-on-failure
 ```
 
@@ -274,7 +295,7 @@ its implementation evidence, superseded claims, and remaining validation work.
 ## Contributor Notes
 
 - Preserve the local Fortran style of the file being edited; avoid broad formatting-only rewrites.
-- Keep interface/helper units named as `*_I.f90`, and shared modules aligned with `*_C.f90` or the local directory convention.
+- Name application source files and Fortran symbols in lowercase `snake_case` by responsibility. Use the implementation name for migrated files whose modules retain a `*_interface` suffix. In `src/lib/grasp_shared/`, use one module per matching file. [Repository guidelines](AGENTS.md#coding-style--naming-conventions)
 - Numerical changes should include input data, output differences, or regression notes.
 - MPI changes should be checked against the corresponding serial path for input, output, and numerical consistency.
 

@@ -47,7 +47,7 @@ rbiotransform_mpi_main.f90
 
 # These routines were not being compiled in the original makefile. The
 # interface file for ORBORD this was still linked though.
-#check_orbital_order.f90
+#check_orbital_order_stub.f90
 #apply_occupation_factor.f90
 "
 generate-makefile > ${MAKEFILE}

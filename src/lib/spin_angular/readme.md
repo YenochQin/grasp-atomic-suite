@@ -6,8 +6,8 @@
 
 | 文件 | 例程 | 输出 |
 | --- | --- | --- |
-| [one_electron_scalar_coefficients.f90](one_electron_scalar_coefficients.f90) | `onescalar` | 单电子偶标量算符的角向系数 |
-| [one_electron_tensor_coefficients.f90](one_electron_tensor_coefficients.f90) | `oneparticlejj` | 给定秩 $K$ 和宇称的单电子张量系数 |
+| [one_electron_scalar_coefficients.f90](one_electron_scalar_coefficients.f90) | `calculate_one_electron_scalar_coefficients` | 单电子偶标量算符的角向系数 |
+| [one_electron_tensor_coefficients.f90](one_electron_tensor_coefficients.f90) | `calculate_one_electron_tensor_coefficients` | 给定秩 $K$ 和宇称的单电子张量系数 |
 | [two_electron_angular_coefficients.f90](two_electron_angular_coefficients.f90) | `calculate_two_electron_angular_coefficients` | 按 CSF 对、四个轨道标签和阶数输出 Coulomb 或 Breit 角向系数 |
 
 $L$ 和 $R$ 分别标记 bra 和 ket。$j$ 是单电子角动量，$J$ 是子壳层项、耦合链节点或整个 CSF 的总角动量，$Q$ 是准自旋。本文使用 $[x]=2x+1$；源码用 `two_j_1` 等整数存储 $2j$，`two_j_plus_one` 存储 $[j]$。活跃子壳层的位置通过 `peel_orbital_indices` 转换为完整轨道表中的编号。

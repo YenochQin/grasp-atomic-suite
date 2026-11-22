@@ -20,6 +20,7 @@ SEMANTIC_NAMES_SNAPSHOT = Path("docs/reference/rmcdhf_semantic_names_snapshot.js
 AUDITED_NAMES_SNAPSHOT = Path("docs/reference/rmcdhf_audited_names_snapshot.json")
 DIAGNOSTIC_LABELS_SNAPSHOT = Path("docs/reference/rmcdhf_diagnostic_labels_snapshot.json")
 V3_J_LABELS_SNAPSHOT = Path("docs/reference/rmcdhf_v3_j_labels_snapshot.json")
+APP_COMMENTS_SNAPSHOT = Path("docs/reference/rmcdhf_app_comments_snapshot.json")
 
 
 def suite_source_path(root: Path, upstream_path: str, renamed_paths: dict[str, str]) -> Path:
@@ -486,17 +487,17 @@ def main(root: Path) -> None:
     reviewed_migration |= audited_names["files"]
 
     predecessor = AUDITED_NAMES_SNAPSHOT
-    for snapshot in (DIAGNOSTIC_LABELS_SNAPSHOT, V3_J_LABELS_SNAPSHOT):
-        labels = json.loads((root / snapshot).read_text())
-        assert labels["schema_version"] == 1, f"Unknown label snapshot schema: {snapshot}"
-        assert labels["previous_manifest_sha256"] == hashlib.sha256(
+    for snapshot in (DIAGNOSTIC_LABELS_SNAPSHOT, V3_J_LABELS_SNAPSHOT, APP_COMMENTS_SNAPSHOT):
+        app_update = json.loads((root / snapshot).read_text())
+        assert app_update["schema_version"] == 1, f"Unknown application snapshot schema: {snapshot}"
+        assert app_update["previous_manifest_sha256"] == hashlib.sha256(
             (root / predecessor).read_bytes()
         ).hexdigest(), f"Previous manifest changed: {predecessor}"
         previous = reviewed_files | reviewed_migration
-        for name, record in labels["files"].items():
+        for name, record in app_update["files"].items():
             assert name in expected and name.endswith(".f90") and name in previous, name
             assert record["before_suite_sha256"] == previous[name]["after_suite_sha256"], name
-        reviewed_migration |= labels["files"]
+        reviewed_migration |= app_update["files"]
         predecessor = snapshot
 
     actual = {

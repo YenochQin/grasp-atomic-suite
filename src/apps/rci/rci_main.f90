@@ -77,7 +77,7 @@ program rci_main
     integer, parameter :: maximum_input_symmetry_blocks = 50
     integer, parameter :: nblk=50
     integer :: start_clock_count
-    integer :: mpi_rank, mpi_process_count, core_subshell_count, ndum, max_orbital_two_j
+    integer :: mpi_rank, mpi_process_count, core_subshell_count, integral_count, max_orbital_two_j
     logical :: yes
     character(len=128) :: name, isotope_file_path
     character(len=8) :: block_labels(maximum_input_symmetry_blocks)
@@ -180,15 +180,15 @@ program rci_main
         !   Calculate all the needed Rk integrals
         !
         write (output_unit, *) "Calling tabulate_slater_integrals..."
-        call tabulate_slater_integrals (mpi_rank, mpi_process_count, ndum, max_orbital_two_j)
+        call tabulate_slater_integrals (mpi_rank, mpi_process_count, integral_count, max_orbital_two_j)
         !
         !   If transverse interaction comput Breit integrals of type 1 and 2
         !
         if (include_transverse_interaction) then
             print *, "Calling tabulate_breit_integrals_1..."
-            call tabulate_breit_integrals_1 (mpi_rank, mpi_process_count, ndum, max_orbital_two_j)
+            call tabulate_breit_integrals_1 (mpi_rank, mpi_process_count, integral_count, max_orbital_two_j)
             print *, "Calling tabulate_breit_integrals_2..."
-            call tabulate_breit_integrals_2 (mpi_rank, mpi_process_count, ndum, max_orbital_two_j)
+            call tabulate_breit_integrals_2 (mpi_rank, mpi_process_count, integral_count, max_orbital_two_j)
         end if
         !
         !   Proceed with the CI calculation

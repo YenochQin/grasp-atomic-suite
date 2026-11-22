@@ -47,7 +47,7 @@ rbiotransform_main.f90
 # The _implementations_ for these routines were not being compiled in the
 # original makefile. The interface files were still linked though.
 #one_electron_occupation_allowed.f90
-#check_orbital_order.f90
+#check_orbital_order_stub.f90
 "
 generate-makefile > ${MAKEFILE}
 generate-cmakelists > ${CMAKELISTSTXT}

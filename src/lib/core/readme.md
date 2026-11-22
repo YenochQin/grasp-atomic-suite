@@ -8,7 +8,7 @@
 
 ### 变换网格
 
-[`radial_grid_setup.f90`](radial_grid_setup.f90) 的 `radgrd` 在等间隔变换坐标 $t_i=h(i-1)$ 上生成半径 $r_i$。$h$ 对应 `transformed_grid_step`，$h_p$ 对应 `asymptotic_grid_step`，$r_0$ 对应 `radial_grid_scale`。
+[`radial_grid_setup.f90`](radial_grid_setup.f90) 的 `initialize_radial_grid` 在等间隔变换坐标 $t_i=h(i-1)$ 上生成半径 $r_i$。$h$ 对应 `transformed_grid_step`，$h_p$ 对应 `asymptotic_grid_step`，$r_0$ 对应 `radial_grid_scale`。
 
 当 $h_p=0$ 时，
 
@@ -60,7 +60,7 @@ $$
 
 ### 原点拟合与复合求积
 
-[`radial_quadrature.f90`](radial_quadrature.f90) 的 `quad` 接收 $T_i=r'_i f(r_i)$。从 $i=2$ 起寻找首对同号非零样本，以 $f(r)\simeq Ar^\sigma$ 拟合小半径区间。
+[`radial_quadrature.f90`](radial_quadrature.f90) 的 `integrate_radial_grid` 接收 $T_i=r'_i f(r_i)$。从 $i=2$ 起寻找首对同号非零样本，以 $f(r)\simeq Ar^\sigma$ 拟合小半径区间。
 
 $$
 \sigma=\frac{\ln\!\big[(T_{i+1}/r'_{i+1})/(T_i/r'_i)\big]}
@@ -89,7 +89,7 @@ $$
 
 ### 重叠积分与 Gram–Schmidt
 
-[`weighted_radial_overlap.f90`](weighted_radial_overlap.f90) 的 `rint` 对两轨道共同的有效径向范围求
+[`weighted_radial_overlap.f90`](weighted_radial_overlap.f90) 的 `integrate_weighted_radial_overlap` 对两轨道共同的有效径向范围求
 
 $$
 S_{ab}^{(k)}=\int_0^\infty r^k
@@ -120,7 +120,7 @@ $$
 
 ### 点 Coulomb 场的解析束缚轨道
 
-[`dirac_coulomb_radial_orbital.f90`](dirac_coulomb_radial_orbital.f90) 的 `dcbsrw` 使用有效电荷 $Z_{\rm eff}$、主量子数 $n$ 和 $\kappa$。令
+[`dirac_coulomb_radial_orbital.f90`](dirac_coulomb_radial_orbital.f90) 的 `evaluate_dirac_coulomb_orbital` 使用有效电荷 $Z_{\rm eff}$、主量子数 $n$ 和 $\kappa$。令
 
 $$
 n_r=n-|\kappa|,\quad z=Z_{\rm eff}/c_0,\quad
@@ -348,7 +348,7 @@ $$
 
 ### CSF 解码、筛选和重耦合表
 
-[`csf_descriptor_reader.f90`](csf_descriptor_reader.f90) 接收每个活动（peel）子壳层的四元组 $(q,2J,v,2K)$，行末保存总 $2J$ 和宇称。完整行宽为 $4n_{\rm peel}+2$。对单电子 $\kappa$ 和各已占据子壳层，检查或推导
+V3 描述符按轨道顺序为每个非闭核（peel）子壳层存储占据数、seniority、子壳层角动量编码 $2J_i+1$ 和累计耦合编码 $2K_i+1$，行末单独存储总 $2J+1$ 和宇称 $\pi$。完整行宽为 $4n_{\rm peel}+2$。读取时根据单电子 $\kappa$ 和已占据子壳层校验下列关系。[V3 字段定义](../csf_descriptor/src/descriptor_transport.rs) · [Fortran 读入](csf_descriptor_reader.f90)
 
 $$
 l=\begin{cases}\kappa&\kappa>0,\\-\kappa-1&\kappa<0,\end{cases}
@@ -358,7 +358,7 @@ N_e=\sum_i q_i,\qquad
 $$
 
 闭核的 $q_i=2j_i+1$，其偶宇称因子为 1。沿已占据子壳层连接中间角动量，每步须满足
-$\lvert2K_{\rm prev}-2J_i\rvert\le2K_{\rm new}\le2K_{\rm prev}+2J_i$，且 $2K_{\rm prev}+2J_i-2K_{\rm new}$ 为偶数。总对称性以 $\pi(2J+1)$ 写入有符号字节，由 [`csf_quantum_queries.f90`](csf_quantum_queries.f90) 分别取符号和绝对值。
+$\lvert2K_{\rm prev}-2J_i\rvert\le2K_{\rm new}\le2K_{\rm prev}+2J_i$，且 $2K_{\rm prev}+2J_i-2K_{\rm new}$ 为偶数。Fortran 将总 $2J+1$ 和 $\pi$ 分别写入 `csf_total_j_slot` 和 `csf_parity_slot`，由 `csf_total_j_code` 和 `csf_parity_code` 直接读取。[CSF 量子数查询](csf_quantum_queries.f90)
 
 [`one_electron_csf_filter.f90`](one_electron_csf_filter.f90) 对 $\Delta q_i=q_i^{\rm bra}-q_i^{\rm ket}$ 要求非零差数目为 0 或 2，且 $|\Delta q_i|\le1$。[`two_electron_csf_filter.f90`](two_electron_csf_filter.f90) 要求非零差数目不超过 4，且 $|\Delta q_i|\le2$。[`angular_momentum_triangle.f90`](angular_momentum_triangle.f90) 对传入的 $s_i=2J_i+1$ 检查 $|s_2-s_3|+1\le s_1\le s_2+s_3-1$。
 

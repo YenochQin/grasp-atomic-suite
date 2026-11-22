@@ -276,7 +276,7 @@
       "procedure": "calculate_subshell_overlap"
     },
     {
-      "implementation": "src/apps/rbiotransform/check_orbital_order.f90",
+      "implementation": "src/apps/rbiotransform/check_orbital_order_stub.f90",
       "interface": "src/apps/rbiotransform/check_orbital_order_interface.f90",
       "module": "check_orbital_order_interface",
       "original_body": "src/apps/rbiotransform/check_orbital_order.f90",
@@ -570,7 +570,7 @@
       "procedure": "calculate_subshell_overlap"
     },
     {
-      "implementation": "src/apps/rbiotransform_mpi/check_orbital_order.f90",
+      "implementation": "src/apps/rbiotransform_mpi/check_orbital_order_stub.f90",
       "interface": "src/apps/rbiotransform_mpi/check_orbital_order_interface.f90",
       "module": "check_orbital_order_interface",
       "original_body": "src/apps/rbiotransform_mpi/check_orbital_order.f90",

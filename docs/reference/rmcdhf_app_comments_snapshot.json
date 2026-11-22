@@ -1,0 +1,23 @@
+{
+  "description": "Revise application comments while preserving Fortran statements and compiler directives.",
+  "files": {
+    "src/appl/rmcdhf/scf.f90": {
+      "after_suite_sha256": "3741dd1b39e4be9e7007fea84d1ca7020c5d365319e33f6726c1b6bcb652b80b",
+      "before_suite_sha256": "b2c9abeb2b035f7d6c4091cac26a919042d83ae91d85bda2adf14e8bf83d71c0"
+    },
+    "src/appl/rmcdhf_mem/scf.f90": {
+      "after_suite_sha256": "3741dd1b39e4be9e7007fea84d1ca7020c5d365319e33f6726c1b6bcb652b80b",
+      "before_suite_sha256": "b2c9abeb2b035f7d6c4091cac26a919042d83ae91d85bda2adf14e8bf83d71c0"
+    },
+    "src/appl/rmcdhf_mem_mpi/scfmpi.f90": {
+      "after_suite_sha256": "a72f28b67ed6eefaa6935ece8d3c32eaf659e9e1fa1e647e2dcf2a2e8eb0ea57",
+      "before_suite_sha256": "e91bac5c8ef42181f534cb098511778e58558dc4dd96e8db77ccc9334495a4b4"
+    },
+    "src/appl/rmcdhf_mpi/scfmpi.f90": {
+      "after_suite_sha256": "a72f28b67ed6eefaa6935ece8d3c32eaf659e9e1fa1e647e2dcf2a2e8eb0ea57",
+      "before_suite_sha256": "e91bac5c8ef42181f534cb098511778e58558dc4dd96e8db77ccc9334495a4b4"
+    }
+  },
+  "previous_manifest_sha256": "c91bd69fe330174fd3c92b8651980de44c25d18db75679b578a99245aaeed6c9",
+  "schema_version": 1
+}

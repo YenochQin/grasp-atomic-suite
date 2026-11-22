@@ -253,7 +253,7 @@ contains
             !   in subroutine improv. For AL calculation, orthst is false.
             if (.not.enforce_orbital_orthogonality) call orthogonalize_radial_orbitals
 
-            !   Write the subshell radial wavefunctions to the .rwf file
+            ! Write this iteration's radial wavefunctions to the selected output path.
 
             if (mpi_rank == 0) call write_scf_radial_wavefunctions (output_wavefunction_path)
 
@@ -289,7 +289,6 @@ contains
         end do
 
         if (mpi_rank == 0) then
-            !CLOSE (23)     ! The .rwf file
             close(mixing_output_unit)                               ! The .mix file
         end if
         !

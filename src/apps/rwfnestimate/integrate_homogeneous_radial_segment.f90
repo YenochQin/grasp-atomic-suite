@@ -37,10 +37,12 @@ contains
         real(real64) , intent(inout) :: small_component_values(max_radial_points)
 
         ! Local constants
-        real(real64), parameter :: b1 = -0.50_real64
-        real(real64), parameter :: b2 = 0.50_real64
-        real(real64), parameter :: b3 = 0.75_real64
-        real(real64), parameter :: b4 = 0.25_real64
+        ! Weight the current and three preceding P and Q samples in the direction of integration.
+        ! The starting_step_weights imported above weight the derivatives.
+        real(real64), parameter :: current_value_weight = -0.50_real64
+        real(real64), parameter :: one_step_back_weight = 0.50_real64
+        real(real64), parameter :: two_steps_back_weight = 0.75_real64
+        real(real64), parameter :: three_steps_back_weight = 0.25_real64
 
         ! Local declarations
         integer :: idiff, loc, j, jp1, jm1
@@ -129,10 +131,12 @@ contains
             do
                 j = j + 1
                 !
-                rppj = b1*pj + b2*pjm1 + b3*pjm2 + b4*pjm3 + c2*ppj + c3*ppjm1 + c4*&
-                    ppjm2 + c5*ppjm3 + c6*ppjm4
-                rqpj = b1*qj + b2*qjm1 + b3*qjm2 + b4*qjm3 + c2*qpj + c3*qpjm1 + c4*&
-                    qpjm2 + c5*qpjm3 + c6*qpjm4
+                rppj = current_value_weight*pj + one_step_back_weight*pjm1 &
+                    + two_steps_back_weight*pjm2 + three_steps_back_weight*pjm3 &
+                    + c2*ppj + c3*ppjm1 + c4*ppjm2 + c5*ppjm3 + c6*ppjm4
+                rqpj = current_value_weight*qj + one_step_back_weight*qjm1 &
+                    + two_steps_back_weight*qjm2 + three_steps_back_weight*qjm3 &
+                    + c2*qpj + c3*qpjm1 + c4*qpjm2 + c5*qpjm3 + c6*qpjm4
                 !
                 jp1 = j + 1
                 ccrpor = cc*radial_derivative_over_radius(jp1)
@@ -219,10 +223,12 @@ contains
             do
                 j = j - 1
                 !
-                rpmj = b1*pj + b2*pjp1 + b3*pjp2 + b4*pjp3 - c2*ppj - c3*ppjp1 - c4*&
-                    ppjp2 - c5*ppjp3 - c6*ppjp4
-                rqmj = b1*qj + b2*qjp1 + b3*qjp2 + b4*qjp3 - c2*qpj - c3*qpjp1 - c4*&
-                    qpjp2 - c5*qpjp3 - c6*qpjp4
+                rpmj = current_value_weight*pj + one_step_back_weight*pjp1 &
+                    + two_steps_back_weight*pjp2 + three_steps_back_weight*pjp3 &
+                    - c2*ppj - c3*ppjp1 - c4*ppjp2 - c5*ppjp3 - c6*ppjp4
+                rqmj = current_value_weight*qj + one_step_back_weight*qjp1 &
+                    + two_steps_back_weight*qjp2 + three_steps_back_weight*qjp3 &
+                    - c2*qpj - c3*qpjp1 - c4*qpjp2 - c5*qpjp3 - c6*qpjp4
                 !
                 jm1 = j - 1
                 ccrpor = cc*radial_derivative_over_radius(jm1)

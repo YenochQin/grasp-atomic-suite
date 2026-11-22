@@ -8,7 +8,7 @@
 
 ### 每个 MPI rank 负责的 Slater 积分数
 
-[distributed_slater_integrals.f90](distributed_slater_integrals.f90) 的 `rk_local_count(n, myid, nprocs)` 计算当前 rank 负责求值的条目数。[GENINTRK](../../apps/rci_mpi/tabulate_slater_integrals.f90) 将 $N$ 个积分条目按 $i=1,\ldots,N$ 编号，并将第 $i$ 个条目分配给 $\operatorname{mod}(i,P)$，其中 $P$ 是 MPI 进程数。令 $N=qP+s$，$0\le s<P$，则 rank $r$ 的任务数为
+[distributed_slater_integrals.f90](distributed_slater_integrals.f90) 的 `rk_local_count(n, myid, nprocs)` 计算当前 rank 负责求值的条目数。[`tabulate_slater_integrals`](../../apps/rci_mpi/tabulate_slater_integrals.f90) 将 $N$ 个积分条目按 $i=1,\ldots,N$ 编号，并将第 $i$ 个条目分配给 $\operatorname{mod}(i,P)$，其中 $P$ 是 MPI 进程数。令 $N=qP+s$，$0\le s<P$，则 rank $r$ 的任务数为
 
 $$
 N_r=q+

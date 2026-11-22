@@ -15,9 +15,11 @@ converted NMS and SMS row and reports differences in the requested GHz, MHz,
 or meV units. A missing or unsupported mass-shift unit is an input error.
 The linear-dependence discrepancy is reported as `NaN` when its normalization denominator is zero.
 
-The suite builds and installs `fical` as a separate executable. You can
-also compile it directly from the repository root with GNU Fortran 15.
+The Suite builds and installs `fical` as a separate executable linked against
+`core`. After configuring Suite, build the target from the repository root.
+Replace `build` with your configured build directory. The executable is
+written to that directory's `bin/`. [Suite build setup](../../../README.md#build)
 
 ```fish
-/usr/bin/gfortran-15 -std=f2018 -pedantic-errors -Werror=implicit-interface -Werror=implicit-procedure src/apps/ris4/isotope_shift_transition_main.f90 -o fical
+cmake --build build --target fical
 ```

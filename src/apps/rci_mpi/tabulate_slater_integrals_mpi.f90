@@ -30,15 +30,15 @@ contains
         integer  :: max_orbital_two_j
 
         ! Local declarations
-        integer      :: n
+        integer      :: slater_integral_count
         !-----------------------------------------------
 
-        call tabulate_slater_integrals (mpi_rank, mpi_process_count, n, max_orbital_two_j)
+        call tabulate_slater_integrals (mpi_rank, mpi_process_count, slater_integral_count, max_orbital_two_j)
 
         ! Gather integrals (and their indeces) from- and send to- all nodes
 
-        call allreduce_mpi_integer_sum (local_slater_integral_indices, n)
-        call allreduce_mpi_real_sum (local_slater_integral_values, n)
+        call allreduce_mpi_integer_sum (local_slater_integral_indices, slater_integral_count)
+        call allreduce_mpi_real_sum (local_slater_integral_values, slater_integral_count)
 
         return
     end subroutine tabulate_slater_integrals_mpi

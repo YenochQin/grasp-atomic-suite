@@ -71,6 +71,7 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
+| [fortran_source_and_readme_review_2026-11-22.md](reviews/fortran_source_and_readme_review_2026-11-22.md) | 已修复审查列出的 Fortran 命名、注释及 README 问题，记录串行和 MPI 回归及 macOS 内存探测限制。 |
 | [fortran_arrow_audit_2026-11-20.md](reviews/fortran_arrow_audit_2026-11-20.md) | Fortran 导入重命名与旧命名兼容入口已清除，含迁移对照、旧接口拒绝验证及运行结果比较。 |
 | [native_csf_descriptor_validation_2026-11-17.md](reviews/native_csf_descriptor_validation_2026-11-17.md) | 原生 CSF 输入的功能回归、矩阵及告警门禁边界；保留独立验收证据。 |
 | [fortls_fortitude_current_audit_2026-11-17.md](reviews/fortls_fortitude_current_audit_2026-11-17.md) | 迁移前工具审查；基准 5806884；保留原静态扫描及解析边界。之后生产 CSF reader 已替换，不能将旧风险与计数当作当前状态。 |
