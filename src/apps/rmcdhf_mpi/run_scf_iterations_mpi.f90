@@ -31,7 +31,8 @@ contains
             highest_selected_level_by_block, symmetry_block_count
         use standard_io_units, only: stderr_unit, stdin_unit
         use orbital_lagrange_multipliers, only: lagrange_multiplier_values, lagrange_orbital_pair_labels, lagrange_multiplier_count
-        use mcp_file_metadata, only: max_mcp_file_multipole_rank
+        use mcp_density_contractions, only: release_contractions, begin_density_epoch
+        use rmcdhf_mcp_io, only: mcp_now, profile_stage
         use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank
         use symmetry_block_offsets, only: total_csf_count, mixing_coefficient_storage_size, csf_offsets_by_block, &
             eigenvalue_offsets_by_block, mixing_offsets_by_block
@@ -67,8 +68,9 @@ contains
         character  :: output_wavefunction_path*(*)
 
         ! Local declarations
-        integer :: orbital_index, symmetry_block_index, mcp_unit, scf_iteration, orbital_update_index, extra_orbital_update, &
+        integer :: orbital_index, symmetry_block_index, scf_iteration, orbital_update_index, extra_orbital_update, &
             & least_consistent_orbital, mpi_logical_type
+        real(real64) :: iteration_started, orbital_started
         real(real64) :: weighted_average_energy, previous_weighted_average_energy, maximum_orbital_damping
         logical :: scf_converged, sort_by_self_consistency, first_davidson_solve
         ! .. set the logical variable dvdfirst
@@ -163,10 +165,13 @@ contains
         if (extended_optimal_level) then
             call solve_hamiltonian_blocks_mpi (first_davidson_solve)
             call update_scf_mixing_mpi (weighted_average_energy)
+        else
+            call begin_density_epoch()
         end if
         previous_weighted_average_energy = 0.0
         first_davidson_solve = .false.
         do scf_iteration = 1, maximum_scf_iterations
+            iteration_started = mcp_now()
             if (mpi_rank == 0) write (*, '(/," Iteration number ",1i3,/," --------------------")') scf_iteration
 
             ! For all pairs constrained through a Lagrange multiplier, compute
@@ -182,8 +187,10 @@ contains
             do orbital_index = 1, orbital_count
                 orbital_update_index = orbital_update_order(orbital_index)
                 if (is_orbital_fixed(orbital_update_index)) cycle
+                orbital_started = mcp_now()
                 call improve_orbital_mpi (extended_optimal_level, orbital_update_index, sort_by_self_consistency, &
                     & maximum_orbital_damping)
+                call profile_stage("orbital_update",orbital_update_index,0,orbital_started)
             end do
             ! For KOUNT = 1 to NSIC: find the least self-consistent orbital;
             ! improve it
@@ -198,8 +205,10 @@ contains
                         exit
                     end if
                 end if
+                orbital_started = mcp_now()
                 call improve_orbital_mpi (extended_optimal_level, least_consistent_orbital, sort_by_self_consistency, &
                     & maximum_orbital_damping)
+                call profile_stage("extra_orbital_update",least_consistent_orbital,0,orbital_started)
             end do
 
             if (extra_orbital_update > orbital_updates_per_scf_iteration) then
@@ -228,6 +237,7 @@ contains
             if (mpi_rank == 0) call write_scf_radial_wavefunctions (output_wavefunction_path)
 
             if (extended_optimal_level) then
+                call release_contractions()
                 call solve_hamiltonian_blocks_mpi(first_davidson_solve)
                 call update_scf_mixing_mpi (weighted_average_energy)
             end if
@@ -237,19 +247,17 @@ contains
             if (abs((weighted_average_energy - previous_weighted_average_energy)/weighted_average_energy) < &
                 & 0.001_real64*working_tolerance) scf_converged = .true.
             previous_weighted_average_energy = weighted_average_energy
+            call profile_stage("scf_iteration",0,0,iteration_started)
             if (.not.scf_converged) cycle
             if (rmcdhf_debug_flags(25) .and. .not.rmcdhf_debug_flags(24) .and. mpi_rank==0) call print_radial_wavefunction (0)
             exit
 
         end do
 
+        call release_contractions()
         if (scf_iteration > maximum_scf_iterations) then
             if (mpi_rank==0) write (stderr_unit,*)" Maximum iterations in SCF Exceeded."
         end if
-
-        do mcp_unit = 31, 32 + max_mcp_file_multipole_rank
-            close(mcp_unit)                                ! The MCP coefficient files
-        end do
 
         if (mpi_rank == 0) then
             close(mixing_output_unit)                               ! The .mix file

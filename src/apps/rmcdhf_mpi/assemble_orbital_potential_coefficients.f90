@@ -17,15 +17,14 @@ contains
     ! Modified by Xinghong He. Last update: 21 Dec 1997
     subroutine assemble_orbital_potential_coefficients(extended_optimal_level, orbital_index)
         ! Module dependencies
-        use mcp_file_metadata, only: mcp_input_units
+        use mpi_indexed_mcp, only: decode_mcp_label
+        use mcp_density_contractions, only: prepare_contractions, contraction_bounds, contracted_labels, contracted_values
+        use rmcdhf_mcp_io, only: mcp_now, profile_stage, log_bits, verification_enabled
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use grasp_parameters,    only: orbital_index_radix
-        use array_memory_management, only: alloc, dalloc, ralloc
-        use mpi_io_errors, only: fail_input_io_mpi
+        use array_memory_management, only: alloc, ralloc
         use orbital_csf_basis, only: csf_count, orbital_count, orbital_kappa, orbital_two_j
         use hamiltonian_symmetry_blocks, only: csf_counts_by_block, symmetry_block_count
-        use sparse_hamiltonian_storage, only: stored_matrix_element_count, matrix_partner_indices
-        use standard_io_units, only: stderr_unit
         use mcp_file_metadata, only: max_mcp_file_multipole_rank
         use mpi_state, only: mpi_process_count, mpi_rank
         use symmetry_block_offsets, only: csf_offsets_by_block
@@ -42,35 +41,19 @@ contains
 
         ! Arguments
         integer, intent(in) :: orbital_index
-        logical  :: extended_optimal_level
+        logical, intent(in) :: extended_optimal_level
 
-        ! Local constants
-        character(len=*), parameter :: routine_name = "assemble_orbital_potential_coefficients"
         real(real64), parameter :: eps = 1.0e-10_real64
+        integer :: decoded_integral_orbital_indices(4)
+        integer :: current_orbital_kappa, current_orbital_two_j, packed_orbital_label_offset, packed_orbital_label_stride, &
+            partner_orbital_index, multipole_rank, symmetry_block_index, csf_index, partner_orbital_two_j, &
+            maximum_multipole_rank, minimum_multipole_rank, nfile, i, jblock, lab, ia, ithis, irank, iind, il, iorb, &
+            iyo1, iyo2, ifound, loc1, loc2, ithis2, selected_integral_orbital_index
+        integer(int64) :: first, last, group_index
+        real(real64) :: current_orbital_weight, sumr, ykab, xkab, sum, started
 
-        ! Local declarations
-        integer  :: decoded_integral_orbital_indices(4)
-        integer :: coefficient_buffer_size, current_orbital_kappa, current_orbital_two_j, packed_orbital_label_offset, &
-            & packed_orbital_label_stride, partner_orbital_index, multipole_rank, symmetry_block_index, csf_index, &
-            & partner_orbital_two_j, maximum_multipole_rank, &
-            minimum_multipole_rank, nfile, i, jblock, jblockt, iendcdum, coefficient_count, io_status, lab, contribution_count, &
-            ia, ic, ithis, irank, iind, il, iorb, iyo1, iyo2, ifound, loc1, loc2, &
-            ithis2, selected_integral_orbital_index, channel_record_count
-        real(real64) :: current_orbital_weight, sumr, ykab, xkab, sum,  contr
-        character :: mcp_channel_label*3
-        ! Locals
-        real(real64), pointer :: channel_coefficients(:)
-        integer, pointer :: channel_csf_columns(:), channel_matrix_positions(:)
-
-        ! Initializations
-
-        coefficient_buffer_size = 1
-        call alloc (channel_coefficients, coefficient_buffer_size, "channel_coefficients", &
-            "assemble_orbital_potential_coefficients" )
-        call alloc (channel_csf_columns, coefficient_buffer_size, "channel_csf_columns", "assemble_orbital_potential_coefficients")
-        call alloc (channel_matrix_positions, coefficient_buffer_size, "channel_matrix_positions", &
-            "assemble_orbital_potential_coefficients")
-
+        started = mcp_now()
+        call prepare_contractions(extended_optimal_level)
         direct_coefficient_count = 0
         exchange_coefficient_count = 0
         y_potential_coefficient_count = 0
@@ -190,132 +173,16 @@ contains
             end do
         end do
 
-        ! Subroutine setham called from matrix had gone through the mcp
-        ! files once. setcof will do it again. (Go to setmcp to see
-        ! contents of these records.
-
-        do nfile = 30, 32 + max_mcp_file_multipole_rank
-            rewind (mcp_input_units(nfile), iostat=io_status)
-            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
-                "MCP assemble_orbital_potential_coefficients rewind")
-            if (nfile /= 30) then
-                do i = 1, 3
-                    read (mcp_input_units(nfile), iostat=io_status)
-                    if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
-                        "MCP assemble_orbital_potential_coefficients skip header or payload")
-                    cycle
-                end do
-            else
-                do i = 1, 3
-                    read (mcp_input_units(nfile), iostat=io_status)
-                    if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
-                        "MCP assemble_orbital_potential_coefficients skip header or payload")
-                    read (mcp_input_units(nfile), iostat=io_status)
-                    if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
-                        "MCP assemble_orbital_potential_coefficients skip header or payload")
-                end do
-            end if
-        end do
-
-        ! Generate DA coefficients; these arise from the one-electron
-        ! integrals
-
+        ! Replay the one-electron groups in block and label order.
         do jblock = 1, symmetry_block_count
-
-            ! Read in IROW from file mcp.30 ***
-            read (mcp_input_units(30), iostat=io_status) mcp_channel_label, jblockt, csf_count
-            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
-                "MCP assemble_orbital_potential_coefficients block or channel header")
-            if (jblockt /= jblock) then
-                write (stderr_unit, *) routine_name, " branch 1: block index mismatch"
-                call fail_input_io_mpi(0, mcp_input_units(30), &
-                    "MCP assemble_orbital_potential_coefficients inconsistent block header")
-            end if
-            read (mcp_input_units(30), iostat=io_status) channel_record_count
-            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
-                "MCP assemble_orbital_potential_coefficients sparse element count")
-            stored_matrix_element_count = int(channel_record_count,kind=int64)
-            call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", &
-                "assemble_orbital_potential_coefficients")
-            read (mcp_input_units(30), iostat=io_status) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), &
-                (matrix_partner_indices(i),i=1, &
-                & stored_matrix_element_count)
-            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
-                "MCP assemble_orbital_potential_coefficients sparse indices")
-
-            ! Block info file mcp.31 ***
-            read (mcp_input_units(31), iostat=io_status) mcp_channel_label, jblockt, csf_count, coefficient_count
-            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(31), &
-                "MCP assemble_orbital_potential_coefficients block or channel header")
-            if (jblockt /= jblock) then
-                write (stderr_unit, *) routine_name, " branch 2: block index mismatch"
-                call fail_input_io_mpi(0, mcp_input_units(31), &
-                    "MCP assemble_orbital_potential_coefficients inconsistent block header")
-            end if
-
-            ! Loop over labels having non-zero coefficients
-            ! it exits when no more labels for the block
-
-            do
-                read (mcp_input_units(31), iostat=io_status) lab, contribution_count
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(31), &
-                    "MCP assemble_orbital_potential_coefficients label/count")
-
-                ! 0, 0 marks the end of a block. This is the normal exit
-
-                if (lab==0 .and. contribution_count==0) then
-                    call dalloc (matrix_partner_indices, "matrix_partner_indices", "assemble_orbital_potential_coefficients")
-                    exit                              ! Actually to next block
-                end if
-
-                ! Decode the labels of I(ab) ***
+            call begin_groups(jblock,31)
+            do while (advance_group())
                 ia = mod(lab,orbital_index_radix)
                 partner_orbital_index = lab/orbital_index_radix
-
-                ! At least one orbital should be J in order to have
-                ! non-zero value; otherwise, skip to the next label.
-
-                if (ia/=orbital_index .and. partner_orbital_index/=orbital_index) then
-                    read (mcp_input_units(31), iostat=io_status)                         ! No contributions from this integral; skip
-                    if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(31), &
-                        "MCP assemble_orbital_potential_coefficients skip header or payload")
-                    cycle                             ! to next label
+                if (ia /= orbital_index .and. partner_orbital_index /= orbital_index) then
+                    cycle
                 end if
-
-                if (contribution_count > coefficient_buffer_size) then
-                    call dalloc (channel_coefficients, "channel_coefficients", "assemble_orbital_potential_coefficients")
-                    call dalloc (channel_csf_columns, "channel_csf_columns", "assemble_orbital_potential_coefficients")
-                    call dalloc (channel_matrix_positions, "channel_matrix_positions", "assemble_orbital_potential_coefficients")
-                    coefficient_buffer_size = contribution_count
-                    call alloc (channel_coefficients, coefficient_buffer_size, "channel_coefficients", &
-                        "assemble_orbital_potential_coefficients" )
-                    call alloc (channel_csf_columns, coefficient_buffer_size, "channel_csf_columns", &
-                        "assemble_orbital_potential_coefficients")
-                    call alloc (channel_matrix_positions, coefficient_buffer_size, "channel_matrix_positions", &
-                        "assemble_orbital_potential_coefficients")
-                end if
-
-                ! Read the column index, the sparse matrix index, and the
-
-                read (mcp_input_units(31), iostat=io_status) (channel_csf_columns(i),channel_matrix_positions(i), &
-                    & channel_coefficients(i),i=1,contribution_count)
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(31), &
-                    "MCP assemble_orbital_potential_coefficients coefficient payload")
-
-                ! Add up all the contributions from this integral;
-                ! off-diagonal contributions have double the weight
-
-                sum = 0.0_real64
-                do i = 1, contribution_count
-                    csf_index = matrix_partner_indices(channel_matrix_positions(i))
-                    ic = channel_csf_columns(i)
-
-                    contr = csf_density_matrix_element(extended_optimal_level,csf_index,ic,jblock)*channel_coefficients(i)
-
-                    if (csf_index /= ic) contr = contr + contr
-                    sum = sum + contr
-                end do
-                sum = 0.5_real64*sum/current_orbital_weight
+                sum = normalized_sum(jblock,31)
 
                 ! Put coefficients in the list. Since there is always
                 ! (almost) some repeatence from different blocks, a check
@@ -359,122 +226,21 @@ contains
                 direct_coefficients(direct_coefficient_count) = sum                      ! print*, DA(NDCOF), ndcof, myid, 'myid'
                 direct_orbital_indices(direct_coefficient_count) = ithis
 
-            end do                             ! For labels
-        end do                                     ! For blocks
-
-        ! Generate YA and XA coefficients; these arise from the two-electron
-        ! integrals
-
-        do nfile = 32, 32 + max_mcp_file_multipole_rank
-
-            ! ...Re-position file mcp.30
-
-            rewind (mcp_input_units(30), iostat=io_status)
-            if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
-                "MCP assemble_orbital_potential_coefficients rewind")
-            do i = 1, 6
-                read (mcp_input_units(30), iostat=io_status)
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
-                    "MCP assemble_orbital_potential_coefficients skip header or payload")
             end do
+        end do
 
-            ! Loop over blocks again, this time, for V-coefficients
-
+        ! Preserve the k, block, label order used for YA and XA additions.
+        do nfile = 32, 32 + max_mcp_file_multipole_rank
+            multipole_rank = nfile - 32
             do jblock = 1, symmetry_block_count
-                ! ...Read in IROW from file mcp.30
-                read (mcp_input_units(30), iostat=io_status) mcp_channel_label, jblockt, csf_count
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
-                    "MCP assemble_orbital_potential_coefficients block or channel header")
-                if (jblockt /= jblock) then
-                    write (stderr_unit, *) routine_name, " branch 3: block index mismatch"
-                    call fail_input_io_mpi(0, mcp_input_units(30), &
-                        "MCP assemble_orbital_potential_coefficients inconsistent block header")
-                end if
-                read (mcp_input_units(30), iostat=io_status) channel_record_count
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
-                    "MCP assemble_orbital_potential_coefficients sparse element count")
-                stored_matrix_element_count = int(channel_record_count,kind=int64)
-                call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", &
-                    "assemble_orbital_potential_coefficients")
-                read (mcp_input_units(30), iostat=io_status) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), &
-                    (matrix_partner_indices(i),i=1, &
-                    & stored_matrix_element_count)
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(30), &
-                    "MCP assemble_orbital_potential_coefficients sparse indices")
-
-                read (mcp_input_units(nfile), iostat=io_status) mcp_channel_label, jblockt, csf_count, coefficient_count
-                if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
-                    "MCP assemble_orbital_potential_coefficients block or channel header")
-                if (jblockt /= jblock) then
-                    write (stderr_unit, *) routine_name, " branch 4: block index mismatch"
-                    call fail_input_io_mpi(0, mcp_input_units(nfile), &
-                        "MCP assemble_orbital_potential_coefficients inconsistent block header")
-                end if
-
-                multipole_rank = nfile - 32                       ! multipolarity of the integral
-
-                ! Attempt to read another block of data
-                do
-                    read (mcp_input_units(nfile), iostat=io_status) lab, contribution_count
-                    if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
-                        "MCP assemble_orbital_potential_coefficients label/count")
-                    if (lab==0 .and. contribution_count==0) then
-                        call dalloc (matrix_partner_indices, "matrix_partner_indices", "assemble_orbital_potential_coefficients")
-                        exit
-                    end if
-                    ! k
-                    ! Decode the labels of R (abcd)
-                    decoded_integral_orbital_indices(4) = mod(lab,orbital_index_radix)
-                    lab = lab/orbital_index_radix
-                    decoded_integral_orbital_indices(2) = mod(lab,orbital_index_radix)
-                    lab = lab/orbital_index_radix
-                    decoded_integral_orbital_indices(3) = mod(lab,orbital_index_radix)
-                    decoded_integral_orbital_indices(1) = lab/orbital_index_radix
-
-                    ! Determine the number of indices that match
-                    irank = 0
-                    irank = irank + count(decoded_integral_orbital_indices==orbital_index)
-
+                call begin_groups(jblock,nfile)
+                do while (advance_group())
+                    call decode_mcp_label(lab,.false.,decoded_integral_orbital_indices)
+                    irank = count(decoded_integral_orbital_indices == orbital_index)
                     if (irank == 0) then
-                        read (mcp_input_units(nfile), iostat=io_status)
-                        if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
-                            & "MCP assemble_orbital_potential_coefficients skip header or payload")
-                        cycle
+                            cycle
                     end if
-
-                    ! At least one subshell index matches; allocate storage
-                    ! for reading in the rest of this block
-                    if (contribution_count > coefficient_buffer_size) then
-                        call dalloc (channel_coefficients, "channel_coefficients", "assemble_orbital_potential_coefficients")
-                        call dalloc (channel_csf_columns, "channel_csf_columns", "assemble_orbital_potential_coefficients")
-                        call dalloc (channel_matrix_positions, "channel_matrix_positions", &
-                            "assemble_orbital_potential_coefficients")
-                        coefficient_buffer_size = contribution_count
-                        call alloc (channel_coefficients, coefficient_buffer_size, "channel_coefficients", &
-                            "assemble_orbital_potential_coefficients")
-                        call alloc (channel_csf_columns, coefficient_buffer_size, "channel_csf_columns", &
-                            "assemble_orbital_potential_coefficients")
-                        call alloc (channel_matrix_positions, coefficient_buffer_size, "channel_matrix_positions", &
-                            "assemble_orbital_potential_coefficients")
-                    end if
-
-                    ! Read the column, sparse matrix index, and coefficient for each contribution to this integral.
-                    read (mcp_input_units(nfile), iostat=io_status) (channel_csf_columns(i),channel_matrix_positions(i), &
-                        & channel_coefficients(i),i=1,contribution_count)
-                    if (io_status /= 0) call fail_input_io_mpi(io_status, mcp_input_units(nfile), &
-                        "MCP assemble_orbital_potential_coefficients coefficient payload")
-
-                    ! Add up all the contributions from this integral;
-                    ! off-diagonal contributions have double the weight
-                    sum = 0.0_real64
-                    do i = 1, contribution_count
-                        csf_index = matrix_partner_indices(channel_matrix_positions(i))
-                        ic = channel_csf_columns(i)
-                        contr = csf_density_matrix_element(extended_optimal_level,csf_index,ic,jblock)*channel_coefficients(i)
-                        if (csf_index /= ic) contr = contr + contr
-                        sum = sum + contr
-                    end do
-                    sum = 0.5_real64*sum/current_orbital_weight
+                    sum = normalized_sum(jblock,nfile)
 
                     select case (irank)
                     case (1)
@@ -766,14 +532,41 @@ contains
                     end select
 
                 end do
-            end do                                  ! loop for V-Coefficients
+                end do
         end do
+        if (verification_enabled) then
+            do i = 1, direct_coefficient_count
+                call log_bits("DA",orbital_index,0,i,int(direct_orbital_indices(i),int64),direct_coefficients(i))
+            end do
+            do i = 1, y_potential_coefficient_count
+                call log_bits("YA",orbital_index,0,i,int(y_potential_coefficient_labels(i),int64),y_potential_coefficients(i))
+            end do
+            do i = 1, exchange_coefficient_count
+                call log_bits("XA",orbital_index,0,i,int(exchange_coefficient_labels(i),int64),exchange_coefficients(i))
+            end do
+        end if
+        call profile_stage("potential_coefficients",orbital_index,0,started)
 
-        ! Deallocate storage for arrays local to this routine
-        call dalloc (channel_coefficients, "channel_coefficients", "assemble_orbital_potential_coefficients")
-        call dalloc (channel_csf_columns, "channel_csf_columns", "assemble_orbital_potential_coefficients")
-        call dalloc (channel_matrix_positions, "channel_matrix_positions", "assemble_orbital_potential_coefficients")
+    contains
 
-        return
+        subroutine begin_groups(block, channel)
+            integer, intent(in) :: block, channel
+            csf_count = csf_counts_by_block(block)
+            call contraction_bounds(block,channel,first,last)
+            group_index = first-1
+        end subroutine begin_groups
+
+        logical function advance_group() result(found)
+            group_index = group_index + 1
+            found = group_index <= last
+            if (found) lab = contracted_labels(group_index)
+        end function advance_group
+
+        real(real64) function normalized_sum(block, channel) result(value)
+            integer, intent(in) :: block, channel
+            value = contracted_values(group_index)
+            if (verification_enabled) call log_bits("group",orbital_index,block,channel,int(lab,int64),value)
+            value = 0.5_real64*value/current_orbital_weight
+        end function normalized_sum
     end subroutine assemble_orbital_potential_coefficients
 end module assemble_orbital_potential_coefficients_interface

@@ -1,46 +1,50 @@
-! Exercise the production MPI sparse-file writer without launching MPI.
+! Exercise the production sparse writer on an occupied and an empty MPI rank.
 program sparse_empty_rank
+    use iso_fortran_env, only: int64
     use orbital_csf_basis, only: csf_count
+    use mpi_state, only: mpi_rank, mpi_process_count, mpi_comm_world, mpi_init, mpi_comm_rank, mpi_comm_size, mpi_finalize
+    use mpi_indexed_mcp, only: indexed_mcp, open_indexed_mcp_writer, start_indexed_channel, finish_indexed_mcp, &
+        open_indexed_mcp_reader, read_indexed_sparse
     use write_mcp_sparsity_interface, only: write_mcp_sparsity
     use mcp_generation_options, only: mcp_temporary_units
     implicit none (type, external)
-    integer :: mcp_output_unit
-    integer :: rank, block, count, columns, endpoint, row
+    type(indexed_mcp) :: shard
+    integer :: status, local_size
+    integer, allocatable :: ends(:), rows(:)
+    character(16) :: prefix
     logical :: printing
-    character(3) :: label
 
+    call mpi_init(status)
+    call mpi_comm_rank(mpi_comm_world,mpi_rank,status)
+    call mpi_comm_size(mpi_comm_world,mpi_process_count,status)
+    if (mpi_process_count /= 2) error stop "Fixture requires two ranks"
+    write(prefix,'(A,I0)') "sparse-rank-",mpi_rank
     allocate(mcp_temporary_units(30:30))
-    csf_count=1
-    printing=.false.
-    do rank=0,1
-        ! Rank 0 owns the only column; rank 1 owns no columns or elements.
-        open(newunit=mcp_output_unit, file="sparse-rank.30", status="replace", form="unformatted")
-        close(mcp_output_unit)
-        open(newunit=mcp_temporary_units(30), status="scratch", form="unformatted")
-        write(mcp_temporary_units(30)) "MCP", 1
-        if (rank == 0) write(mcp_temporary_units(30)) 1, 1, 1
-        rewind(mcp_temporary_units(30))
-        call write_mcp_sparsity(check_callback,1-rank,printing,1,rank,2,"sparse-rank")
-        close(mcp_temporary_units(30))
-
-        open(newunit=mcp_output_unit, file="sparse-rank.30", status="old", form="unformatted")
-        read(mcp_output_unit) label, block, columns
-        if (label /= "MCP" .or. block /= 1 .or. columns /= csf_count) error stop "Sparse header"
-        read(mcp_output_unit) count
-        if (count /= 1-rank) error stop "Sparse local count"
-        if (rank == 0) then
-            read(mcp_output_unit) endpoint, row
-            if (endpoint /= 1 .or. row /= 1) error stop "Sparse owned column"
-        else
-            read(mcp_output_unit) ! Required empty record for a rank with no work.
-        end if
-        close(mcp_output_unit, status="delete")
-    end do
-    print *, "PASS sparse occupied and empty rank records"
+    csf_count = 1
+    local_size = 1-mpi_rank
+    printing = .false.
+    open(newunit=mcp_temporary_units(30),status="scratch",form="unformatted")
+    write(mcp_temporary_units(30)) "MCP",1
+    if (local_size == 1) write(mcp_temporary_units(30)) 1,1,1
+    rewind(mcp_temporary_units(30))
+    call open_indexed_mcp_writer(shard,prefix,0,0,2,1,[1],["   0+   "],[0],0,repeat("a",64))
+    call write_mcp_sparsity(check_callback,local_size,printing,1,mpi_rank,mpi_process_count,shard)
+    close(mcp_temporary_units(30))
+    call start_indexed_channel(shard,1)
+    call start_indexed_channel(shard,2)
+    call finish_indexed_mcp(shard)
+    call open_indexed_mcp_reader(shard,prefix,1)
+    if (shard%row_counts(1) /= int(local_size,int64)) error stop "Sparse count"
+    allocate(ends(local_size),rows(local_size))
+    call read_indexed_sparse(shard,1,ends,rows)
+    if (any(ends /= 1) .or. any(rows /= 1)) error stop "Sparse owned column"
+    close(shard%unit,status="delete")
+    call mpi_finalize(status)
+    print *, "PASS indexed sparse occupied and empty ranks"
 contains
-    subroutine check_callback(lprint, nnonz, n)
+    subroutine check_callback(lprint,nnonz,n)
         logical, intent(in) :: lprint
-        integer, intent(in) :: nnonz, n
-        if (lprint .or. nnonz /= 1-rank .or. n /= csf_count) error stop "Sparse callback"
+        integer, intent(in) :: nnonz,n
+        if (lprint .or. nnonz /= local_size .or. n /= csf_count) error stop "Sparse callback"
     end subroutine check_callback
 end program sparse_empty_rank

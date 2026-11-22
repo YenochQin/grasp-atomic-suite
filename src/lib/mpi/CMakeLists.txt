@@ -4,6 +4,8 @@ add_library(grasp_mpi STATIC
     mpi_csf_basis_input.f90
     mpi_rmcdhf_csf_input.f90
     mpi_io_errors.f90
+    mpi_indexed_mcp.f90
+    mpi_mcp_calculation_input.f90
     mpi_nuclear_polarization.f90
     mpi_state.f90
     mpi_runtime.f90

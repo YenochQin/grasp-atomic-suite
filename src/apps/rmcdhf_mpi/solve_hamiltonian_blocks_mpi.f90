@@ -16,7 +16,9 @@ contains
     ! Block version by Xinghong He. 07 Aug 1998
     subroutine solve_hamiltonian_blocks_mpi(first_davidson_solve)
         ! Module dependencies
-        use mcp_file_metadata, only: mcp_input_units
+        use mpi_mcp_calculation_input, only: indexed_input
+        use rmcdhf_mcp_io, only: read_sparse, profile_indexed_matrix_skip, mcp_now, profile_stage, verification_enabled, log_bits
+        use mcp_density_contractions, only: record_solver_workspace
         use, intrinsic :: iso_fortran_env, only: output_unit
         use calculation_file_units, only: mixing_output_unit
         use, intrinsic :: iso_fortran_env, only: real64, int64
@@ -25,10 +27,10 @@ contains
         use atomic_calculation_state, only: requested_level_indices, selected_level_count
         use debug_output_settings, only: ldbpg
         use eigenstate_expansions, only: hamiltonian_energy_shift, shifted_eigenvalues, csf_mixing_coefficients
-        use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, symmetry_block_count
+        use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, symmetry_block_count, &
+            highest_selected_level_by_block
         use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets, &
             matrix_partner_indices
-        use mcp_file_metadata, only: max_mcp_file_multipole_rank
         use mpi_state, only: mpi_allreduce, mpi_barrier, mpi_comm_world, mpi_double_precision, mpi_error_code, &
             mpi_process_count, mpi_rank, mpi_sum
         use orbital_csf_basis, only: csf_count, orbital_count
@@ -47,15 +49,13 @@ contains
         logical, intent(in) ::  first_davidson_solve
 
         ! Local declarations
-        integer :: mcp_channel, file_electron_count, discarded_header_value, symmetry_block_index, file_block_index, i, &
-            & block_csf_offset, block_eigenvalue_offset, &
-            block_mixing_offset, file_csf_count, file_coefficient_count, lab, contribution_count, itmp, csf_index, idiag, &
-                & level_index, iofset, &
-            jother, ia, jofset, iattmp, iastmp, nelmntgg
+        integer :: file_electron_count, discarded_header_value, symmetry_block_index, i, &
+            block_csf_offset, block_eigenvalue_offset, block_mixing_offset, csf_index, idiag, level_index, iofset, &
+            jother, ia, jofset, iattmp, iastmp
+        integer(int64) :: matrix_entry
         real(real64), pointer :: cmvl(:)
-        real(real64) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa
+        real(real64) :: amax, cdampj, dnfac, evecij, sum, tmp, omcdaj, ovrlap, wa, started
         logical :: first
-        character :: mcp_channel_label*3
 
         save first
 
@@ -75,18 +75,6 @@ contains
         ! Position the files - MCP files (unit NFILE) for reading
         ! and mixing coefficients file (unit 25) for writing
 
-        do mcp_channel = 30, 32 + max_mcp_file_multipole_rank
-            rewind (mcp_input_units(mcp_channel))
-            if (mcp_channel == 30) then
-                read (mcp_input_units(mcp_channel))
-                read (mcp_input_units(mcp_channel))
-                read (mcp_input_units(mcp_channel))
-            end if
-            read (mcp_input_units(mcp_channel))
-            read (mcp_input_units(mcp_channel))
-            read (mcp_input_units(mcp_channel))
-        end do
-
         ! To put in ncmin and nvecsiz. Values read here are the same
         ! as the values already loaded in the shared modules.
         if (mpi_rank == 0) then
@@ -104,69 +92,48 @@ contains
 
         do symmetry_block_index = 1, symmetry_block_count                      ! block do-loop
 
-            !   Read indeces of non-zero elements from mcp.30 file. Note the
-            !   format has been changed to lower-triangle-by-rows.
-            ! Length of iendc can be reduced
+            started = mcp_now()
+            csf_count = csf_counts_by_block(symmetry_block_index)
+            if (eigenvector_counts_by_block(symmetry_block_index) == 0) then
+                call profile_indexed_matrix_skip(symmetry_block_index)
+                call profile_stage("matrix_skipped",0,symmetry_block_index,started)
+                cycle
+            end if
 
-            read (mcp_input_units(30)) mcp_channel_label, file_block_index, csf_count
-            if (file_block_index/=symmetry_block_index .or. csf_count/=csf_counts_by_block(symmetry_block_index)) error stop &
-                "solve_hamiltonian_blocks_mpi: block index or CSF count mismatch"
-            read (mcp_input_units(30)) nelmntgg
-            stored_matrix_element_count = int(nelmntgg,kind=int64)
-            call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", &
-                "solve_hamiltonian_blocks_mpi")
-            call alloc (hamiltonian_values, stored_matrix_element_count, "hamiltonian_values", "solve_hamiltonian_blocks_mpi")
-            call alloc (stored_segment_end_offsets, 0, csf_count, "stored_segment_end_offsets", "solve_hamiltonian_blocks_mpi" )
-
-            !                                                 ! may not be necessary if iendc is ALWAYS used
-            ! IENDC(:NCF) = 0                        ! the way it is assigned here.
-            stored_segment_end_offsets(0:csf_count) = 0
-
-            ! ...EMT will be accumulated in setham
-            hamiltonian_values(:stored_matrix_element_count) = 0.0_real64
-
-            read (mcp_input_units(30)) (stored_segment_end_offsets(i),i=mpi_rank+1,csf_count,mpi_process_count), &
-                (matrix_partner_indices(i) &
-                & ,i=1,stored_matrix_element_count)
+            stored_matrix_element_count = indexed_input%row_counts(symmetry_block_index)
+            call alloc(matrix_partner_indices,stored_matrix_element_count,"matrix_partner_indices","solve_hamiltonian_blocks_mpi")
+            call alloc(stored_segment_end_offsets,0,csf_count,"stored_segment_end_offsets","solve_hamiltonian_blocks_mpi")
+            stored_segment_end_offsets = 0
+            call read_sparse(symmetry_block_index, &
+                stored_segment_end_offsets(mpi_rank+1:csf_count:mpi_process_count),matrix_partner_indices,"matrix")
 
             block_csf_offset = csf_offsets_by_block(symmetry_block_index)
             block_eigenvalue_offset = eigenvalue_offsets_by_block(symmetry_block_index)
             block_mixing_offset = mixing_offsets_by_block(symmetry_block_index)
 
-            ! Skip current block if no eigenlaue is required
-
-            if (eigenvector_counts_by_block(symmetry_block_index) == 0) then
-                do mcp_channel = 31, 32 + max_mcp_file_multipole_rank
-                    read (mcp_input_units(mcp_channel)) mcp_channel_label, file_block_index, file_csf_count, file_coefficient_count
-                    if (file_block_index /= symmetry_block_index)                  &
-                        error stop "solve_hamiltonian_blocks_mpi: block index mismatch"
-                    if (file_csf_count /= csf_count) error stop "solve_hamiltonian_blocks_mpi: CSF count mismatch"
-
-                    read (mcp_input_units(mcp_channel)) lab, contribution_count
-                    do while(lab/=0 .or. contribution_count/=0)
-                        read (mcp_input_units(mcp_channel)) (itmp,itmp,tmp,i=1,contribution_count)
-                        read (mcp_input_units(mcp_channel)) lab, contribution_count
-                    end do
-                end do
-
-                call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "solve_hamiltonian_blocks_mpi")
-                call dalloc (matrix_partner_indices, "matrix_partner_indices", "solve_hamiltonian_blocks_mpi")
-
-                cycle
-
-            end if
-
-            ! Generate the Hamiltonian matrix - average energy is removed here
-
+            call alloc(hamiltonian_values,stored_matrix_element_count,"hamiltonian_values","solve_hamiltonian_blocks_mpi")
+            hamiltonian_values = 0.0_real64
+            call record_solver_workspace(csf_count,stored_matrix_element_count, &
+                highest_selected_level_by_block(symmetry_block_index),mixing_coefficient_storage_size)
             call assemble_hamiltonian_block (symmetry_block_index, mpi_rank, mpi_process_count)
+            if (verification_enabled) then
+                do matrix_entry = 1, stored_matrix_element_count
+                    call log_bits("H",0,symmetry_block_index,0,matrix_entry,hamiltonian_values(matrix_entry))
+                end do
+            end if
+            call profile_stage("matrix_assembly",0,symmetry_block_index,started)
             ! Determine average energy
             hamiltonian_energy_shift = 0.0_real64
             do csf_index = mpi_rank + 1, csf_count, mpi_process_count
                 hamiltonian_energy_shift = hamiltonian_energy_shift + hamiltonian_values(stored_segment_end_offsets(csf_index))
             end do
+            started = mcp_now()
             call mpi_barrier(mpi_comm_world,mpi_error_code)
+            call profile_stage("matrix_barrier",0,symmetry_block_index,started)
+            started = mcp_now()
             call mpi_allreduce (hamiltonian_energy_shift,tmp,1,mpi_double_precision,mpi_sum,  &
                 mpi_comm_world,mpi_error_code)
+            call profile_stage("matrix_reduction",0,symmetry_block_index,started)
             hamiltonian_energy_shift = tmp / csf_count
             ! EAV = EAV/NCF
             mean_energy_by_block(symmetry_block_index) = hamiltonian_energy_shift

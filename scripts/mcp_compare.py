@@ -178,6 +178,151 @@ class Shard:
     blocks: list[SparseBlock]
 
 
+@dataclass(frozen=True)
+class IndexedChannel:
+    first: int
+    groups: int
+    contributions: int
+    position: int
+
+
+@dataclass
+class IndexedShard(Shard):
+    directory_position: int
+    channels: list[list[IndexedChannel]]
+    endian: str
+    radix: int
+    generation: int
+    basis_id: bytes
+    cutoffs: tuple[int, ...]
+
+
+def read_indexed_shard(path: Path) -> tuple[IndexedShard, tuple[Any, ...]]:
+    """Validate the stream envelope and load the compact block directory."""
+    with path.open("rb") as stream:
+        size = path.stat().st_size
+        def fail(message: str) -> None:
+            raise MCPError(f"{path} at byte {stream.tell()}: {message}")
+
+        def unpack(fields: str) -> tuple[Any, ...]:
+            layout = struct.Struct(endian + fields)
+            data = stream.read(layout.size)
+            if len(data) != layout.size:
+                fail("truncated indexed MCP")
+            return layout.unpack(data)
+
+        prefix = stream.read(16)
+        if prefix[:8] != b"GMCPIDX1" or prefix[12:16] not in (b"\x04\x03\x02\x01", b"\x01\x02\x03\x04"):
+            fail("invalid indexed MCP signature or byte order")
+        endian = "<" if prefix[12:16] == b"\x04\x03\x02\x01" else ">"
+        stream.seek(8)
+        version, _, i32, i64, real, radix, integer_format, real_format = unpack("8i")
+        if (version, i32, i64, real, integer_format, real_format) != (1, 4, 8, 8, 1, 1) or radix < 2:
+            fail("unsupported indexed MCP representation")
+        rank, ranks, core, blocks, kmax, electrons, csfs, nw, flags, generation, directory, groups = unpack("12q")
+        basis_id, = unpack("64s")
+        if not (0 <= rank < ranks and 0 < nw < radix and 0 <= core <= nw and 1 <= blocks <= 50
+                and 0 <= kmax <= 67 and electrons > 0 and 0 <= flags <= 3
+                and groups >= 0 and 200 < directory <= size - 31
+                and directory - 1 + 32 * (groups + 1) == size):
+            fail("invalid header dimensions or truncated indexed MCP directory")
+        if not re.fullmatch(rb"[a-f0-9]{64}", basis_id):
+            fail("invalid basis identifier")
+        expected_position = 201 + blocks * (48 + 24 * (kmax + 2))
+        expected_group = 1
+        channels, sparse_data, ids, ncfs, cutoffs = [], [], [], [], []
+        for _ in range(blocks):
+            tag, ncf, cutoff, position, ncols, nrows = unpack("8s5q")
+            columns_owned = max(0, (ncf - rank - 1) // ranks + 1)
+            if not (0 < ncf < 2**31 and 0 <= cutoff <= ncf and position == expected_position
+                    and ncols == columns_owned and ncols <= nrows < 2**31
+                    and position + 4 * (nrows + ncols) <= directory):
+                fail("invalid indexed block structure")
+            ncfs.append(ncf)
+            ids.append(tag.decode("ascii", errors="replace").strip())
+            cutoffs.append(cutoff)
+            sparse_data.append((position, ncols, nrows))
+            expected_position += 4 * (ncols + nrows)
+            first, counts, totals = [unpack(f"{kmax + 2}q") for _ in range(3)]
+            block_channels = []
+            for first_group, count, total in zip(first, counts, totals, strict=True):
+                if not (first_group == expected_group and 0 <= count <= groups - expected_group + 1
+                        and count <= total and expected_position + 16 * total <= directory):
+                    fail("invalid indexed channel extent")
+                block_channels.append(IndexedChannel(first_group, count, total, expected_position))
+                expected_group += count
+                expected_position += 16 * total
+            channels.append(block_channels)
+        if expected_group != groups + 1 or expected_position != directory or sum(ncfs) != csfs:
+            fail("indexed directory totals do not match header")
+        stream.seek(size - 32)
+        if unpack("8s3q") != (b"MCPDONE1", generation, directory, groups):
+            fail("incomplete indexed MCP shard")
+        dtype = np.dtype(endian + "i4")
+        sparse = []
+        for ncf, (position, ncols, nrows) in zip(ncfs, sparse_data, strict=True):
+            stream.seek(position - 1)
+            data = np.fromfile(stream, dtype, ncols + nrows)
+            if data.size != ncols + nrows:
+                fail("truncated indexed sparse structure")
+            ends, rows = data[:ncols], data[ncols:]
+            if ncols:
+                cols = np.arange(rank + 1, ncf + 1, ranks)
+                if ends[0] < 1 or ends[-1] != nrows or np.any(ends[1:] <= ends[:-1]):
+                    fail("invalid indexed sparse column endpoints")
+                if np.any(rows[ends - 1] != cols):
+                    fail("missing diagonal at end of indexed column")
+            elif nrows:
+                fail("indexed sparse rows on an empty rank")
+            block = SparseBlock(ncf, rank, ranks, ends, rows)
+            pairs = block.pairs()
+            for start in range(0, nrows, CHUNK):
+                stop = min(start + CHUNK, nrows)
+                cols = block.columns(np.arange(start, stop))
+                if np.any(rows[start:stop] < 1) or np.any(rows[start:stop] > cols):
+                    fail("indexed row outside lower CSF triangle")
+            pairs.sort()
+            if np.any(pairs[1:] == pairs[:-1]):
+                fail("duplicate indexed sparse CSF pair")
+            sparse.append(block)
+    h = Header(blocks, rank, ranks, electrons, csfs, nw, bool(flags & 1), cutoffs[0], bool(flags & 2))
+    return IndexedShard(path, h, sparse, directory, channels, endian, radix, generation, basis_id, tuple(cutoffs)), (
+        core, tuple(ncfs), tuple(ids), kmax, h.semantics()
+    )
+
+
+def indexed_coefficient_groups(
+    stream: BinaryIO, shard: IndexedShard, unit: int, block: int, radix: int
+) -> Iterator[tuple[int, Array, Array]]:
+    if radix != shard.radix:
+        raise MCPError(f"{shard.prefix}: orbital label radix is {shard.radix}; check --keyorb")
+    channel = shard.channels[block-1][unit-31]
+    sparse = shard.blocks[block-1]
+    dtype = np.dtype([("column", shard.endian+"i4"), ("index", shard.endian+"i4"), ("value", shard.endian+"f8")])
+    remaining, position, previous = channel.contributions, channel.position, 0
+    for index in range(channel.first, channel.first + channel.groups):
+        stream.seek(shard.directory_position - 1 + (index - 1)*32)
+        payload = stream.read(32)
+        if len(payload) != 32:
+            raise MCPError(f"{shard.prefix}: truncated indexed group directory")
+        offset, length, label, count = struct.unpack(shard.endian+"4q", payload)
+        if offset != position or not 0 < count <= remaining or length != 16*count or label <= previous:
+            raise MCPError(f"{shard.prefix}: invalid indexed integral group")
+        if any(i < 1 or i > shard.header.nw for i in orbitals(label, unit, radix)):
+            raise MCPError(f"{shard.prefix}: indexed group label outside orbital basis")
+        stream.seek(offset - 1)
+        data = np.fromfile(stream, dtype, count)
+        if data.size != count:
+            raise MCPError(f"{shard.prefix}: truncated indexed coefficient payload")
+        pairs, values = checked_contributions(sparse, data, shard.prefix)
+        yield label, pairs, values
+        remaining -= count
+        position += length
+        previous = label
+    if remaining:
+        raise MCPError(f"{shard.prefix}: indexed channel contribution total mismatch")
+
+
 class Dataset:
     """A complete serial set or a complete collection of MPI rank files."""
 
@@ -189,6 +334,15 @@ class Dataset:
             for p in directory.glob(pattern)
             if re.fullmatch(r"mcp(?:\d+)?\.\d+", p.name)
         }
+        indexed_paths = sorted(
+            path for pattern in ("mcp*.mcpidx", "[0-9][0-9][0-9]/mcp.mcpidx") for path in directory.glob(pattern)
+            if re.fullmatch(r"mcp(?:[0-9]+)?\.mcpidx", path.name)
+        )
+        if indexed_paths:
+            if channels:
+                raise MCPError(f"{directory}: mixed indexed and sequential MCP file sets")
+            self.load_indexed(indexed_paths)
+            return
         files = [directory / p for p in sorted(channels) if p.suffix == ".30"]
         if not files:
             raise MCPError(f"{directory}: no mcp.30 or mcpNNN.30 files")
@@ -290,6 +444,29 @@ class Dataset:
             )
         self.paths = [directory / name for name in sorted(expected)]
 
+    def load_indexed(self, paths: list[Path]) -> None:
+        self.shards = []
+        first, self.metadata = read_indexed_shard(paths[0])
+        self.ncore, self.ncfs, self.ids, self.kmax, _ = self.metadata
+        self.header = first.header
+        self.paths = paths
+        for path in paths:
+            shard, metadata = (first, self.metadata) if path == paths[0] else read_indexed_shard(path)
+            if (metadata != self.metadata or shard.header.nprocs != self.header.nprocs
+                    or (shard.generation, shard.basis_id, shard.cutoffs, shard.radix, shard.endian)
+                    != (first.generation, first.basis_id, first.cutoffs, first.radix, first.endian)):
+                raise MCPError(f"{path}: inconsistent indexed shard metadata")
+            if path.parent != self.directory and int(path.parent.name) != shard.header.rank:
+                raise MCPError(f"{path}: rank directory does not match header")
+            if path.stem != "mcp" and int(path.stem[3:]) != shard.header.rank:
+                raise MCPError(f"{path}: filename rank does not match header")
+            self.shards.append(shard)
+        self.shards.sort(key=lambda shard: shard.header.rank)
+        if len(self.shards) != self.header.nprocs or any(
+            shard.header.rank != index for index, shard in enumerate(self.shards)
+        ):
+            raise MCPError(f"{self.directory}: missing or duplicate indexed ranks")
+
     def summary(self) -> dict[str, Any]:
         return {
             "directory": str(self.directory),
@@ -317,22 +494,30 @@ class Dataset:
     def groups(self, unit: int, keyorb: int) -> Iterator[tuple[int, int, Array, Array]]:
         """Yield (block, label, CSF pair keys, coefficients), one label at a time."""
         with ExitStack() as stack:
-            readers = []
+            readers: list[Records] = []
+            indexed = isinstance(self.shards[0], IndexedShard)
+            files: list[BinaryIO] = []
             for shard in self.shards:
-                path = shard.prefix.with_suffix(f".{unit}")
-                r = Records(path, stack.enter_context(path.open("rb")), False)
-                if header(r) != shard.header:
-                    r.fail("coefficient header differs from mcp.30")
-                readers.append(r)
+                if indexed:
+                    files.append(stack.enter_context(shard.prefix.open("rb")))
+                else:
+                    path = shard.prefix.with_suffix(f".{unit}")
+                    r = Records(path, stack.enter_context(path.open("rb")), False)
+                    if header(r) != shard.header:
+                        r.fail("coefficient header differs from mcp.30")
+                    readers.append(r)
             for block in range(1, self.header.nblock + 1):
-                streams = [
-                    iter(
-                        coefficient_groups(
-                            r, s.blocks[block - 1], unit, block, keyorb, self.header.nw
-                        )
-                    )
-                    for r, s in zip(readers, self.shards)
-                ]
+                if indexed:
+                    streams = [
+                        iter(indexed_coefficient_groups(file, shard, unit, block, keyorb))
+                        for file, shard in zip(files, self.shards, strict=True)
+                        if isinstance(shard, IndexedShard)
+                    ]
+                else:
+                    streams = [
+                        iter(coefficient_groups(r, s.blocks[block - 1], unit, block, keyorb, self.header.nw))
+                        for r, s in zip(readers, self.shards, strict=True)
+                    ]
                 heap = []
                 for i, source in enumerate(streams):
                     item = next(source, None)
@@ -383,19 +568,23 @@ def coefficient_groups(
             r.fail(f"label {label} has invalid orbital indices; check --keyorb")
         previous = label
         data = np.frombuffer(r.record(size * dtype.itemsize), dtype)
-        positions = data["index"].astype(np.int64) - 1
-        if np.any(positions < 0) or np.any(positions >= sparse.rows.size):
-            r.fail("coefficient index outside sparse structure")
-        cols = sparse.columns(positions)
-        if np.any(cols != data["column"]):
-            r.fail("coefficient column disagrees with sparse index")
-        if not np.all(np.isfinite(data["value"])):
-            r.fail("non-finite angular coefficient")
-        pairs = cols * (sparse.ncf + 1) + sparse.rows[positions]
+        pairs, values = checked_contributions(sparse, data, r.path)
         total += size
-        yield label, pairs, data["value"]
+        yield label, pairs, values
     if total != count:
         r.fail(f"NCOEFF={count}, parsed {total} contributions")
+
+
+def checked_contributions(sparse: SparseBlock, data: Array, path: Path) -> tuple[Array, Array]:
+    positions = data["index"].astype(np.int64) - 1
+    if np.any(positions < 0) or np.any(positions >= sparse.rows.size):
+        raise MCPError(f"{path}: coefficient index outside sparse structure")
+    cols = sparse.columns(positions)
+    if np.any(cols != data["column"]):
+        raise MCPError(f"{path}: coefficient column disagrees with sparse index")
+    if not np.all(np.isfinite(data["value"])):
+        raise MCPError(f"{path}: non-finite angular coefficient")
+    return cols * (sparse.ncf + 1) + sparse.rows[positions], data["value"]
 
 
 def canonical(pairs: Array, values: Array, sum_duplicates: bool) -> tuple[Array, Array]:
@@ -472,6 +661,12 @@ def compare(
         if len(report["differences"]) < max_diffs:
             report["differences"].append(item)
 
+    indexed_reference, indexed_candidate = reference.shards[0], candidate.shards[0]
+    if isinstance(indexed_reference, IndexedShard) and isinstance(indexed_candidate, IndexedShard):
+        if indexed_reference.cutoffs != indexed_candidate.cutoffs:
+            difference({"type": "interaction_cutoffs", "reference": indexed_reference.cutoffs, "candidate": indexed_candidate.cutoffs})
+        if indexed_reference.basis_id != indexed_candidate.basis_id:
+            raise MCPError("indexed MCP basis identifiers differ")
     if reference.metadata != candidate.metadata:
         difference(
             {
@@ -704,11 +899,6 @@ def main(argv: list[str] | None = None) -> int:
             raise MCPError("--keyorb must be >= 2")
         if args.command == "compare" and args.max_diffs < 0:
             raise MCPError("--max-diffs must be nonnegative")
-        identity = (
-            input_identity(args.reference, args.candidate, args.assume_same_csfs)
-            if args.command == "compare"
-            else None
-        )
         dataset = Dataset(args.reference)
         if dataset.header.nw >= args.keyorb:
             raise MCPError("NW must be less than --keyorb")
@@ -717,6 +907,13 @@ def main(argv: list[str] | None = None) -> int:
             other = Dataset(args.candidate)
             if other.header.nw >= args.keyorb:
                 raise MCPError("candidate NW must be less than --keyorb")
+            first, second = dataset.shards[0], other.shards[0]
+            if isinstance(first, IndexedShard) and isinstance(second, IndexedShard):
+                if first.basis_id != second.basis_id:
+                    raise MCPError("indexed MCP basis identifiers differ")
+                identity = {"status": "indexed_basis_sha256_identical", "sha256": first.basis_id.decode("ascii")}
+            else:
+                identity = input_identity(args.reference,args.candidate,args.assume_same_csfs)
             result = compare(
                 dataset,
                 other,

@@ -12,9 +12,7 @@ OBJS= \
 	 \
 	read_mcp_structure_into_memory.o \
 	read_mcp_coefficients_into_memory.o \
-	query_total_system_memory.o \
 	 \
-	query_available_system_memory.o \
 	 \
 	cache_mcp_files.o \
 	 \

@@ -19,17 +19,19 @@ module mpi_rmcdhf_csf_input
     public :: load_rmcdhf_descriptors_mpi
 contains
 
-    subroutine load_rmcdhf_descriptors_mpi(descriptor_path,core_subshell_count,block_labels)
+    subroutine load_rmcdhf_descriptors_mpi(descriptor_path,core_subshell_count,block_labels,expected_basis_id)
         ! Arguments
         character(len=*), intent(in) :: descriptor_path
         integer, intent(out) :: core_subshell_count
         character(len=8), intent(in) :: block_labels(:)
+        character(len=64), intent(in), optional :: expected_basis_id
 
         ! Local declarations
         integer :: descriptor_status, mpi_return_code, basis_counts(5), root_csf_counts_by_block(max_symmetry_blocks)
         character(len=8) :: root_block_labels(max_symmetry_blocks)
         descriptor_status = 0
-        if (mpi_rank == 0) call load_rmcdhf_descriptors(descriptor_path,core_subshell_count,block_labels,descriptor_status)
+        if (mpi_rank == 0) call load_rmcdhf_descriptors(descriptor_path,core_subshell_count,block_labels,descriptor_status, &
+            expected_basis_id)
         call require_collective_success(descriptor_status)
         if (mpi_rank == 0) then
             basis_counts = [csf_count,orbital_count,electron_count,symmetry_block_count,core_subshell_count]

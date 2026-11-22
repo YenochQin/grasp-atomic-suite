@@ -13,6 +13,7 @@
 program rmcdhf_mpi_main
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: int64
+    use rmcdhf_mcp_io, only: read_mcp_options, start_mcp_logs, close_mcp_input
     use calculation_file_units, only: calculation_log_unit
     use calculation_input_defaults, only: nondefault_options_flag
     use closed_core_subshells, only: closed_core_subshell_count
@@ -67,6 +68,7 @@ program rmcdhf_mpi_main
     call initialize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length, &
         & start_clock_count,       &
         startup_directory, serial_io_directory, rank_scratch_root, "RMCDHF_MPI")
+    call read_mcp_options()
     lenperm = len_trim (serial_io_directory)
 
     ! Record whether the run uses default SCF options.
@@ -114,7 +116,9 @@ program rmcdhf_mpi_main
     radial_output_path = "  "
     if(mpi_rank == 0) radial_output_path = trim(serial_io_directory)//"/"//files%orbitals
 
+    call start_mcp_logs(files%mcp)
     call run_scf_iterations_mpi (extended_optimal_level, radial_output_path)
+    call close_mcp_input()
 
     ! Report elapsed time.
 

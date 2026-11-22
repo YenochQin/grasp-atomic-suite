@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import os
@@ -37,6 +38,36 @@ def read_rank_timings(directory: Path, ranks: int) -> list[dict[str, float]]:
             totals[row["stage"]] = totals.get(row["stage"], 0.0) + elapsed
         profiles.append(totals)
     return profiles
+
+
+def mcp_fingerprints(path: Path) -> tuple[str, str]:
+    if path.suffix != ".mcpidx":
+        digest = file_identity(path)["sha256"]
+        return digest, digest
+
+    raw = hashlib.sha256()
+    normalized = hashlib.sha256()
+    file_size = path.stat().st_size
+    with path.open("rb") as stream:
+        header = stream.read(200)
+        if len(header) != 200 or header[:8] != b"GMCPIDX1" or file_size < 232:
+            raise ValueError(f"Invalid indexed MCP header in {path}")
+        raw.update(header)
+        normalized.update(header[:112] + bytes(8) + header[120:])
+        remaining = file_size - len(header) - 32
+        while remaining:
+            payload = stream.read(min(remaining, 1024 * 1024))
+            if not payload:
+                raise ValueError(f"Truncated indexed MCP payload in {path}")
+            remaining -= len(payload)
+            raw.update(payload)
+            normalized.update(payload)
+        footer = stream.read(32)
+        if len(footer) != 32 or footer[:8] != b"MCPDONE1" or footer[8:16] != header[112:120]:
+            raise ValueError(f"Invalid indexed MCP footer in {path}")
+        raw.update(footer)
+        normalized.update(footer[:8] + bytes(8) + footer[16:])
+    return raw.hexdigest(), normalized.hexdigest()
 
 
 def run_mode(arguments: argparse.Namespace, inputs: Path, mode: str, repetition: int) -> dict[str, Any]:
@@ -88,12 +119,15 @@ def run_mode(arguments: argparse.Namespace, inputs: Path, mode: str, repetition:
     execution["rank_stages"] = read_rank_timings(directory, arguments.ranks)
     root_stages = execution["rank_stages"][0]
     execution["root_input_seconds"] = root_stages["input_header_and_broadcast"] + root_stages["csf_load_and_broadcast"]
-    execution["output_sha256"] = {
-        path.relative_to(directory).as_posix(): file_identity(path)["sha256"]
+    fingerprints = {
+        path.relative_to(directory).as_posix(): mcp_fingerprints(path)
         for path in sorted(directory.glob("[0-9][0-9][0-9]/mcp*.*"))
     }
+    execution["output_sha256"] = {path: raw for path, (raw, _) in fingerprints.items()}
+    execution["normalized_mcp_sha256"] = {path: normalized for path, (_, normalized) in fingerprints.items()}
     for rank_index in range(arguments.ranks):
-        if not (directory / f"{rank_index:03d}" / "mcp.30").is_file():
+        rank_dir = directory / f"{rank_index:03d}"
+        if not any((rank_dir / name).is_file() for name in ("mcp.mcpidx", "mcp.30")):
             raise ValueError(f"Missing MCP sparse structure for rank {rank_index}")
     save_json(directory / "execution.json", execution)
     print(f"Finished {mode}: wall={execution['wall_seconds']:.6f}s, "
@@ -167,10 +201,10 @@ def main() -> int:
                 execution = run_mode(arguments, inputs, mode, repetition)
                 report["runs"].append(execution)
                 if expected_outputs is None:
-                    expected_outputs = execution["output_sha256"]
-                execution["byte_identical"] = execution["output_sha256"] == expected_outputs
+                    expected_outputs = execution["normalized_mcp_sha256"]
+                execution["mcp_data_identical"] = execution["normalized_mcp_sha256"] == expected_outputs
                 save_json(arguments.output / "summary.json", report)
-                if not execution["byte_identical"]:
+                if not execution["mcp_data_identical"]:
                     raise ValueError("MCP file set/content differs from the first text run")
         report["statistics"] = summarize(report["runs"])
         report["status"] = "passed"

@@ -1,0 +1,103 @@
+{
+  "added": {
+    "src/apps/rmcdhf_mpi/mcp_density_contractions.f90": "e5c50a7bf79d2ed8ae315599e8901db5a02bbb3157c7196e574ff6183b378067",
+    "src/apps/rmcdhf_mpi/rmcdhf_mcp_io.f90": "85073e90ee1d881a3d4c10253298ad663a7a788fa9b706418101a6905c36a3fe"
+  },
+  "description": "Use indexed MCP exclusively for ordinary and in-memory MPI MCDHF, with density contractions in the ordinary solver.",
+  "files": {
+    "src/appl/rmcdhf_mem_mpi/BUILDCONF.sh": {
+      "after_suite_sha256": "920b34c216c565fb798a8c62cff6bd01e4ab095aad8c4d9129d160c514827815",
+      "before_suite_sha256": "a8a524fac101df903e57844c08b7240ba4c587fb539a5dbb1d57f1ca5da12a3f"
+    },
+    "src/appl/rmcdhf_mem_mpi/CMakeLists.txt": {
+      "after_suite_sha256": "958bf8547e0ca25670943860ce4adb443e4982e21b5883cac61018498e5dc366",
+      "before_suite_sha256": "9e715d4eb4c32e586ae646e68ff73ae256691063a9127022d70d5f4bbc3f44e0"
+    },
+    "src/appl/rmcdhf_mem_mpi/Makefile": {
+      "after_suite_sha256": "d5f03b9594ea999c3fbec4b86545b15dae1a101e6bc26e04f399cc9fa5f7a690",
+      "before_suite_sha256": "4c1a39dc6000ad2dc601704806e460e01392620d5c7cbcd1d164537ef16e9adf"
+    },
+    "src/appl/rmcdhf_mem_mpi/scfmpi.f90": {
+      "after_suite_sha256": "1b703ad9753546534c413831d73d425dd004715ecbdf5c4c78dba234e3dafe2f",
+      "before_suite_sha256": "d2a5fdd4c0409d0c83186c0d801b0c4d1370f26cdd65411356fa330d3f6609a4"
+    },
+    "src/appl/rmcdhf_mem_mpi/setcslmpi.f90": {
+      "after_suite_sha256": "ee460ab82bb3be07fa66ec2011fb686caa8987efaeb2fc477cc0a450a7b5a8e4",
+      "before_suite_sha256": "d0ff8ff911afba6b2a17c5d708e63a40f91c243fb595a274d8714117ef8ff90e"
+    },
+    "src/appl/rmcdhf_mem_mpi/setmcp.f90": {
+      "after_suite_sha256": "7bd9b6c326d3a2c0132014cba9d57fae7135d268e0e0ff366002639d4ee78410",
+      "before_suite_sha256": "50270cfd58bb00f0fe5e6832dac2a491fe5c4bd55714a1d59e254cc7aa2a08b9"
+    },
+    "src/appl/rmcdhf_mem_mpi/setmcp_mem.f90": {
+      "after_suite_sha256": "ddf94dcfed6e4caf0b7ffdd28706d170bd468ae5101b5efc7f73b95cd7177e6b",
+      "before_suite_sha256": "ade76c146fc4cc9c3aa605e6aac7cb1f1b317ec26d869ee40b7e189a68742c51"
+    },
+    "src/appl/rmcdhf_mpi/BUILDCONF.sh": {
+      "after_suite_sha256": "e93ffba6ab841a21a87767e5ffd11c58dc72baede4a1df8f306d1c53f8326602",
+      "before_suite_sha256": "696244f1d2be087376bb37bbadb5f63b7555cf07d06c53653e386d8fea89f786"
+    },
+    "src/appl/rmcdhf_mpi/CMakeLists.txt": {
+      "after_suite_sha256": "bf83e5124d085785a1d1914372de2fdc48f01d5cb4541ae53b12a3f715634350",
+      "before_suite_sha256": "3440c6c78e4638e2556ef43eb47272a5c6b0c5bab43cffeb523b4dd35da1ccfd"
+    },
+    "src/appl/rmcdhf_mpi/Makefile": {
+      "after_suite_sha256": "efefae59acd75848d913eb20d9579a972836a48edcd94387a5b6e23d102b97ed",
+      "before_suite_sha256": "7d0dff6d9ff24633a0bde625eed58720b01577d7b34c2951832ae1a49233fd2a"
+    },
+    "src/appl/rmcdhf_mpi/cofpotmpi.f90": {
+      "after_suite_sha256": "12ffd17601cbf6b12d20fd0c026a3b7d29cd909cd6e8f736baa7aac873fb0b69",
+      "before_suite_sha256": "25035be0e0abbdb28a66670faac8bfdec214e864268f2dd9c59cbfdde816bc49"
+    },
+    "src/appl/rmcdhf_mpi/improvmpi.f90": {
+      "after_suite_sha256": "9c638121dcd2eab0c3bfa2b93c698066d9473e34f06094d7921701a072dd9dba",
+      "before_suite_sha256": "75c3ffc10347281c70f7dca43606659f145b02935d5efd7731e3fea85c2881e2"
+    },
+    "src/appl/rmcdhf_mpi/matrixmpi.f90": {
+      "after_suite_sha256": "99612486a496f3231e32d7d59c21e7c7527c45ab18e99b2f62123c82a7417af2",
+      "before_suite_sha256": "753c3e64b113a364209e9c62fdb7cbb07aaef600900ff5aa74920a40c949dffa"
+    },
+    "src/appl/rmcdhf_mpi/newcompi.f90": {
+      "after_suite_sha256": "eee6e9bba6dd182729537ef77ba239fae6cdd54d1a49ac96ffcfea7db6c66a2a",
+      "before_suite_sha256": "4ff007f6a7343589af673016ef7aa95ea88259b3600064c39c41e1f0eb180972"
+    },
+    "src/appl/rmcdhf_mpi/rscfmpivu.f90": {
+      "after_suite_sha256": "fdfa0c280aa11fec3e40f41f2b2fc2fbdf909995452576b7dd01fce536601578",
+      "before_suite_sha256": "9b0580b3213b40f0279eaf60ac82565d5944a0a123814a4a3e44f5424d28f4cb"
+    },
+    "src/appl/rmcdhf_mpi/scfmpi.f90": {
+      "after_suite_sha256": "258dcda08b05d0b216c1cde5952660e8ea917736ed862c838052aa2a3413eae8",
+      "before_suite_sha256": "d2a5fdd4c0409d0c83186c0d801b0c4d1370f26cdd65411356fa330d3f6609a4"
+    },
+    "src/appl/rmcdhf_mpi/setcof.f90": {
+      "after_suite_sha256": "bf7a49a79a129a93598a0e705cbb50dfec986029a6d4a764d95535eeba15943f",
+      "before_suite_sha256": "5991d7c772c9dfcfbeebb3bc7ba0b0c49d432d8f220beea01dea1178a44084a2"
+    },
+    "src/appl/rmcdhf_mpi/setcslmpi.f90": {
+      "after_suite_sha256": "1815caf1af24627406eb20f834c40852a259b19db6491839137ac30250d7872e",
+      "before_suite_sha256": "d0ff8ff911afba6b2a17c5d708e63a40f91c243fb595a274d8714117ef8ff90e"
+    },
+    "src/appl/rmcdhf_mpi/setham.f90": {
+      "after_suite_sha256": "fd9e115e87ebfa8551904c82d13d1eb098dbc2d5cadfb18ac360c279c695fd58",
+      "before_suite_sha256": "5d89dab8e5dbda450c0a76f04378f2f6faca81f1d60744c4e025dfede15f9976"
+    },
+    "src/appl/rmcdhf_mpi/setlagmpi.f90": {
+      "after_suite_sha256": "9ea99ab8cb8c952156be7e21722660c2305518117a73b1cdd1ce34bdc1a376f7",
+      "before_suite_sha256": "957a953e4df3d3e3cb7e82a8a418f387d72da00c8dd599b1013223ddd5c0780e"
+    },
+    "src/appl/rmcdhf_mpi/setmcp.f90": {
+      "after_suite_sha256": "7bd9b6c326d3a2c0132014cba9d57fae7135d268e0e0ff366002639d4ee78410",
+      "before_suite_sha256": "e460605f224f8399d4cfa5187cedd1cef8d0945b7e855bf4eb38a10baa7d3b3a"
+    }
+  },
+  "previous_manifest_sha256": "d9b8a93b265a0921f94384d4a7fe255bd5c68e0629a8a0b22114223cae1cb490",
+  "removed": {
+    "src/appl/rmcdhf_mem_mpi/systemfreemem.f90": {
+      "before_suite_sha256": "ac1fa6dd749f12bf263c727ebd97c75e85a8da8966461c8b831ccaf2e94696d4"
+    },
+    "src/appl/rmcdhf_mem_mpi/systemmem.f90": {
+      "before_suite_sha256": "e6614a347b6d823f37f856849612b6af1d147f0189ed57dd0297dfec21d142a1"
+    }
+  },
+  "schema_version": 1
+}

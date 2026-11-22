@@ -92,7 +92,7 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
             assert (launch / (name + extension)).read_text().splitlines()[0] == name
         for rank in range(2 if launcher else 1):
             channel_dir = scratch / f"{rank:03d}" if launcher else permanent
-            assert (channel_dir / "mcp.30").stat().st_size > 0
+            assert (channel_dir / ("mcp.mcpidx" if launcher else "mcp.30")).stat().st_size > 0
             assert not list(channel_dir.glob(f"{name}.mcp*"))
         if not launcher and name == "N":
             first_mcp = {p.name: p.read_bytes() for p in permanent.glob("mcp.*")}

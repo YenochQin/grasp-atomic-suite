@@ -9,16 +9,13 @@ contains
 
     subroutine assemble_hamiltonian_block(symmetry_block_index, mpi_rank, mpi_process_count)
         ! Module dependencies
-        use mcp_file_metadata, only: mcp_input_units
-        use, intrinsic :: iso_fortran_env, only: output_unit
+        use mpi_indexed_mcp, only: mcp_segment_size, decode_mcp_label
+        use rmcdhf_mcp_io, only: mcp_cursor, mcp_buffer, start_channel, next_group, read_segment, profile_channel
         use, intrinsic :: iso_fortran_env, only: real64, int64
-        use grasp_parameters,    only: orbital_index_radix
-        use array_memory_management, only: alloc, dalloc
         use sparse_hamiltonian_storage, only: stored_matrix_element_count, hamiltonian_values, stored_segment_end_offsets
         use mcp_file_metadata, only: max_mcp_file_multipole_rank
         use orbital_csf_basis, only: csf_count, orbital_count, orbital_kappa, orbital_two_j
         use symmetry_block_offsets, only: csf_offsets_by_block
-        use standard_io_units, only: stderr_unit
         use csf_quantum_queries, only: csf_occupation
         use one_electron_radial_integral, only: integrate_one_electron_radial
 
@@ -37,27 +34,14 @@ contains
         integer , intent(in) :: mpi_rank
         integer , intent(in) :: mpi_process_count
 
-        ! Local constants
-        character(len=*), parameter :: routine_name = "assemble_hamiltonian_block"
-
-        ! Local declarations
         integer :: block_csf_offset, orbital_index, csf_index, itmp, diagonal_element_index, km, k, k0, ib, &
-            & first_orbital_two_j, second_orbital_two_j, kmin&
-            , kmax, ndim, file_block_index, file_csf_count, file_coefficient_count, io_status, packed_orbital_label, &
-                & contribution_count, &
-                & file_csf_column, i, &
-            loc, mcp_channel, id, ic
-        integer(int64) :: lod
+            first_orbital_two_j, second_orbital_two_j, kmin, kmax, i, loc, mcp_channel, length, orbitals(4)
+        integer(int64) :: first
         real(real64) :: diaa, coef, f0aa, fkaa, f0ab, gkab, radial_integral_value
         logical :: set
-        character :: mcp_channel_label*3
-        real(real64), pointer :: coeff(:)
-        integer, pointer :: indx(:)
-        ! !*** needs EMT, IENDC.
-        !
-        ! !*** needs ncf, nw
-        !
-        ! !POINTER (PICLMN,ICLMNdum)
+        type(mcp_cursor) :: cursor
+        type(mcp_buffer) :: buffer
+
         block_csf_offset = csf_offsets_by_block(symmetry_block_index)
         ! Accumulate diagonal terms that do not require MCP coefficients
 
@@ -185,136 +169,27 @@ contains
             if (k >= km) exit
         end do
 
-        ! Local storage for reading mcpXXX files
-
-        ndim = 1
-        call alloc (coeff, ndim, "COEFF", "assemble_hamiltonian_block" )
-        call alloc (indx, ndim, "INDX", "assemble_hamiltonian_block")
-
-        ! Accumulate one-electron terms that require MCP coefficients
-
-        read (mcp_input_units(31)) mcp_channel_label, file_block_index, file_csf_count, file_coefficient_count
-
-        if (file_block_index /= symmetry_block_index) then
-            write (stderr_unit, *) routine_name, ": file_block_index=", file_block_index, &
-                " symmetry_block_index=", symmetry_block_index
-            error stop
-        end if
-        if (file_csf_count /= csf_count) then
-            write (stderr_unit, *) routine_name, ": file_csf_count=", file_csf_count, " csf_count=", csf_count
-            error stop
-        end if
-
-        ! Loop over non-zero labels which have non-zero elements
-
-        read (mcp_input_units(31), iostat=io_status) packed_orbital_label, contribution_count
-        if (io_status /= 0) error stop "IOS .NE. 0 when reading LAB, NCONTR"
-        do while(packed_orbital_label/=0 .or. contribution_count/=0)
-
-            ! decode the label of I(ab)
-            orbital_index = mod(packed_orbital_label,orbital_index_radix)
-            ib = packed_orbital_label/orbital_index_radix
-
-            ! Compute radial integral I(ab)
-            radial_integral_value = integrate_one_electron_radial(orbital_index,ib,0)
-
-            ! Read column index, sparse matrix index, and coefficient
-            ! for all contributions from this integral.
-            if (contribution_count > ndim) then
-                call dalloc (coeff, "COEFF", "assemble_hamiltonian_block")
-                call dalloc (indx, "INDX", "assemble_hamiltonian_block")
-                ndim = contribution_count
-                call alloc (coeff, ndim, "COEFF", "assemble_hamiltonian_block")
-                call alloc (indx, ndim, "INDX", "assemble_hamiltonian_block")
-            end if
-            read (mcp_input_units(31)) (file_csf_column,indx(i),coeff(i),i=1,contribution_count)
-
-            ! Store all the contributions from this integral
-            do i = 1, contribution_count
-                loc = indx(i)
-                lod = loc
-                if (lod > (stored_matrix_element_count)) then
-                    write (output_unit, *) "  Error in computing 1-e contribution"
-                    write (output_unit, *) "  LOC = ", loc, "  NELMNT = ", (stored_matrix_element_count)
-                    error stop
+        ! Read the groups in their original order and use the current radial integrals.
+        do mcp_channel = 31, 32 + max_mcp_file_multipole_rank
+            call start_channel(cursor,symmetry_block_index,mcp_channel)
+            do while (next_group(cursor))
+                call decode_mcp_label(int(cursor%group%label),mcp_channel==31,orbitals)
+                if (mcp_channel == 31) then
+                    radial_integral_value = integrate_one_electron_radial(orbitals(1),orbitals(2),0)
+                else
+                    radial_integral_value = calculate_slater_radial_integral(orbitals(1),orbitals(2),orbitals(3), &
+                        orbitals(4),mcp_channel-32)
                 end if
-                hamiltonian_values(loc) = hamiltonian_values(loc) + radial_integral_value*coeff(i)
-            end do
-
-            read (mcp_input_units(31), iostat=io_status) packed_orbital_label, contribution_count
-            if (io_status == 0) cycle
-            error stop "IOS .NE. 0 when reading LAB, NCONTR"
-        end do
-
-        ! Accumulate two-electron terms that require MCP coefficients
-
-        do mcp_channel = 32, 32 + max_mcp_file_multipole_rank
-            k = mcp_channel - 32
-
-            read (mcp_input_units(mcp_channel)) mcp_channel_label, file_block_index, file_csf_count, file_coefficient_count
-
-            if (file_block_index /= symmetry_block_index) then
-                write (stderr_unit, *) routine_name, ": file_block_index=", file_block_index, &
-                    " symmetry_block_index=", symmetry_block_index
-                error stop
-            end if
-            if (file_csf_count /= csf_count) then
-                write (stderr_unit, *) routine_name, ": file_csf_count=", file_csf_count, " csf_count=", csf_count
-                error stop
-            end if
-
-            ! Loop over non-zero labels which have non-zero elements
-
-            read (mcp_input_units(mcp_channel), iostat=io_status) packed_orbital_label, contribution_count
-            if (io_status /= 0) error stop "IOS .NE. 0 when reading LAB, NCONTR 2"
-            do while(packed_orbital_label/=0 .or. contribution_count/=0)
-
-                !                          k
-                ! decode the label of R (abcd)
-                id = mod(packed_orbital_label,orbital_index_radix)
-                packed_orbital_label = packed_orbital_label/orbital_index_radix
-                ib = mod(packed_orbital_label,orbital_index_radix)
-                packed_orbital_label = packed_orbital_label/orbital_index_radix
-                ic = mod(packed_orbital_label,orbital_index_radix)
-                orbital_index = packed_orbital_label/orbital_index_radix
-
-                ! Compute radial integral
-                radial_integral_value = calculate_slater_radial_integral(orbital_index,ib,ic,id,k)
-
-                ! Read column index, sparse matrix index, and coefficient
-                ! for all contributions from this integral.
-                if (contribution_count > ndim) then
-                    call dalloc (coeff, "COEFF", "assemble_hamiltonian_block")
-                    call dalloc (indx, "INDX", "assemble_hamiltonian_block")
-                    ndim = contribution_count
-                    call alloc (coeff, ndim, "COEFF", "assemble_hamiltonian_block")
-                    call alloc (indx, ndim, "INDX", "assemble_hamiltonian_block")
-                end if
-                read (mcp_input_units(mcp_channel)) (file_csf_column,indx(i),coeff(i),i=1,contribution_count)
-
-                ! Store all the contributions from this integral
-                do i = 1, contribution_count
-                    loc = indx(i)
-                    lod = loc
-                    if (lod > stored_matrix_element_count) then
-                        write (output_unit, *) "  Error in computing 2-e contribution"
-                        write (output_unit, *) "  LOC = ", loc, "  NELMNT = ", stored_matrix_element_count
-                        error stop
-                    end if
-                    hamiltonian_values(loc) = hamiltonian_values(loc) + radial_integral_value*coeff(i)
+                do first = 1, cursor%group%count, mcp_segment_size
+                    length = int(min(int(mcp_segment_size,int64),cursor%group%count-first+1))
+                    call read_segment(cursor,buffer,first,length,stored_matrix_element_count)
+                    do i = 1, length
+                        loc = buffer%positions(i)
+                        hamiltonian_values(loc) = hamiltonian_values(loc) + radial_integral_value*buffer%values(i)
+                    end do
                 end do
-
-                read (mcp_input_units(mcp_channel), iostat=io_status) packed_orbital_label, contribution_count
-                if (io_status == 0) cycle
-                error stop "IOS .NE. 0 when reading LAB, NCONTR 2"
             end do
+            call profile_channel("matrix",0,cursor)
         end do
-
-        ! Deallocate local storage
-
-        call dalloc (coeff, "COEFF", "assemble_hamiltonian_block")
-        call dalloc (indx, "INDX", "assemble_hamiltonian_block")
-
-        return
     end subroutine assemble_hamiltonian_block
 end module assemble_hamiltonian_block_interface

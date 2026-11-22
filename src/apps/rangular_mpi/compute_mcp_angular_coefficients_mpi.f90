@@ -22,8 +22,10 @@ contains
     ! Modified by C. Froese Fischer for block computation.
     ! Modified by G. Gaigalas and J. Bieron for new spin-angular
     ! integration                                        01 April 2012
-    subroutine compute_mcp_angular_coefficients_mpi (nb, is_restart, output_file_prefix)
+    subroutine compute_mcp_angular_coefficients_mpi (nb, is_restart, indexed_output)
         ! Module dependencies
+        use mpi_indexed_mcp, only: indexed_mcp
+        use mpi_io_errors, only: fail_input_io_mpi
         use mcp_generation_options, only: mcp_temporary_units
         use calculation_file_units, only: summary_output_unit
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
@@ -62,7 +64,7 @@ contains
         integer  :: nb
 
         logical , intent(in) :: is_restart
-        character(len=*), intent(in) :: output_file_prefix
+        type(indexed_mcp), intent(inout) :: indexed_output
 
         ! Local constants
         integer, parameter :: orbital_index_radix_squared = orbital_index_radix*orbital_index_radix
@@ -78,7 +80,7 @@ contains
         real(real64) :: shell_coefficients(max_orbitals)
         real(real64) :: vcoeff
         logical :: f0int, lincr
-        integer(int64) :: stage_start_count
+        integer(int64) :: stage_start_count, wide_label
         !    Allocate storage to the array that stores the lengths
         !    of the lists of V coefficients of each multipolarity
         stage_start_count = stage_clock()
@@ -112,6 +114,8 @@ contains
         ! in the list of NCF configurations
         call record_stage("coefficient_buffer_allocation",nb,stage_start_count)
         stage_start_count = stage_clock()
+        if (csf_count >= huge(0)-mpi_process_count) &
+            call fail_input_io_mpi(0,mcp_temporary_units(30),"MCP CSF column loop exceeds integer range")
         do csf_index = first_bra_csf_index, csf_count, mpi_process_count
             first_ket_csf_index = 1
             do ket_csf_index = first_ket_csf_index, csf_index
@@ -123,7 +127,7 @@ contains
                 if (ket_csf_index /= csf_index) then
                     lincr = .true.
                 else
-                    matrix_element_position = matrix_element_position + 1
+                    call increment_count(matrix_element_position,30)
                     lincr = .false.
                 end if
                 if (ket_csf_index /= csf_index) then
@@ -132,9 +136,9 @@ contains
                         & shell_coefficients)
                     if (bra_orbital_index /= 0 .and. bra_orbital_index /= ket_orbital_index .and.       &
                         abs (shell_coefficients(1)) > cutoff) then
-                        matrix_element_position = matrix_element_position + 1
+                        call increment_count(matrix_element_position,30)
                         lincr = .false.
-                        one_electron_coefficient_count = one_electron_coefficient_count + 1
+                        call increment_count(one_electron_coefficient_count,31)
                         packed_orbital_label = min (bra_orbital_index,ket_orbital_index) * orbital_index_radix + max &
                             & (bra_orbital_index, &
                             & ket_orbital_index)
@@ -173,19 +177,19 @@ contains
                                 nswap = nswap + 1
                             end if
                             if (lincr) then
-                                matrix_element_position = matrix_element_position + 1
+                                call increment_count(matrix_element_position,30)
                                 lincr = .false.
                             end if
-                            two_electron_counts_by_rank(k) = two_electron_counts_by_rank(k) + 1
+                            if (k < 0 .or. k > max_coulomb_multipole_rank) &
+                                call fail_input_io_mpi(0,mcp_temporary_units(30),"MCP multipole channel out of range")
+                            call increment_count(two_electron_counts_by_rank(k),32+k)
                             first_orbital_pair_label = bra_orbital_index * orbital_index_radix + ic
                             second_orbital_pair_label = ket_orbital_index * orbital_index_radix + id
-                            if (first_orbital_pair_label < second_orbital_pair_label) then
-                                packed_orbital_label = first_orbital_pair_label * orbital_index_radix_squared + &
-                                & second_orbital_pair_label
-                            else
-                                packed_orbital_label = second_orbital_pair_label * orbital_index_radix_squared + &
-                                & first_orbital_pair_label
-                            end if
+                            wide_label = int(min(first_orbital_pair_label,second_orbital_pair_label),int64) * &
+                                orbital_index_radix_squared + max(first_orbital_pair_label,second_orbital_pair_label)
+                            if (wide_label <= 0 .or. wide_label > huge(packed_orbital_label)) &
+                                call fail_input_io_mpi(0,mcp_temporary_units(32+k),"MCP packed orbital label exceeds integer range")
+                            packed_orbital_label = int(wide_label)
                             write (mcp_temporary_units(32+k)) csf_index, matrix_element_position, packed_orbital_label, vcoeff
                         end if
                     end if
@@ -220,8 +224,7 @@ contains
         stage_start_count = stage_clock()
         rewind (mcp_temporary_units(30))
         call write_mcp_sparsity (write_mcp_sparsity_summary_mpi, matrix_element_position, ldbpa(4), nb, mpi_rank, &
-            & mpi_process_count, &
-            & output_file_prefix)
+            & mpi_process_count, indexed_output)
         close (mcp_temporary_units(30), status = "DELETE")
         call record_stage("sparse_structure_and_output",nb,stage_start_count,int(matrix_element_position,int64),storage="disk")
         ! Sort MCP coefficients into integral-based lists
@@ -230,7 +233,7 @@ contains
         stage_start_count = stage_clock()
         rewind (mcp_temporary_units(31))
         call sort_mcp_coefficients (31, (one_electron_coefficient_count), distinct_radial_integral_count, ldbpa(2), nb, &
-            & output_file_prefix)
+            indexed_output)
         if (nondefault_options_flag /= 0 .and. mpi_rank == 0) then
             write (summary_output_unit,*) distinct_radial_integral_count, " I(ab) integrals;"
         end if
@@ -241,7 +244,7 @@ contains
             stage_start_count = stage_clock()
             rewind (mcp_temporary_units(k+32))
             call sort_mcp_coefficients (k+32, (two_electron_counts_by_rank(k)), distinct_radial_integral_count, ldbpa(3), nb, &
-                & output_file_prefix)
+                indexed_output)
             if (nondefault_options_flag /= 0 .and. mpi_rank == 0) then
                 write (summary_output_unit,*) " k = ", k, ": ", distinct_radial_integral_count, " Slater integrals;"
             end if
@@ -249,6 +252,16 @@ contains
             call record_stage("sort_and_output",nb,stage_start_count,int(two_electron_counts_by_rank(k),int64),k+32,"disk")
         end do
         call dalloc(two_electron_counts_by_rank, "two_electron_counts_by_rank", "compute_mcp_angular_coefficients_mpi")
-        return
+    contains
+
+        subroutine increment_count(count, channel)
+            integer, intent(inout) :: count
+            integer, intent(in) :: channel
+            ! The temporary records and the in-memory sort use default integers.
+            if (count >= huge(count)-1) &
+                call fail_input_io_mpi(0,mcp_temporary_units(channel), &
+                "MCP rank-local position or channel count exceeds integer range")
+            count = count + 1
+        end subroutine increment_count
     end subroutine compute_mcp_angular_coefficients_mpi
 end module compute_mcp_angular_coefficients_mpi_interface

@@ -23,6 +23,7 @@ module csf_descriptor_reader
         logical :: is_open = .false., header_loaded = .false.
         integer :: core_count = 0, peel_count = 0, orbital_count = 0, block_count = 0
         integer :: format_version = 0
+        character(len=64) :: basis_id = ""
         integer :: row_width = 0, total_csf_count = 0, electron_count = 0
         integer, allocatable :: principal_numbers(:), relativistic_kappas(:)
         integer, allocatable :: orbital_momenta(:), single_electron_two_j(:)
@@ -124,6 +125,7 @@ contains
         if (.not. require_descriptor(read_status == 0, reader_message(:max(0,index(reader_message,c_null_char)-1)), &
             & status)) return
         source%is_open = .true.
+        call rust_descriptor_basis_id(source%handle, source%basis_id)
         source%format_version = int(rust_descriptor_format_version())
         read_status = rust_descriptor_info(source%handle, header_counts, reader_message, 1024_c_size_t)
         if (.not. require_descriptor(read_status == 0, reader_message(:max(0,index(reader_message,c_null_char)-1)), &

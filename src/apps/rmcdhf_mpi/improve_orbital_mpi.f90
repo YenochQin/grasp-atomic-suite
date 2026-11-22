@@ -18,6 +18,7 @@ contains
     subroutine improve_orbital_mpi (extended_optimal_level, orbital_index, sort_by_self_consistency, maximum_orbital_damping)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
+        use rmcdhf_mcp_io, only: mcp_now, profile_stage
         use array_memory_management, only: alloc, dalloc, ralloc
         use scf_damping_factors, only: orbital_damping_factors
         use atomic_calculation_state, only: working_tolerance, orbital_updates_per_scf_iteration
@@ -70,6 +71,7 @@ contains
         integer :: ipr, potential_grid_point_count, orbital_sign_reversal_count, matching_grid_index, radial_node_count, i, nwww
         integer :: i_mpi, ndcof_max, ntot, i_last, iproc, ndcip, jproc
         integer :: ifound, ind_buf, k
+        real(real64) :: reduction_started, attempt_started
         real(real64) :: previous_relative_energy_change, origin_exponent, old_orbital_energy, radial_norm_squared, &
             normalization_factor, relative_energy_change, normalization_error, orbital_damping_factor
         logical :: solve_failed, first
@@ -90,6 +92,7 @@ contains
         ! C Froese Fischer's parameters IPR, ED1, ED2 are set and
         ! used in this routine and in DAMPCK
         do
+            attempt_started = mcp_now()
             old_orbital_energy = orbital_energy_parameters(orbital_index)
             ! Set up the exchange potential and arrays XU, XV as appropriate
             !
@@ -117,6 +120,7 @@ contains
             !       nda(1:ndcof) = nda_buffer(1:ndcof)
             ! AK      Consolidate NDA and DA from all nodes
             if (mpi_process_count>1) then
+                reduction_started = mcp_now()
                 call alloc(ndcof_buffer,mpi_process_count,"ndcof_buffer","improve_orbital_mpi")
                 call mpi_gather(direct_coefficient_count, 1, i_mpi, ndcof_buffer,            &
                     1, i_mpi, 0, mpi_comm_world, mpi_error_code)
@@ -175,6 +179,7 @@ contains
                     call dalloc(da_buffer,"da_buffer","improve_orbital_mpi")
                 end if
                 call dalloc(ndcof_buffer,"ndcof_buffer","improve_orbital_mpi")
+                call profile_stage("direct_coefficient_reduction",orbital_index,0,reduction_started)
             end if
 
             call solve_radial_orbital (orbital_index, solve_failed, orbital_sign_reversal_count, matching_grid_index, &
@@ -186,6 +191,7 @@ contains
                     orbital_principal_n(orbital_index), orbital_symmetry_labels(orbital_index), &
                         radial_solution_methods(orbital_index)
                 if (radial_solution_methods(orbital_index) /= 2) then
+                    call profile_stage("radial_failure_retry",orbital_index,0,attempt_started)
                     radial_solution_methods(orbital_index) = 2
                     ! XHH orthsc does not have any argument
                     !     Orbital J [PF() and QF()]is not updated, why redo orthogonalization

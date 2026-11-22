@@ -1,5 +1,7 @@
 add_executable(rmcdhf_mpi
     csf_density_matrix_element.f90
+    rmcdhf_mcp_io.f90
+    mcp_density_contractions.f90
     direct_angular_coefficient.f90
     exchange_angular_coefficient.f90
     assemble_orbital_potential_coefficients.f90

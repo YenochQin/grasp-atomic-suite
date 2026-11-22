@@ -25,6 +25,9 @@ program ci_damping
 #ifdef CI_MEM
     use rmcdhf_mcp_memory, only: imin1_30, imax1_30, imin2_30, imax2_30
 #endif
+#ifdef CI_INDEXED
+    use mpi_mcp_calculation_input, only: indexed_input
+#endif
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
     integer :: channel_suffix, i, records, local_size
@@ -50,6 +53,13 @@ program ci_damping
 #ifdef CI_MEM
     allocate(imin1_30(1),imax1_30(1),imin2_30(1),imax2_30(1))
     imin1_30=0; imax1_30=2; imin2_30=0; imax2_30=local_size
+#elif defined(CI_INDEXED)
+    allocate(indexed_input%sparse_positions(1),indexed_input%row_counts(1),indexed_input%column_counts(1))
+    indexed_input%sparse_positions = 1
+    indexed_input%row_counts = local_size
+    indexed_input%column_counts = local_size
+    open(newunit=indexed_input%unit,status="scratch",access="stream",form="unformatted")
+    write(indexed_input%unit) [(i,i=1,local_size)],[(mpi_rank+1+(i-1)*mpi_process_count,i=1,local_size)]
 #else
     allocate(mcp_input_units(30:33))
     do channel_suffix=30,33
@@ -62,7 +72,7 @@ program ci_damping
         if(channel_suffix==30) then
             write(mcp_input_units(channel_suffix)) "MCP",1,2
             write(mcp_input_units(channel_suffix)) local_size
-            write(mcp_input_units(channel_suffix)) [(i,i=1,local_size)], [(i,i=1,local_size)]
+            write(mcp_input_units(channel_suffix)) [(i,i=1,local_size)], [(mpi_rank+1+(i-1)*mpi_process_count,i=1,local_size)]
         end if
     end do
 #endif
@@ -94,7 +104,9 @@ program ci_damping
         close(mixing_output_unit)
         print *, "PASS: production FIRST / nonzero multi-root DDOT / zero damping"
     end if
-#ifndef CI_MEM
+#if defined(CI_INDEXED)
+    close(indexed_input%unit)
+#elif !defined(CI_MEM)
     do channel_suffix=30,33
         close(mcp_input_units(channel_suffix))
     end do

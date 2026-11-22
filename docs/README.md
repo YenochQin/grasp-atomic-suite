@@ -54,11 +54,13 @@
 | [mpi90_variable_migration.md](implemented/mpi90_variable_migration.md) | MPI 支持库的作用域级变量与常量对应表，含通信、输入、目录管理和稀疏矩阵例程。 |
 | [RHFS_gJ_report.md](implemented/RHFS_gJ_report.md) | 已实施；串行 RHFS 的加载、矩阵元、ASF 投影及输出链仍存在。仅覆盖该路径，不是 gj/MPI 完整说明。 |
 | [rmcdhf_nuclear_polarization.md](implemented/rmcdhf_nuclear_polarization.md) | 已实施，普通 MPI 已移除 NP 入口；2026-11-15 普通 rmcdhf_mpi 恢复直接核势初始化；rmcdhf、rmcdhf_mem、rmcdhf_mem_mpi 保留可选 NP。保留 2026-10-24 历史代码验证，物理计算验证未执行。 |
+| [rmcdhf_mcp_io.md](implemented/rmcdhf_mcp_io.md) | MPI 计算链统一使用目录格式。普通版使用每轮 EOL 收缩，内存版读取相同分片。本地对照通过，生产对照待测。 |
 
 ## 未完成的计划与清单
 
 | 文档 | 范围与状态 |
 | --- | --- |
+| [RMCDHF 的 MCP 读取优化实施计划](plans/rmcdhf_mcp_io_2026-11-22.md) | 阶段 0–2 已接入并通过本地回归。阶段 3 的目标文件系统性能对照、默认值与其他变体评估待完成。 |
 | [variable_renaming_followup_2026-11-16.md](plans/variable_renaming_followup_2026-11-16.md) | 变量语义重命名；第一批 529 项已处理，原有 19,579 项需与当前源码重新对齐；旧 CSF reader 已替换，不恢复退役代码。 |
 | [static_diagnostics_remaining_2026-11-17.md](plans/static_diagnostics_remaining_2026-11-17.md) | 待核定的静态诊断；S1–S4、格式及 USE ONLY 批次已完成；保留接口、状态、I/O、工具覆盖、告警预算及数值验证待办。 |
 | [non_csfg_variable_inventory_2026-11-16.md](plans/non_csfg_variable_inventory_2026-11-16.md) | 明确候选已处理，其余待核实；原始采集基准 caaf3a5；1,880 份 Fortran 文本、20,108 个实体。529 项明确候选已逐项标记（528 改名、pi 保留），其余 19,579 项待核实；原名、原声明行及哈希作为历史快照，当前名称与位置另有 JSON 映射。 |
@@ -71,7 +73,7 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
-| [多 J 块 MCP 容量与读写成本](reviews/rangular_mcp_io_2026-11-22.md) | 现行 Suite 的串行与双进程文件字节对照，48-rank 历史作业的 312.13 GB 最终主体、1.56 TB 生成逻辑读写核算，以及千万级容量估算与优化顺序。 |
+| [多 J 块 MCP 容量与读写成本](reviews/rangular_mcp_io_2026-11-22.md) | 串行与双进程文件字节对照，48-rank 历史作业的容量和读写核算，以及面向 RMCDHF 的分块积分目录、每次密度更新后的流式收缩和验收方法。 |
 | [fortran_source_and_readme_review_2026-11-22.md](reviews/fortran_source_and_readme_review_2026-11-22.md) | 已修复审查列出的 Fortran 命名、注释及 README 问题，记录串行和 MPI 回归及 macOS 内存探测限制。 |
 | [fortran_arrow_audit_2026-11-20.md](reviews/fortran_arrow_audit_2026-11-20.md) | Fortran 导入重命名与旧命名兼容入口已清除，含迁移对照、旧接口拒绝验证及运行结果比较。 |
 | [native_csf_descriptor_validation_2026-11-17.md](reviews/native_csf_descriptor_validation_2026-11-17.md) | 原生 CSF 输入的功能回归、矩阵及告警门禁边界；保留独立验收证据。 |

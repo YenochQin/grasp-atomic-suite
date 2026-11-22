@@ -57,7 +57,7 @@ an isolated 2-by-2 block with analytic lowest eigenvalue 1. A directly converged
 residual must be accepted before preconditioning/MGS, even in the first loops;
 the energy/coefficient three-loop guards remain unchanged. Both cases check
 finite values, eigenvalues, explicit residuals and normalization at 1e-12.
-`f2018_sparse_empty_rank` calls the production RANGULAR_MPI SETSDA with occupied
+`f2018_sparse_empty_rank` calls the indexed RANGULAR_MPI sparse writer with occupied
 and empty partitions and checks its MCP records. Only this diagnostic test
 compilation poisons local integers (`-finit-integer=-999999`) to catch the former
 uninitialized empty-rank index deterministically. The BLAS contract also checks

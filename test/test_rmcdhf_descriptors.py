@@ -67,19 +67,12 @@ def main() -> None:
             for rank in range(ranks):
                 assert (work / f"occupations.{rank:03d}.bin").read_bytes() == expected
             if ranks > 1:
-                # Alter all rank-1 channel electron counts consistently: SETMCP
-                # accepts its own shard, but cross-rank metadata must fail.
-                originals = {}
-                for file in (work / "001").glob("mcp.*"):
-                    original = file.read_bytes()
-                    originals[file] = original
-                    data = bytearray(original)
-                    offset = 0
-                    record_index = 4 if file.suffix == ".30" else 1
-                    for _ in range(record_index):
-                        offset += 8 + struct.unpack_from("=i", data, offset)[0]
-                    struct.pack_into("=i", data, offset + 4, 99)
-                    file.write_bytes(data)
+                # Alter the electron count on just one rank.
+                path = work / "001/mcp.mcpidx"
+                original = path.read_bytes()
+                data = bytearray(original)
+                struct.pack_into("=q", data, 8 + 8*4 + 5*8, 99)
+                path.write_bytes(data)
                 result = subprocess.run(
                     [*prefix, str(loader)],
                     cwd=work,
@@ -90,8 +83,7 @@ def main() -> None:
                     timeout=30,
                 )
                 assert result.returncode != 0, "worker MCP mismatch accepted"
-                for file, data in originals.items():
-                    file.write_bytes(data)
+                path.write_bytes(original)
             header = work / "rcsf_header.toml"
             header.write_bytes(header.read_bytes() + b"\n")
             result = subprocess.run(

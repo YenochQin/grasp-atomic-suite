@@ -10,6 +10,8 @@ OL/EOL 计算的 `name.mix` 写入永久 I/O 目录，SCF 日志写入启动目�
 需要通过 `npol.inp` 启用核极化时，可选用 MPI 内存版。
 [角系数程序](../rangular_mpi/README.md) · [MPI 内存版](../rmcdhf_mem_mpi/README.md) · [MPI 诊断](../../../docs/implemented/rmcdhf_mpi_diagnostics.md)
 
+势系数复用当前密度权重下的收缩结果。[格式与诊断选项](../../../docs/implemented/rmcdhf_mcp_io.md)
+
 ## 计算流程
 
 1. 同步状态与网格设置，各 rank 读取并核对自己的 MCP 文件。集体加载基组与初猜，建立相同的核势和 SCF 权重数据。[MPI 输入](rmcdhf_mpi_main.f90) · [径向与 SCF 设置](read_scf_options_mpi.f90)
@@ -26,7 +28,7 @@ OL/EOL 计算的 `name.mix` 写入永久 I/O 目录，SCF 日志写入启动目�
 | --- | --- |
 | [`configure_debug_output.f90`](configure_debug_output.f90) | 初始化 SCF 径向、角向、矩阵与正交化诊断位，按需打开指定 `.dbg` 路径。 |
 | [`configure_debug_output_mpi.f90`](configure_debug_output_mpi.f90) | 在 rank 0 处理调试选项并广播诊断位，使各 rank 采用相同的临时诊断设置。 |
-| [`connect_mcp_files.f90`](connect_mcp_files.f90) | 读 `mcp.30` 的闭核数、块长度、标签和最大多极阶，再核对各通道的电子、CSF、轨道数及 rank／进程数。保留各块位置与相互作用截止。内存版在这里预载已检查的通道。 |
+| [`connect_mcp_files.f90`](connect_mcp_files.f90) | 打开本 rank 的 `mcp.mcpidx`，校验分片身份及布局并安装基组和相互作用元数据。 |
 | [`load_csf_basis_data_mpi.f90`](load_csf_basis_data_mpi.f90) | 调用 MPI 适配器，由 rank 0 验证并读取描述符，各 rank 对照自己的 MCP 元数据并取得广播的占据和块信息。 |
 | [`read_al_average_options_mpi.f90`](read_al_average_options_mpi.f90) | 由 rank 0 选择 AL/EAL 权重和迭代控制选项并广播，使各 rank 构造一致的平均占据和正交化设置。 |
 | [`read_al_level_weights.f90`](read_al_level_weights.f90) | 按等权、$2J+1$ 或用户给出的正权重填入向量，对总和归一化供平均能量与占据计算。 |

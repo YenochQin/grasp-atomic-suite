@@ -15,6 +15,7 @@ program rangular_mpi_main
     use, intrinsic :: iso_fortran_env, only: output_unit
     use calculation_file_units, only: angular_log_unit, summary_output_unit
     use debug_output_settings, only: angular_debug_unit
+    use mpi_indexed_mcp, only: indexed_mcp, finish_indexed_mcp
     use mpi_csf_collectives, only: allocate_descriptor_arrays
     use iso_fortran_env, only: int64
     use rangular_mpi_input, only: mpi_angular_input_options, parse_mpi_angular_options, &
@@ -64,6 +65,7 @@ program rangular_mpi_main
     character(len=3) :: block_label_text
     type(mpi_angular_input_options) :: input_options
     type(state_files) :: files
+    type(indexed_mcp) :: indexed_output
     character(state_name_length) :: state
     integer(int64) :: program_start_count, stage_start_count
     character(len=16) :: input_format_name
@@ -104,7 +106,7 @@ program rangular_mpi_main
     stage_start_count = stage_clock()
     is_restart = .false.
 
-    call open_mcp_outputs_mpi (core_subshell_count, block_labels, files%mcp, input_options%descriptors)
+    call open_mcp_outputs_mpi (core_subshell_count, block_labels, files%mcp, input_options%descriptors, indexed_output)
     if (nondefault_options_flag/=0 .and. mpi_rank==0) call write_input_summary
     call initialize_log_factorial_table
     call record_stage("mcp_setup_including_interaction_input",0,stage_start_count)
@@ -129,8 +131,9 @@ program rangular_mpi_main
         ! Open the temporary MCP channels for this symmetry block.
         call open_temporary_mcp_channels (symmetry_block_index, max_coulomb_multipole_rank, files%temporary//block_label_text)
         ! Generate this symmetry block’s MCP data.
-        call compute_mcp_angular_coefficients_mpi (symmetry_block_index, is_restart, files%mcp)
+        call compute_mcp_angular_coefficients_mpi (symmetry_block_index, is_restart, indexed_output)
     end do
+    call finish_indexed_mcp(indexed_output)
     call close_mpi_angular_input(input_options)
     if (summary_output_unit /= -1) close(summary_output_unit)                                  ! Summary file
     if (mpi_rank == 0) close(angular_log_unit)                                 ! rangular.log

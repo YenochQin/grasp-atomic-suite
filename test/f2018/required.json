@@ -194,16 +194,10 @@
         "mpi"
       ],
       "targets": [
-        "test.mcp_io_rmcdhf_mpi",
-        "test.mcp_io_rmcdhf_mem_mpi",
-        "test.mcp_memory_rmcdhf_mem_mpi",
         "test.csf_record_rbiotransform_mpi",
         "test.cpath_io"
       ],
       "tests": [
-        "f2018_mcp_io_rmcdhf_mpi",
-        "f2018_mcp_io_rmcdhf_mem_mpi",
-        "f2018_mcp_memory_rmcdhf_mem_mpi",
         "f2018_csf_record_rbiotransform_mpi",
         "f2018_cpath_io_mpi"
       ]

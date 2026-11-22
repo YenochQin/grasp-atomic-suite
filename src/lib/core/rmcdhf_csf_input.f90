@@ -59,11 +59,13 @@ contains
         path = descriptor_input_path(trimmed_name)
     end function descriptor_path
 
-    subroutine load_rmcdhf_descriptors(state_name, core_subshell_count, block_labels, status)
+    subroutine load_rmcdhf_descriptors(state_name, core_subshell_count, block_labels, status, expected_basis_id)
         ! Arguments
         character(len=*), intent(in) :: state_name
         integer, intent(out) :: core_subshell_count, status
         character(len=8), intent(in) :: block_labels(:)
+
+        character(len=64), intent(in), optional :: expected_basis_id
 
         ! Local declarations
         type(descriptor_source) :: basis_reader
@@ -71,6 +73,14 @@ contains
         call open_descriptor_source(basis_reader, resolve_descriptor_input(descriptor_path(state_name)), &
             size(packed_block_symmetries), status=status)
         if (status /= 0) return
+        if (present(expected_basis_id)) then
+            if (basis_reader%basis_id /= expected_basis_id) then
+                write(*,*) "MCP indexed basis identifier does not match the CSF descriptors"
+                call close_descriptor_source(basis_reader)
+                status = 1
+                return
+            end if
+        end if
         call read_rmcdhf_basis(basis_reader, core_subshell_count, block_labels, status)
         call close_descriptor_source(basis_reader)
         if (status /= 0) write(*,*) "RMCDHF descriptor loading or MCP contract failed"

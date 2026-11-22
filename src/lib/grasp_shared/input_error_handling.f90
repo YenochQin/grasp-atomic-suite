@@ -36,10 +36,13 @@ contains
             write(error_unit, "(a,a,a,i0,a,i0)") "Input I/O failure: ", trim(context), &
                 "; unit=", unit, "; iostat=", status
         end if
-        inquire(unit=unit, opened=opened, named=named, name=filename, iostat=inquiry_status)
-        if (inquiry_status == 0) then
-            if (opened) then
-                if (named) write(error_unit, "(a,a)") "Input file: ", trim(filename)
+        ! A failed OPEN has no unit to inquire about.
+        if (unit /= -1) then
+            inquire(unit=unit, opened=opened, named=named, name=filename, iostat=inquiry_status)
+            if (inquiry_status == 0) then
+                if (opened) then
+                    if (named) write(error_unit, "(a,a)") "Input file: ", trim(filename)
+                end if
             end if
         end if
         flush(error_unit)

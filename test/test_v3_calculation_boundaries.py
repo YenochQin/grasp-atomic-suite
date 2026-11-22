@@ -83,9 +83,10 @@ def verify(binaries: Path, root: Path, mpiexec: str | None) -> None:
 
     def check_mcp(work: Path, label: str) -> None:
         run("rangular", work, angular_answers)
-        files = sorted(work.rglob("mcp.30"))
+        files = sorted(work.rglob("mcp.mcpidx" if mpiexec else "mcp.30"))
         assert len(files) == (2 if mpiexec else 1), files
-        assert all(records(path)[2] == label.encode().ljust(8) for path in files), files
+        labels = [path.read_bytes()[200:208] if mpiexec else records(path)[2] for path in files]
+        assert all(value == label.encode().ljust(8) for value in labels), files
 
     # A full high-j peel shell follows the closed-shell path in the angular kernel.
     work = root / "full-6h"

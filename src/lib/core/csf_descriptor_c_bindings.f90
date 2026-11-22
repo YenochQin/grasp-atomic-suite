@@ -9,11 +9,16 @@ module csf_descriptor_c_bindings
     public :: rust_descriptor_abi_version, rust_descriptor_open, rust_descriptor_info
     public :: rust_descriptor_tables, rust_descriptor_read, rust_descriptor_close
     public :: rust_descriptor_zero_order_counts, rust_descriptor_format_version
-    public :: rust_descriptor_read_radial_header
+    public :: rust_descriptor_read_radial_header, rust_descriptor_basis_id
     public :: rust_descriptor_select_block, rust_descriptor_check_spin_angular
 
     ! Procedure interfaces
     interface
+        subroutine rust_descriptor_basis_id(handle, digest) bind(C, name="rcsfs_descriptor_basis_id")
+            import c_ptr, c_char
+            type(c_ptr), value :: handle
+            character(kind=c_char), intent(out) :: digest(*)
+        end subroutine rust_descriptor_basis_id
         function rust_descriptor_abi_version() bind(C, name="rcsfs_descriptor_abi_version") result(status)
             ! Module dependencies
             import c_int32_t

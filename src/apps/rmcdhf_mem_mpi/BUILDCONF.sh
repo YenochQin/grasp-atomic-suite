@@ -9,8 +9,6 @@ read_mcp_coefficients_from_memory.f90
 load_mcp_records_into_memory.f90
 read_mcp_structure_into_memory.f90
 read_mcp_coefficients_into_memory.f90
-query_total_system_memory.f90
-query_available_system_memory.f90
 cache_mcp_files.f90
 
 csf_density_matrix_element.f90

@@ -22,6 +22,7 @@ DIAGNOSTIC_LABELS_SNAPSHOT = Path("docs/reference/rmcdhf_diagnostic_labels_snaps
 V3_J_LABELS_SNAPSHOT = Path("docs/reference/rmcdhf_v3_j_labels_snapshot.json")
 APP_COMMENTS_SNAPSHOT = Path("docs/reference/rmcdhf_app_comments_snapshot.json")
 MPI_RUN_LOGGING_SNAPSHOT = Path("docs/reference/rmcdhf_mpi_run_logging_snapshot.json")
+MPI_MCP_IO_SNAPSHOT = Path("docs/reference/rmcdhf_mpi_mcp_io_snapshot.json")
 
 
 def suite_source_path(root: Path, upstream_path: str, renamed_paths: dict[str, str]) -> Path:
@@ -488,7 +489,8 @@ def main(root: Path) -> None:
     reviewed_migration |= audited_names["files"]
 
     predecessor = AUDITED_NAMES_SNAPSHOT
-    for snapshot in (DIAGNOSTIC_LABELS_SNAPSHOT, V3_J_LABELS_SNAPSHOT, APP_COMMENTS_SNAPSHOT, MPI_RUN_LOGGING_SNAPSHOT):
+    for snapshot in (DIAGNOSTIC_LABELS_SNAPSHOT, V3_J_LABELS_SNAPSHOT, APP_COMMENTS_SNAPSHOT, MPI_RUN_LOGGING_SNAPSHOT,
+                     MPI_MCP_IO_SNAPSHOT):
         app_update = json.loads((root / snapshot).read_text())
         assert app_update["schema_version"] == 1, f"Unknown application snapshot schema: {snapshot}"
         assert app_update["previous_manifest_sha256"] == hashlib.sha256(
@@ -496,10 +498,23 @@ def main(root: Path) -> None:
         ).hexdigest(), f"Previous manifest changed: {predecessor}"
         previous = reviewed_files | reviewed_migration
         for name, record in app_update["files"].items():
-            assert name in expected and name.endswith(".f90") and name in previous, name
-            assert record["before_suite_sha256"] == previous[name]["after_suite_sha256"], name
+            allowed_build_file = snapshot == MPI_MCP_IO_SNAPSHOT and Path(name).name in {
+                "CMakeLists.txt", "Makefile", "BUILDCONF.sh",
+            }
+            assert name in expected and (name.endswith(".f90") or allowed_build_file), name
+            previous_digest = previous[name]["after_suite_sha256"] if name in previous else expected[name]["sha256"]
+            assert record["before_suite_sha256"] == previous_digest, name
         reviewed_migration |= app_update["files"]
         predecessor = snapshot
+
+    mcp_snapshot = json.loads((root / MPI_MCP_IO_SNAPSHOT).read_text())
+    for name, record in mcp_snapshot["removed"].items():
+        previous = reviewed_files | reviewed_migration
+        previous_digest = previous[name]["after_suite_sha256"] if name in previous else expected[name]["sha256"]
+        assert record["before_suite_sha256"] == previous_digest, name
+        path = suite_source_path(root, name, renamed_paths)
+        assert not path.exists(), f"Retired MPI memory probe restored: {path}"
+        del expected[name]
 
     actual = {
         path
@@ -510,7 +525,12 @@ def main(root: Path) -> None:
     expected_paths = {name: suite_source_path(root, name, renamed_paths) for name in expected}
     paths = set(expected_paths.values())
     assert len(paths) == len(expected), "App source paths must be unique"
+    added = mcp_snapshot["added"]
+    assert paths.isdisjoint(root / name for name in added)
+    paths.update(root / name for name in added)
     assert actual == paths, (actual - paths, paths - actual)
+    for name, digest in added.items():
+        assert hashlib.sha256((root / name).read_bytes()).hexdigest() == digest, f"Unreviewed new app source: {name}"
     for relative, record in expected.items():
         path = expected_paths[relative]
         if relative in reviewed_migration:

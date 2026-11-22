@@ -145,6 +145,16 @@ if(Python3_Interpreter_FOUND)
             set_tests_properties(state_workflow_mpi PROPERTIES PROCESSORS 2)
         endif()
     endif()
+    if(TARGET rwfnestimate AND TARGET rangular_mpi AND TARGET rmcdhf_mpi AND MPIEXEC_EXECUTABLE)
+        add_executable(test.indexed_mcp f2018/indexed_mcp_roundtrip.f90
+            "${PROJECT_SOURCE_DIR}/src/apps/rangular_mpi/write_mcp_sparsity_summary_mpi.f90")
+        setup_fortran_modules(test.indexed_mcp)
+        target_link_libraries_Fortran(test.indexed_mcp PRIVATE grasp_mpi core grasp_shared)
+        add_test(NAME rmcdhf_mcp_paths COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/test_rmcdhf_mcp_paths.py" $<TARGET_FILE_DIR:rwfnestimate>
+            --mpiexec "${MPIEXEC_EXECUTABLE}" --probe $<TARGET_FILE:test.indexed_mcp>)
+        set_tests_properties(rmcdhf_mcp_paths PROPERTIES PROCESSORS 2 TIMEOUT 180)
+    endif()
     add_test(NAME save_rmcdhf
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_save_rmcdhf.py"
             "${PROJECT_BINARY_DIR}/bin/save_rmcdhf")
@@ -236,9 +246,11 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
             target_sources(${target} PRIVATE "${app}/serial_mpi_context.f90")
         endif()
         if(variant MATCHES "mem")
-            target_sources(${target} PRIVATE "${app}/cache_mcp_files.f90"
-                "${app}/rmcdhf_mcp_memory.f90" "${app}/query_total_system_memory.f90"
-                "${app}/query_available_system_memory.f90")
+            target_sources(${target} PRIVATE "${app}/cache_mcp_files.f90" "${app}/rmcdhf_mcp_memory.f90")
+            if(variant STREQUAL "rmcdhf_mem")
+                target_sources(${target} PRIVATE "${app}/query_total_system_memory.f90"
+                    "${app}/query_available_system_memory.f90")
+            endif()
         endif()
         add_test(NAME descriptor_input_${variant} COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/test_rmcdhf_descriptors.py

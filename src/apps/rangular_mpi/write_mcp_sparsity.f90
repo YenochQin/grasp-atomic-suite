@@ -17,8 +17,9 @@ contains
     !
     ! Currently shared by mcpblk, mcpmpi
     subroutine write_mcp_sparsity(write_coefficient_callback,nonzero_element_count,print_details,symmetry_block_index,mpi_rank, &
-        & mpi_process_count,output_file_prefix)
+        & mpi_process_count,indexed_output)
         ! Module dependencies
+        use mpi_indexed_mcp, only: indexed_mcp, write_indexed_sparse
         use mcp_generation_options, only: mcp_temporary_units
         use, intrinsic :: iso_fortran_env, only: output_unit
         use array_memory_management, only: alloc, dalloc
@@ -30,16 +31,14 @@ contains
         implicit none (type, external)
 
         ! Arguments and local declarations
-        integer :: mcp_append_unit
+        type(indexed_mcp), intent(inout) :: indexed_output
         procedure(write_mcp_sparsity_summary_mpi) :: write_coefficient_callback
         integer, intent(in) :: nonzero_element_count
         integer , intent(in) :: symmetry_block_index
         integer , intent(in) :: mpi_rank
         integer , intent(in) :: mpi_process_count
         logical  :: print_details
-        character , intent(in) :: output_file_prefix*(*)
-        integer :: file_block_index, previous_column_end, previous_column_index, i, column_index, cumulative_nonzero_count, &
-            & io_status
+        integer :: file_block_index, previous_column_end, previous_column_index, i, column_index, cumulative_nonzero_count
         integer, pointer :: column_end_positions(:)
         integer, pointer :: row_indices(:)
         character :: mcp_channel_label*3
@@ -74,19 +73,8 @@ contains
         !       IENDC(NCF) = IEND
         !      ICLAST is zero on an empty rank; IC has no value in that case.
         column_end_positions(previous_column_index) = previous_column_end
-        !    Sorting complete; rewrite to mcpXXX.30 file
-        open(newunit=mcp_append_unit, file=output_file_prefix//".30", status="OLD", form="UNFORMATTED", iostat=io_status&
-            , position="APPEND")
-        if (io_status /= 0) then
-            write (stderr_unit, *) " Error when opening the file mcp.30"
-            stop
-        end if
-
-        write (mcp_append_unit) "MCP", symmetry_block_index, csf_count
-        write (mcp_append_unit) nonzero_element_count
-        write (mcp_append_unit) (column_end_positions(i),i=mpi_rank + 1,csf_count,mpi_process_count), &
-            & (row_indices(i),i=1,nonzero_element_count)
-        close(mcp_append_unit)
+        call write_indexed_sparse(indexed_output,symmetry_block_index, &
+            column_end_positions(mpi_rank+1:csf_count:mpi_process_count),row_indices)
         !    Deallocate storage
         call dalloc (column_end_positions, "column_end_positions", "write_mcp_sparsity")
         call dalloc (row_indices, "row_indices", "write_mcp_sparsity")

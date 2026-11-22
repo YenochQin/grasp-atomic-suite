@@ -16,6 +16,8 @@ contains
     subroutine calculate_lagrange_multipliers_mpi(extended_optimal_level)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
+        use rmcdhf_mcp_io, only: mcp_now, profile_stage, log_bits, log_radial_grid, verification_enabled
+        use iso_fortran_env, only: int64
         use grasp_parameters,    only: orbital_index_radix, max_radial_points
         use array_memory_management, only: alloc
         use scf_orbital_order, only: orbital_update_order
@@ -54,7 +56,7 @@ contains
         real(real64) :: ypj(max_radial_points), ypm(max_radial_points), xpj(max_radial_points), xpm(max_radial_points), &
             xqj(max_radial_points), xqm(max_radial_points)
         real(real64) :: eps, orbital_j_occupation, orbital_m_occupation, result, one_electron_radial_integral, &
-            inverse_occupation_sum, tmp
+            inverse_occupation_sum, tmp, started
         logical :: first, fulli, fullj, vli, vlj
 
         ! Initial values
@@ -146,9 +148,12 @@ contains
             if (j /= jlast) then
                 orbital_j_occupation = orbital_occupation_weights(j)
                 call assemble_orbital_potential_coefficients (extended_optimal_level, j)
+                started = mcp_now()
                 call build_direct_radial_potential (j)
                 call build_exchange_radial_potential (j)
                 call apply_off_diagonal_integrals
+                call profile_stage("multiplier_radial",j,0,started)
+                call log_radial_grid("multiplier_radial",j,radial_point_count)
                 ypj(:radial_point_count) = orbital_y_potential(:radial_point_count)
                 xpj(:radial_point_count) = large_exchange_source(:radial_point_count)
                 xqj(:radial_point_count) = small_exchange_source(:radial_point_count)
@@ -157,9 +162,12 @@ contains
             if (m /= mlast) then
                 orbital_m_occupation = orbital_occupation_weights(m)
                 call assemble_orbital_potential_coefficients (extended_optimal_level, m)
+                started = mcp_now()
                 call build_direct_radial_potential (m)
                 call build_exchange_radial_potential (m)
                 call apply_off_diagonal_integrals
+                call profile_stage("multiplier_radial",m,0,started)
+                call log_radial_grid("multiplier_radial",m,radial_point_count)
                 ypm(:radial_point_count) = orbital_y_potential(:radial_point_count)
                 xpm(:radial_point_count) = large_exchange_source(:radial_point_count)
                 xqm(:radial_point_count) = small_exchange_source(:radial_point_count)
@@ -217,9 +225,12 @@ contains
             ! have the same set of "LAB" and "NCONTR". So an easier aggregation
             ! can be done for arrays DA, XA, YA in setcof. And so the computation
             ! of YPOT, XPOT, DACON can be distributed.
+            started = mcp_now()
             call mpi_allreduce (lagrange_multiplier_values(li),tmp,1,mpi_double_precision, &
                 mpi_sum, mpi_comm_world, mpi_error_code)
+            call profile_stage("multiplier_reduction",j,0,started)
             lagrange_multiplier_values(li) = tmp
+            if (verification_enabled) call log_bits("multiplier",j,0,m,int(li,int64),tmp)
 
             if(mpi_rank == 0)write (*, '(13x,2(2x,1i2,1a2),2x,1p,d16.9)') &
                 orbital_principal_n(j), orbital_symmetry_labels(j), orbital_principal_n(m), &

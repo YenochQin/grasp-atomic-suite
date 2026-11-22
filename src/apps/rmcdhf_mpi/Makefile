@@ -4,6 +4,8 @@ FC_MODULES= -I ${GRASP}/src/lib/davidson_eigensolver -I ${GRASP}/src/lib/mpi -I 
 
 OBJS= \
 	csf_density_matrix_element.o \
+	rmcdhf_mcp_io.o \
+	mcp_density_contractions.o \
 	 \
 	direct_angular_coefficient.o \
 	 \

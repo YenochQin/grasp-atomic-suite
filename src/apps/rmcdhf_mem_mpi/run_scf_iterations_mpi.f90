@@ -31,7 +31,6 @@ contains
             highest_selected_level_by_block, symmetry_block_count
         use standard_io_units, only: stderr_unit, stdin_unit
         use orbital_lagrange_multipliers, only: lagrange_multiplier_values, lagrange_orbital_pair_labels, lagrange_multiplier_count
-        use mcp_file_metadata, only: max_mcp_file_multipole_rank
         use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank
         use symmetry_block_offsets, only: total_csf_count, mixing_coefficient_storage_size, csf_offsets_by_block, &
             eigenvalue_offsets_by_block, mixing_offsets_by_block
@@ -67,7 +66,7 @@ contains
         character  :: output_wavefunction_path*(*)
 
         ! Local declarations
-        integer :: orbital_index, symmetry_block_index, mcp_unit, scf_iteration, orbital_update_index, extra_orbital_update, &
+        integer :: orbital_index, symmetry_block_index, scf_iteration, orbital_update_index, extra_orbital_update, &
             & least_consistent_orbital, mpi_logical_type
         real(real64) :: weighted_average_energy, previous_weighted_average_energy, maximum_orbital_damping
         logical :: scf_converged, sort_by_self_consistency, first_davidson_solve
@@ -246,10 +245,6 @@ contains
         if (scf_iteration > maximum_scf_iterations) then
             if (mpi_rank==0) write (stderr_unit,*)" Maximum iterations in SCF Exceeded."
         end if
-
-        do mcp_unit = 31, 32 + max_mcp_file_multipole_rank
-            close(mcp_unit)                                ! The MCP coefficient files
-        end do
 
         if (mpi_rank == 0) then
             close(mixing_output_unit)                               ! The .mix file

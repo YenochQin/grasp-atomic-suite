@@ -10,6 +10,8 @@ contains
     subroutine load_csf_basis_data_mpi(name, core_subshell_count, block_labels)
         ! Module dependencies
         use mpi_rmcdhf_csf_input, only: load_rmcdhf_descriptors_mpi
+        use mpi_mcp_calculation_input, only: indexed_input
+        use cache_mcp_files_interface, only: cache_mcp_files
         use hamiltonian_symmetry_blocks, only: symmetry_block_count
         implicit none (type, external)
 
@@ -17,6 +19,7 @@ contains
         character(len=*), intent(in) :: name
         integer :: core_subshell_count
         character(len=8) :: block_labels(*)
-        call load_rmcdhf_descriptors_mpi(name,core_subshell_count,block_labels(:symmetry_block_count))
+        call load_rmcdhf_descriptors_mpi(name,core_subshell_count,block_labels(:symmetry_block_count),indexed_input%basis_id)
+        call cache_mcp_files()
     end subroutine load_csf_basis_data_mpi
 end module load_csf_basis_data_mpi_interface

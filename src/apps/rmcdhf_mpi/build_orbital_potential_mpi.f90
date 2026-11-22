@@ -10,6 +10,7 @@ contains
     subroutine build_orbital_potential_mpi(extended_optimal_level, orbital_index, radial_point_count)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
+        use rmcdhf_mcp_io, only: mcp_now, profile_stage, log_radial_grid
         use scf_radial_potentials, only: large_exchange_source, small_exchange_source, orbital_y_potential
         use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_process_count, mpi_sum
 
@@ -32,13 +33,16 @@ contains
         logical  :: extended_optimal_level
 
         ! Local declarations
-        real(real64) :: radial_reduction_buffer(radial_point_count)
+        real(real64) :: radial_reduction_buffer(radial_point_count), started
 
         call assemble_orbital_potential_coefficients (extended_optimal_level, orbital_index)
+        started = mcp_now()
         call build_direct_radial_potential (orbital_index)
         call build_exchange_radial_potential (orbital_index)
         call apply_lagrange_constraints (orbital_index, mpi_process_count)
         call apply_off_diagonal_integrals
+        call profile_stage("radial_potential",orbital_index,0,started)
+        started = mcp_now()
 
         call mpi_allreduce (orbital_y_potential, radial_reduction_buffer, radial_point_count, mpi_double_precision,  &
             mpi_sum, mpi_comm_world, mpi_error_code)
@@ -52,6 +56,7 @@ contains
             mpi_sum, mpi_comm_world, mpi_error_code)
         call dcopy (radial_point_count, radial_reduction_buffer, 1, small_exchange_source, 1)
 
-        return
+        call profile_stage("radial_reduction",orbital_index,0,started)
+        call log_radial_grid("radial",orbital_index,radial_point_count)
     end subroutine build_orbital_potential_mpi
 end module build_orbital_potential_mpi_interface

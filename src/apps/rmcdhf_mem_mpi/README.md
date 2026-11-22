@@ -10,9 +10,11 @@ SCF 日志写入启动目录。
 
 [角系数程序](../rangular_mpi/README.md) · [核极化输入](../../../docs/implemented/rmcdhf_nuclear_polarization.md) · [MCP 存储及实现差异](../../../docs/reviews/rmcdhf_mem_comparison_2026-11-11.md)
 
+各 rank 从同一目录格式装入内存。 [MPI MCP 格式](../../../docs/implemented/rmcdhf_mcp_io.md)
+
 ## 计算流程
 
-1. 每个 rank 先读自己的 MCP 结构、积分标签、贡献和索引并缓存，集体取得描述符与核／径向数据。在需要时从永久目录读入核极化设置并更新核势。[缓存](cache_mcp_files.f90) · [核势设置](read_scf_options_mpi.f90)
+1. 每个 rank 校验 MCP 元数据及描述符基组，然后按目录装入结构和积分组。随后集体取得核与径向数据。在需要时从永久目录读入核极化设置并更新核势。[缓存](cache_mcp_files.f90) · [核势设置](read_scf_options_mpi.f90)
 2. 各 rank 从本地缓存提取角贡献，计算块哈密顿量及当前轨道的一体密度收缩。通过 MPI 累加对角、矩阵乘、占据及轨道方程贡献。[块求解](solve_hamiltonian_blocks_mpi.f90) · [势计算](build_orbital_potential_mpi.f90)
 3. 两个轨道均可变时，MPI 乘子根据占据相对差在势差与势和表达间切换。rank 0 每轮写径向波函数，OL/EOL 同步更新能量与混合系数。轨道自洽误差或加权平均能量的相对变化满足阈值时停止。达到最大迭代次数也会结束，并打印对应提示。[乘子分支](calculate_lagrange_multipliers_mpi.f90) · [迭代循环](run_scf_iterations_mpi.f90)
 
@@ -26,7 +28,7 @@ SCF 日志写入启动目录。
 | --- | --- |
 | [`configure_debug_output.f90`](configure_debug_output.f90) | 初始化 SCF 径向、角向、矩阵与正交化诊断位，按需打开指定 `.dbg` 路径。 |
 | [`configure_debug_output_mpi.f90`](configure_debug_output_mpi.f90) | 在 rank 0 处理调试选项并广播诊断位，使各 rank 采用相同的临时诊断设置。 |
-| [`connect_mcp_files.f90`](connect_mcp_files.f90) | 读 `mcp.30` 的闭核数、块长度、标签和最大多极阶，再核对各通道的电子、CSF、轨道数及 rank／进程数。保留各块位置与相互作用截止。内存版在这里预载已检查的通道。 |
+| [`connect_mcp_files.f90`](connect_mcp_files.f90) | 打开本 rank 的 `mcp.mcpidx`，校验分片身份及布局并安装基组和相互作用元数据。 |
 | [`load_csf_basis_data_mpi.f90`](load_csf_basis_data_mpi.f90) | 调用 MPI 适配器，由 rank 0 验证并读取描述符，各 rank 对照自己的 MCP 元数据并取得广播的占据和块信息。 |
 | [`read_al_average_options_mpi.f90`](read_al_average_options_mpi.f90) | 由 rank 0 选择 AL/EAL 权重和迭代控制选项并广播，使各 rank 构造一致的平均占据和正交化设置。 |
 | [`read_al_level_weights.f90`](read_al_level_weights.f90) | 按等权、$2J+1$ 或用户给出的正权重填入向量，对总和归一化供平均能量与占据计算。 |
@@ -82,16 +84,16 @@ SCF 日志写入启动目录。
 
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
-| [`cache_mcp_files.f90`](cache_mcp_files.f90) | 先扫描一个 MCP 通道的记录数和各块边界，按实际大小分配索引／系数数组，再重新遍历填入缓存。对读入失败或损坏的记录报告 I/O 上下文。 |
+| [`cache_mcp_files.f90`](cache_mcp_files.f90) | 根据目录分配原有内存数组，按块装入稀疏结构和各通道积分组。读取失败时报告相关分片。 |
 | [`finish_summary.f90`](finish_summary.f90) | 输出最后一轮的能量、能级权重和组态成分，按选取的平均模式完成报告并关闭相应输出单元。 |
 | [`load_mcp_records_into_memory.f90`](load_mcp_records_into_memory.f90) | 按通道编号及累计记录位置返回该积分标签和贡献数，供矩阵或势构造遍历缓存。 |
 | [`open_mixing_output.f90`](open_mixing_output.f90) | 为 OL/EOL 创建混合文件并写 `G92MIX` 标记和预备维数，供每轮矩阵求解写各块系数。 |
 | [`open_summary_file.f90`](open_summary_file.f90) | 将状态摘要路径连接到 SCF 文本单元，检查是否成功打开，供初始设置和结束时的能量表写入。 |
 | [`print_radial_wavefunction.f90`](print_radial_wavefunction.f90) | 按列打印网格上的大、小分量及相关势的诊断样本，可调用 ASCII 绘图例程查看径向形状。 |
 | [`print_scf_results.f90`](print_scf_results.f90) | 把轨道编号转换为谱学标签，列出将优化的轨道及其控制选项，供交互核对轨道选择。 |
-| [`read_mcp_coefficients_from_memory.f90`](read_mcp_coefficients_from_memory.f90) | 从 `mcp.30` 缓存还原当前块的稀疏列尾偏移和行号。MPI 版本按本地列分工恢复内存布局。 |
+| [`read_mcp_coefficients_from_memory.f90`](read_mcp_coefficients_from_memory.f90) | 从稀疏结构缓存还原当前块的稀疏列尾偏移和行号。MPI 版本按本地列分工恢复内存布局。 |
 | [`read_mcp_coefficients_into_memory.f90`](read_mcp_coefficients_into_memory.f90) | 从所选 T/V 通道缓存取一组贡献，把每条记录的 CSF 列、矩阵位置和角系数依次复制到调用方数组。 |
-| [`read_mcp_structure_from_memory.f90`](read_mcp_structure_from_memory.f90) | 用对称性块在 `mcp.30` 缓存里的下标范围，将稀疏行号复制到当前块的 `matrix_partner_indices`。 |
+| [`read_mcp_structure_from_memory.f90`](read_mcp_structure_from_memory.f90) | 用对称性块在稀疏结构缓存里的下标范围，将稀疏行号复制到当前块的 `matrix_partner_indices`。 |
 | [`read_mcp_structure_into_memory.f90`](read_mcp_structure_into_memory.f90) | 按通道和累计贡献位置取出指定积分的 CSF 列、稀疏矩阵位置及角系数，供当前计算使用。 |
 | [`write_csf_weights.f90`](write_csf_weights.f90) | 据每块 CSF、根和混合系数偏移扫过本征向量，选出幅值最大的组态分量，以块内 CSF 序号、符号和对称性输出。 |
 | [`write_hamiltonian_records_mpi.f90`](write_hamiltonian_records_mpi.f90) | 遍历当前 rank 负责的稀疏列和对角索引，将所选的矩阵元输出到调试单元。 |
@@ -105,6 +107,4 @@ SCF 日志写入启动目录。
 | --- | --- |
 | [`basis_csf_parity.f90`](basis_csf_parity.f90) | 把 CSF 序号交给 RMCDHF 基组查询接口，由占据／块标签状态读取该 CSF 宇称。 |
 | [`basis_csf_two_j_plus_one.f90`](basis_csf_two_j_plus_one.f90) | 从 CSF 对应的块状态取得角动量编码 $2J+1$，供统计权重和能级输出使用。 |
-| [`query_available_system_memory.f90`](query_available_system_memory.f90) | 读取 `/proc/meminfo` 第二行的内存数值并换算为 GiB，用于报告缓存建立前后的系统内存读数。 |
-| [`query_total_system_memory.f90`](query_total_system_memory.f90) | 读取 `/proc/meminfo` 首行的系统总内存数值，将其除以 `1048576` 后返回整数精度的 GiB，供 MCP 缓存诊断打印。 |
-| [`rmcdhf_mcp_memory.f90`](rmcdhf_mcp_memory.f90) | 声明 `mcp.30` 的稀疏列界与行号，及各个 T/V 通道的标签、贡献数、列号、稀疏位置与系数数组。 |
+| [`rmcdhf_mcp_memory.f90`](rmcdhf_mcp_memory.f90) | 声明块的稀疏列界与行号，及各个 T/V 通道的标签、贡献数、列号、稀疏位置与系数数组。 |

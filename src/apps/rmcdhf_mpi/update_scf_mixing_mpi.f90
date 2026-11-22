@@ -17,6 +17,7 @@ contains
     ! Modified by G. Gaigalas. 05 Feb 2017
     subroutine update_scf_mixing_mpi(weighted_average_energy)
         ! Module dependencies
+        use mcp_density_contractions, only: begin_density_epoch
         use, intrinsic :: iso_fortran_env, only: error_unit
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
@@ -130,6 +131,6 @@ contains
         end if
         ! ~~~~~~~~~
 
-        return
+        call begin_density_epoch()
     end subroutine update_scf_mixing_mpi
 end module update_scf_mixing_mpi_interface

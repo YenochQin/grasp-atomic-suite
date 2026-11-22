@@ -86,8 +86,10 @@ class MpiDescriptorTests(unittest.TestCase):
                     ["--csf-descriptors", str(self.binary_path), "--timings", "timings.csv"],
                 )
                 self.assertFalse((binary_directory / "rcsf.inp").exists())
-                self.assertEqual(len(self.outputs(text_directory)), 6 * ranks)
-                self.assertEqual(self.outputs(text_directory), self.outputs(binary_directory))
+                self.assertEqual(len(self.outputs(text_directory)), ranks)
+                input_comparison = mcp_compare.compare(self.dataset(text_directory), self.dataset(binary_directory),
+                                                     atol=0.0, rtol=0.0)
+                self.assertEqual(input_comparison["status"], "equal", input_comparison)
                 for rank_index in range(ranks):
                     profile = binary_directory / f"{rank_index:03d}" / f"timings.rank{rank_index:03d}.csv"
                     with profile.open() as stream:
@@ -195,7 +197,8 @@ class MpiDescriptorTests(unittest.TestCase):
         relative_binary = "../inputs/csfs_descriptors.parquet"
         reference = self.successful_run("relative-text", 2, ["--csf-descriptors", str(self.binary_path)])
         candidate = self.successful_run("relative-binary", 2, ["--csf-descriptors", relative_binary])
-        self.assertEqual(self.outputs(reference), self.outputs(candidate))
+        comparison = mcp_compare.compare(self.dataset(reference), self.dataset(candidate), atol=0.0, rtol=0.0)
+        self.assertEqual(comparison["status"], "equal", comparison)
 
     def test_invalid_descriptor_stops_mpi_job(self) -> None:
         import pyarrow as arrow

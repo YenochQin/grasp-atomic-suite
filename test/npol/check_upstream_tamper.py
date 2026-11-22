@@ -15,6 +15,7 @@ from check_upstream import (
     APP_SYMBOLS_SNAPSHOT,
     AUDITED_NAMES_SNAPSHOT,
     DIAGNOSTIC_LABELS_SNAPSHOT,
+    MPI_MCP_IO_SNAPSHOT,
     MPI_RUN_LOGGING_SNAPSHOT,
     V3_J_LABELS_SNAPSHOT,
     suite_source_path,
@@ -30,7 +31,8 @@ def main() -> None:
         app_symbols = json.loads((root / APP_SYMBOLS_SNAPSHOT).read_text())
         app_modules = json.loads((root / APP_MODULES_SNAPSHOT).read_text())
         audited_names = json.loads((root / AUDITED_NAMES_SNAPSHOT).read_text())
-        removed = set(migration["removed"]) | set(app_modules["merged_interfaces"])
+        mcp_snapshot = json.loads((root / MPI_MCP_IO_SNAPSHOT).read_text())
+        removed = set(migration["removed"]) | set(app_modules["merged_interfaces"]) | set(mcp_snapshot["removed"])
         renamed_paths = {name: record["suite_path"] for name, record in app_symbols["files"].items()}
         renamed_paths.update({
             name: record["suite_path"] for name, record in audited_names["files"].items() if "suite_path" in record
@@ -39,6 +41,7 @@ def main() -> None:
             suite_source_path(root, name, renamed_paths)
             for name in manifest["files"] if name not in removed
         ]
+        paths += [root / name for name in mcp_snapshot["added"]]
         paths += list((root / "docs/reference").glob("rmcdhf_*.json"))
         for source in paths:
             target = work / source.relative_to(root)
@@ -67,6 +70,8 @@ def main() -> None:
                          V3_J_LABELS_SNAPSHOT,
                          APP_COMMENTS_SNAPSHOT,
                          MPI_RUN_LOGGING_SNAPSHOT,
+                         MPI_MCP_IO_SNAPSHOT,
+                         "src/apps/rmcdhf_mpi/mcp_density_contractions.f90",
                          "docs/reference/rmcdhf_grasp_mpi_naming_snapshot.json",
                          "docs/reference/rmcdhf_grasp_shared_naming_snapshot.json",
                          "docs/reference/rmcdhf_davidson_naming_snapshot.json",
@@ -96,7 +101,7 @@ def main() -> None:
                          "docs/reference/rmcdhf_use_only_orb_label_snapshot.json"):
             target = work / relative
             original = target.read_bytes()
-            if relative in (V3_J_LABELS_SNAPSHOT, APP_COMMENTS_SNAPSHOT, MPI_RUN_LOGGING_SNAPSHOT):
+            if relative in (V3_J_LABELS_SNAPSHOT, APP_COMMENTS_SNAPSHOT, MPI_RUN_LOGGING_SNAPSHOT, MPI_MCP_IO_SNAPSHOT):
                 snapshot = json.loads(original)
                 next(iter(snapshot["files"].values()))["after_suite_sha256"] = "0" * 64
                 target.write_text(json.dumps(snapshot))

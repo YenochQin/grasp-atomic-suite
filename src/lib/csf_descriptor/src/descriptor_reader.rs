@@ -22,6 +22,7 @@ pub struct DescriptorReader {
     // Cumulative logical row offsets, including the end sentinel.
     row_group_offsets: Vec<u64>,
     block_starts: Vec<u64>,
+    pub basis_id: [u8; 64],
     pub header_lines: [String; 5],
     pub block_lengths: Vec<u64>,
     pub zero_order_counts: Option<Vec<i64>>,
@@ -382,6 +383,10 @@ impl DescriptorReader {
             batch_size,
             row_group_offsets,
             block_starts,
+            basis_id: expected
+                .as_bytes()
+                .try_into()
+                .expect("validated digest length"),
             header_lines: header_lines.map(str::to_owned),
             block_lengths,
             zero_order_counts,

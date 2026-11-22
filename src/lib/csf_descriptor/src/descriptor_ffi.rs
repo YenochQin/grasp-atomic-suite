@@ -57,6 +57,22 @@ pub extern "C" fn rcsfs_descriptor_format_version() -> i32 {
     i32::from(crate::descriptor_schema::DESCRIPTOR_VERSION)
 }
 
+/// Copy the verified Parquet SHA-256 as 64 ASCII bytes. Its metadata binds the ordered header.
+/// # Safety
+/// The handle must be live and the output must be writable for 64 bytes.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rcsfs_descriptor_basis_id(handle: *const c_void, output: *mut c_char) {
+    // SAFETY: The caller provides a live handle and disjoint writable storage.
+    unsafe {
+        let reader = &(*handle.cast::<Handle>()).reader;
+        ptr::copy_nonoverlapping(
+            reader.basis_id.as_ptr(),
+            output.cast(),
+            reader.basis_id.len(),
+        );
+    }
+}
+
 /// Read radial input metadata from TOML. No descriptor file or handle is used.
 ///
 /// # Safety
