@@ -48,7 +48,7 @@ program rangular_mpi_main
 
     ! Module dependencies
     use mpi_utilities, only: initialize_mpi_runtime_with_status
-    use mpi_utilities, only: finalize_mpi_runtime_with_status
+    use mpi_utilities, only: finish_mpi_application
 
     ! Procedure interfaces
     use configure_debug_output_mpi_interface, only: configure_debug_output_mpi
@@ -56,7 +56,8 @@ program rangular_mpi_main
     use compute_mcp_angular_coefficients_mpi_interface, only: compute_mcp_angular_coefficients_mpi
     implicit none (type, external)
     integer, parameter :: maximum_input_symmetry_blocks = 50   !-----------------------------------------------
-    integer :: start_clock_count, core_subshell_count, symmetry_block_index
+    integer :: core_subshell_count, symmetry_block_index
+    integer(int64) :: start_clock_count
     logical ::  debug, is_restart, yes
     character(len=128) :: startup_directory, permanent_directory, scratch_directory
     character(len=8):: block_labels(maximum_input_symmetry_blocks)
@@ -137,7 +138,6 @@ program rangular_mpi_main
     call record_stage("program_before_finalize_including_interaction_input",0,program_start_count)
     call close_stage_profile()
     ! Report elapsed time.
-    call finalize_mpi_runtime_with_status (mpi_rank,mpi_process_count,processor_name,processor_name_length,start_clock_count, &
-        & "RANGULAR_MPI")
+    call finish_mpi_application (mpi_rank, start_clock_count, "RANGULAR_MPI")
     stop
 end program rangular_mpi_main

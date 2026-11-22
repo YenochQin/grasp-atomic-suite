@@ -5,10 +5,21 @@
 | 功能 | 源码 |
 | --- | --- |
 | 初始化、进程状态、消息和归约 | [mpi_runtime.f90](mpi_runtime.f90)、[mpi_state.f90](mpi_state.f90)、[mpi_utilities.f90](mpi_utilities.f90) |
+| 运行时间、主机和目录汇总 | [mpi_run_logging.f90](mpi_run_logging.f90) |
 | 工作目录与输入错误 | [mpi_work_paths.f90](mpi_work_paths.f90)、[mpi_change_directory.f90](mpi_change_directory.f90)、[mpi_current_directory.f90](mpi_current_directory.f90)、[mpi_make_directory.f90](mpi_make_directory.f90)、[mpi_io_errors.f90](mpi_io_errors.f90) |
 | 组态状态函数（CSF）完整基组、RCI 分块读取和 RMCDHF 输入 | [mpi_csf_basis_input.f90](mpi_csf_basis_input.f90)、[mpi_csf_block_input.f90](mpi_csf_block_input.f90)、[mpi_rmcdhf_csf_input.f90](mpi_rmcdhf_csf_input.f90)、[mpi_csf_collectives.f90](mpi_csf_collectives.f90) |
 | 同位素、径向波函数和核极化输入 | [mpi_isotope_input.f90](mpi_isotope_input.f90)、[mpi_radial_wavefunction_file.f90](mpi_radial_wavefunction_file.f90)、[mpi_radial_wavefunction_reader.f90](mpi_radial_wavefunction_reader.f90)、[mpi_nuclear_polarization.f90](mpi_nuclear_polarization.f90) |
 | 稀疏矩阵乘法和 Davidson 初始向量 | [mpi_sparse_matrix_product.f90](mpi_sparse_matrix_product.f90)、[mpi_initial_eigenvectors.f90](mpi_initial_eigenvectors.f90) |
+
+## MPI 运行日志
+
+`start_mpi_application` 和 `initialize_mpi_runtime_with_status` 在 MPI 初始化后由 rank 0 记录开始时间。
+`finish_mpi_application` 在集体 `MPI_Finalize` 返回后，由 rank 0 打印结束时间、总墙钟时间和完成消息。
+启停例程之间用 `integer(int64)` 传递开始时的时钟计数。
+
+`Participating nodes:` 汇总主机数、MPI rank 总数和每台主机上的 rank 数。配置 rank 本地工作目录的程序还会报告
+启动目录、rank 0 的串行 I/O 目录和并行 I/O 根目录。所有 rank 的路径值相同时显示一行，多个路径按相同值归并并标注
+适用的 rank，例如 `0-2,4`。各 rank 的并行 I/O 文件位于对应根目录下的编号子目录中。
 
 ## 对称稀疏哈密顿量乘法
 

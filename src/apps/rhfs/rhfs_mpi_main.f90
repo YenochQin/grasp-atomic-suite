@@ -2,7 +2,7 @@
 program rhfs_mpi_main
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: output_unit
-    use, intrinsic :: iso_fortran_env, only: real64
+    use, intrinsic :: iso_fortran_env, only: int64, real64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
     use mpi_state, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_finalize, mpi_integer, &
@@ -39,7 +39,8 @@ program rhfs_mpi_main
     use mpi_utilities, only: finish_mpi_application
     use mpi_utilities, only: start_mpi_application
     implicit none (type, external)
-    integer :: input_status, mixing_file_kind, unused_core_subshell_count, start_clock_count
+    integer :: input_status, mixing_file_kind, unused_core_subshell_count
+    integer(int64) :: start_clock_count
     integer :: stage_start_clock_count, stage_finish_clock_count, clock_tick_rate, maximum_clock_count
     logical :: prompt_answer, use_command_line_arguments
     real(real64) :: basis_loading_seconds, hyperfine_option_input_seconds, mixing_input_seconds, hyperfine_matrix_element_seconds

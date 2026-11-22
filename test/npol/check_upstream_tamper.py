@@ -15,6 +15,7 @@ from check_upstream import (
     APP_SYMBOLS_SNAPSHOT,
     AUDITED_NAMES_SNAPSHOT,
     DIAGNOSTIC_LABELS_SNAPSHOT,
+    MPI_RUN_LOGGING_SNAPSHOT,
     V3_J_LABELS_SNAPSHOT,
     suite_source_path,
 )
@@ -65,6 +66,7 @@ def main() -> None:
                          DIAGNOSTIC_LABELS_SNAPSHOT,
                          V3_J_LABELS_SNAPSHOT,
                          APP_COMMENTS_SNAPSHOT,
+                         MPI_RUN_LOGGING_SNAPSHOT,
                          "docs/reference/rmcdhf_grasp_mpi_naming_snapshot.json",
                          "docs/reference/rmcdhf_grasp_shared_naming_snapshot.json",
                          "docs/reference/rmcdhf_davidson_naming_snapshot.json",
@@ -94,7 +96,7 @@ def main() -> None:
                          "docs/reference/rmcdhf_use_only_orb_label_snapshot.json"):
             target = work / relative
             original = target.read_bytes()
-            if relative in (V3_J_LABELS_SNAPSHOT, APP_COMMENTS_SNAPSHOT):
+            if relative in (V3_J_LABELS_SNAPSHOT, APP_COMMENTS_SNAPSHOT, MPI_RUN_LOGGING_SNAPSHOT):
                 snapshot = json.loads(original)
                 next(iter(snapshot["files"].values()))["after_suite_sha256"] = "0" * 64
                 target.write_text(json.dumps(snapshot))

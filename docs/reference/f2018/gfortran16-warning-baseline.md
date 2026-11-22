@@ -917,10 +917,11 @@
 | [src/lib/mpi/mpi_radial_wavefunction_file.f90](../../../src/lib/mpi/mpi_radial_wavefunction_file.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/mpi/mpi_radial_wavefunction_reader.f90](../../../src/lib/mpi/mpi_radial_wavefunction_reader.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/mpi/mpi_rmcdhf_csf_input.f90](../../../src/lib/mpi/mpi_rmcdhf_csf_input.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
+| [src/lib/mpi/mpi_run_logging.f90](../../../src/lib/mpi/mpi_run_logging.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/mpi/mpi_runtime.f90](../../../src/lib/mpi/mpi_runtime.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/mpi/mpi_sparse_matrix_product.f90](../../../src/lib/mpi/mpi_sparse_matrix_product.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/mpi/mpi_state.f90](../../../src/lib/mpi/mpi_state.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
-| [src/lib/mpi/mpi_utilities.f90](../../../src/lib/mpi/mpi_utilities.f90) | 1 | 0 | 1 | 0 | 1 | 1 |
+| [src/lib/mpi/mpi_utilities.f90](../../../src/lib/mpi/mpi_utilities.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/mpi/mpi_work_paths.f90](../../../src/lib/mpi/mpi_work_paths.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/spin_angular/angular_triangle_and_parity.f90](../../../src/lib/spin_angular/angular_triangle_and_parity.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/spin_angular/breit_radial_rank_ranges.f90](../../../src/lib/spin_angular/breit_radial_rank_ranges.f90) | 0 | 0 | 0 | 0 | 0 | 0 |

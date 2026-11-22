@@ -1,0 +1,15 @@
+{
+  "description": "Use the common MPI timing and completion log in both RMCDHF MPI entry points.",
+  "files": {
+    "src/appl/rmcdhf_mem_mpi/rscfmpivu.f90": {
+      "after_suite_sha256": "beff46938756d356b59494c9796e195267c70241066e0b48a8235347a2524f77",
+      "before_suite_sha256": "8365e824753166d3d89f4e0c3757572604ffbb8aabaeb79156485633ede18ff0"
+    },
+    "src/appl/rmcdhf_mpi/rscfmpivu.f90": {
+      "after_suite_sha256": "9b0580b3213b40f0279eaf60ac82565d5944a0a123814a4a3e44f5424d28f4cb",
+      "before_suite_sha256": "7f7188f467cccf71b9a592127a6991751b49b749d33e9233b973308170cc6883"
+    }
+  },
+  "previous_manifest_sha256": "b97a5c56c505840da527e4603ed39857eb356d673c1b7057c8092f8913ad27cc",
+  "schema_version": 1
+}

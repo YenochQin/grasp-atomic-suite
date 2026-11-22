@@ -2,7 +2,7 @@
 ! MPI processes isolate the mutable angular-library module state.
 module density_parallel
     ! Module dependencies
-    use, intrinsic :: iso_fortran_env, only: real64
+    use, intrinsic :: iso_fortran_env, only: int64, real64
     use mpi, only: mpi_abort, mpi_bcast, mpi_character, mpi_comm_world, mpi_integer
     use mpi_utilities, only: start_mpi_application, finish_mpi_application, reduce_mpi_real_sum_to_root
     use mpi_state, only: mpi_rank, mpi_process_count, processor_name, processor_name_length
@@ -15,7 +15,7 @@ module density_parallel
     public :: load_density_basis
 
     ! Module state
-    integer :: start_count
+    integer(int64) :: start_count
 contains
     subroutine load_density_basis(descriptor_path, core_subshell_count)
         ! Module dependencies

@@ -26,9 +26,10 @@ def main() -> None:
     driver = """program output_probe
 use startup_probe
 use mpi
-use, intrinsic :: iso_fortran_env, only: output_unit
+use, intrinsic :: iso_fortran_env, only: int64, output_unit
 implicit none
-integer::rank,ranks,length,count,status
+integer::rank,ranks,length,status
+integer(int64)::count
 character(MPI_MAX_PROCESSOR_NAME)::host
 character(16)::mode
 call get_command_argument(1,mode)
@@ -44,13 +45,16 @@ end program
         work = Path(temporary)
         (work / "probe.f90").write_text(source + driver)
         subprocess.run([mpifort, "-std=f2018", "-fcheck=all",
-                        str(root / "src/lib/mpi/mpi_runtime.f90"), "probe.f90", "-o", "probe"],
+                        str(root / "src/lib/mpi/mpi_runtime.f90"),
+                        str(root / "src/lib/mpi/mpi_run_logging.f90"), "probe.f90", "-o", "probe"],
                        cwd=work, env=env, check=True, capture_output=True, text=True)
         for mode, path in (("quiet", "/dev/null"), ("failure", str(work)), ("visible", str(work))):
             result = subprocess.run([mpiexec, "-n", "2", str(work / "probe"), mode, path],
                                     cwd=work, env=env, capture_output=True, text=True, timeout=20)
             assert result.returncode == 0, (mode, result.stdout, result.stderr)
             assert "visible rank 0" in result.stdout
+            assert result.stdout.count("Date and Time:") == 1, result.stdout
+            assert result.stdout.count("Participating nodes:") == 1, result.stdout
             if mode == "failure":
                 assert "MPI worker output warning: rank=1; iostat=" in result.stderr, result.stderr
             else:

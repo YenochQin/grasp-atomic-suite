@@ -10,7 +10,6 @@ module mpi_utilities
     public :: initialize_mpi_runtime_with_status
     public :: finish_mpi_application
     public :: finalize_mpi_runtime
-    public :: finalize_mpi_runtime_with_status
     public :: print_mpi_message
     public :: check_mpi_checkpoint
     public :: create_contiguous_mpi_byte_datatype
@@ -25,32 +24,30 @@ contains
         program_name, description, input_file_description, &
         output_file_description, quiet_workers)
         ! Module dependencies
-        use, intrinsic :: iso_fortran_env, only: output_unit
-        use, intrinsic :: iso_fortran_env, only: error_unit
+        use, intrinsic :: iso_fortran_env, only: error_unit, int64, output_unit
+        use mpi_run_logging, only: begin_mpi_run, report_mpi_rank_values
 
         implicit none (type, external)
 
         ! Arguments
-        integer :: rank, process_count, processor_name_length, start_ticks
+        integer, intent(out) :: rank, process_count, processor_name_length
+        integer(int64), intent(out) :: start_ticks
         character(len=*), intent(out) :: processor_name
         character(len=*), intent(in) :: program_name, description
         character(len=*), intent(in) :: input_file_description, output_file_description
         logical, intent(in) :: quiet_workers
 
         ! Local declarations
-        integer :: ticks_per_second, clock_count_limit, output_open_status
+        integer :: output_open_status
         character(len=256) :: output_message
 
         call initialize_mpi_runtime (rank, process_count, processor_name, processor_name_length)
-        call system_clock (start_ticks, ticks_per_second, clock_count_limit)
+        call begin_mpi_run (rank, program_name, start_ticks)
 
         if (rank == 0) then
-            write (output_unit, *)
-            write (output_unit, *) trim(program_name)
             write (output_unit, *) trim(description)
             write (output_unit, *) "Input files:  " // trim(input_file_description)
             write (output_unit, *) "Output files: " // trim(output_file_description)
-            write (output_unit, *) "Running on ", process_count, " MPI ranks"
         else if (quiet_workers) then
             ! Reconnect the standard stream used by WRITE(*) and PRINT.
             open (unit=output_unit, file="/dev/null", status="OLD", action="WRITE", &
@@ -62,6 +59,7 @@ contains
             end if
         end if
 
+        call report_mpi_rank_values (rank, process_count, "Participating nodes:", processor_name, as_hosts=.true.)
         return
     end subroutine start_mpi_application
 
@@ -70,168 +68,57 @@ contains
         startup_directory, serial_io_directory, rank_scratch_root, program_name)
 
         ! Module dependencies
+        use, intrinsic :: iso_fortran_env, only: int64, output_unit
+        use mpi_run_logging, only: begin_mpi_run, report_mpi_rank_values
         use mpi_work_paths, only: prepare_mpi_work_directories
 
         implicit none (type, external)
 
         ! Arguments
         integer, intent(out)  :: rank,  process_count, processor_name_length
-        integer, intent(out)  :: start_ticks
+        integer(int64), intent(out) :: start_ticks
         character(len=*), intent(out) :: processor_name
         character(len=*), intent(in) :: program_name
         character(len=*), intent(out) :: startup_directory, serial_io_directory, rank_scratch_root
 
-        ! Local declarations
-        character :: rank_label*3
-        character :: date_text*8, time_text*10, zone_text*5
-        integer ::  date_time_values(8)
-        integer :: startup_directory_length, serial_io_directory_length, rank_scratch_root_length
-        integer :: ticks_per_second, clock_count_limit
-        character(len=80) :: message
-
         call initialize_mpi_runtime (rank, process_count, processor_name, processor_name_length)
-        write (rank_label, "(I3.3)") rank
-        if (rank == 0) then
-            print *, "===================================================="
-            print *, "       ", program_name, ": Execution Begins ..."
-            print *, "===================================================="
-            print *,        "Participating nodes:"
-        end if
-        message = "  Host: " // processor_name(1:processor_name_length) // "    ID: " // rank_label
-        call print_mpi_message (message, rank, process_count)
-
-        call date_and_time (date_text, time_text, zone_text, date_time_values)
-        if (rank == 0) then
-            print *
-            print *, "Date and Time:"
-        end if
-        message = "  " // processor_name(1:processor_name_length) // ": " // &
-            "  Date: " // date_text // &
-            "  Time: " // time_text // &
-            "  Zone: " // zone_text
-        call print_mpi_message (message, rank, process_count)
+        call begin_mpi_run (rank, program_name, start_ticks)
+        call report_mpi_rank_values (rank, process_count, "Participating nodes:", processor_name, as_hosts=.true.)
 
         ! Keep the serial I/O directory for rank 0 and select a scratch root for each rank.
         call prepare_mpi_work_directories (startup_directory, serial_io_directory, rank_scratch_root)
 
-        startup_directory_length = len_trim (startup_directory)
-        serial_io_directory_length = len_trim (serial_io_directory)
-        rank_scratch_root_length = len_trim (rank_scratch_root)
-
+        call report_mpi_rank_values (rank, process_count, "Start Dir:", startup_directory, as_hosts=.false.)
         if (rank == 0) then
-            print *
-            print *, "Start Dir:"
+            write (output_unit, "(2a)") "Serial I/O Dir (rank 0): ", trim(serial_io_directory)
         end if
-        message = "  " // processor_name(1:processor_name_length) // ": " // startup_directory(1:startup_directory_length)
-        call print_mpi_message (message, rank, process_count)
-
-        if (rank == 0) then
-            print *
-            print *, "Serial I/O Dir (node-0 only):"
-            print *, "  " // processor_name(1:processor_name_length) // ": " // serial_io_directory(1:serial_io_directory_length)
-        end if
-
-        if (rank == 0) then
-            print *
-            print *, "Work Dir (Parallel I/O):"
-        end if
-        message = "  " // processor_name(1:processor_name_length) // ": " // rank_scratch_root(1:rank_scratch_root_length)
-        call print_mpi_message (message, rank, process_count)
-
-        call system_clock (start_ticks, ticks_per_second, clock_count_limit)
+        call report_mpi_rank_values (rank, process_count, "Work Dir (Parallel I/O):", rank_scratch_root, as_hosts=.false.)
         return
     end subroutine initialize_mpi_runtime_with_status
 
-    ! Print elapsed time on rank 0 and finalize MPI.
+    ! All ranks finalize MPI before rank 0 reports the end of the run.
     subroutine finish_mpi_application (rank, start_ticks, program_name)
         ! Module dependencies
-        use, intrinsic :: iso_fortran_env, only: output_unit
-        use mpi, only: mpi_finalize
+        use, intrinsic :: iso_fortran_env, only: int64, output_unit
+        use mpi, only: mpi_finalize, mpi_success
+        use mpi_run_logging, only: report_mpi_run_finish
         implicit none (type, external)
 
         ! Arguments
-        integer, intent(in) :: rank, start_ticks
+        integer, intent(in) :: rank
+        integer(int64), intent(in) :: start_ticks
         character(len=*), intent(in) :: program_name
 
         ! Local declarations
-        integer :: elapsed_ticks, ticks_per_second, clock_count_limit, elapsed_seconds, mpi_return_code
-        character(len=8) :: date_text
-        character(len=10) :: time_text
-        character(len=5) :: zone_text
-        integer :: date_time_values(8)
+        integer :: mpi_return_code
 
-        call system_clock (elapsed_ticks, ticks_per_second, clock_count_limit)
-        elapsed_ticks = elapsed_ticks - start_ticks
-        elapsed_seconds = elapsed_ticks / ticks_per_second
-        call date_and_time (date_text, time_text, zone_text, date_time_values)
-
-        if (rank == 0) then
-            write (output_unit, *)
-            write (output_unit, *) trim(program_name) // ": Execution complete."
-            write (output_unit, *) "Wall time: ", elapsed_seconds, " seconds"
-            write (output_unit, *) "Finish date: ", date_text, " time: ", time_text, &
-                " zone: ", zone_text
-        end if
-
+        flush (output_unit)
         call mpi_finalize (mpi_return_code)
+        if (mpi_return_code /= mpi_success) error stop "MPI_Finalize failed"
+        call report_mpi_run_finish (rank, start_ticks, program_name)
 
         return
     end subroutine finish_mpi_application
-
-    ! Collect elapsed time and completion details on rank 0, then synchronize and stop.
-    subroutine finalize_mpi_runtime_with_status (rank, process_count, processor_name, processor_name_length, start_ticks, &
-        program_name)
-
-        ! Module dependencies
-        use mpi, only: mpi_barrier, mpi_comm_world
-
-        implicit none (type, external)
-
-        ! Arguments
-        integer, intent(in)  ::  rank,process_count,processor_name_length
-        integer              ::  start_ticks
-        character*(*), intent(in) ::  processor_name, program_name
-        integer ::   elapsed_ticks, ticks_per_second, clock_count_limit, elapsed_seconds
-        character :: date_text*8, time_text*10, zone_text*5
-        integer ::  date_time_values(8)
-
-        character :: elapsed_seconds_text*8, message*80
-
-        integer :: mpi_return_code
-
-        if (rank == 0) then
-            print *, "===================================================="
-            print *, "       ", program_name, ": Execution Finished ..."
-            print *, "===================================================="
-            print *,        "Wall time:"
-        end if
-
-        call system_clock (elapsed_ticks, ticks_per_second, clock_count_limit)
-        elapsed_ticks = elapsed_ticks - start_ticks
-        elapsed_seconds = elapsed_ticks / ticks_per_second
-        write (elapsed_seconds_text, "(i8)") elapsed_seconds
-        message = elapsed_seconds_text // " seconds on " // processor_name(1:processor_name_length)
-        call print_mpi_message (message, rank, process_count)
-
-        if (rank == 0) then
-            print *
-            print *, "Finish Date and Time:"
-        end if
-
-        call date_and_time (date_text, time_text, zone_text, date_time_values)
-
-        message = "  " // processor_name(1:processor_name_length) // ": " // &
-            "  Date: " // date_text // &
-            "  Time: " // time_text // &
-            "  Zone: " // zone_text
-        call print_mpi_message (message, rank, process_count)
-
-        if (rank == 0) print *
-
-        call mpi_barrier (mpi_comm_world,mpi_return_code)
-        call finalize_mpi_runtime (program_name // ": Execution complete.", rank)
-        return
-    end subroutine finalize_mpi_runtime_with_status
 
     ! Print messages on rank 0 in rank order. Workers send the length before the payload.
     subroutine print_mpi_message (message, rank, process_count)

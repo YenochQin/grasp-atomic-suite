@@ -7,7 +7,7 @@
 ! and for reducing usage of CPU memory.        NIST, October 2017
 program rtransition_mpi_main
     ! Module dependencies
-    use, intrinsic :: iso_fortran_env, only: output_unit
+    use, intrinsic :: iso_fortran_env, only: int64, output_unit
     use calculation_input_defaults, only: input_mixing_file_kind, nondefault_options_flag, angular_output_dump_flag
     use yes_no_input, only: read_yes_no
     use machine_constants, only: initialize_machine_constants
@@ -32,11 +32,12 @@ program rtransition_mpi_main
 
     use posix_services, only: terminate_process
     use mpi_utilities, only: initialize_mpi_runtime_with_status
-    use mpi_utilities, only: finalize_mpi_runtime_with_status
+    use mpi_utilities, only: finish_mpi_application
     use isotope_data_input, only: read_isotope_data
     use mpi_change_directory, only: change_mpi_directory
     implicit none (type, external)
-    integer :: ntest,start_clock_count,label_output_option,permanent_directory_length,scratch_directory_length, iii
+    integer :: ntest,label_output_option,permanent_directory_length,scratch_directory_length, iii
+    integer(int64) :: start_clock_count
     logical :: yes
     character :: name(2)*24
     character :: fullname(2)*128
@@ -142,8 +143,7 @@ program rtransition_mpi_main
     end if
     ! Report elapsed time.
 
-    call finalize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length,                     &
-        start_clock_count, "RTRANSITION_MPI")
+    call finish_mpi_application (mpi_rank, start_clock_count, "RTRANSITION_MPI")
 
     stop
 end program rtransition_mpi_main

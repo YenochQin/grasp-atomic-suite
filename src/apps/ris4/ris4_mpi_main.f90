@@ -1,7 +1,7 @@
 ! Calculate the electronic isotope-shift factors across MPI ranks.
 program ris4_mpi_main
     ! Module dependencies
-    use, intrinsic :: iso_fortran_env, only: real64
+    use, intrinsic :: iso_fortran_env, only: int64, real64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
     use debug_output_settings,         only: matrix_element_screening_cutoff
@@ -37,7 +37,8 @@ program ris4_mpi_main
     use mpi_utilities, only: finish_mpi_application
     use mpi_utilities, only: start_mpi_application
     implicit none (type, external)
-    integer :: input_status, mixing_file_kind, unused_core_subshell_count, start_clock_count
+    integer :: input_status, mixing_file_kind, unused_core_subshell_count
+    integer(int64) :: start_clock_count
     logical :: yes, use_args
     character :: name*24
 

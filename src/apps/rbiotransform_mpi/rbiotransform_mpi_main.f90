@@ -17,7 +17,7 @@
 program rbiotransform_mpi_main
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: output_unit
-    use, intrinsic :: iso_fortran_env, only: real64
+    use, intrinsic :: iso_fortran_env, only: int64, real64
     use grasp_parameters,   only: max_orbitals, max_radial_points
     use calculation_input_defaults,       only: nondefault_options_flag, angular_output_dump_flag
     use biorthogonal_subshell_layout,         only: max_biorthogonal_kappa_groups, kappa_group_count, &
@@ -60,7 +60,7 @@ program rbiotransform_mpi_main
 
     ! Module dependencies
     use mpi_utilities, only: initialize_mpi_runtime_with_status
-    use mpi_utilities, only: finalize_mpi_runtime_with_status
+    use mpi_utilities, only: finish_mpi_application
 
     ! Procedure interfaces
     use load_biorthogonal_csf_basis_mpi_interface, only: load_biorthogonal_csf_basis_mpi
@@ -74,7 +74,8 @@ program rbiotransform_mpi_main
     integer, parameter :: orbital_transformation_workspace_size = 10000000
     integer :: ninshli(max_biorthogonal_kappa_groups), ninshlf(max_biorthogonal_kappa_groups)
     integer :: ntestg, ntestl, ntest, mixing_file_kind, initial_core_subshell_count, final_core_subshell_count, mxl
-    integer :: start_clock_count,permanent_directory_length,scratch_directory_length,iii,unused_core_subshell_count
+    integer :: permanent_directory_length,scratch_directory_length,iii,unused_core_subshell_count
+    integer(int64) :: start_clock_count
     real(real64) :: orbital_transformation_workspace(orbital_transformation_workspace_size)
     real(real64) :: cishl(max_biorthogonal_kappa_groups*max_biorthogonal_kappa_groups)
     real(real64)   :: s(max_orbitals, max_orbitals)
@@ -244,7 +245,6 @@ program rbiotransform_mpi_main
 
     ! Report elapsed time.
 
-    call finalize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length,             &
-        start_clock_count, "RBIOTRANSFORM_MPI")
+    call finish_mpi_application (mpi_rank, start_clock_count, "RBIOTRANSFORM_MPI")
     stop
 end program rbiotransform_mpi_main

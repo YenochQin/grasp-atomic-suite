@@ -11,7 +11,7 @@
 ! Modified by Gediminas Gaigalas for new spin-angular integration.
 program rci_mpi_main
     ! Module dependencies
-    use, intrinsic :: iso_fortran_env, only: output_unit
+    use, intrinsic :: iso_fortran_env, only: int64, output_unit
     use calculation_file_units, only: calculation_log_unit
     use calculation_input_defaults, only: nondefault_options_flag
     use rci_prerun_settings, only: prerun_stage
@@ -47,11 +47,11 @@ program rci_mpi_main
 
     ! Module dependencies
     use mpi_utilities, only: initialize_mpi_runtime_with_status
-    use mpi_utilities, only: finalize_mpi_runtime_with_status
+    use mpi_utilities, only: finish_mpi_application
     implicit none (type, external)
     integer, parameter :: maximum_input_symmetry_blocks = 50
     integer, parameter :: nblk=50
-    integer :: start_clock_count
+    integer(int64) :: start_clock_count
     integer :: core_subshell_count, max_orbital_two_j
     logical :: yes
     character(len=128) :: startup_directory, state_name, scratch_directory, permanent_directory
@@ -133,8 +133,7 @@ program rci_mpi_main
     end do
     ! Report elapsed time.
 
-    call finalize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length,          &
-        start_clock_count, "RCI_MPI")
+    call finish_mpi_application (mpi_rank, start_clock_count, "RCI_MPI")
 
     stop
 end program rci_mpi_main

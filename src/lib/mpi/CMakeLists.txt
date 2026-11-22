@@ -7,6 +7,7 @@ add_library(grasp_mpi STATIC
     mpi_nuclear_polarization.f90
     mpi_state.f90
     mpi_runtime.f90
+    mpi_run_logging.f90
     mpi_utilities.f90
     mpi_work_paths.f90
     mpi_calculation_state.f90

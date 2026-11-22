@@ -1,7 +1,7 @@
 ! Calculate electronic Landé factors using MPI-distributed matrix elements.
 program gj_mpi
     ! Module dependencies
-    use, intrinsic :: iso_fortran_env, only: real64
+    use, intrinsic :: iso_fortran_env, only: int64, real64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
     use array_memory_management, only: alloc, dalloc
@@ -34,7 +34,8 @@ program gj_mpi
     use mpi_utilities, only: finish_mpi_application
     use mpi_utilities, only: start_mpi_application
     implicit none (type, external)
-    integer :: input_status, mixing_file_kind, unused_core_subshell_count, start_clock_count
+    integer :: input_status, mixing_file_kind, unused_core_subshell_count
+    integer(int64) :: start_clock_count
     logical :: prompt_answer, use_command_line_arguments
     real(real64), pointer :: lande_g_factors(:), lande_g_factor_corrections(:)
     character :: state_name*24

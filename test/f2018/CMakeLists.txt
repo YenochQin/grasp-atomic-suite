@@ -258,6 +258,6 @@ if(Python3_Interpreter_FOUND)
         add_test(NAME f2018_cpath_io_mpi
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_cpath_io.py
             "${MPIEXEC_EXECUTABLE}" $<TARGET_FILE:test.cpath_io>)
-        set_tests_properties(f2018_cpath_io_mpi PROPERTIES TIMEOUT 60 PROCESSORS 2)
+        set_tests_properties(f2018_cpath_io_mpi PROPERTIES TIMEOUT 60 PROCESSORS 4)
     endif()
 endif()

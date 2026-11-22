@@ -72,8 +72,6 @@ contains
 
         ! Module dependencies
         use mpi_utilities, only: reduce_mpi_real_sum_to_root
-        use run_timer_start, only: begin_run_timer
-        use run_timer_finish, only: finish_run_timer
         implicit none (type, external)
 
         ! Arguments
@@ -96,7 +94,7 @@ contains
         real(real64) :: reduced_rank1_angular_element, specific_mass_shift_hz_u, normal_mass_shift_hz_u, &
             nuclear_density_fit_radius
         logical :: avail_tb, avail_ob, yes2, saveyes, serial_save
-        integer :: i, orbital_index, start_clock_count, one_body_cache_mode, two_body_cache_mode, &
+        integer :: i, orbital_index, one_body_cache_mode, two_body_cache_mode, &
             & nuclear_density_grid_point_count, yes2_mpi
         integer :: avail_ob_mpi, avail_tb_mpi, serial_save_mpi, cache_status
         if (mpi_rank == 0) then
@@ -138,8 +136,6 @@ contains
         call alloc (inverse_radius_squared_by_level, active_level_count,"inverse_radius_squared_by_level", &
             "calculate_isotope_shifts_mpi")
         call alloc (leading_nms_by_level, active_level_count,"leading_nms_by_level","calculate_isotope_shifts_mpi")
-
-        call begin_run_timer (start_clock_count, "RIS_CAL_MPI")
 
         do i = 1,active_level_count
             leading_sms_by_level(i)  = 0.0_real64
@@ -467,8 +463,6 @@ contains
             write(*,*) "calculate_isotope_shifts_mpi: Execution Finished ..."
             write(*,*) "-------------------------------"
         end if
-        call finish_run_timer (start_clock_count, "RIS_CAL_MPI")
-        return
         return
     end subroutine calculate_isotope_shifts_mpi
 end module calculate_isotope_shifts_mpi_interface
