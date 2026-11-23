@@ -59,16 +59,20 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
-| [RMCDHF 的 MCP 读取优化实施计划](plans/plan-0005-rmcdhf-mcp-production-io.md) | 阶段 0–2 已通过本地回归。阶段 3 已完成目标文件系统的 A/C 全 SCF 对照，势系数分段补测和完整验收待完成。 |
+| [RMCDHF 的 MCP 读取优化实施计划](plans/plan-0005-rmcdhf-mcp-production-io.md) | 阶段 0–2 已通过本地回归。阶段 3 已完成服务器 XFS 势系数分段、本机 Btrfs 与 XFS 矩阵分段及逐轮页驻留诊断。服务器矩阵分段、生产读盘、B 对照和资源预算待验收。 |
 | [plan-0003-rmcdhf-mpi-stall-diagnostics.md](plans/plan-0003-rmcdhf-mpi-stall-diagnostics.md) | 诊断计划，D0 首版已实现；普通/memory MPI 在大规模 CSF 下全程反复 D 状态；记录单节点条件、SETLAG 冻结侧冗余和 Davidson 候选。普通 MPI 已有 MCP 阶段计时。服务器联合采样、扩展性与根因诊断待完成。 |
 | [plan-0001-radial-grid-validation.md](plans/plan-0001-radial-grid-validation.md) | 待执行；修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
 | [F2018 后续验收](plans/plan-0004-f2018-follow-up-validation.md) | 当前接口与状态诊断、真实多根、完整性质和平台对照。 |
+
+## 实施过程记录
+
+- [2026-11-23 RMCDHF MCP 阶段 3 实施过程](plans/2026-11-23-plan-0005-rmcdhf-mcp-phase3.md)记录基准来源、采样包演进、复跑入口和证据位置。
 
 ## 分析与验证证据
 
 | 文档 | 范围与状态 |
 | --- | --- |
-| [RMCDHF MCP 阶段 3 实测与续跑](reviews/evidence-0025-rmcdhf-mcp-phase3-benchmark.md) | Zn I AS2 冷、热缓存对照，读盘、峰值 RSS、墙钟与验收差距。记录势系数与 MPI 补测、Rust 静态库复用和换机交接。 |
+| [RMCDHF MCP 阶段 3 实测与续跑](reviews/evidence-0025-rmcdhf-mcp-phase3-benchmark.md) | Zn I AS2 在服务器 XFS 和本机同盘 Btrfs、XFS 的 A/C 实测，以及页驻留诊断与外部 Rust 静态库复用。 |
 | [多 J 块 MCP 容量与读写成本](reviews/evidence-0017-rangular-mcp-io.md) | 串行与双进程文件字节对照，48-rank 历史作业的容量和读写核算，以及面向 RMCDHF 的分块积分目录、每次密度更新后的流式收缩和验收方法。 |
 | [evidence-0016-fortran-source-and-readme-review.md](reviews/evidence-0016-fortran-source-and-readme-review.md) | 已修复审查列出的 Fortran 命名、注释及 README 问题，记录串行和 MPI 回归及 macOS 内存探测限制。 |
 | [evidence-0015-fortran-alias-audit.md](reviews/evidence-0015-fortran-alias-audit.md) | Fortran 导入重命名与旧命名兼容入口已清除，含迁移对照、旧接口拒绝验证及运行结果比较。 |
