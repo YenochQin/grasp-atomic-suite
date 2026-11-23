@@ -37,7 +37,7 @@ selected levels in reverse order with skipped blocks, sequential `.lsj.T`
 generation/replay, and unique labels. Default `.expected.lbl` files were generated
 with the original workspace GRASP executable, whose source snapshot is identified
 in [the provenance manifest](../../docs/reference/jj2lsj/source-manifest.json).
-Source and numerical behavior are described in [the implementation guide](../../docs/implemented/jj2lsj_openmp.md).
+Source and numerical behavior are described in [the implementation guide](../../docs/implemented/design-0028-jj2lsj-openmp.md).
 
 From the suite root:
 

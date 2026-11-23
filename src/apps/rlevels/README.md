@@ -6,13 +6,13 @@
 可提供状态名或 `name.mix`、`name.cimix` 等混合文件路径，程序也接受旧后缀 `.m` 和 `.cm`。
 如果有配套的 `name.lsj.lbl`，能级表还会显示匹配到的主要构型标签。
 
-[LSJ 标签生成程序](../jj2lsj/README.md) · [输入方式及输出列](../../../docs/implemented/rlevels.md)
+[LSJ 标签生成程序](../jj2lsj/README.md) · [输入方式及输出列](../../../docs/implemented/design-0025-rlevels.md)
 
 ## 计算流程
 
 1. 逐输入文件验证 `G92MIX` 标记、记录规模和分块字段。将平均块能量与各根的移位本征值相加，形成每级的总能量，并读取／跳过相应的混合记录以对齐下一块。[混合文件读取](rlevels.f90)
 2. 在同一输入文件范围内，按块内根号、$J$、宇称和带符号总能量关联可选的 `.lsj.lbl`。归并所有输入能级并对总能量稳定排序。[标签匹配、稳定排序](rlevels.f90)
-3. 若排序后能量为 $E_i$，则激发能取 $E_i-E_1$，相邻间隔取 $E_i-E_{i-1}$，最低行两项都为零。写表时把这两列从 Hartree 换算为 cm⁻¹。[输出格式](../../../docs/implemented/rlevels.md)
+3. 若排序后能量为 $E_i$，则激发能取 $E_i-E_1$，相邻间隔取 $E_i-E_{i-1}$，最低行两项都为零。写表时把这两列从 Hartree 换算为 cm⁻¹。[输出格式](../../../docs/implemented/design-0025-rlevels.md)
 
 ## 逐文件计算与数据流程
 

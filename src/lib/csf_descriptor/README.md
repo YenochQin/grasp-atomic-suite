@@ -41,4 +41,4 @@ cargo test --manifest-path src/lib/csf_descriptor/Cargo.toml \
 ```
 
 The default and extended reader contracts are documented in
-[native CSF inputs](../../../docs/implemented/native_csf_descriptors.md).
+[native CSF inputs](../../../docs/implemented/design-0001-native-csf-descriptors.md).

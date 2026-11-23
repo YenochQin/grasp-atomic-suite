@@ -7,12 +7,12 @@
 `name.mix` 或 `name.cimix`。MCDHF 模式写出 `name.h` 和 `name.hoffd`，
 CI 模式写出 `name.ch` 和 `name.choffd`。
 
-[独立 Landé 因子程序](../gj/README.md) · [超精细常数与 Landé 因子计算流程](../../../docs/implemented/RHFS_gJ_report.md)
+[独立 Landé 因子程序](../gj/README.md) · [超精细常数与 Landé 因子计算流程](../../../docs/implemented/design-0027-rhfs-lande-g.md)
 
 ## 计算流程
 
 1. 装入同位素的核矩与核自旋数据、原生基组、径向轨道和能级混合系数。以轨道对为单位预制一电子角因子和所需径向积分。[输入与配置](read_hyperfine_options.f90) · [角因子](hyperfine_one_electron_element.f90) · [径向积分](hyperfine_radial_integral.f90)
-2. 分别对磁偶极、电四极和 Landé 项计算 CSF 约化矩阵元，按初、末能级的混合向量收缩为 ASF 矩阵。乘入核磁偶极矩、核电四极矩及相应的角动量归一化因子，输出对角常数和允许的非对角矩阵元。[串行超精细计算](calculate_hyperfine_matrix_elements.f90) · [超精细与 Landé 归一化说明](../../../docs/implemented/RHFS_gJ_report.md)
+2. 分别对磁偶极、电四极和 Landé 项计算 CSF 约化矩阵元，按初、末能级的混合向量收缩为 ASF 矩阵。乘入核磁偶极矩、核电四极矩及相应的角动量归一化因子，输出对角常数和允许的非对角矩阵元。[串行超精细计算](calculate_hyperfine_matrix_elements.f90) · [超精细与 Landé 归一化说明](../../../docs/implemented/design-0027-rhfs-lande-g.md)
 3. MPI 版本由各 rank 负责不同的 CSF 列，归约超精细、Landé 和自旋修正数组后由 rank 0 完成级结果输出。[MPI 超精细计算](calculate_hyperfine_matrix_elements_mpi.f90)
 
 ## 逐文件计算与数据流程

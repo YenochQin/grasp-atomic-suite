@@ -7,12 +7,10 @@ For toolchain setup, see the [Suite build instructions](../../README.md#build).
 
 The regular CMake/CTest flow registers:
 
-- `f2018_nmtejj_parity` and `f2018_nmtejj_csfg_parity`: 22,701 integer lookup
+- `f2018_nmtejj_parity`: 22,701 integer lookup
   inputs per implementation, compared with a frozen stdout SHA-256 from the
   d1260ba GNU 15.3.0 legacy libraries. The fixture records the original source
   hashes. These cover hits, misses, all three table branches and the upper guard.
-- `f2018_csfg_reallocation`: preserve values across shrinking/growing arrays
-  using LONG extents, and preserve the restart counter's 64-bit width.
 - `f2018_storage_bytes`: scalar, empty, multidimensional, strided and packed
   intrinsic payloads. Arrays must be allocated/associated when passed.
 - `f2018_system_paths`: real production POSIX/MPI helper interfaces in a
@@ -65,19 +63,16 @@ SLAMCH/DLAMCH return types. NP path cases live in `test/npol`, including the
 legacy static-storage configuration that originally returned an empty path.
 
 The rejected strict/diagnostic solvers and their exclusive tests have been removed;
-see [retirement scope](../../docs/implemented/rejected_rmcdhf_variants.md).
+see [retirement scope](../../docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md).
 
-The first prioritized warning-repair batch additionally registers:
+The current suite also registers:
 
-- `f2018_weights_*`: seven production GETALDWT variants, with equal, standard,
+- `f2018_weights_*`: four production RMCDHF weight readers, with equal, standard,
   custom and retry inputs. A test-only integer poison exposes the former undefined
   read extent; no production default initialization is added.
-- `f2018_rk_count_*`: three production GENINTRK bodies with a counted SLATER seam,
+- `f2018_rk_count_*`: the serial and MPI RCI Slater-integral tabulation routines with a counted SLATER seam,
   simulated rank layouts 1–4, empty partitions, repeated calls and integer-boundary
   arithmetic. These are cache-partition checks, not full RCI or large-count MPI tests.
-- `f2018_csfg_dacon` and `f2018_csfg_debug_mpi_1/2/4`: the actual DACON update has
-  the same analytic values for all diagnostic modes, and its two CSFG-owned flags
-  are broadcast correctly without indexing beyond the shared 30-entry array.
 - `f2018_interp_contracts`: finite polynomial values, first node, short/zero tables,
   singleton extrapolation with an explicit unavailable-accuracy message, exact
   singleton lookup, empty-table rejection, and 71 regular points. ACCY is unchanged.
@@ -86,9 +81,9 @@ The first prioritized warning-repair batch additionally registers:
 
 The existing Davidson tests also check preservation of earlier projected columns
 and another root's convergence flag. A removed unreachable branch is distinguished
-from a demonstrated numerical bug in the [compatibility guide](../../docs/implemented/f2018_compatibility.md).
+from a demonstrated numerical bug in the [compatibility guide](../../docs/implemented/design-0004-f2018-compatibility.md).
 
-## Acceptance profiles and mandatory runner (2026-11-09)
+## Acceptance profiles and mandatory runner
 
 Load GNU Fortran 16.2, the compatible MPI and BLAS/LAPACK environment, and put a
 V3-capable `rcsfs` on `PATH`. Set `FC` and `OMPI_FC` to the same compiler and
@@ -110,8 +105,8 @@ Use `f2018-check`/Debug for standard/interface/runtime diagnostics and
 `f2018-audit`/Release for optimized standard/interface/warning diagnostics.
 For Audit, omit `--debug`, use `--profile f2018-audit`, and configure a separate build directory.
 All use automatic local storage; the legacy profile, implicit-SAVE switches and
-the former `check.py --audit` compatibility mode are retired. CSFG is isolated
-and off by default. See [current build policy](../../docs/implemented/build_profiles.md).
+the former `check.py --audit` compatibility mode are retired. CSFG targets and
+their dedicated tests have been removed. See [current build policy](../../docs/implemented/design-0002-fortran-build-profiles.md).
 Before those solvers were retired, the strict normalization stage passed both all-target profiles with 74/74
 tests; its two restart cases converge in 11 cycles with unchanged inputs,
 assertions and thresholds. That record, the earlier Linux 71/73 and macOS 64/68
@@ -128,7 +123,7 @@ reports warning collection as not performed rather than declaring warnings clear
 new/increased warnings, missing tests, failures, and skips fail the run. `--inventory-only`
 does not run a build or tests and reports that limited status. Logs, source,
 compiler and object identities are retained under the build directory;
-see [compatibility and validation limits](../../docs/implemented/f2018_compatibility.md).
+see [compatibility and validation limits](../../docs/implemented/design-0004-f2018-compatibility.md).
 The required list covers current programs/tests, not the still-missing F00–F10
 suite. Labels are `f2018_unit`, `f2018_serial`, `f2018_mpi`,
 `f2018_properties`, and `f2018_io`; no real-case test is registered yet.
@@ -176,15 +171,17 @@ capture on an older build, use a fresh directory or rebuild with `--clean-first`
 The launcher adds only diagnostic-format flags, preserving numerical options.
 
 The [GNU 16.2 JSON baseline](../../docs/reference/f2018/gfortran16-warning-baseline.json)
-was collected with GNU Fortran 16.2.0 on macOS arm64 and has a
-[per-file index](../../docs/reference/f2018/gfortran16-warning-baseline.md).
+was collected for Suite `0f35673` with GNU Fortran 16.2.1 on Linux x86-64.
+It covers the indexed MPI MCP source and test targets. The earlier 16.2.0
+macOS arm64 observation remains in Git at `0ca7970e`.
+[Current per-file index](../../docs/reference/f2018/evidence-0019-gnu16-warning-baseline.md)
 Diagnostic identity includes target, source, position, warning option and message;
 counts are separate for each configuration. A new diagnostic cannot be offset by
 removing another, or by removing it from another target. The default budget
 accepts 16.2 patch releases, including 16.2.1, and applies the same source,
-target, and warning checks on each. If a platform or compiler introduces a
-diagnostic beyond the budget, review it before adopting a candidate baseline
-for that toolchain. The runner records the exact compiler version used.
+target, and warning checks on each. Platform-specific diagnostics can still
+differ and require review when they exceed the budget. The runner records the
+exact compiler version used.
 `-w` and `-Wno-*` cannot hide warnings in strict acceptance.
 
 `correctness-review` flags potential uninitialized values, bounds, narrowing,
@@ -228,18 +225,18 @@ without running atomic calculations.
 
 ```fish
 ../graspkit-tools/.venv/bin/python test/f2018/warning_inventory.py report \
-  --output docs/reference/f2018/gfortran16-warning-baseline.md
+  --output docs/reference/f2018/evidence-0019-gnu16-warning-baseline.md
 ```
 
 ## Production CI damping branch
 
-`ci_damping.F90` compiles six production MATRIX implementations with controlled
+`ci_damping.F90` compiles the four retained RMCDHF matrix implementations with controlled
 assembly/eigensolver/input seams and the real BLAS library. It checks FIRST,
 nonzero two-root damping/Schmidt orthogonalization, a zero-damping control,
-nonzero block offsets and finite normalized orthogonal outputs. Two serial
-cases plus four MPI variants at 1/2/4 ranks give 14 tests. This is not an
-end-to-end SCF/RCI or CSFG validation. The checked fixture also exposed and now
-protects the MPI IENDC allocation's required zero lower bound.
+nonzero block offsets and finite normalized orthogonal outputs. The full MPI
+configuration registers eight tests, with two serial cases and two MPI variants
+at 1/2/4 ranks. The fixture also exercises the MPI IENDC allocation's required
+zero lower bound. End-to-end validation uses separate SCF and RCI fixtures.
 
 ## Complete first-sweep comparison
 

@@ -2,7 +2,7 @@
 """Validate, inspect, export and compare sorted GRASP rangular MCP files.
 
 NumPy handles coefficient arrays in batches. No GRASP executable is needed.
-See docs/implemented/mcp_compare.md for the format and comparison contract.
+See docs/implemented/design-0024-mcp-compare.md for the format and comparison contract.
 """
 
 from __future__ import annotations

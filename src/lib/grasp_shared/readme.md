@@ -1,6 +1,6 @@
 # GRASP 共享模块库
 
-`grasp_shared` 为各 GRASP 程序提供共享状态、查找表和基础接口。每个 `.f90` 文件对应一个同名模块。库和模块的旧名对照见[命名迁移表](../../../docs/implemented/shared_library_naming.md)。
+`grasp_shared` 为各 GRASP 程序提供共享状态、查找表和基础接口。每个 `.f90` 文件对应一个同名模块。库和模块的旧名对照见[命名迁移表](../../../docs/implemented/design-0006-shared-library-naming.md)。
 
 [轨道与 CSF 基组](orbital_csf_basis.f90)、[径向网格](radial_grid_state.f90)、[径向波函数](radial_wavefunctions.f90)和[本征态展开](eigenstate_expansions.f90)等模块保存由调用方填充的数据。[BLAS/LAPACK 接口](blas_lapack_interfaces.f90)声明外部例程的调用约定。下文给出库内实际执行的运算，以及读取查找表所需的编码约定。公式依据当前 suite 工作树，Git 基点为 `2d4c721`。
 
@@ -118,4 +118,4 @@ $$
 
 ## 核极化状态的符号约定
 
-[nuclear_polarization_state.f90](nuclear_polarization_state.f90) 的 `npol_capture` 保存 Coulomb 基线。按[初始化例程](../core/nuclear_polarization_initialization.f90)传入的约定，第 $i$ 个径向点保留 $\texttt{zz\_coul}(i)=-r_iV_{\mathrm{Coulomb}}(r_i)$。`npol_publish` 在网格长度与已捕获的基线一致时，复制调用方算好的 E1、E2 和总势。势的模型与计算公式见[核极化实现说明](../../../docs/implemented/rmcdhf_nuclear_polarization.md)。
+[nuclear_polarization_state.f90](nuclear_polarization_state.f90) 的 `npol_capture` 保存 Coulomb 基线。按[初始化例程](../core/nuclear_polarization_initialization.f90)传入的约定，第 $i$ 个径向点保留 $\texttt{zz\_coul}(i)=-r_iV_{\mathrm{Coulomb}}(r_i)$。`npol_publish` 在网格长度与已捕获的基线一致时，复制调用方算好的 E1、E2 和总势。势的模型与计算公式见[核极化实现说明](../../../docs/implemented/design-0022-rmcdhf-nuclear-polarization.md)。

@@ -7,7 +7,7 @@
 `name.mix` 或 `name.cimix`，将自然轨道写入 `name.nw`，将径向密度写入
 `name.d`（MCDHF）或 `name.cd`（CI）。MPI 模式由 rank 0 写出这些文件。
 
-[输入选项与自然轨道排序](../../../docs/implemented/rdensity_mpi.md)
+[输入选项与自然轨道排序](../../../docs/implemented/design-0026-rdensity-mpi.md)
 
 ## 计算流程
 

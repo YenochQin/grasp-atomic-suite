@@ -1,7 +1,7 @@
 # grasp-atomic-suite
 
 全部保留的 CSF 消费程序现已使用原生描述符 Parquet + 配套 header TOML。
-输入约定、Rust 依赖与测试方式见[原生输入说明](docs/implemented/native_csf_descriptors.md)。
+输入约定、Rust 依赖与测试方式见[原生输入说明](docs/implemented/design-0001-native-csf-descriptors.md)。
 reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descriptor.a`，
 无需外部 rCSFs 源码或预编译 reader 库，计算运行不依赖 Python 转换。
 
@@ -11,7 +11,7 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 
 本仓库不是上游 GRASP 的最小镜像。它保留了传统 GRASP 数值库和应用组织方式，同时加入了 CMake 构建、MPI 目标、`gj` 独立程序、回归数据和面向 `g_J`/MPI 优化的开发文档。
 
-普通应用目录现已去掉旧 `90` 标记，Landé 因子程序命令为 `gj` 和 `gj_mpi`；对应关系和重新构建方式见[程序命名说明](docs/implemented/program_naming.md)。
+普通应用目录现已去掉旧 `90` 标记，Landé 因子程序命令为 `gj` 和 `gj_mpi`；对应关系和重新构建方式见[程序命名说明](docs/implemented/design-0005-program-naming.md)。
 
 ## 代码结构
 
@@ -50,16 +50,16 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 
 | 程序 | 源码目录 | CMake 目标 | 说明 |
 | --- | --- | --- | --- |
-| 普通 GRASP 计算链 | `src/apps/rangular*`、`rwfnestimate`、`rci*`、`rbiotransform*`、`rtransition*` | `rangular{,_mpi}`、`rwfnestimate`、`rci{,_mpi}`、`rbiotransform{,_mpi}`、`rtransition{,_phase,_mpi}` | 十个目标复用 suite 共享库与集中容量参数；见[来源、构建与验证范围](docs/implemented/standard_grasp_integration.md)。 |
-| `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | 普通 CSF 的 OpenMP jj–LS 转换，按 LS 行并行并保留原截断顺序；见[构建、运行和验证说明](docs/implemented/jj2lsj_openmp.md)。与 `jj2lsj_csfg` 分开。 |
-| `rlevels` | `src/apps/rlevels` | `rlevels` | 从 RMCDHF `.m` 和 RCI `.cm` 生成能级表，可附加 `jj2lsj` 标签。见[用法和输出格式](docs/implemented/rlevels.md)。 |
+| 普通 GRASP 计算链 | `src/apps/rangular*`、`rwfnestimate`、`rci*`、`rbiotransform*`、`rtransition*` | `rangular{,_mpi}`、`rwfnestimate`、`rci{,_mpi}`、`rbiotransform{,_mpi}`、`rtransition{,_phase,_mpi}` | 十个目标复用 Suite 共享库与集中容量参数。[导入记录](docs/archive/2026-11-08-plan-0002-standard-grasp-integration.md) |
+| `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | 普通 CSF 的 OpenMP jj–LS 转换，按 LS 行并行并保留原截断顺序；见[构建、运行和验证说明](docs/implemented/design-0028-jj2lsj-openmp.md)。与 `jj2lsj_csfg` 分开。 |
+| `rlevels` | `src/apps/rlevels` | `rlevels` | 从 RMCDHF `.m` 和 RCI `.cm` 生成能级表，可附加 `jj2lsj` 标签。见[用法和输出格式](docs/implemented/design-0025-rlevels.md)。 |
 | `gj` | `src/apps/gj` | `gj`, `gj_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、该状态的 CSF 描述符文件对、`name.mix/name.cimix`、`name.wfn`，输出 `name.gj/name.cgj`。 |
 | `rhfs` | `src/apps/rhfs` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
-| `rdensity` | `src/apps/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/rdensity_mpi.md)。 |
+| `rdensity` | `src/apps/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/design-0026-rdensity-mpi.md)。 |
 | `ris4` | `src/apps/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，输出 `name.i/name.ci` 及中间角向数据。 |
-| 原版 RMCDHF + 可选 NP | `src/apps/rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | 从工作区 grasp 新复制，保留原版求解流程；仅这四个读取 `npol.inp`。详见[NP 接口与来源](docs/implemented/rmcdhf_nuclear_polarization.md)。 |
+| 原版 RMCDHF + 可选 NP | `src/apps/rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | 从工作区 grasp 新复制，保留原版求解流程；仅这四个读取 `npol.inp`。详见[NP 接口与来源](docs/implemented/design-0022-rmcdhf-nuclear-polarization.md)。 |
 
-已否决的 strict/diag 独立求解器及专用测试、运行入口均已[移除](docs/implemented/rejected_rmcdhf_variants.md)。
+已否决的 strict/diag 独立求解器及专用测试、运行入口均已[移除](docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md)。
 
 默认 CMake 配置会尝试构建 MPI 版本。如果系统没有 MPI Fortran 工具链，会跳过 MPI 目标。串行轨道与性质程序需要显式开启。`jj2lsj_omp` 默认构建，`GRASP_JJ2LSJ_OPENMP=ON` 在可用时启用 OpenMP，线程数由 `OMP_NUM_THREADS` 控制；变换文件读写模式保留串行路径。
 
@@ -153,9 +153,9 @@ CMake 会自动查找 BLAS/LAPACK，并要求 GNU Fortran 15 或更新版本。
 严格验收默认使用 GNU Fortran 16.2 系列的告警基线。
 默认 `f2018-release` 使用 O2；`f2018-check` 和 `f2018-audit` 分别提供
 标准/接口/运行时检查与优化后诊断。legacy、隐式 SAVE 及参数不匹配放行选项已移除。
-现行约束见[构建策略](docs/implemented/build_profiles.md)和
-[兼容性与共享接口](docs/implemented/f2018_compatibility.md)；
-当前原生输入依赖及验证边界见[描述符说明](docs/implemented/native_csf_descriptors.md)。
+现行约束见[构建策略](docs/implemented/design-0002-fortran-build-profiles.md)和
+[兼容性与共享接口](docs/implemented/design-0004-f2018-compatibility.md)；
+当前原生输入依赖及验证边界见[描述符说明](docs/implemented/design-0001-native-csf-descriptors.md)。
 历史测试数量不代表当前源码或物理精度已通过验收。
 
 ## 输入与输出
@@ -171,9 +171,9 @@ CMake 会自动查找 BLAS/LAPACK，并要求 GNU Fortran 15 或更新版本。
 | `rmcdhf`、`rmcdhf_mem` | 同一描述符文件对、初猜轨道和 MCP | 优化轨道 `name.wfn`、OL/EOL 混合系数 `name.mix`、`name.rmcdhf.summary`、`name.rmcdhf.log` |
 | `rci` | 同一描述符文件对和 `name.wfn` | CI 混合系数 `name.cimix`、`name.csum`、`name.clog` |
 
-MPI 版本由 rank 0 询问状态名。各 rank 在各自的临时目录交接 `mcp.NN`，描述符和轨道位于永久 I/O 目录，角系数与 SCF 日志位于启动目录。`isodata` 和适用的 `npol.inp` 仍按目录共用。`rci` 沿用先询问默认设置、再询问状态名的顺序。后续若要使用 `gj` 等性质程序，状态名应控制在 23 个字符以内。
+MPI 版本由 rank 0 询问状态名。`rangular_mpi` 在每个 rank 的临时目录写入 `mcp.mcpidx`，随后用相同基组和 rank 布局运行 `rmcdhf_mpi` 或 `rmcdhf_mem_mpi`。已有旧格式的作业需用当前 `rangular_mpi` 重新生成。描述符和轨道位于永久 I/O 目录，角系数程序和 SCF 的日志位于启动目录。`isodata` 和适用的 `npol.inp` 按目录共用。`rci` 沿用先询问默认设置、再询问状态名的顺序。供 `gj` 等性质程序使用的状态名应控制在 23 个字符以内。[MPI MCP 格式和验收](docs/implemented/design-0020-rmcdhf-mcp-io.md)
 
-每个工作目录共用一套 `mcp.NN`。应先完成本基组的 RMCDHF，再在同一目录为下一基组生成角系数。并行计算不同基组时，分别使用独立的工作目录和 MPI scratch 目录。`A` 和 `A.initial` 两个状态也应分目录保存，因为两者都会写 `A.initial.wfn`。下游程序优先读取新后缀，对应新文件缺失时可读取归档中的 `.w`、`.m`、`.cm`。
+每个工作目录共用一套 MCP。应先完成本基组的 RMCDHF，再在同一目录为下一基组生成角系数。并行计算不同基组时，分别使用独立的工作目录和 MPI scratch 目录。`A` 和 `A.initial` 两个状态也应分目录保存，因为两者都会写 `A.initial.wfn`。下游程序优先读取新后缀，对应新文件缺失时可读取归档中的 `.w`、`.m`、`.cm`。
 
 状态名留空会使用 `rcsf_desc.parquet`、`rcsf_header.toml`、`rwfn.inp`、`rwfn.out` 和 `rmix.out`。描述符短文件名缺失时，仍可读取旧的 `*_descriptors.parquet`。以 y/n 回答设置开头的旧输入脚本仍可使用。若状态名恰为单字母 Y 或 N（含小写），相应输入目录里的同名头文件优先。同名重算时，(E)AL 不更新该状态已有的混合系数文件。固定文件名的已有计算仍可通过 [save_rmcdhf 归档](scripts/README.md#保存-rmcdhf-计算结果)。
 
@@ -237,12 +237,12 @@ CTest 覆盖描述符输入、计算流程、公共库、MPI 稀疏缓冲区和�
 ctest --test-dir build-all --output-on-failure
 ```
 
-轨道回归脚本见 [test/rmcdhf](test/rmcdhf/README.md)。大型计算输入和结果留在仓库外。旧 orbopt 运行器和 SLURM 模板已移除，见[退役说明](docs/implemented/orbopt_retirement.md)。
+轨道回归脚本见 [test/rmcdhf](test/rmcdhf/README.md)。大型计算输入和结果留在仓库外。旧 orbopt 运行器和 SLURM 模板已移除，见[退役说明](docs/implemented/adr-0001-retire-rmcdhf-orbopt.md)。
 
 ## 径向网格与仓库迁移
 
 公共容量集中定义在 [`cal_constants.f90`](src/lib/grasp_shared/cal_constants.f90)，
-经 [`grasp_parameters.f90`](src/lib/grasp_shared/grasp_parameters.f90) 转导。库名及模块名的完整对照见[共享库命名](docs/implemented/shared_library_naming.md)。Suite 的默认值为
+经 [`grasp_parameters.f90`](src/lib/grasp_shared/grasp_parameters.f90) 转导。库名及模块名的完整对照见[共享库命名](docs/implemented/design-0006-shared-library-naming.md)。Suite 的默认值为
 `max_radial_points=590`、`radial_workspace_capacity=600`、`max_orbitals=127`、
 `max_orbitals_minus_one=126`、`max_orbitals_minus_two=125` 和 `orbital_index_radix=215`。
 有限核默认使用 `radial_point_count=max_radial_points`，点核分支初值为 `min(220,max_radial_points)`。
@@ -260,24 +260,24 @@ ctest --test-dir build-all --output-on-failure
 源码目录残留的 `.mod` 文件会覆盖新模块，CMake 会拒绝这种混合构建；
 需先将旧生成文件移出源码目录。
 
-参数列表、调用顺序和验证见[公共参数说明](docs/implemented/common_parameters.md)。
+参数列表、调用顺序和验证见[公共参数说明](docs/implemented/design-0003-shared-grid-parameters.md)。
 本仓库的脚本布局按需修改集中容量配置和十五个独立网格入口。显式修改 `working_tolerance` 还覆盖
 串行和 MPI 两个 RCI 续算入口。
 参数调整的具体数值、原因、测试数据及验收标准见
-[径向网格参数调整与验证规程](docs/plans/grasp_grid_parameter_tuning.md)。
+[径向网格参数调整与验证规程](docs/plans/plan-0001-radial-grid-validation.md)。
 
 迁移来源见 [RMCDHF 源码快照](docs/reference/rmcdhf_upstream_snapshot.json)，
-保留的求解器见 [RMCDHF 流程说明](docs/implemented/rmcdhf_flow_and_state.md)。
+保留的求解器见 [RMCDHF 流程说明](docs/implemented/design-0019-rmcdhf-flow-and-state.md)。
 
 ## 开发文档
 
 [文档索引与实施状态审计](docs/README.md)逐份列出已实施功能、过时描述、
 核查依据和待验证事项。
 
-- 已实施说明：[公共参数](docs/implemented/common_parameters.md)与[RHFS g_J 流程](docs/implemented/RHFS_gJ_report.md)。
-- 待执行实验：[径向网格方案](docs/plans/grasp_grid_parameter_tuning.md)，物理收敛计算仍需运行。
-- 已完成审查：[网格方法审查](docs/reviews/grasp_grid_methodology_review.md)，保留源码和诊断证据。
-- 理论参考：[Landé 因子背景稿](docs/reference/lande_g.md)，算符规范尚需独立核对。
+- 已实施说明：[公共参数](docs/implemented/design-0003-shared-grid-parameters.md)与[RHFS g_J 流程](docs/implemented/design-0027-rhfs-lande-g.md)。
+- 待执行实验：[径向网格方案](docs/plans/plan-0001-radial-grid-validation.md)，物理收敛计算仍需运行。
+- 已完成审查：[网格方法审查](docs/reviews/evidence-0001-radial-grid-methodology-review.md)，保留源码和诊断证据。
+- 理论参考：[Landé 因子背景稿](docs/reference/design-0032-lande-g-theory.md)，算符规范尚需独立核对。
 - [历史归档](docs/README.md#历史背景)，包括 gj 蓝图、轨道优化结果以及 RHFS/RIS 阶段报告。
 
 ## 开发注意事项

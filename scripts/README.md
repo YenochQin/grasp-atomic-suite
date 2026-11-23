@@ -2,13 +2,13 @@
 
 2026-11-16：网格工具同时识别原版及语义变量名，命令行/TOML 参数保持不变。
 `atomic-suite` 现覆盖十五个普通网格入口和两个 RCI 续算入口，CSFG 专用入口已移除。
-集中配置及 `grasp_parameters` 转导的正式名称见[共同参数说明](../docs/implemented/common_parameters.md)。
+集中配置及 `grasp_parameters` 转导的正式名称见[共同参数说明](../docs/implemented/design-0003-shared-grid-parameters.md)。
 
 大规模 RMCDHF MPI 停顿采样使用 [sample_rmcdhf_mpi.py](sample_rmcdhf_mpi.py)，
 只读附着到指定 Linux PID 树，记录线程状态、等待位置、I/O、缺页和系统压力。
-用法、原版流程对照及验证边界见 [RMCDHF MPI 诊断](../docs/implemented/rmcdhf_mpi_diagnostics.md)。
+用法、原版流程对照及验证边界见 [RMCDHF MPI 诊断](../docs/implemented/design-0021-rmcdhf-mpi-diagnostics.md)。
 
-当前生产 CSF 输入与构建方式见[原生描述符说明](../docs/implemented/native_csf_descriptors.md)。
+当前生产 CSF 输入与构建方式见[原生描述符说明](../docs/implemented/design-0001-native-csf-descriptors.md)。
 计算程序直接链接 Rust reader，不调用下列开发/对照脚本。
 
 - [compare_rangular_versions.py](compare_rangular_versions.py) 比较默认和显式描述符路径及不同程序版本；
@@ -20,7 +20,7 @@
 - [旧 GCSDESC1 转换器](archive/prepare_csf_descriptors.py) 已归档，仅服务历史格式夹具；当前程序拒绝其输出。
 
 角系数文件的解析、统计和原版/候选程序对比见
-[MCP 解析与比较工具](../docs/implemented/mcp_compare.md)，入口为
+[MCP 解析与比较工具](../docs/implemented/design-0024-mcp-compare.md)，入口为
 [mcp_compare.py](mcp_compare.py)。支持普通串行与 MPI 输出，不运行原子计算。
 
 ## 保存 RMCDHF 计算结果
@@ -65,7 +65,7 @@ save_rmcdhf --io-dir /path/to/serial-io results/Zn_odd_AS1
 每组参数使用独立的 Suite 源码副本。修改完成后，按[构建说明](../README_ZH.md)全量重编译
 所有实际使用的串行和 MPI 程序。交互输入和旧 RCI `.res` 可覆盖新默认网格，
 `GRASP_COUNT_ACCY` 可覆盖工作容差。数值收敛须通过独立计算验证。
-见[容量和默认值](../docs/implemented/common_parameters.md)及[网格实验方案](../docs/plans/grasp_grid_parameter_tuning.md)。
+见[容量和默认值](../docs/implemented/design-0003-shared-grid-parameters.md)及[网格实验方案](../docs/plans/plan-0001-radial-grid-validation.md)。
 
 ### TOML 配置
 

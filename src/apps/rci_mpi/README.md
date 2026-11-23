@@ -8,7 +8,7 @@
 程序写出混合系数 `name.cimix`、摘要 `name.csum` 和日志 `name.clog`，
 各 rank 使用自己的 `rciNNN.res` 续算文件。
 
-[串行版本与可选修正](../rci/README.md) · [原生 CSF 输入及零阶优先分区](../../../docs/implemented/native_csf_descriptors.md)
+[串行版本与可选修正](../rci/README.md) · [原生 CSF 输入及零阶优先分区](../../../docs/implemented/design-0001-native-csf-descriptors.md)
 
 ## 计算流程
 

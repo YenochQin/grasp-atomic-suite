@@ -1,6 +1,6 @@
 # Core 公共基础库
 
-`core` 为 GRASP 的应用程序提供 CSF 基组输入、径向数值计算、角动量运算和通用 I/O，构建产物为 `libcore.a`。本文用公式说明计算例程的实际实现。其他例程的入口行为见各文件开头的注释。文件、模块和变量的旧名见[命名迁移](../../../docs/implemented/core_naming.md)与[变量迁移表](../../../docs/implemented/core_variable_migration.md)。
+`core` 为 GRASP 的应用程序提供 CSF 基组输入、径向数值计算、角动量运算和通用 I/O，构建产物为 `libcore.a`。本文用公式说明计算例程的实际实现。其他例程的入口行为见各文件开头的注释。文件、模块和变量的旧名见[命名迁移](../../../docs/implemented/design-0008-core-library-naming.md)与[变量迁移表](../../../docs/implemented/design-0009-core-variable-migration.md)。
 
 下文的 $P_a(r), Q_a(r)$ 是轨道 $a$ 的大小径向分量，$\kappa_a$ 是其相对论角量子数。径向量使用原子单位，$c_0$ 表示原子单位下的光速，避免与 Fermi 核半密度半径 $c_F$ 混淆。
 

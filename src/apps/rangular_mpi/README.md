@@ -9,9 +9,9 @@
 
 [MCP 通道说明](../rangular/README.md) · [rmcdhf_mpi](../rmcdhf_mpi/README.md) · [rmcdhf_mem_mpi](../rmcdhf_mem_mpi/README.md)
 
-[原生 CSF 输入及零阶优先分区](../../../docs/implemented/native_csf_descriptors.md)
+[原生 CSF 输入及零阶优先分区](../../../docs/implemented/design-0001-native-csf-descriptors.md)
 
-[格式、预算与诊断选项](../../../docs/implemented/rmcdhf_mcp_io.md)
+[格式、预算与诊断选项](../../../docs/implemented/design-0020-rmcdhf-mcp-io.md)
 
 ## 计算流程
 

@@ -9,7 +9,7 @@ MCDHF 在优化轨道时将这些系数与径向积分结合，组装哈密顿�
 
 [rmcdhf](../rmcdhf/README.md) · [rmcdhf_mem](../rmcdhf_mem/README.md) · [MPI 版本](../rangular_mpi/README.md)
 
-[角系数计算流程](../../../docs/implemented/rangular_flow_and_state.md) · [原生 CSF 输入](../../../docs/implemented/native_csf_descriptors.md)
+[角系数计算流程](../../../docs/implemented/design-0017-rangular-flow-and-state.md) · [原生 CSF 输入](../../../docs/implemented/design-0001-native-csf-descriptors.md)
 
 ## 计算流程
 

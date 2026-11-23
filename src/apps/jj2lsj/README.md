@@ -9,12 +9,12 @@
 启用 OpenMP 后，程序并行计算 LS 系数行，线程数由 `OMP_NUM_THREADS` 控制。
 写入或回读变换文件时使用串行路径。
 
-[能级表程序](../rlevels/README.md) · [构建与运行选项](../../../docs/implemented/jj2lsj_openmp.md)
+[能级表程序](../rlevels/README.md) · [构建与运行选项](../../../docs/implemented/design-0028-jj2lsj-openmp.md)
 
 ## 计算流程
 
 1. 装入描述符中按对称性块排列的 jj 基组与对应混合向量。根据所选能级和组分阈值选取参与构造的 jj CSF，再按壳占据和允许的耦合枚举 LSJ 基。[基组转换控制](jj2lsj_conversion.f90)
-2. 对每个允许的 LSJ–jj 对，从单壳层表取变换元素，并用 9j 重耦合递推组合各壳。对能级 $s$，逐项求 $a_{is}^{\mathrm{LS}}=\sum_j T_{ij}c_{js}^{\mathrm{jj}}$。OpenMP 路径分批计算独立的 LS 行，依原有行序提交结果、累计权重及执行截断。写入或回读 `.lsj.T` 的模式走串行计算路径。[变换与并行顺序](jj2lsj_conversion.f90) · [OpenMP 实现说明](../../../docs/implemented/jj2lsj_openmp.md)
+2. 对每个允许的 LSJ–jj 对，从单壳层表取变换元素，并用 9j 重耦合递推组合各壳。对能级 $s$，逐项求 $a_{is}^{\mathrm{LS}}=\sum_j T_{ij}c_{js}^{\mathrm{jj}}$。OpenMP 路径分批计算独立的 LS 行，依原有行序提交结果、累计权重及执行截断。写入或回读 `.lsj.T` 的模式走串行计算路径。[变换与并行顺序](jj2lsj_conversion.f90) · [OpenMP 实现说明](../../../docs/implemented/design-0028-jj2lsj-openmp.md)
 3. 逐能级按 $a_{is}^2$ 稳定排序，保留并列组分原有顺序。按输出选项写 LS 与 jj 组分、主导标签，以及经重复标签处理的唯一标签。[组分排序](jj2lsj_postprocessing.f90) · [标签写出](jj2lsj_conversion.f90)
 
 ## 逐文件计算与数据流程

@@ -12,17 +12,40 @@ implementation guides belong in `docs/implemented/`, pending experiments in
 `docs/plans/`, completed reviews in `docs/reviews/`, theory drafts in
 `docs/reference/`, and superseded plans or historical reports in `docs/archive/`.
 State the source revision and distinguish implemented code from completed
-physical validation; update relative links and the index when moving documents.
+physical validation.
+
+### Documentation filenames
+
+Name Markdown documents under `docs/` with a type, a stable four-digit number,
+and a lowercase hyphenated ASCII topic slug. Keep `docs/README.md` as the index.
+
+| Type | Filename | Example |
+| --- | --- | --- |
+| Plan | `plan-{id}-{slug}.md` | `plan-0007-user-login.md` |
+| Process record | `{YYYY-MM-DD}-{type}-{ref}-{slug}.md` | `2026-02-11-plan-0007-weekly.md` |
+| Evidence | `evidence-{id}-{slug}.md` | `evidence-0007-session-store-benchmark.md` |
+| Design | `design-{id}-{slug}.md` | `design-0007-token-refresh.md` |
+| Decision | `adr-{seq}-{slug}.md` | `adr-0003-postgresql-as-primary-store.md` |
+
+Allocate the next zero-padded number within each type across all directories,
+including archives. Keep the type and number when editing, moving, completing,
+or archiving a document, and reserve retired numbers. Use a date prefix only
+for process records. In their filenames, use the record date and the referenced
+document's type and number. Keep each filename unique. On rename, update the
+index, links and command examples. Keep URLs pinned to historical Git revisions
+pointing to the files at those revisions.
+
+### Shared libraries and retained programs
 
 The supported ordinary RMCDHF programs are `rmcdhf{,_mem,_mpi,_mem_mpi}`.
 CSFG source and targets have been removed; retain the ordinary shared libraries.
 The rejected `rmcdhf_orbopt*`,
 `rmcdhf_mem_strict_mpi`, and `rmcdhf_mem_diag_mpi` programs are retired; historical
-documents are not authorization to restore them. See [retirement scope](docs/implemented/rejected_rmcdhf_variants.md).
+documents are not authorization to restore them. See [retirement scope](docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md).
 Retained programs share
 `grasp_shared`, `libcore`, `libdavidson_eigensolver`, and `src/lib/mpi` with the property programs; do not
 introduce a second copy of these libraries. Preserve suite MPI helpers.
-For shared module names and external migration, see [shared library naming](docs/implemented/shared_library_naming.md).
+For shared module names and external migration, see [shared library naming](docs/implemented/design-0006-shared-library-naming.md).
 In `src/lib/grasp_shared/`, use one lowercase module per matching `.f90` filename.
 Keep `grasp_parameters` as the public capacity re-export interface.
 Define shared capacities only in `cal_constants.f90` and re-export their
@@ -66,7 +89,7 @@ alongside serial and MPI property programs. In this workspace, run Python
 scripts/tests with `../graspkit-tools/.venv/bin/python`; do not create another
 environment or run `uv sync`/`uv run` here.
 
-For grid or capacity changes, use [common parameters](docs/implemented/common_parameters.md)
+For grid or capacity changes, use [common parameters](docs/implemented/design-0003-shared-grid-parameters.md)
 for the current contract and [scripts/README.md](scripts/README.md) for patch-tool
 configuration, preview/apply, and restore commands. The patcher locates `src/`
 alongside its own `scripts/` directory. Preserve omitted
@@ -76,7 +99,7 @@ set; compilation is a separate step from applying the patch.
 ## Coding Style & Naming Conventions
 Under `src/lib/` and `src/apps/`, indent Fortran by four spaces per level. Use comments to group module dependencies, explicit interfaces, arguments, and important declarations. Use structured control flow with unlabeled statements and unnamed constructs.
 
-Use lowercase snake_case for application source files and Fortran symbols. Keep application procedure definitions in modules so a single set of dummy declarations supplies the explicit interface. Use the implementation filename for migrated modules that retain their established `*_interface` module name. Serial and MPI alternatives can share a module name when each executable selects one implementation. Ordinary program directories and targets use lowercase functional names like `rangular`, `rhfs`, and `gj`; use the build profile to identify the Fortran standard. For renamed paths and executable names, see [program naming](docs/implemented/program_naming.md).
+Use lowercase snake_case for application source files and Fortran symbols. Keep application procedure definitions in modules so a single set of dummy declarations supplies the explicit interface. Use the implementation filename for migrated modules that retain their established `*_interface` module name. Serial and MPI alternatives can share a module name when each executable selects one implementation. Ordinary program directories and targets use lowercase functional names like `rangular`, `rhfs`, and `gj`; use the build profile to identify the Fortran standard. For renamed paths and executable names, see [program naming](docs/implemented/design-0005-program-naming.md).
 
 ## Testing Guidelines
 CI uses the CMake workflow. Run tests covering the affected programs, using a

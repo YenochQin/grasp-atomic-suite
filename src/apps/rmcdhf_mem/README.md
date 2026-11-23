@@ -7,7 +7,7 @@
 `mcp.NN` 通道，支持通过 `npol.inp` 启用核极化。输出包括 `name.wfn`、SCF 摘要和日志，
 以及 OL/EOL 计算的 `name.mix`。
 
-[串行版本与状态文件](../rmcdhf/README.md) · [MCP 存储及实现差异](../../../docs/reviews/rmcdhf_mem_comparison_2026-11-11.md)
+[串行版本与状态文件](../rmcdhf/README.md) · [MCP 存储及实现差异](../../../docs/reviews/evidence-0007-rmcdhf-memory-variant-comparison.md)
 
 ## 计算流程
 

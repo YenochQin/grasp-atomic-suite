@@ -6,7 +6,7 @@ Thomas–Fermi、屏蔽氢样或自定义有效核电荷生成初猜。
 程序读取 `isodata`，从 `name_header.toml` 取得轨道表和总电子数。可通过 `--header`
 指定头文件路径。输出 `name.initial.wfn` 供 MCDHF 程序优化轨道。
 
-[MCDHF 程序](../rmcdhf/README.md) · [头文件与初猜选项](../../../docs/implemented/rwfnestimate_header_input.md)
+[MCDHF 程序](../rmcdhf/README.md) · [头文件与初猜选项](../../../docs/implemented/design-0023-rwfnestimate-header-input.md)
 
 ## 计算流程
 

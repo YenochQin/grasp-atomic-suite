@@ -1,6 +1,6 @@
 # 自旋–角向系数
 
-`spin_angular` 计算两个 $jj$ 耦合组态态函数（CSF）之间的单电子和双电子自旋–角向系数。以下公式对应 suite `2d4c721` 加 `spin_angular` 命名迁移后的实现。文件、模块与旧例程名的对应关系见[命名对照](../../../docs/implemented/spin_angular_naming.md)，形参与工作数组见[变量对照](../../../docs/implemented/librang90_variable_migration.md)。
+`spin_angular` 计算两个 $jj$ 耦合组态态函数（CSF）之间的单电子和双电子自旋–角向系数。以下公式对应 suite `2d4c721` 加 `spin_angular` 命名迁移后的实现。文件、模块与旧例程名的对应关系见[命名对照](../../../docs/implemented/design-0012-spin-angular-library-naming.md)，形参与工作数组见[变量对照](../../../docs/implemented/design-0013-spin-angular-variable-migration.md)。
 
 ## 入口和符号
 

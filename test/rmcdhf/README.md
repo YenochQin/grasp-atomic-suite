@@ -3,11 +3,11 @@
 This directory contains shared readers and comparison utilities for the original
 RMCDHF programs. The four `rmcdhf_orbopt*` programs and their
 dedicated runners, SLURM templates, fixtures and policy tests were removed on
-2026-11-08. See the [historical results](../../docs/archive/orbopt/RESULTS.md)
+2026-11-08. See the [historical results](../../docs/archive/orbopt/evidence-0024-orbopt-as2-diagnostics.md)
 for trials of the retired programs.
 
 - The rejected strict/diagnostic variants and their dedicated tests were removed
-  on 2026-11-11; see [retirement scope](../../docs/implemented/rejected_rmcdhf_variants.md).
+  on 2026-11-11; see [retirement scope](../../docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md).
 - `compare_rwfn.py`, `compare_sum.py`, `crosscheck_rwfn.py` and
   `compare_fine_structure.py` remain generic readers/comparison utilities.
 

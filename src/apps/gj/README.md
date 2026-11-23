@@ -7,7 +7,7 @@
 MCDHF 模式读取 `name.mix` 并写出 `name.gj`，CI 模式读取 `name.cimix` 并写出 `name.cgj`。
 `gj_mpi` 支持交互输入，也可从命令行接收状态名及 `--nonci` 或 `--ci`。
 
-[RHFS 程序](../rhfs/README.md) · [Landé 因子计算流程](../../../docs/implemented/RHFS_gJ_report.md)
+[RHFS 程序](../rhfs/README.md) · [Landé 因子计算流程](../../../docs/implemented/design-0027-rhfs-lande-g.md)
 
 ## 计算流程
 

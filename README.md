@@ -1,7 +1,7 @@
 # grasp-atomic-suite
 
 All retained CSF consumers now use native descriptor Parquet + matching header TOML.
-See [native input and build requirements](docs/implemented/native_csf_descriptors.md).
+See [native input and build requirements](docs/implemented/design-0001-native-csf-descriptors.md).
 The reader source is bundled in this repository and builds into `build/lib/libcsf_descriptor.a`;
 no external rCSFs checkout or reader library is needed. Python is only used for developer tests.
 
@@ -11,7 +11,7 @@ no external rCSFs checkout or reader library is needed. Python is only used for 
 
 This repository is not a minimal upstream GRASP mirror. It keeps the traditional GRASP numerical libraries and application layout, while adding CMake builds, MPI targets, an extracted `gj` program, regression data, and development notes for `g_J` and MPI optimization work.
 
-Ordinary application directories now omit the old `90` suffix; the Landé-factor commands are `gj` and `gj_mpi`. See the [name mapping and rebuild instructions](docs/implemented/program_naming.md).
+Ordinary application directories now omit the old `90` suffix; the Landé-factor commands are `gj` and `gj_mpi`. See the [name mapping and rebuild instructions](docs/implemented/design-0005-program-naming.md).
 
 ## Source Layout
 
@@ -50,17 +50,17 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 
 | Program | Source directory | CMake targets | Purpose |
 | --- | --- | --- | --- |
-| Ordinary GRASP calculation chain | `src/apps/rangular*`, `rwfnestimate`, `rci*`, `rbiotransform*`, `rtransition*` | `rangular{,_mpi}`, `rwfnestimate`, `rci{,_mpi}`, `rbiotransform{,_mpi}`, `rtransition{,_phase,_mpi}` | Ten targets reuse the suite libraries and central capacities; see [provenance, builds and validation scope](docs/implemented/standard_grasp_integration.md). |
-| `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/jj2lsj_openmp.md). CSFG support has been removed. |
-| `rlevels` | `src/apps/rlevels` | `rlevels` | Energy tables from RMCDHF `.m` and RCI `.cm` files with optional `jj2lsj` labels. [Usage and output format](docs/implemented/rlevels.md). |
+| Ordinary GRASP calculation chain | `src/apps/rangular*`, `rwfnestimate`, `rci*`, `rbiotransform*`, `rtransition*` | `rangular{,_mpi}`, `rwfnestimate`, `rci{,_mpi}`, `rbiotransform{,_mpi}`, `rtransition{,_phase,_mpi}` | Ten targets reuse the suite libraries and central capacities. See the [import record](docs/archive/2026-11-08-plan-0002-standard-grasp-integration.md). |
+| `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/design-0028-jj2lsj-openmp.md). CSFG support has been removed. |
+| `rlevels` | `src/apps/rlevels` | `rlevels` | Energy tables from RMCDHF `.m` and RCI `.cm` files with optional `jj2lsj` labels. [Usage and output format](docs/implemented/design-0025-rlevels.md). |
 | `gj` | `src/apps/gj` | `gj`, `gj_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, the state's CSF descriptor pair, `name.mix/name.cimix`, and `name.wfn`, then writes `name.gj/name.cgj`. |
 | `rhfs` | `src/apps/rhfs` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
-| `rdensity` | `src/apps/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/rdensity_mpi.md). |
+| `rdensity` | `src/apps/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/design-0026-rdensity-mpi.md). |
 | `ris4` | `src/apps/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing `name.i/name.ci` and angular intermediate data. |
 | `fical` | `src/apps/ris4` | `fical` | Standalone [line isotope-shift postprocessor](src/apps/ris4/README.md#fical) for pairs of RIS4 reports. |
-| GRASP RMCDHF | `src/apps/rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | `rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | Copies from the workspace GRASP source, retaining its solver flow. Ordinary `rmcdhf_mpi` has no NP initialization; the other three optionally read `npol.inp`. See [NP interface and provenance](docs/implemented/rmcdhf_nuclear_polarization.md). |
+| GRASP RMCDHF | `src/apps/rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | `rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | Copies from the workspace GRASP source, retaining its solver flow. Ordinary `rmcdhf_mpi` has no NP initialization; the other three optionally read `npol.inp`. See [NP interface and provenance](docs/implemented/design-0022-rmcdhf-nuclear-polarization.md). |
 
-The rejected strict/diagnostic RMCDHF variants have been [removed](docs/implemented/rejected_rmcdhf_variants.md), together with their dedicated tests and runtime entry points.
+The rejected strict/diagnostic RMCDHF variants have been [removed](docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md), together with their dedicated tests and runtime entry points.
 
 `./configure.sh` enables all retained non-CSFG applications by default: serial,
 MPI and jj2lsj OpenMP, including `rwfnestimate`. MPI requires a compatible
@@ -154,10 +154,10 @@ acceptance budget covers GNU Fortran 16.2 releases, including 16.2.1. The defaul
 `f2018-release` profile uses O2; `f2018-check` and `f2018-audit` provide
 standard, interface and runtime or optimized diagnostics. Legacy profiles,
 implicit-SAVE flags and argument-mismatch allowances have been removed.
-See the [build policy](docs/implemented/build_profiles.md) and
-[implemented compatibility and interface contracts](docs/implemented/f2018_compatibility.md).
+See the [build policy](docs/implemented/design-0002-fortran-build-profiles.md) and
+[implemented compatibility and interface contracts](docs/implemented/design-0004-f2018-compatibility.md).
 Current native input requirements and validation limits are documented in
-[the descriptor guide](docs/implemented/native_csf_descriptors.md).
+[the descriptor guide](docs/implemented/design-0001-native-csf-descriptors.md).
 Historical test counts do not certify the current source or physical accuracy.
 
 ## Inputs And Outputs
@@ -178,14 +178,16 @@ enter the same name at each `Name of state:` prompt. For example, the state
 | `rmcdhf` and `rmcdhf_mem` | Same descriptor pair, `name.initial.wfn`, `mcp.NN` | `name.wfn` (optimized orbitals), `name.mix` (OL/EOL mixing), `name.rmcdhf.summary`, `name.rmcdhf.log` |
 | `rci` | Same descriptor pair and `name.wfn` | `name.cimix` (CI mixing), `name.csum`, `name.clog` |
 
-MPI uses the same state name. Each rank writes and reads its own
-`mcp.NN` channels in its scratch directory. The descriptor and radial
-files live in the permanent I/O directory. Angular and SCF logs live in the
-launch directory. `isodata` and applicable `npol.inp` are shared nuclear inputs.
+MPI uses the same state name. Each `rangular_mpi` rank writes `mcp.mcpidx` in
+its scratch directory. Run `rmcdhf_mpi` or `rmcdhf_mem_mpi` with the same basis
+and rank layout. Use the current `rangular_mpi` to regenerate older MCP output.
+The descriptor and radial files live in the permanent I/O directory, and the
+angular and SCF logs live in the launch directory. `isodata` and applicable
+`npol.inp` are shared nuclear inputs. See [MPI MCP formats and validation](docs/implemented/design-0020-rmcdhf-mcp-io.md).
 RCI keeps its settings-first prompt order. Property programs such as `gj` use
 up to 23 characters for the state name.
 
-MCP channels belong to the working directory. Finish the SCF run for a basis
+MCP data belongs to the working directory. Finish the SCF run for a basis
 before generating another basis there, or use separate work and MPI scratch
 directories. States named `A` and `A.initial` also share the path `A.initial.wfn`
 and need separate directories. State readers prefer `.wfn`, `.mix` and `.cimix`
@@ -262,13 +264,13 @@ sparse MPI buffers, and the grid patcher.
 ctest --test-dir build-all --output-on-failure
 ```
 
-Orbital regression runners live in [test/rmcdhf](test/rmcdhf/README.md). Large calculation inputs/results remain outside the repository. The retired orbopt runners and SLURM templates are no longer provided; see [retirement details](docs/implemented/orbopt_retirement.md).
+Orbital regression runners live in [test/rmcdhf](test/rmcdhf/README.md). Large calculation inputs/results remain outside the repository. The retired orbopt runners and SLURM templates are no longer provided; see [retirement details](docs/implemented/adr-0001-retire-rmcdhf-orbopt.md).
 
 ## Radial Grid And Migration
 
 Shared limits live in [`cal_constants.f90`](src/lib/grasp_shared/cal_constants.f90)
 and are re-exported by [`grasp_parameters.f90`](src/lib/grasp_shared/grasp_parameters.f90).
-See [shared library naming](docs/implemented/shared_library_naming.md) for the library and module mapping.
+See [shared library naming](docs/implemented/design-0006-shared-library-naming.md) for the library and module mapping.
 The Suite defaults are `max_radial_points=590`, `radial_workspace_capacity=600`, `max_orbitals=127`,
 `max_orbitals_minus_one=126`, `max_orbitals_minus_two=125`, and `orbital_index_radix=215`.
 Finite nuclei use `radial_point_count=max_radial_points`. Programs with a point-nucleus branch start at
@@ -285,24 +287,24 @@ Preview is the default. Keep a separate source copy for each parameter set and
 build it manually using this repository's CMake workflow. Changes require a
 full rebuild and numerical convergence checks.
 
-See [shared parameter guide](docs/implemented/common_parameters.md) for the parameter table,
+See [shared parameter guide](docs/implemented/design-0003-shared-grid-parameters.md) for the parameter table,
 initialization order, and validation. The suite layout edits the central capacity configuration
 and the fifteen individual grid entry points as needed. Explicit changes to `working_tolerance`
 also cover the serial and MPI RCI restart paths.
 For candidate values, their rationale, test datasets, and convergence criteria,
-see [GRASP grid parameter tuning](docs/plans/grasp_grid_parameter_tuning.md) (Chinese).
+see [GRASP grid parameter tuning](docs/plans/plan-0001-radial-grid-validation.md) (Chinese).
 
-The [RMCDHF source snapshot](docs/reference/rmcdhf_upstream_snapshot.json) records the source provenance. The [RMCDHF flow guide](docs/implemented/rmcdhf_flow_and_state.md) describes the retained solver.
+The [RMCDHF source snapshot](docs/reference/rmcdhf_upstream_snapshot.json) records the source provenance. The [RMCDHF flow guide](docs/implemented/design-0019-rmcdhf-flow-and-state.md) describes the retained solver.
 
 ## Development Notes
 
 The [documentation index and status audit](docs/README.md) covers every document,
 its implementation evidence, superseded claims, and remaining validation work.
 
-- [Implemented guides](docs/implemented/common_parameters.md): shared parameters and the [RHFS g_J code trace](docs/implemented/RHFS_gJ_report.md).
-- [Experiment plan](docs/plans/grasp_grid_parameter_tuning.md): grid configurations and physical convergence checks still to run.
-- [Completed grid review](docs/reviews/grasp_grid_methodology_review.md): source findings and diagnostic evidence.
-- [Theory reference](docs/reference/lande_g.md): Landé-factor background draft; operator conventions need independent verification.
+- [Implemented guides](docs/implemented/design-0003-shared-grid-parameters.md): shared parameters and the [RHFS g_J code trace](docs/implemented/design-0027-rhfs-lande-g.md).
+- [Experiment plan](docs/plans/plan-0001-radial-grid-validation.md): grid configurations and physical convergence checks still to run.
+- [Completed grid review](docs/reviews/evidence-0001-radial-grid-methodology-review.md): source findings and diagnostic evidence.
+- [Theory reference](docs/reference/design-0032-lande-g-theory.md): Landé-factor background draft; operator conventions need independent verification.
 - [Historical archive](docs/README.md#历史背景): gj blueprint, orbital-optimization results and RHFS/RIS optimization reports.
 
 ## Contributor Notes

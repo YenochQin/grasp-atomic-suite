@@ -189,7 +189,7 @@ $$
 
 返回时，`real_workspace` 在约束列之后连续存放这 $m$ 个谱端近似本征对的数据。数组先放 $Nm$ 个全空间向量元素，再依次放 $m$ 个本征值、$m$ 个本征值绝对变化量和 $m$ 个残差范数。低端结果按本征值升序，高端结果按降序。收敛判定针对请求态，跨度内其余位置也保留当前近似。[控制与打包源码](davidson_solver_control.f90)
 
-接口及符号迁移见 [Davidson 本征求解库命名迁移](../../../docs/implemented/davidson_eigensolver_migration.md)。
+接口及符号迁移见 [Davidson 本征求解库命名迁移](../../../docs/implemented/design-0014-davidson-eigensolver-migration.md)。
 
 ## 来源
 

@@ -42,5 +42,5 @@ the device itself is never replaced or deleted.
 
 Build logs and CTest results live under the chosen build directories. Test-only
 stubs are linked solely to the consumer executables, never to an application.
-See the [implementation guide](../../docs/implemented/rmcdhf_nuclear_polarization.md)
+See the [implementation guide](../../docs/implemented/design-0022-rmcdhf-nuclear-polarization.md)
 for the exact supported scope and recorded validation.
