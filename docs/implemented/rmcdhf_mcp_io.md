@@ -3,6 +3,8 @@
 2026-11-22，基准源码为 Suite `c1377aa0`。`3.4dev1` 的 `rangular_mpi`、
 `rmcdhf_mpi` 和 `rmcdhf_mem_mpi` 使用相同的带目录格式。生产冷／热缓存、峰值 RSS 和
 最慢 rank 墙钟的验收步骤见[实施计划](../plans/rmcdhf_mcp_io_2026-11-22.md)。
+Zn I AS2 在目标文件系统上的 A/C 全 SCF 对照已完成，势系数分段性能待测。
+见[阶段 3 实测与续跑](../reviews/rmcdhf_mcp_phase3_2026-11-23.md)。
 
 ## MPI 计算链
 
