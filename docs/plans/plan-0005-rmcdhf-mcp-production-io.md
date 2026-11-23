@@ -2,8 +2,13 @@
 
 Suite `0f35673` 已完成阶段 0–2 的接入与本地回归。MPI 生成和读取统一使用目录格式，
 普通 MPI 求解器在密度权重更新后重建收缩表，内存版读取同格式的分片。
-阶段 3 的服务器文件系统对照待执行。[现行格式、本地结果及计时](../implemented/design-0020-rmcdhf-mcp-io.md)
+[现行格式、本地结果及计时](../implemented/design-0020-rmcdhf-mcp-io.md)
 · [原实施计划](https://github.com/YenochQin/grasp-atomic-suite/blob/0f356733d3a62ff3e9d9c349c3148ab1dd25daf7/docs/plans/rmcdhf_mcp_io_2026-11-22.md)
+
+2026-11-23，阶段 3 已完成作业 14 的 A/C 目标文件系统对照。冷、热缓存下全 SCF 墙钟均缩短，
+冷态全 SCF 实际读盘量增加。势系数分段探针已在两份独立基准快照中通过本地校验，
+生产分段测量和单 rank 内存预算核对待完成。
+[实测、验收差距与复跑](../reviews/evidence-0025-rmcdhf-mcp-phase3-benchmark.md)
 
 | 对照路径 | 比较目的 |
 | --- | --- |
@@ -19,8 +24,9 @@ A、B 使用归档构建。C 使用当前 `rangular_mpi` 和 `rmcdhf_mpi`，按�
 记录最慢 rank 和全体 ranks 的逻辑读取字节、系统实际 I/O、等待及每轮 SCF 墙钟，同时
 记录峰值 RSS、生成阶段峰值磁盘和最终文件大小。`--mcp-trace` 记录应用层计数。
 实际设备流量、页缓存和等待栈需结合目标文件系统与外部采样。性能对照关闭
-`--mcp-verify`。根据重复测量判断势系数阶段及整个 SCF 是否改善，并核算生成成本、
-复用次数和每 rank 的内存预算。[外部采样计划](plan-0003-rmcdhf-mpi-stall-diagnostics.md)
+`--mcp-verify`。在代表性重复读取算例上，核对势系数阶段的实际读盘量和最慢 rank 墙钟是否
+可重复下降、全 SCF 墙钟是否缩短，以及峰值 RSS 是否符合单 rank 内存预算。另核算生成成本
+和复用次数。[外部采样计划](plan-0003-rmcdhf-mpi-stall-diagnostics.md)
 
 若评估两种 MPI 求解器，分别与各自的历史路径比较。当前串行 rangular 和 RMCDHF 仍使用
 串行 MCP 格式，是否接入目录格式另行评估。
