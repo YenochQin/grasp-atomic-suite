@@ -6,9 +6,10 @@
 ! Translated by Gediminas Gaigalas 11/18/19
 program ris4_main
     !  Module dependencies
-    use, intrinsic :: iso_fortran_env, only: real64
+    use, intrinsic :: iso_fortran_env, only: int64, real64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
+    use run_timer, only: begin_run_timer, finish_run_timer
     use debug_output_settings,         only: matrix_element_screening_cutoff
     use calculation_state_files, only: read_state_name
     use yes_no_input, only: read_yes_no
@@ -40,11 +41,11 @@ program ris4_main
     logical   :: yes
     character :: name*24
     integer :: mixing_file_kind, unused_core_subshell_count
+    integer(int64) :: start_clock_count
+
+    call begin_run_timer (start_clock_count, "ris4_main", log_unit=stderr_unit)
     ! Matrix elements smaller than CUTOFF are not accumulated
     matrix_element_screening_cutoff = 1.0e-10_real64
-    write (stderr_unit, *)
-    write (stderr_unit, *) "ris4_main: Execution begins ..."
-
     write (stderr_unit, *)
     write (stderr_unit, *) "Default settings?"
     yes = read_yes_no ()
@@ -88,7 +89,6 @@ program ris4_main
     ! Proceed with the RIS calculation
     call calculate_isotope_shifts(name)
 
-    write (stderr_unit, *)
-    write (stderr_unit, *) "ris4_main: Execution complete."
+    call finish_run_timer (start_clock_count, "ris4_main", log_unit=stderr_unit)
     stop
 end  program ris4_main

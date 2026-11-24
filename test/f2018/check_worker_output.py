@@ -45,6 +45,7 @@ end program
         work = Path(temporary)
         (work / "probe.f90").write_text(source + driver)
         subprocess.run([mpifort, "-std=f2018", "-fcheck=all",
+                        str(root / "src/lib/core/run_timer.f90"),
                         str(root / "src/lib/mpi/mpi_runtime.f90"),
                         str(root / "src/lib/mpi/mpi_run_logging.f90"), "probe.f90", "-o", "probe"],
                        cwd=work, env=env, check=True, capture_output=True, text=True)

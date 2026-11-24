@@ -42,6 +42,8 @@ METADATA = (
     r"\s*Time \(Hr/Min/Sec\): \d{2}/\d{2}/\d{2}\.\d+\s*",
     r"\s*Zone: [+-]\d{4}\s*",
 )
+RUN_TIMESTAMP = re.compile(r"(Date and Time:|Finish Date and Time:) \d{4}-\d{2}-\d{2} "
+                           r"\d{2}:\d{2}:\d{2}\.\d{3} [+-]\d{4}")
 
 
 def solver_inputs(iteration_limit: int) -> str:
@@ -60,8 +62,13 @@ def normalize(text: str) -> str:
     result: list[str] = []
     wall_time = False
     for line in text.splitlines(keepends=True):
-        if wall_time and re.fullmatch(r"\s*\d+ seconds\s*", line):
+        timestamp = RUN_TIMESTAMP.fullmatch(line.rstrip("\n"))
+        if re.fullmatch(r"Wall time: \d+ seconds\n?", line):
+            result.append("Wall time: <wall seconds>\n")
+        elif wall_time and re.fullmatch(r"\s*\d+ seconds\s*", line):
             result.append("<wall seconds>\n")
+        elif timestamp:
+            result.append(f"{timestamp[1]} <date/time metadata>\n")
         elif any(re.fullmatch(pattern, line) for pattern in METADATA):
             result.append("<date/time metadata>\n")
         else:

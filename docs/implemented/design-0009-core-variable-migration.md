@@ -1843,7 +1843,9 @@
 | `start` | `scf_c::nda` | `nda` | `direct_orbital_indices` |
 | `start` | `scf_c::da` | `da` | `direct_coefficients` |
 
-## [run_timer_start.f90](../../src/lib/core/run_timer_start.f90)
+## [run_timer_start.f90](https://github.com/YenochQin/grasp-atomic-suite/blob/0963cd6a764d01d5714df164af3295ac220c3543/src/lib/core/run_timer_start.f90)
+
+此处记录首次重命名。当前应用通过 [run_timer.f90](../../src/lib/core/run_timer.f90) 计时。
 
 ### `run_timer_start → starttime`
 
@@ -1856,7 +1858,7 @@
 
 保留 `nymduhmsm`（仅声明）、`chdate`（仅声明）、`chtime`（仅声明）、`chzone`（仅声明）、`msg`（仅声明）。
 
-## [run_timer_finish.f90](../../src/lib/core/run_timer_finish.f90)
+## [run_timer_finish.f90](https://github.com/YenochQin/grasp-atomic-suite/blob/0963cd6a764d01d5714df164af3295ac220c3543/src/lib/core/run_timer_finish.f90)
 
 ### `run_timer_finish → stoptime`
 

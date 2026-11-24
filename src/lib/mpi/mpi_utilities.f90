@@ -25,7 +25,8 @@ contains
         output_file_description, quiet_workers)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: error_unit, int64, output_unit
-        use mpi_run_logging, only: begin_mpi_run, report_mpi_rank_values
+        use mpi_run_logging, only: report_mpi_rank_values
+        use run_timer, only: begin_run_timer
 
         implicit none (type, external)
 
@@ -42,7 +43,8 @@ contains
         character(len=256) :: output_message
 
         call initialize_mpi_runtime (rank, process_count, processor_name, processor_name_length)
-        call begin_mpi_run (rank, program_name, start_ticks)
+        start_ticks = 0_int64
+        if (rank == 0) call begin_run_timer (start_ticks, program_name)
 
         if (rank == 0) then
             write (output_unit, *) trim(description)
@@ -69,7 +71,8 @@ contains
 
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: int64, output_unit
-        use mpi_run_logging, only: begin_mpi_run, report_mpi_rank_values
+        use mpi_run_logging, only: report_mpi_rank_values
+        use run_timer, only: begin_run_timer
         use mpi_work_paths, only: prepare_mpi_work_directories
 
         implicit none (type, external)
@@ -82,7 +85,8 @@ contains
         character(len=*), intent(out) :: startup_directory, serial_io_directory, rank_scratch_root
 
         call initialize_mpi_runtime (rank, process_count, processor_name, processor_name_length)
-        call begin_mpi_run (rank, program_name, start_ticks)
+        start_ticks = 0_int64
+        if (rank == 0) call begin_run_timer (start_ticks, program_name)
         call report_mpi_rank_values (rank, process_count, "Participating nodes:", processor_name, as_hosts=.true.)
 
         ! Keep the serial I/O directory for rank 0 and select a scratch root for each rank.
@@ -101,7 +105,7 @@ contains
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: int64, output_unit
         use mpi, only: mpi_finalize, mpi_success
-        use mpi_run_logging, only: report_mpi_run_finish
+        use run_timer, only: finish_run_timer
         implicit none (type, external)
 
         ! Arguments
@@ -115,7 +119,7 @@ contains
         flush (output_unit)
         call mpi_finalize (mpi_return_code)
         if (mpi_return_code /= mpi_success) error stop "MPI_Finalize failed"
-        call report_mpi_run_finish (rank, start_ticks, program_name)
+        if (rank == 0) call finish_run_timer (start_ticks, program_name)
 
         return
     end subroutine finish_mpi_application

@@ -69,8 +69,7 @@ add_library(core STATIC
     slater_radial_integral.f90
     sparse_symmetric_matvec.f90
     radial_origin_solution.f90
-    run_timer_start.f90
-    run_timer_finish.f90
+    run_timer.f90
 )
 setup_fortran_modules(core)
 target_link_libraries(core PUBLIC csf_descriptor)

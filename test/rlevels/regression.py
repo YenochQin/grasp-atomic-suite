@@ -1,6 +1,7 @@
 """Check the installed-command contract with a GRASP case and small G92MIX files."""
 
 from pathlib import Path
+import re
 import shutil
 import struct
 import subprocess
@@ -54,7 +55,13 @@ def rows(result: subprocess.CompletedProcess[str]) -> list[list[str]]:
 
 
 def check_real_fixture(binary: Path, data: Path, work: Path) -> None:
-    real = rows(run(binary, data / "test.m"))
+    result = run(binary, data / "test.m")
+    real = rows(result)
+    timestamps = r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} [+-]\d{4}"
+    for label in ("Date and Time:", "Finish Date and Time:"):
+        assert len(re.findall(rf"^{label} {timestamps}$", result.stderr, re.MULTILINE)) == 1, result.stderr
+    assert len(re.findall(r"^Wall time: \d+ seconds$", result.stderr, re.MULTILINE)) == 1, result.stderr
+    assert result.stderr.splitlines().count("RLEVELS: Execution complete.") == 1, result.stderr
     assert len(real) == 9
     assert real[0] == ["1", "1", "4", "+", "-1519.3952877", "0.00", "0.00", "3s(2).3p(6).3d(8)3F.4s(2)_3F"]
     assert real[-1] == ["9", "2", "0", "+", "-1519.1147235", "61576.71", "35869.38", "3s(2).3p(6).3d(8)1S.4s(2)_1S"]
@@ -105,6 +112,7 @@ def check_invalid_files(binary: Path, work: Path) -> None:
         result = run(binary, bad)
         assert result.returncode != 0 and error in result.stderr, result
         assert "No Pos  J " not in result.stdout
+        assert "RLEVELS: Execution complete." not in result.stderr
     result = run(binary, work / "missing.cm")
     assert result.returncode != 0 and "missing.cm" in result.stderr, result
 

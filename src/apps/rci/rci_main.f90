@@ -11,7 +11,7 @@
 ! Modified by Gediminas Gaigalas for new spin-angular integration.
 program rci_main
     ! Module dependencies
-    use, intrinsic :: iso_fortran_env, only: output_unit
+    use, intrinsic :: iso_fortran_env, only: int64, output_unit
     use calculation_file_units, only: calculation_log_unit
     use calculation_input_defaults, only: nondefault_options_flag
     use rci_prerun_settings, only: prerun_stage
@@ -44,31 +44,27 @@ program rci_main
     use tabulate_slater_integrals_interface, only: tabulate_slater_integrals
 
     ! Module dependencies
-    use run_timer_start, only: begin_run_timer
-    use run_timer_finish, only: finish_run_timer
+    use run_timer, only: begin_run_timer, finish_run_timer
     implicit none (type, external)
     integer, parameter :: maximum_input_symmetry_blocks = 50
     integer, parameter :: nblk=50
-    integer :: start_clock_count
+    integer(int64) :: start_clock_count
     integer :: mpi_rank, mpi_process_count, core_subshell_count, integral_count, max_orbital_two_j
     logical :: yes
     character(len=128) :: name, isotope_file_path
     character(len=8) :: block_labels(maximum_input_symmetry_blocks)
 
+    call begin_run_timer (start_clock_count, "RCI")
     prerun_stage = 0
     mpi_rank = 0
     mpi_process_count = 1
 
-    write(*,*)
-    write(*,*) "RCI"
     write(*,*) "This is the configuration interaction program "
     write(*,*) "Input file:  isodata, name_desc.parquet, name_header.toml, name.wfn"
     write(*,*) "Outputfiles: name.cimix, name.csum, name.clog "
     write(*,*) "             rci.res (can be used for restart)"
     write(*,*)
 
-    ! Start timing
-    call begin_run_timer (start_clock_count, "RCI")
     ! Read the default settings and restart choices.
     write (stderr_unit, "(A)") "Default settings? "
     yes = read_yes_no()

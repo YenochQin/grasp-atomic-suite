@@ -67,6 +67,14 @@ class FirstSweepTests(unittest.TestCase):
             result = self.compare(mode)
             self.assertEqual(result.returncode, 0, result.stderr)
         self.assertNotEqual(normalize('time step 1\n'), normalize('time step 2\n'))
+        first = ("Date and Time: 2026-11-24 10:00:00.010 +0800\n"
+                 "Finish Date and Time: 2026-11-24 10:00:03.030 +0800\n"
+                 "Wall time: 3 seconds\n")
+        second = ("Date and Time: 2026-11-24 11:00:00.010 +0800\n"
+                  "Finish Date and Time: 2026-11-24 11:00:09.090 +0800\n"
+                  "Wall time: 9 seconds\n")
+        self.assertEqual(normalize(first), normalize(second))
+        self.assertNotEqual(normalize(first), normalize(second + "Wall time: unavailable\n"))
 
     def test_changed_science_warning_iteration_or_completion_fails(self) -> None:
         for mode in ('warning', 'energy', 'iteration', 'unfinished'):

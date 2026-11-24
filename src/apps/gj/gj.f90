@@ -1,9 +1,10 @@
 ! Calculate electronic Landé factors and anomalous magnetic moment corrections for selected levels.
 program gj
     ! Module dependencies
-    use, intrinsic :: iso_fortran_env, only: real64
+    use, intrinsic :: iso_fortran_env, only: int64, real64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
+    use run_timer, only: begin_run_timer, finish_run_timer
     use array_memory_management, only: alloc, dalloc
     use selected_level_indices,          only: active_level_count
     use compute_gj_only_interface, only: compute_gj_only
@@ -34,9 +35,9 @@ program gj
     logical :: prompt_answer
     real(real64), pointer :: lande_g_factors(:), lande_g_factor_corrections(:)
     character :: state_name*24
+    integer(int64) :: start_clock_count
 
-    write (stderr_unit, *)
-    write (stderr_unit, *) "GJ"
+    call begin_run_timer (start_clock_count, "GJ", log_unit=stderr_unit)
     write (stderr_unit, *) "This is the serial Lande-factor program"
     write (stderr_unit, *) "Input files:  isodata, name_desc.parquet, name_header.toml, name.mix/name.cimix, name.wfn"
     write (stderr_unit, *) "Output files: name.gj or name.cgj"
@@ -71,7 +72,6 @@ program gj
     call write_lande_g_factors(state_name, mixing_file_kind, lande_g_factors, lande_g_factor_corrections)
     call dalloc(lande_g_factors, "lande_g_factors", "GJ")
     call dalloc(lande_g_factor_corrections, "lande_g_factor_corrections", "GJ")
-    write (stderr_unit, *)
-    write (stderr_unit, *) "GJ: Execution complete."
+    call finish_run_timer (start_clock_count, "GJ", log_unit=stderr_unit)
     stop
 end program gj

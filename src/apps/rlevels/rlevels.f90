@@ -5,6 +5,7 @@ program rlevels
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use, intrinsic :: iso_fortran_env, only: error_unit, int64, iostat_end, output_unit, real64
     use calculation_state_files, only: read_state_entry, resolve_mixing_file
+    use run_timer, only: begin_run_timer, finish_run_timer
     implicit none (type, external)
 
     real(real64), parameter :: rydberg_wavenumber_cm = 109737.31568508_real64
@@ -31,8 +32,10 @@ program rlevels
     type(level), allocatable :: levels(:)
     character(len=:), allocatable :: path
     integer :: argument_index, path_length, io_status, level_count
+    integer(int64) :: start_clock_count
     logical :: show_configuration
 
+    call begin_run_timer (start_clock_count, "RLEVELS", log_unit=error_unit)
     level_count = 0
     show_configuration = .false.
     allocate(levels(0))
@@ -62,6 +65,7 @@ program rlevels
     end select
     if (level_count == 0) call fail('input', 'no energy levels found')
     call print_levels(levels(:level_count), show_configuration)
+    call finish_run_timer (start_clock_count, "RLEVELS", log_unit=error_unit)
 
 contains
 

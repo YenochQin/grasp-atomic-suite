@@ -7,7 +7,7 @@
 ! and for reducing usage of CPU memory.        NIST, October 2017
 program rtransition_main
     ! Module dependencies
-    use, intrinsic :: iso_fortran_env, only: output_unit
+    use, intrinsic :: iso_fortran_env, only: int64, output_unit
     use calculation_input_defaults, only: input_mixing_file_kind, nondefault_options_flag, angular_output_dump_flag
     use debug_output_settings, only: rmcdhf_debug_flags
     use yes_no_input, only: read_yes_no
@@ -28,19 +28,17 @@ program rtransition_main
     use calculate_oscillator_strengths_interface, only: calculate_oscillator_strengths
 
     ! Module dependencies
-    use run_timer_start, only: begin_run_timer
-    use run_timer_finish, only: finish_run_timer
+    use run_timer, only: begin_run_timer, finish_run_timer
     implicit none (type, external)
-    integer :: ntest, start_clock_count, label_output_option
+    integer :: ntest, label_output_option
+    integer(int64) :: start_clock_count
     logical :: yes
     character :: name(2)*24
     character(len=128) :: isotope_file_path
 
+    call begin_run_timer (start_clock_count, "RTRANSITION")
     isotope_file_path = "isodata"
     ntest = 1001
-    call begin_run_timer (start_clock_count, "RTRANSITION")
-    write(*,*)
-    write(*,*) "RTRANSITION"
     write(*,*) "This program computes transition parameters from"
     write(*,*) "transformed wave functions"
     write(*,*) "Input files:  isodata, name1_desc.parquet, name1.bw, name1.(c)bm"

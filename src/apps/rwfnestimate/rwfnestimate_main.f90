@@ -6,8 +6,10 @@
 ! Written by Farid A. Parpia. Last revision: 15 Dec 1992
 program rwfnestimate_main
     ! Module dependencies
+    use, intrinsic :: iso_fortran_env, only: int64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
+    use run_timer, only: begin_run_timer, finish_run_timer
     use rwfnestimate_input, only: radial_input_options, parse_radial_options, load_radial_header
     use calculation_state_files, only: check_orbital_output
     use calculation_state_files, only: state_files, state_name_length, select_state, files_for_state, orbital_input_path
@@ -35,12 +37,12 @@ program rwfnestimate_main
     type(state_files) :: files
     character(state_name_length) :: state
     integer :: core_subshell_count
+    integer(int64) :: start_clock_count
     logical :: yes
     type(radial_input_options) :: input_options
 
-    ! Startup message
     call parse_radial_options(input_options)
-    write (stderr_unit, *) "RWFNESTIMATE"
+    call begin_run_timer (start_clock_count, "RWFNESTIMATE", log_unit=stderr_unit)
     write (stderr_unit, *) "This program estimates radial wave functions"
     write (stderr_unit, *) "for orbitals"
     write (stderr_unit, *) "Input files: isodata, descriptor header TOML, optional rwfn file"
@@ -87,6 +89,6 @@ program rwfnestimate_main
     ! Write the subshell radial wavefunctions out
     call write_initial_radial_wavefunctions(files%initial_orbitals)
 
-    write (stderr_unit, *) "RWFNESTIMATE: Execution complete."
+    call finish_run_timer (start_clock_count, "RWFNESTIMATE", log_unit=stderr_unit)
     stop
 end program rwfnestimate_main

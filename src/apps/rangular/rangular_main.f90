@@ -15,11 +15,10 @@
 !                             2) for sorting in the memory.
 program rangular_main
     ! Module dependencies
-    use, intrinsic :: iso_fortran_env, only: output_unit
+    use, intrinsic :: iso_fortran_env, only: int64, output_unit
     use calculation_file_units, only: angular_log_unit, summary_output_unit
     use debug_output_settings, only: angular_debug_unit
     use grasp_parameters,   only:  max_orbitals
-    use iso_fortran_env, only: int64
     use rangular_input, only: angular_input_options, parse_angular_options, load_angular_header, &
         load_angular_block, close_angular_input
     use rangular_profile, only: stage_clock, record_stage, close_stage_profile
@@ -29,7 +28,7 @@ program rangular_main
     use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals
     use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes, csf_angular_code_count
     use calculation_state_files, only: state_files, state_name_length, files_for_state, select_state, resolve_descriptor_input
-    use run_timer_start, only: begin_run_timer
+    use run_timer, only: begin_run_timer, finish_run_timer
 
     ! Procedure interfaces
     use configure_debug_output_interface, only: configure_debug_output
@@ -49,14 +48,12 @@ program rangular_main
     ! Procedure interfaces
     use open_temporary_mcp_channels_interface, only: open_temporary_mcp_channels
 
-    ! Module dependencies
-    use run_timer_finish, only: finish_run_timer
-
     ! Procedure interfaces
     use compute_mcp_angular_coefficients_interface, only: compute_mcp_angular_coefficients
     implicit none (type, external)
     integer, parameter :: maximum_input_symmetry_blocks = 50   !-----------------------------------------------
-    integer :: start_clock_count, core_subshell_count, symmetry_block_index
+    integer(int64) :: start_clock_count
+    integer :: core_subshell_count, symmetry_block_index
     logical ::  debug, is_restart, yes
     character(len=8):: block_labels(maximum_input_symmetry_blocks)
     integer :: mpi_rank,mpi_process_count
@@ -67,13 +64,12 @@ program rangular_main
     character(len=16) :: input_format_name
 
     call parse_angular_options(input_options)
+    call begin_run_timer (start_clock_count, "RANGULAR")
     call select_state(state, "Full interaction? (y/n)", yes)
     files = files_for_state(state)
     if (input_options%input_filename == "") input_options%input_filename = resolve_descriptor_input(files%descriptors)
     input_format_name = "descriptors"
     program_start_count = stage_clock()
-    write(*,*)
-    write(*,*) "RANGULAR"
     write(*,*) "This program performs angular integration "
     write(*,*) "Input file: ", input_options%input_filename
     write(*,*) "Output files: ", files%mcp, ".30, ", files%mcp, ".31, ..."
@@ -83,7 +79,6 @@ program rangular_main
     if (state /= "") write(angular_log_unit,"(A)") trim(state)
     mpi_rank = 0
     mpi_process_count = 1
-    call begin_run_timer (start_clock_count, "RANGULAR")
     ! Record the choice of full or restricted CSF interactions.
     if (mpi_rank == 0) then
         if (yes) then

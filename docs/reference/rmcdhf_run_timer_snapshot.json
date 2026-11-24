@@ -1,0 +1,15 @@
+{
+  "description": "Use the shared application wall-clock timer in both serial RMCDHF entry points.",
+  "files": {
+    "src/appl/rmcdhf/rscfvu.f90": {
+      "after_suite_sha256": "45ad557c14adec2f66ae1bd624b3f852d01c5cd28be4c28ebfeeeb5054598ec4",
+      "before_suite_sha256": "ddec372ac4e29014dce4d036189f2c036d60a94f9e46baf26d4674bd2329b611"
+    },
+    "src/appl/rmcdhf_mem/rscfvu.f90": {
+      "after_suite_sha256": "1778f6485aa0201bb1e61addaf273af1e76d700cdf83eb4acb19a0acf7cbebe1",
+      "before_suite_sha256": "3563707a238d5ab55050eb3abca2ae89500de27f985b2231251e668bf8b00815"
+    }
+  },
+  "previous_manifest_sha256": "22c60e249fe97cbbd97c0a3da3507a25b0e82667f066745067531e154a5301d8",
+  "schema_version": 1
+}

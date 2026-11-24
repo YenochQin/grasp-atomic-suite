@@ -46,8 +46,10 @@
 ! Last revision: Nov 2017
 program rhfs_main
     ! Module dependencies
+    use, intrinsic :: iso_fortran_env, only: int64
     use calculation_input_defaults, only: nondefault_options_flag
     use standard_io_units, only: stderr_unit
+    use run_timer, only: begin_run_timer, finish_run_timer
     use calculation_state_files, only: read_state_name
     use yes_no_input, only: read_yes_no
 
@@ -78,9 +80,9 @@ program rhfs_main
     integer   :: mixing_file_kind, unused_core_subshell_count
     logical   :: prompt_answer
     character :: name*24
+    integer(int64) :: start_clock_count
 
-    write (stderr_unit, *)
-    write (stderr_unit, *) "RHFS"
+    call begin_run_timer (start_clock_count, "RHFS", log_unit=stderr_unit)
     write (stderr_unit, *) "This is the hyperfine structure program"
     write (stderr_unit, *) "Input files:  isodata, name_desc.parquet, name_header.toml, name.mix/name.cimix, name.wfn"
     write (stderr_unit, *) "Output files: name.(c)h, name.(c)hoffd"
@@ -124,7 +126,6 @@ program rhfs_main
     ! Proceed with the HFS calculation
     call calculate_hyperfine_matrix_elements
 
-    write (stderr_unit, *)
-    write (stderr_unit, *) "RHFS: Execution complete."
+    call finish_run_timer (start_clock_count, "RHFS", log_unit=stderr_unit)
     stop
 end program rhfs_main

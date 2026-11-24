@@ -86,8 +86,8 @@ Davidson 求解入口为 `solve_davidson_eigenpairs`，矩阵–向量回调接�
 | `speak` | `buffer_mcp_coefficient` | [mcp_coefficient_output](../../src/lib/core/mcp_coefficient_output.f90) |
 | `spicmv2` | `multiply_sparse_symmetric_matrix` | [sparse_symmetric_matvec](../../src/lib/core/sparse_symmetric_matvec.f90) |
 | `start` | `solve_radial_origin` | [radial_origin_solution](../../src/lib/core/radial_origin_solution.f90) |
-| `starttime` | `begin_run_timer` | [run_timer_start](../../src/lib/core/run_timer_start.f90) |
-| `stoptime` | `finish_run_timer` | [run_timer_finish](../../src/lib/core/run_timer_finish.f90) |
+| `starttime` | `begin_run_timer` | [run_timer](../../src/lib/core/run_timer.f90) |
+| `stoptime` | `finish_run_timer` | [run_timer](../../src/lib/core/run_timer.f90) |
 | `yzk` | `evaluate_hartree_yz_functions` | [hartree_yz_functions](../../src/lib/core/hartree_yz_functions.f90) |
 
 ## 自旋–角向库

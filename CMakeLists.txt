@@ -89,7 +89,7 @@ unset(_grasp_target_fortran_flags)
 set(Fortran_MODULE_DIRECTORY_root ${CMAKE_CURRENT_BINARY_DIR}/modules)
 # Retire the former interfaces when upgrading an existing build or installation.
 foreach(obsolete_module IN ITEMS core/csf_byte_packing_impl.mod core/radial_node_count_impl.mod
-        breit_angular_support/breit_angular_coefficient_dispatch.mod)
+        core/run_timer_start.mod core/run_timer_finish.mod breit_angular_support/breit_angular_coefficient_dispatch.mod)
     file(REMOVE "${Fortran_MODULE_DIRECTORY_root}/${obsolete_module}")
     install(CODE "file(REMOVE \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib/${obsolete_module}\")")
 endforeach()

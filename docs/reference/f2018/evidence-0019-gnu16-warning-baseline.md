@@ -770,8 +770,7 @@
 | [src/lib/core/reduced_angular_matrix_element.f90](../../../src/lib/core/reduced_angular_matrix_element.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/core/relativistic_three_j.f90](../../../src/lib/core/relativistic_three_j.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/core/rmcdhf_csf_input.f90](../../../src/lib/core/rmcdhf_csf_input.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
-| [src/lib/core/run_timer_finish.f90](../../../src/lib/core/run_timer_finish.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
-| [src/lib/core/run_timer_start.f90](../../../src/lib/core/run_timer_start.f90) | 1 | 0 | 0 | 1 | 1 | 1 |
+| [src/lib/core/run_timer.f90](../../../src/lib/core/run_timer.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/core/slater_radial_integral.f90](../../../src/lib/core/slater_radial_integral.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/core/sparse_dot_and_scatter.f90](../../../src/lib/core/sparse_dot_and_scatter.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/core/sparse_eigensolver_initial_basis.f90](../../../src/lib/core/sparse_eigensolver_initial_basis.f90) | 3 | 3 | 0 | 0 | 3 | 3 |

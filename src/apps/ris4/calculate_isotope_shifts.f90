@@ -72,9 +72,6 @@ contains
         use calculate_seltzer_field_shift_factors_interface, only: calculate_seltzer_field_shift_factors
         use read_seltzer_field_shift_factors_interface, only: read_seltzer_field_shift_factors
 
-        ! Module dependencies
-        use run_timer_start, only: begin_run_timer
-        use run_timer_finish, only: finish_run_timer
         implicit none (type, external)
 
         ! Arguments
@@ -99,7 +96,7 @@ contains
         real(real64) :: reduced_rank1_angular_element, specific_mass_shift_hz_u, normal_mass_shift_hz_u, &
             nuclear_density_fit_radius
         logical :: yes, yes2, avail_tb, avail_ob
-        integer :: i, orbital_index, start_clock_count, one_body_cache_mode, two_body_cache_mode, &
+        integer :: i, orbital_index, one_body_cache_mode, two_body_cache_mode, &
             nuclear_density_grid_point_count, cache_status
 
         ! Matrix elements smaller than CUTOFF are not accumulated
@@ -142,8 +139,6 @@ contains
         call alloc (inverse_radius_by_level,active_level_count,"inverse_radius_by_level","calculate_isotope_shifts")
         call alloc (inverse_radius_squared_by_level,active_level_count,"inverse_radius_squared_by_level","calculate_isotope_shifts")
         call alloc (leading_nms_by_level,active_level_count,"leading_nms_by_level","calculate_isotope_shifts")
-
-        call begin_run_timer (start_clock_count, "RIS_CAL")
 
         ! Initialise
         do i = 1,active_level_count
@@ -408,7 +403,6 @@ contains
         write(*,*) "calculate_isotope_shifts: Execution Finished ..."
         write(*,*) "-------------------------------"
 
-        call finish_run_timer (start_clock_count, "RIS_CAL")
         return
 
         ! Electron density values

@@ -2,9 +2,11 @@
 program isotope_shift_transition_main
     ! Module dependencies
     use calculation_state_files, only: read_state_name
-    use, intrinsic :: iso_fortran_env, only: real64
+    use, intrinsic :: iso_fortran_env, only: int64, real64
+    use run_timer, only: begin_run_timer, finish_run_timer
     implicit none (type, external)
     integer :: isotope_shift_output_unit
+    integer(int64) :: start_clock_count
     integer :: i,j,ii,jj,lsjpresent,lmax,lmax1,lmax2
     integer :: first_state_level_count,second_state_level_count,nveclsj1,nveclsj2,level1(500),level2(500),levellsj1(500), &
         & levellsj2(500)
@@ -45,6 +47,7 @@ program isotope_shift_transition_main
 
     logical :: exist1,exist2
 
+    call begin_run_timer (start_clock_count, "FICAL")
     headermpghz = '(1X,"Upper level",5X,"Lower level",5X,"Energy (cm-1)",3X,"NMS-S (GHz u)" &
         &,6X,"NMS (GHz u)",6X,"SMS (GHz u)",8X,"MS (GHz u)")'
     headermpghzlsj = '(1X,a,5X,a,5X,"Energy (cm-1)",3X,"NMS-S (GHz u)" &
@@ -111,7 +114,6 @@ program isotope_shift_transition_main
     format2 = "(i4,a13,i3,a12,f12.2,1P,3d18.7)"
     format2lsj = "(a,a10,a,a10,f12.2,1P,3d18.7)"
 
-    write(*,*) "WELCOME TO PROGRAM FICAL"
     write(*,*) "Computes line frequency isotope shift parameters and/or energies using"
     write(*,*) "output files from ris4"
     write(*,*)
@@ -767,6 +769,7 @@ program isotope_shift_transition_main
     write(*,*) "program FICAL finished ..."
     write(*,*)
     write(*,*) "Isotope shift parameters/energies written to file ", file3
+    call finish_run_timer (start_clock_count, "FICAL")
 contains
 
     pure function linearity_discrepancy(first,second,ref_first,ref_second) result(value)

@@ -137,12 +137,6 @@ program rtransition_mpi_main
     ! Proceed with the transition calculation
     call calculate_oscillator_strengths (name,fullname,scratch_directory,startup_directory,block_label_text)
 
-    if (mpi_rank == 0) then
-        print *
-        print *, "RTRANSITION_MPI: Execution complete."
-    end if
-    ! Report elapsed time.
-
     call finish_mpi_application (mpi_rank, start_clock_count, "RTRANSITION_MPI")
 
     stop

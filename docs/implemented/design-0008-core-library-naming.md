@@ -87,7 +87,7 @@ GNU Fortran 15 的干净 Release 构建启用 MPI 和 OpenMP，110 项 CTest 全
 | `speak.f90` | `speak_i` | `mcp_coefficient_output` · [mcp_coefficient_output.f90](../../src/lib/core/mcp_coefficient_output.f90) |
 | `spicmv2.f90` | `spicmv2_i` | `sparse_symmetric_matvec` · [sparse_symmetric_matvec.f90](../../src/lib/core/sparse_symmetric_matvec.f90) |
 | `start.f90` | `start_i` | `radial_origin_solution` · [radial_origin_solution.f90](../../src/lib/core/radial_origin_solution.f90) |
-| `starttime.f90` | `starttime_i` | `run_timer_start` · [run_timer_start.f90](../../src/lib/core/run_timer_start.f90) |
-| `stoptime.f90` | `stoptime_i` | `run_timer_finish` · [run_timer_finish.f90](../../src/lib/core/run_timer_finish.f90) |
+| `starttime.f90` | `starttime_i` | `run_timer` · [run_timer.f90](../../src/lib/core/run_timer.f90) |
+| `stoptime.f90` | `stoptime_i` | `run_timer` · [run_timer.f90](../../src/lib/core/run_timer.f90) |
 | `suite_system.f90` | `suite_system` | `posix_services` · [posix_services.f90](../../src/lib/core/posix_services.f90) |
 | `yzk.f90` | `yzk_i` | `hartree_yz_functions` · [hartree_yz_functions.f90](../../src/lib/core/hartree_yz_functions.f90) |

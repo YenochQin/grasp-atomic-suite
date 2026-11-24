@@ -12,13 +12,14 @@
 ! Modified by G. Gaigalas. 05 Feb 2017
 program rmcdhf_mem_main
     ! Module dependencies
+    use, intrinsic :: iso_fortran_env, only: int64
     use calculation_file_units, only: calculation_log_unit
     use calculation_input_defaults, only: nondefault_options_flag
     use closed_core_subshells, only: closed_core_subshell_count
     use serial_mpi_context, only: mpi_process_count, mpi_rank
     use calculation_state_files, only: check_orbital_output
     use calculation_state_files, only: state_files, state_name_length, files_for_state, select_state
-    use run_timer_start, only: begin_run_timer
+    use run_timer, only: begin_run_timer, finish_run_timer
 
     ! Procedure interfaces
     use configure_debug_output_interface, only: configure_debug_output
@@ -42,20 +43,19 @@ program rmcdhf_mem_main
     use run_scf_iterations_interface, only: run_scf_iterations
 
     ! Module dependencies
-    use run_timer_finish, only: finish_run_timer
     implicit none (type, external)
     integer, parameter :: maximum_input_symmetry_blocks = 50  ! Maximum number of blocks
-    integer :: core_subshell_count, start_clock_count
+    integer :: core_subshell_count
+    integer(int64) :: start_clock_count
     type(state_files) :: files
     character(state_name_length) :: state
     logical :: extended_optimal_level, yes
     character :: block_labels(maximum_input_symmetry_blocks)*8
+    call begin_run_timer (start_clock_count, "RMCDHF")
     ! Use a single-process context for the serial kernels.
     mpi_rank = 0
     mpi_process_count = 1
 
-    write(*,*)
-    write(*,*) "RMCDHF"
     write(*,*) "This program determines the radial orbitals   "
     write(*,*) "and the expansion coefficients of the CSFs         "
     write(*,*) "in a self-onsistent field proceedure               "
@@ -65,7 +65,6 @@ program rmcdhf_mem_main
     write(*,*) "Input files: isodata, ", files%descriptors, ", ", files%header, ", ", files%initial_orbitals
     write(*,*) "Output files: ", files%orbitals, ", ", files%mixing, ", ", files%scf_summary, ", ", files%scf_log
 
-    call begin_run_timer (start_clock_count, "RMCDHF")
 
     open(newunit=calculation_log_unit,file=files%scf_log,status="UNKNOWN")
     if (state /= "") write(calculation_log_unit,"(A)") trim(state)

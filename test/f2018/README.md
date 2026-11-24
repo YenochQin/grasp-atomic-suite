@@ -243,8 +243,8 @@ zero lower bound. End-to-end validation uses separate SCF and RCI fixtures.
 The comparator requires exactly seven binary outputs and the frozen MCP record
 shape, decodes complete finite wavefunction/mixing records, and checks program
 completion and the expected single-iteration limit. All stdout/stderr and native
-scientific text are compared. Only the anchored date/time lines and the seconds
-line immediately following `Wall time:` are normalized. Warnings, scientific
+scientific text are compared. Only the anchored date/time and duration records
+are normalized, including the legacy seconds line following `Wall time:`. Warnings, scientific
 values and stop states remain significant. Every failure leaves a structured
 `comparison.json` and the available input/output logs.
 

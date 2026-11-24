@@ -5,7 +5,8 @@
 | 功能 | 源码 |
 | --- | --- |
 | 初始化、进程状态、消息和归约 | [mpi_runtime.f90](mpi_runtime.f90)、[mpi_state.f90](mpi_state.f90)、[mpi_utilities.f90](mpi_utilities.f90) |
-| 运行时间、主机和目录汇总 | [mpi_run_logging.f90](mpi_run_logging.f90) |
+| 应用计时 | [run_timer.f90](../core/run_timer.f90) |
+| MPI 主机和目录汇总 | [mpi_run_logging.f90](mpi_run_logging.f90) |
 | 工作目录与输入错误 | [mpi_work_paths.f90](mpi_work_paths.f90)、[mpi_change_directory.f90](mpi_change_directory.f90)、[mpi_current_directory.f90](mpi_current_directory.f90)、[mpi_make_directory.f90](mpi_make_directory.f90)、[mpi_io_errors.f90](mpi_io_errors.f90) |
 | 组态状态函数（CSF）完整基组、RCI 分块读取和 RMCDHF 输入 | [mpi_csf_basis_input.f90](mpi_csf_basis_input.f90)、[mpi_csf_block_input.f90](mpi_csf_block_input.f90)、[mpi_rmcdhf_csf_input.f90](mpi_rmcdhf_csf_input.f90)、[mpi_csf_collectives.f90](mpi_csf_collectives.f90) |
 | 同位素、径向波函数和核极化输入 | [mpi_isotope_input.f90](mpi_isotope_input.f90)、[mpi_radial_wavefunction_file.f90](mpi_radial_wavefunction_file.f90)、[mpi_radial_wavefunction_reader.f90](mpi_radial_wavefunction_reader.f90)、[mpi_nuclear_polarization.f90](mpi_nuclear_polarization.f90) |
@@ -13,6 +14,7 @@
 
 ## MPI 运行日志
 
+串行、OpenMP 和 MPI 应用使用 `core` 中的 `run_timer` 记录开始时间、结束时间和总墙钟时间。
 `start_mpi_application` 和 `initialize_mpi_runtime_with_status` 在 MPI 初始化后由 rank 0 记录开始时间。
 `finish_mpi_application` 在集体 `MPI_Finalize` 返回后，由 rank 0 打印结束时间、总墙钟时间和完成消息。
 启停例程之间用 `integer(int64)` 传递开始时的时钟计数。

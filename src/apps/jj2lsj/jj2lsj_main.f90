@@ -12,17 +12,17 @@
 ! Modified by G. Gaigalas. Jan 2025
 program jj2lsj_main
     ! Module dependencies
+    use, intrinsic :: iso_fortran_env, only: int64
     use jj2lsj_profile, only: profile_finish, profile_start
     use jj2lsj_conversion, only: run_ls_coupling_conversion, profile_finish, profile_start
     use log_factorial_table, only: initialize_log_factorial_table
     use isotope_data_input, only: read_isotope_data
-    use run_timer_start, only: begin_run_timer
-    use run_timer_finish, only: finish_run_timer
+    use run_timer, only: begin_run_timer, finish_run_timer
     use physical_constants, only: initialize_physical_constants
     implicit none (type, external)
-    integer           :: start_clock_count
-    call profile_start()
+    integer(int64) :: start_clock_count
     call begin_run_timer (start_clock_count, "jj2lsj_omp")
+    call profile_start()
     print *, " "
     print *, "jj2lsj_omp: Transformation of ASFs from a jj-coupled CSF basis"
     print *, "        into an LS-coupled CSF basis  (Fortran 95 version)"
