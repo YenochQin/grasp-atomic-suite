@@ -39,7 +39,7 @@ class MpiDescriptorTests(unittest.TestCase):
         directory = self.root / label
         directory.mkdir()
         if default_text:
-            shutil.copyfile(self.binary_path, directory / "rcsf_descriptors.parquet")
+            shutil.copyfile(self.binary_path, directory / "rcsf_desc.parquet")
             shutil.copyfile(self.binary_path.parent / "csfs_header.toml", directory / "rcsf_header.toml")
         return self.run_mpi(ARGUMENTS.rangular, directory, ranks, options, interactive_input), directory
 
@@ -171,9 +171,9 @@ class MpiDescriptorTests(unittest.TestCase):
                     ]],
                     zero_order_counts=counts,
                 )
-                parquet.rename(directory / "case_descriptors.parquet")
+                parquet.rename(directory / "case_desc.parquet")
                 header.rename(directory / "case_header.toml")
-                for filename in ("case.c", "case.cm", "rcsf.inp"):
+                for filename in ("case.c", "case.cimix", "rcsf.inp"):
                     (directory / filename).unlink()
                 result = self.run_mpi(
                     ARGUMENTS.rci, directory, 2, [],
@@ -194,7 +194,7 @@ class MpiDescriptorTests(unittest.TestCase):
 
     def test_relative_inputs_use_serial_directory(self) -> None:
         # Relative paths are resolved before access from the rank-specific cwd.
-        relative_binary = "../inputs/csfs_descriptors.parquet"
+        relative_binary = "../inputs/csfs_desc.parquet"
         reference = self.successful_run("relative-text", 2, ["--csf-descriptors", str(self.binary_path)])
         candidate = self.successful_run("relative-binary", 2, ["--csf-descriptors", relative_binary])
         comparison = mcp_compare.compare(self.dataset(reference), self.dataset(candidate), atol=0.0, rtol=0.0)
@@ -205,7 +205,7 @@ class MpiDescriptorTests(unittest.TestCase):
         from pyarrow import parquet
         for label in ("truncated", "bad-state"):
             with self.subTest(case=label):
-                path = self.root / f"{label}_descriptors.parquet"
+                path = self.root / f"{label}_desc.parquet"
                 shutil.copyfile(self.binary_path.parent / "csfs_header.toml", self.root / f"{label}_header.toml")
                 if label == "truncated":
                     path.write_bytes(self.binary_path.read_bytes()[:-1])

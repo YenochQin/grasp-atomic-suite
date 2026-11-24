@@ -30,7 +30,7 @@ mpiexec -n 4 /path/to/grasp-atomic-suite/bin/rdensity_mpi name --ci --order=2
 /path/to/grasp-atomic-suite/bin/rdensity name --nonci --order=1
 ```
 
-The default mixing suffix is `.m`; `--ci` selects `.cm`. The default ordering is
+The default mixing suffix is `.mix`. The `--ci` flag selects `.cimix`. The default ordering is
 2. State names follow the legacy limit of 23 characters, with no spaces.
 Without arguments, both targets accept the upstream default-input sequence:
 

@@ -51,7 +51,7 @@ def prepare(work: Path, case: str, identity: bool = False, unused_orbitals: bool
     def doubles(values: list[float]) -> bytes:
         return struct.pack(f"={len(values)}d", *values)
 
-    with (work / "test.m").open("wb") as stream:
+    with (work / "test.mix").open("wb") as stream:
         def record(data: bytes) -> None:
             stream.write(ints(len(data)) + data + ints(len(data)))
 
@@ -156,7 +156,7 @@ def main() -> None:
             assert (padded / output).read_bytes() == (reference / output).read_bytes(), output
 
         # A same-width block with the wrong parity cannot label this basis.
-        mixing = padded / "test.m"
+        mixing = padded / "test.mix"
         raw = mixing.read_bytes()
         first_block = struct.pack("=7i", 20, 1, 2, 2, 2, -1, 20)
         assert raw.count(first_block) == 1

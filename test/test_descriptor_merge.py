@@ -45,7 +45,7 @@ def main() -> None:
                 ("right", right_peel, right_blocks),
             ]:
                 parquet, header, text = write_fixture(work / stem, ["1s"], peel, blocks)
-                parquet.rename(work / f"{stem}_descriptors.parquet")
+                parquet.rename(work / f"{stem}_desc.parquet")
                 header.rename(work / f"{stem}_header.toml")
                 text.unlink()
             command = [str(args.executable.resolve()), scenario]

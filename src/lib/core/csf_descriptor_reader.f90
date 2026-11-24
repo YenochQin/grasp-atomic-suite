@@ -107,13 +107,13 @@ contains
             & "only descriptor Parquet input is supported", status)) return
         descriptor_stem = filename(:path_length-8)
         path_length = len(descriptor_stem)
+        if (path_length >= len("_descriptors")) then
+            if (.not. require_descriptor(descriptor_stem(path_length-len("_descriptors")+1:) /= "_descriptors", &
+                "use a *_desc.parquet descriptor filename: "//trim(filename), status)) return
+        end if
         if (path_length >= len("_desc")) then
             if (descriptor_stem(path_length-len("_desc")+1:) == "_desc") &
                 descriptor_stem = descriptor_stem(:path_length-len("_desc"))
-        end if
-        if (path_length >= len("_descriptors") .and. len(descriptor_stem) == path_length) then
-            if (descriptor_stem(path_length-len("_descriptors")+1:) == "_descriptors") &
-                descriptor_stem = descriptor_stem(:path_length-len("_descriptors"))
         end if
         ! Derive the paired header path unless the caller supplied one.
         header_path = descriptor_stem//"_header.toml"
@@ -122,8 +122,8 @@ contains
         end if
         read_status = rust_descriptor_open(trim(filename)//c_null_char, header_path//c_null_char, &
             source%handle, reader_message, 1024_c_size_t)
-        if (.not. require_descriptor(read_status == 0, reader_message(:max(0,index(reader_message,c_null_char)-1)), &
-            & status)) return
+        if (.not. require_descriptor(read_status == 0, trim(filename)//": "// &
+            reader_message(:max(0,index(reader_message,c_null_char)-1)), status)) return
         source%is_open = .true.
         call rust_descriptor_basis_id(source%handle, source%basis_id)
         source%format_version = int(rust_descriptor_format_version())

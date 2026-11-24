@@ -186,7 +186,7 @@ def write_fixture(
         ],
         schema=schema,
     )
-    parquet_path = root / "csfs_descriptors.parquet"
+    parquet_path = root / "csfs_desc.parquet"
     parquet.write_table(
         table, parquet_path, row_group_size=2, compression="zstd", use_dictionary=True
     )
@@ -471,7 +471,7 @@ class DescriptorTests(unittest.TestCase):
                     )
                     run_directory.mkdir()
                     if input_mode == "default":
-                        shutil.copyfile(self.parquet_path, run_directory / "rcsf_descriptors.parquet")
+                        shutil.copyfile(self.parquet_path, run_directory / "rcsf_desc.parquet")
                         shutil.copyfile(self.header_path, run_directory / "rcsf_header.toml")
                     command = [str(ARGUMENTS.rangular)]
                     if input_mode == "descriptors":

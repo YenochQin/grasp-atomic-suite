@@ -49,7 +49,7 @@ RMCDHF 的 `THRESH=0.05D0`、`METHOD=3`、`ODAMP=0` 保持原版。
 - 已移除集中初始化附带的 `UPDATE_RADIAL_ACCURACY` 和 `VALIDATE_RADIAL_GRID` 调用。
   输入设置必须满足原版的网格容量和数值约束。
 
-输入 `.w` 经插值到本次运行网格，不会自动将 N/H/RNT 改成文件网格。
+输入 `.wfn` 经插值到本次运行网格，不会自动将 N/H/RNT 改成文件网格。
 已否决的 strict/diag 独立求解器已[移除](adr-0002-retire-strict-and-diagnostic-rmcdhf.md)；现行入口只覆盖保留程序。
 
 CSFG 的专用源码、构建和测试已于 `4c17db6` 移除，该提交保留历史参数记录。

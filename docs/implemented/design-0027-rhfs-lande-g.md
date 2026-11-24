@@ -1,8 +1,7 @@
 # RHFS `g_J` 计算流程报告
 
-当前 Suite 从 `name_desc.parquet` 和 `name_header.toml` 读取 CSF，按状态名优先读取
-`name.wfn` 和 `name.mix` 或 `name.cimix`。下文的矩阵元说明保留上游内核简称和旧轨道、
-混合文件记法。程序仍可读取归档中的 `.w`、`.m`、`.cm`。[输入与输出](../../README_ZH.md#输入与输出)
+当前 Suite 从 `name_desc.parquet` 和 `name_header.toml` 读取 CSF，从 `name.wfn` 读取轨道，
+从 `name.mix` 或 `name.cimix` 读取混合系数。下文的矩阵元说明保留上游内核简称。[输入与输出](../../README_ZH.md#输入与输出)
 
 > 文档状态：已实施、串行代码流程说明。
 > 核查日期：2026-10-05；源码基准：`8b298a6`。
@@ -52,19 +51,19 @@ rhfs_main
 - `IASPAR(K)` 为宇称标签
 - `IVEC(K)` 为态序号
 
-### 2.1 `name.w` 波函数文件的详细读取流程
+### 2.1 `name.wfn` 波函数文件的详细读取流程
 
 `GETHFD` 并不自己解析波函数文件，而是在建立好统一径向网格后调用：
 
 ```text
-GETHFD -> SETRWFA(TRIM(NAME)//'.w') -> LODRWF -> INTRPQ -> ORTHSC
+GETHFD -> SETRWFA(TRIM(NAME)//'.wfn') -> LODRWF -> INTRPQ -> ORTHSC
 ```
 
 #### 第一步：打开并校验文件头
 
 `SETRWFA` 位于 `src/lib/core/radial_wavefunction_input.f90`。它做三件事：
 
-1. 以非格式化二进制方式打开 `name.w`
+1. 以非格式化二进制方式打开 `name.wfn`
 2. 读入文件头字符串
 3. 检查该字符串是否为 `G92RWF`
 
@@ -79,15 +78,15 @@ GETHFD -> SETRWFA(TRIM(NAME)//'.w') -> LODRWF -> INTRPQ -> ORTHSC
 
 同时初始化：
 
-- `E(J) = -1`：表示该轨道尚未在 `.w` 文件中找到
+- `E(J) = -1`：表示该轨道尚未在 `.wfn` 文件中找到
 - `GAMA(J)`：每个轨道的 `gamma` 参数
 - `PF(:,J) = 0`，`QF(:,J) = 0`
 
 目标轨道集合由读入的 CSF 基组确定。径向波函数文件为这些轨道提供径向函数。
 
-#### 第三步：逐轨道扫描 `name.w`
+#### 第三步：逐轨道扫描 `name.wfn`
 
-`LODRWF` 之后进入循环，从 `.w` 文件里一条轨道一条轨道地读。每条轨道在文件中的记录结构是：
+`LODRWF` 之后进入循环，从 `.wfn` 文件里一条轨道一条轨道地读。每条轨道在文件中的记录结构是：
 
 1. 轨道标签与长度信息：
    - `NPY`：主量子数
@@ -101,7 +100,7 @@ GETHFD -> SETRWFA(TRIM(NAME)//'.w') -> LODRWF -> INTRPQ -> ORTHSC
 3. 文件自带径向网格：
    - `RA(1:MY)`
 
-这一点也能从写 `.w` 文件的工具程序中反向验证，写出顺序是：
+这一点也能从写 `.wfn` 文件的工具程序中反向验证，写出顺序是：
 
 ```text
 'G92RWF'
@@ -125,7 +124,7 @@ R(1:MF)
 
 然后调用 `INTRPQ(PA, QA, MY, RA, J, DNORM)`，把文件中的轨道函数装载到统一工作网格上。
 
-如果 `.w` 文件扫描结束后，找到的轨道数 `NWIN` 小于所需轨道总数 `NW`，程序报错退出。这说明：`rhfs` 要求 `CSL` 中涉及到的每个轨道都必须在 `.w` 文件中存在。
+如果 `.wfn` 文件扫描结束后，找到的轨道数 `NWIN` 小于所需轨道总数 `NW`，程序报错退出。这说明：`rhfs` 要求 `CSL` 中涉及到的每个轨道都必须在 `.wfn` 文件中存在。
 
 #### 第五步：插值到统一径向网格
 
@@ -155,7 +154,7 @@ R(1:MF)
 3. 重新归一化
 4. 更新 `MF(L)`，并截去尾部非常小的数值点
 
-因此，最终进入 `g_J` 计算的并不是 `.w` 文件原样存储的轨道，而是：
+因此，最终进入 `g_J` 计算的并不是 `.wfn` 文件原样存储的轨道，而是：
 
 - 经过匹配
 - 插值到统一网格

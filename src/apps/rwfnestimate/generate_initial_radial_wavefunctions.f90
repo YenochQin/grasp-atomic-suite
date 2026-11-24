@@ -101,7 +101,7 @@ contains
                     write (stderr_unit, *)
                     write (stderr_unit, *) "Read subshell radial wavefunctions. ", &
                         "Choose one below"
-                    write (stderr_unit, *) "    1 -- GRASP92 File"
+                    write (stderr_unit, *) "    1 -- Saved radial wavefunction file"
                     write (stderr_unit, *) "    2 -- Thomas-Fermi"
                     write (stderr_unit, *) "    3 -- Screened Hydrogenic"
                     write (stderr_unit, *) "    4 -- Screened Hydrogenic [custom Z]"
@@ -120,6 +120,12 @@ contains
                         read (stdin_unit, "(A)") infile
                         if (len_trim(infile) == 0) infile = default_orbitals
 
+                        if (len_trim(infile) >= 2) then
+                            select case (infile(len_trim(infile)-1:len_trim(infile)))
+                            case (".w", ".W")
+                                error stop "Use a .wfn radial wavefunction file: "//trim(infile)
+                            end select
+                        end if
                         inquire(file=infile, exist=existed)
                         if (.not.existed) then
                             write (stderr_unit, *) ' File "', infile(1:len_trim(infile)), &

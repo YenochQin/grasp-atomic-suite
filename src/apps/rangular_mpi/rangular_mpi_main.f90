@@ -27,7 +27,7 @@ program rangular_mpi_main
     use orbital_csf_basis, only: csf_count, csf_subshell_occupations
     use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes
     use mcp_generation_options, only: max_coulomb_multipole_rank
-    use calculation_state_files, only: state_files, state_name_length, files_for_state, resolve_descriptor_input
+    use calculation_state_files, only: state_files, state_name_length, files_for_state
     use mpi_calculation_state, only: select_mpi_state
 
     ! Procedure interfaces
@@ -80,10 +80,7 @@ program rangular_mpi_main
     write (block_label_text, "(I3.3)") mpi_rank
     call select_mpi_state(state, "Use zero-first partition from descriptor header? (y/n)", yes, permanent_directory)
     files = files_for_state(state)
-    if (input_options%input_filename == "") then
-        input_options%input_filename = files%descriptors
-        if (mpi_rank == 0) input_options%input_filename = resolve_descriptor_input(files%descriptors, permanent_directory)
-    end if
+    if (input_options%input_filename == "") input_options%input_filename = files%descriptors
     if (mpi_rank == 0) then
         open(newunit=angular_log_unit,file=trim(startup_directory)//"/"//files%angular_log,status="UNKNOWN")
         if (state /= "") write(angular_log_unit,"(A)") trim(state)

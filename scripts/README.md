@@ -36,7 +36,7 @@ save_rmcdhf results/Zn_odd_AS1
 
 | 计算目录中的文件 | 归档目录中的文件 | 内容 |
 | --- | --- | --- |
-| `rcsf_desc.parquet`、`rcsf_header.toml` | `name_desc.parquet`、`name_header.toml` | 原生 CSF 描述符与头文件按原字节成对复制，保留 header 哈希绑定。短名缺失时可归档 `rcsf_descriptors.parquet`。 |
+| `rcsf_desc.parquet`、`rcsf_header.toml` | `name_desc.parquet`、`name_header.toml` | 原生 CSF 描述符与头文件按原字节成对复制，保留 header 哈希绑定。 |
 | `rwfn.out` | `name.wfn` | 径向轨道，保留 Fortran 非格式化记录 |
 | `rmix.out` | `name.mix` | OL/EOL 的 CSF 混合系数，保留 Fortran 非格式化记录 |
 | `rmcdhf.sum` | `name.rmcdhf.summary` | 计算摘要 |
@@ -44,13 +44,36 @@ save_rmcdhf results/Zn_odd_AS1
 | `rangular.log` | `name.rangular.log` | 角系数程序的交互记录，存在时复制 |
 | `isodata`、`npol.inp` | `isodata`、`npol.inp` | 存在时按原名复制的核参数和核极化输入 |
 
-脚本依据摘要中的计算模式处理混合系数。OL/EOL 缺少 `rmix.out` 会报错，(E)AL 会跳过目录中遗留的 `rmix.out`。归档内的 `name.w` 和 OL/EOL 的 `name.m` 分别是指向 `name.wfn` 和 `name.mix` 的相对符号链接。有 `isodata` 的 OL/EOL 归档可整体移到另一目录，再从归档中运行 `gj`，输入同一状态名并选择 MCDHF 混合系数。供 `gj` 等程序使用时，状态名宜用 1 至 23 个无空格的 ASCII 字符。
+脚本依据摘要中的计算模式处理混合系数。OL/EOL 缺少 `rmix.out` 会报错，(E)AL 会跳过目录中遗留的 `rmix.out`。归档轨道文件为 `name.wfn`，OL/EOL 混合系数文件为 `name.mix`。有 `isodata` 的 OL/EOL 归档可整体移到另一目录，再从归档中运行 `gj`，输入同一状态名并选择 MCDHF 混合系数。供 `gj` 等程序使用时，状态名宜用 1 至 23 个无空格的 ASCII 字符。
 
 MPI 通过 `disks` 单独配置永久 I/O 目录时，从含有 `rmcdhf.log` 的启动目录执行以下命令。脚本从 `--io-dir` 读取描述符、轨道、混合系数、摘要和核数据。
 
 ```fish
 save_rmcdhf --io-dir /path/to/serial-io results/Zn_odd_AS1
 ```
+
+## 导入原版 GRASP 的 rsave 结果
+
+在原版 `rsave` 结果所在目录，运行 [import_rsave](import_rsave) 并传入当时使用的状态名。
+命令安装到 Suite 的 `bin/`，使用 Python 3.10 或以上版本和支持 V3 的 `rcsfs`。
+
+```fish
+cd /path/to/grasp-results
+import_rsave Zn_odd_AS1
+```
+
+`rcsfs` 默认从 `PATH` 查找，也可用 `--rcsfs /path/to/rcsfs` 指定。
+
+| 原版结果 | 同目录生成的 Suite 文件 |
+| --- | --- |
+| `name.c` | `name_desc.parquet`、`name_header.toml`，保留 CSF 行顺序和对称性块 |
+| `name.w` | `name.wfn` |
+| `name.m`、`name.cm` | `name.mix`、`name.cimix`，分别在源文件存在时生成 |
+| `name.sum`、`name.log`、`name.alog` | `name.rmcdhf.summary`、`name.rmcdhf.log`、`name.rangular.log`，分别在源文件存在时生成 |
+
+脚本要求同一状态的 `.c` 和 `.w`。摘要标明 `(E)AL` 时跳过原目录中遗留的 `.m`。
+轨道和混合系数原样复制，要求原版输出与 Suite 的 Fortran 二进制记录格式兼容。已有 `isodata`、LSJ 标签和能级表继续在原目录使用。
+原始文件与同名 Suite 文件受保护，目标文件已存在时命令报错退出。
 
 ## 批量修改 grasp-atomic-suite 径向网格
 

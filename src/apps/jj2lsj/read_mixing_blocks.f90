@@ -33,7 +33,6 @@ contains
         use standard_io_units, only: stderr_unit
         use transition_basis_blocks,            only: transition_level_counts_by_block, transition_csf_counts_by_block, &
             transition_two_j_by_block, transition_block_count, cumulative_csf_counts
-        use file_open, only: open_calculation_file
         implicit none (type, external)
 
         ! Arguments and local declarations
@@ -44,19 +43,14 @@ contains
             ncfpat, neavsum, jb, nb, ncfblk, nevblk, iatjp, iaspa, j
         real(real64) :: eavsum
         integer(int64) :: nvecsizpat, ncftot_i8
-        character(len=3)   :: status
         character(len=6)   :: mixing_file_signature
-        character(len=11)  :: form
         character(len=256) :: file_path
         ! The  .mix  file is UNFORMATTED; it must exist
         file_path = mixing_input_path(state_name, ci_input_mode == 0)
-        form = "UNFORMATTED"
-        status = "OLD"
-        call open_calculation_file (mixing_input_unit, file_path, form, status, open_status)
-        if (open_status == 1) then
-            write (stderr_unit, *) "Error when opening", file_path
-            stop
-        end if
+        open(newunit=mixing_input_unit, file=file_path, form="UNFORMATTED", &
+            status="OLD", action="READ", iostat=open_status)
+        if (open_status /= 0) error stop "Cannot open mixing file: "//trim(file_path)
+
         ! Check the header of the file; if not as expected, try again
         read (mixing_input_unit, iostat=io_status) mixing_file_signature
         if (io_status/=0 .or. mixing_file_signature/="G92MIX") then

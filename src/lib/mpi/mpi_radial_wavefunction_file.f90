@@ -12,7 +12,7 @@ contains
         ! Module dependencies
         use mpi_state, only: mpi_rank
         use standard_io_units, only: stderr_unit
-        use file_open, only: open_calculation_file
+        use mpi_io_errors, only: fail_input_io_mpi
         use mpi_radial_wavefunction_reader, only: read_mpi_radial_wavefunction_records
         implicit none (type, external)
 
@@ -23,11 +23,10 @@ contains
         character (len = 6) :: file_header
         wavefunction_input_unit = -1
         if (mpi_rank == 0) then
-            call open_calculation_file (wavefunction_input_unit, wavefunction_path, "UNFORMATTED", "OLD", setup_status)
-            if (setup_status == 1) then
-                write (stderr_unit,*) "Error opening", wavefunction_path(1:len_trim (wavefunction_path))
-                stop
-            end if
+            open(newunit=wavefunction_input_unit, file=wavefunction_path, form="UNFORMATTED", &
+                status="OLD", action="READ", iostat=setup_status)
+            if (setup_status /= 0) call fail_input_io_mpi(setup_status, wavefunction_input_unit, &
+                "Cannot open radial wavefunction file: "//trim(wavefunction_path))
 
             read (wavefunction_input_unit,iostat = header_read_status) file_header
             if ((header_read_status /= 0) .or. (file_header /= "G92RWF")) then

@@ -11,7 +11,7 @@ module calculation_state_files
     public :: read_state_entry, read_state_pair, property_state_arguments, resolve_mixing_file
     public :: named_angular_output
     public :: orbital_input_path, mixing_input_path, ci_mixing_suffix
-    public :: descriptor_input_path, resolve_descriptor_input
+    public :: descriptor_input_path
     public :: check_orbital_output
 
     ! Module constants
@@ -19,7 +19,7 @@ module calculation_state_files
     integer, parameter :: state_name_length = 127
     character(*), parameter :: orbital_suffix = ".wfn", mixing_suffix = ".mix", ci_mixing_suffix = ".cimix"
     character(*), parameter :: initial_orbital_suffix = ".initial.wfn"
-    character(*), parameter :: descriptor_suffix = "_desc.parquet", legacy_descriptor_suffix = "_descriptors.parquet"
+    character(*), parameter :: descriptor_suffix = "_desc.parquet"
 
     ! Derived types
     type :: state_files
@@ -69,7 +69,15 @@ contains
 
         ! Local declarations
         logical :: exists, has_scf, has_ci
+        integer :: suffix
         path = entry
+        suffix = index(path, ".", back=.true.)
+        if (suffix > 0) then
+            select case (path(suffix:))
+            case (".m", ".M", ".cm", ".cM", ".Cm", ".CM")
+                error stop "Use a .mix or .cimix mixing file: "//path
+            end select
+        end if
         inquire(file=path, exist=exists)
         if (exists) return
         scf_path = mixing_input_path(entry, .false.)
@@ -114,31 +122,14 @@ contains
         character(*), intent(in) :: name
         character(:), allocatable :: path
 
-        path = existing_input(name, descriptor_suffix, legacy_descriptor_suffix)
-    end function
-
-    ! Resolve an implicitly named descriptor, optionally relative to the MPI serial I/O directory.
-    function resolve_descriptor_input(filename, directory) result(path)
-        character(*), intent(in) :: filename
-        character(*), optional, intent(in) :: directory
-        character(:), allocatable :: path, prefix
-        integer :: stem_length
-
-        path = trim(filename)
-        stem_length = len(path) - len(descriptor_suffix)
-        if (stem_length < 1) return
-        if (path(stem_length+1:) /= descriptor_suffix) return
-        prefix = ""
-        if (present(directory)) prefix = trim(directory)//"/"
-        path = descriptor_input_path(prefix//path(:stem_length))
-        path = path(len(prefix)+1:)
+        path = trim(name)//descriptor_suffix
     end function
 
     function orbital_input_path(name) result(path)
         ! Arguments
         character(*), intent(in) :: name
         character(:), allocatable :: path
-        path = existing_input(name, orbital_suffix, ".w")
+        path = trim(name)//orbital_suffix
     end function
 
     function mixing_input_path(name, from_ci) result(path)
@@ -147,25 +138,10 @@ contains
         logical, intent(in) :: from_ci
         character(:), allocatable :: path
         if (from_ci) then
-            path = existing_input(name, ci_mixing_suffix, ".cm")
+            path = trim(name)//ci_mixing_suffix
         else
-            path = existing_input(name, mixing_suffix, ".m")
+            path = trim(name)//mixing_suffix
         end if
-    end function
-
-    ! Prefer the canonical input, including when reporting a missing file.
-    function existing_input(name, suffix, old_suffix) result(path)
-        ! Arguments
-        character(*), intent(in) :: name, suffix, old_suffix
-        character(:), allocatable :: path
-
-        ! Local declarations
-        logical :: exists
-        path = trim(name)//suffix
-        inquire(file=path, exist=exists)
-        if (exists) return
-        inquire(file=trim(name)//old_suffix, exist=exists)
-        if (exists) path = trim(name)//old_suffix
     end function
 
     ! Explicit CLI inputs and profiling files must not alias the angular writer.

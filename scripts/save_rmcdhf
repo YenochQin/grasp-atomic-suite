@@ -58,20 +58,14 @@ copy_file rmcdhf.log "$state.rmcdhf.log"
 mode=$(awk 'NF == 2 && $2 == "calculation." {print $1; exit}' < "$staging/$state.rmcdhf.summary")
 case $mode in
     OL|EOL)
-        copy_data "$io_dir/rmix.out" "$state.mix"
-        ln -s -- "$state.mix" "$staging/$state.m" ;;
+        copy_data "$io_dir/rmix.out" "$state.mix" ;;
     '(E)AL') ;;  # This run did not write rmix.out.
     *) fail "unrecognized calculation mode in $io_dir/rmcdhf.sum" ;;
 esac
 
-descriptor=$io_dir/rcsf_desc.parquet
-if [ ! -e "$descriptor" ] && [ ! -L "$descriptor" ] && [ -e "$io_dir/rcsf_descriptors.parquet" ]; then
-    descriptor=$io_dir/rcsf_descriptors.parquet
-fi
 copy_data "$io_dir/rcsf_header.toml" "${state}_header.toml"
-copy_data "$descriptor" "${state}_desc.parquet"
+copy_data "$io_dir/rcsf_desc.parquet" "${state}_desc.parquet"
 copy_data "$io_dir/rwfn.out" "$state.wfn"
-ln -s -- "$state.wfn" "$staging/$state.w"
 
 for input in isodata npol.inp; do
     if [ -e "$io_dir/$input" ] || [ -L "$io_dir/$input" ]; then

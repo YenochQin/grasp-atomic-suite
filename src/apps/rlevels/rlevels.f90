@@ -92,7 +92,7 @@ contains
 
         suffix = index(name, '.', back=.true.)
         mcdhf = .false.
-        if (suffix > 0) mcdhf = name(suffix:) == '.mix' .or. name(suffix:) == '.m'
+        if (suffix > 0) mcdhf = name(suffix:) == '.mix'
         open (newunit=unit, file=name, form='unformatted', status='old', action='read', iostat=status)
         if (status /= 0) call fail(name, 'cannot open mixing file')
         read (unit, iostat=status) magic
@@ -155,7 +155,7 @@ contains
 
         if (suffix > 0 .and. file_level_count > 0) then
             select case (name(suffix:))
-            case ('.mix', '.cimix', '.m', '.cm')
+            case ('.mix', '.cimix')
                 call read_labels(name(:suffix-1)//'.lsj.lbl', entries, blocks, with_labels)
             end select
         end if

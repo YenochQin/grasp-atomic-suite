@@ -81,12 +81,12 @@ def run_mode(arguments: argparse.Namespace, inputs: Path, mode: str, repetition:
         raise ValueError("MPI scratch path is too long; choose a shorter --scratch-root")
     environment["MPI_TMP"] = str(directory)
     if mode == "default":
-        shutil.copyfile(inputs / "csfs_descriptors.parquet", directory / "rcsf_descriptors.parquet")
+        shutil.copyfile(inputs / "csfs_desc.parquet", directory / "rcsf_desc.parquet")
         shutil.copyfile(inputs / "csfs_header.toml", directory / "rcsf_header.toml")
     command = [str(arguments.mpiexec), *arguments.mpiexec_arg, arguments.numproc_flag,
                str(arguments.ranks), str(arguments.executable)]
     if mode == "descriptors":
-        command += ["--csf-descriptors", str(inputs / "csfs_descriptors.parquet")]
+        command += ["--csf-descriptors", str(inputs / "csfs_desc.parquet")]
     command += ["--timings", "timings.csv"]
     execution: dict[str, Any] = {
         "mode": mode, "repetition": repetition, "command": command, "directory": str(destination),
@@ -183,15 +183,15 @@ def main() -> int:
         inputs = arguments.output / "inputs"
         inputs.mkdir()
         shutil.copyfile(arguments.csf, inputs / "rcsf.inp")
-        shutil.copyfile(arguments.descriptors, inputs / "csfs_descriptors.parquet")
+        shutil.copyfile(arguments.descriptors, inputs / "csfs_desc.parquet")
         shutil.copyfile(arguments.header, inputs / "csfs_header.toml")
         report["identity"] = {"executable": file_identity(arguments.executable),
                               "verifier": file_identity(arguments.verifier),
                               "text": file_identity(inputs / "rcsf.inp"),
-                              "descriptors": file_identity(inputs / "csfs_descriptors.parquet"),
+                              "descriptors": file_identity(inputs / "csfs_desc.parquet"),
                               "platform": platform.platform(), "scratch_root": str(arguments.scratch_root),
                               "affinity": sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None}
-        verified = verify_descriptors(arguments.verifier, inputs / "csfs_descriptors.parquet", inputs / "rcsf.inp")
+        verified = verify_descriptors(arguments.verifier, inputs / "csfs_desc.parquet", inputs / "rcsf.inp")
         (arguments.output / "array-verification.log").write_text(verified.stdout + verified.stderr)
         report["array_verification"] = "passed"
         expected_outputs = None

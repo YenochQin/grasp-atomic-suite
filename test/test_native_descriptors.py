@@ -22,7 +22,6 @@ def main() -> None:
         parquet, header, text = write_fixture(
             root, ["1s"], ["2s", "2p-", "2p", "3s", "3p-"], basic_blocks()
         )
-        parquet = parquet.rename(root / "csfs_descriptors.parquet")
         result = subprocess.run(
             [str(binaries / "csf_descriptor_verify"), str(parquet), str(text)],
             cwd=root,
@@ -62,6 +61,20 @@ def main() -> None:
         assert result.returncode == 0, result.stdout + result.stderr
         assert (root / "mcp.30").is_file(), result.stdout
         assert (root / "mcp.31").stat().st_size > 0
+        legacy_parquet = root / "csfs_descriptors.parquet"
+        shutil.copyfile(parquet, legacy_parquet)
+        rejected = subprocess.run(
+            [binaries / "rangular", "--csf-descriptors", str(legacy_parquet), "--header", str(header)],
+            cwd=root, input="y\n", capture_output=True, text=True, check=False, timeout=30,
+        )
+        assert rejected.returncode != 0 and "use a *_desc.parquet" in rejected.stderr, rejected
+        shutil.copyfile(parquet, root / "rcsf_descriptors.parquet")
+        shutil.copyfile(header, root / "rcsf_header.toml")
+        rejected = subprocess.run(
+            [binaries / "rangular"], cwd=root, input="y\n",
+            capture_output=True, text=True, check=False, timeout=30,
+        )
+        assert rejected.returncode != 0 and "rcsf_desc.parquet" in rejected.stderr, rejected
         # A valid legacy input must never rescue an invalid descriptor/header.
         write_fixture(
             root / "legacy", ["1s"], ["2s", "2p-", "2p", "3s", "3p-"], basic_blocks()

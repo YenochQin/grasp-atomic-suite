@@ -52,9 +52,11 @@ def pipeline(
     work = root / "biotransform"
     work.mkdir()
     shutil.copyfile(template / "isodata", work / "isodata")
+    wave_suffix = "wfn" if native else "w"
+    mix_suffix = "mix" if native else "m"
     for stem in ("left", "right"):
-        for source, target in (("c", "c"), ("w", "wfn"), ("m", "mix")):
-            shutil.copyfile(template / f"case.{source}", work / f"{stem}.{target if native else source}")
+        for source, target in (("c", "c"), ("wfn", wave_suffix), ("mix", mix_suffix)):
+            shutil.copyfile(template / f"case.{source}", work / f"{stem}.{target}")
         if native:
             descriptors(work / f"{stem}.c")
             (work / f"{stem}.c").unlink()
@@ -73,12 +75,14 @@ def pipeline(
     rci_work = root / "rci"
     fixture(rci_work, False, False)
     if native:
-        for old, new in (("case.w", "case.wfn"), ("case.m", "case.mix")):
-            (rci_work / old).rename(rci_work / new)
-            (rci_work / old).write_bytes(b"stale legacy file")
-        (rci_work / "case.cm").write_bytes(b"stale legacy file")
+        for filename in ("case.w", "case.m", "case.cm"):
+            (rci_work / filename).write_bytes(b"stale legacy file")
         descriptors(rci_work / "case.c")
         (rci_work / "case.c").unlink()
+    else:
+        (rci_work / "case.wfn").rename(rci_work / "case.w")
+        (rci_work / "case.mix").rename(rci_work / "case.m")
+        (rci_work / "case.cimix").rename(rci_work / "case.cm")
     execute(
         binaries / ("rci" + suffix),
         rci_work,

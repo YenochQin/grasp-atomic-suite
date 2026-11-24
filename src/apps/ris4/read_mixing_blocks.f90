@@ -27,7 +27,6 @@ contains
         use selected_level_indices, only: active_level_indices, active_level_count
         use level_symmetry_metadata, only: level_parity_signs, level_two_j_plus_one
         use standard_io_units, only: stderr_unit
-        use file_open, only: open_calculation_file
         implicit none (type, external)
 
         ! Arguments and local declarations
@@ -37,16 +36,13 @@ contains
         integer :: open_status, io_status, total_csf_count, nvectot, vector_size, nblock, i, nvecpat, &
             ncfpat, nvecsizpat, neavsum, jb, nb, ncfblk, nevblk, iatjp, iaspa, j
         real(real64) :: eavsum
-        character :: file_path*256, form*11, mixing_file_signature*6, status*3
+        character :: file_path*256, mixing_file_signature*6
         ! The  .mix  file is UNFORMATTED; it must exist
         file_path = mixing_input_path(state_name, ci_input_mode == 0)
-        form = "UNFORMATTED"
-        status = "OLD"
-        call open_calculation_file (mixing_input_unit, file_path, form, status, open_status)
-        if (open_status == 1) then
-            write (stderr_unit, *) "Error when opening", file_path
-            stop
-        end if
+        open(newunit=mixing_input_unit, file=file_path, form="UNFORMATTED", &
+            status="OLD", action="READ", iostat=open_status)
+        if (open_status /= 0) error stop "Cannot open mixing file: "//trim(file_path)
+
         ! Check the header of the file; if not as expected, try again
         read (mixing_input_unit, iostat=io_status) mixing_file_signature
         if (io_status/=0 .or. mixing_file_signature/="G92MIX") then

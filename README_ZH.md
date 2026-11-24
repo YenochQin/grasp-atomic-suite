@@ -52,7 +52,7 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 | --- | --- | --- | --- |
 | 普通 GRASP 计算链 | `src/apps/rangular*`、`rwfnestimate`、`rci*`、`rbiotransform*`、`rtransition*` | `rangular{,_mpi}`、`rwfnestimate`、`rci{,_mpi}`、`rbiotransform{,_mpi}`、`rtransition{,_phase,_mpi}` | 十个目标复用 Suite 共享库与集中容量参数。[导入记录](docs/archive/2026-11-08-plan-0002-standard-grasp-integration.md) |
 | `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | 普通 CSF 的 OpenMP jj–LS 转换，按 LS 行并行并保留原截断顺序；见[构建、运行和验证说明](docs/implemented/design-0028-jj2lsj-openmp.md)。与 `jj2lsj_csfg` 分开。 |
-| `rlevels` | `src/apps/rlevels` | `rlevels` | 从 RMCDHF `.m` 和 RCI `.cm` 生成能级表，可附加 `jj2lsj` 标签。见[用法和输出格式](docs/implemented/design-0025-rlevels.md)。 |
+| `rlevels` | `src/apps/rlevels` | 从 RMCDHF `.mix` 和 RCI `.cimix` 生成能级表，可附加 `jj2lsj` 标签。见[用法和输出格式](docs/implemented/design-0025-rlevels.md)。 |
 | `gj` | `src/apps/gj` | `gj`, `gj_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、该状态的 CSF 描述符文件对、`name.mix/name.cimix`、`name.wfn`，输出 `name.gj/name.cgj`。 |
 | `rhfs` | `src/apps/rhfs` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
 | `rdensity` | `src/apps/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/design-0026-rdensity-mpi.md)。 |
@@ -173,9 +173,9 @@ CMake 会自动查找 BLAS/LAPACK，并要求 GNU Fortran 15 或更新版本。
 
 MPI 版本由 rank 0 询问状态名。`rangular_mpi` 在每个 rank 的临时目录写入 `mcp.mcpidx`，随后用相同基组和 rank 布局运行 `rmcdhf_mpi` 或 `rmcdhf_mem_mpi`。已有旧格式的作业需用当前 `rangular_mpi` 重新生成。描述符和轨道位于永久 I/O 目录，角系数程序和 SCF 的日志位于启动目录。`isodata` 和适用的 `npol.inp` 按目录共用。`rci` 沿用先询问默认设置、再询问状态名的顺序。供 `gj` 等性质程序使用的状态名应控制在 23 个字符以内。[MPI MCP 格式和验收](docs/implemented/design-0020-rmcdhf-mcp-io.md)
 
-每个工作目录共用一套 MCP。应先完成本基组的 RMCDHF，再在同一目录为下一基组生成角系数。并行计算不同基组时，分别使用独立的工作目录和 MPI scratch 目录。`A` 和 `A.initial` 两个状态也应分目录保存，因为两者都会写 `A.initial.wfn`。下游程序优先读取新后缀，对应新文件缺失时可读取归档中的 `.w`、`.m`、`.cm`。
+每个工作目录共用一套 MCP。应先完成本基组的 RMCDHF，再在同一目录为下一基组生成角系数。并行计算不同基组时，分别使用独立的工作目录和 MPI scratch 目录。`A` 和 `A.initial` 两个状态也应分目录保存，因为两者都会写 `A.initial.wfn`。下游程序读取 `.wfn` 轨道文件、`.mix` 的 RMCDHF 系数或 `.cimix` 的 RCI 系数。
 
-状态名留空会使用 `rcsf_desc.parquet`、`rcsf_header.toml`、`rwfn.inp`、`rwfn.out` 和 `rmix.out`。描述符短文件名缺失时，仍可读取旧的 `*_descriptors.parquet`。以 y/n 回答设置开头的旧输入脚本仍可使用。若状态名恰为单字母 Y 或 N（含小写），相应输入目录里的同名头文件优先。同名重算时，(E)AL 不更新该状态已有的混合系数文件。固定文件名的已有计算仍可通过 [save_rmcdhf 归档](scripts/README.md#保存-rmcdhf-计算结果)。
+状态名留空会使用 `rcsf_desc.parquet`、`rcsf_header.toml`、`rwfn.inp`、`rwfn.out` 和 `rmix.out`。以 y/n 回答设置开头的旧输入脚本仍可使用。若状态名恰为单字母 Y 或 N（含小写），相应输入目录里的同名头文件优先。同名重算时，(E)AL 不更新该状态已有的混合系数文件。固定文件名的已有计算仍可通过 [save_rmcdhf 归档](scripts/README.md#保存-rmcdhf-计算结果)。
 
 常用输入文件：
 
@@ -192,7 +192,7 @@ MPI 版本由 rank 0 询问状态名。`rangular_mpi` 在每个 rank 的临时�
 - `ris4`：`name.i/name.ci`，并可能生成 `name.IOB`、`name.ITB` 等角向中间文件。
 
 `gj_mpi` 接受状态名和 `--nonci` 或 `--ci`。从计算目录运行，并将
-`suite_bin` 设为构建目录下 `bin` 的绝对路径。CI 模式需要 `name.cimix` 或归档的 `name.cm`。
+`suite_bin` 设为构建目录下 `bin` 的绝对路径。CI 模式读取 `name.cimix`。
 
 ```fish
 mpiexec -n 2 "$suite_bin/gj_mpi" name --nonci
@@ -215,15 +215,16 @@ data/test.gj
 
 复现 `data/test.gj` 时，从 Suite 根目录运行下列命令，并将支持 V3 的
 `rcsfs` 加入 `PATH`。按实际构建目录设置 `suite_bin`。
-`rcsfs convert` 会生成 Parquet 描述符和配套的 TOML 头文件。样本中的 `test.m`
-和 `test.w` 使用兼容的归档后缀。
+`rcsfs convert` 会生成 Parquet 描述符和配套的 TOML 头文件。将样本轨道和混合系数复制为 `test.wfn` 和 `test.mix`。
 
 ```fish
 set suite_root (pwd)
 set suite_bin (realpath build-gf16/bin)
 mkdir -p ../temp/tests
 set gj_work (mktemp -d ../temp/tests/gj-example.XXXXXXXX)
-cp data/isodata data/test.c data/test.m data/test.w "$gj_work/"
+cp data/isodata data/test.c "$gj_work/"
+cp data/test.m "$gj_work/test.mix"
+cp data/test.w "$gj_work/test.wfn"
 cd "$gj_work"
 rcsfs convert test.c test_desc.parquet
 printf '%s\n' y test n | "$suite_bin/gj"

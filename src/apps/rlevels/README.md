@@ -3,7 +3,7 @@
 `rlevels` 将一个或多个 MCDHF 或 CI 混合文件中的能级按总能量合并排序，向标准输出写出
 总能量（Hartree）、激发能和相邻能级的间隔（cm⁻¹）。
 
-可提供状态名或 `name.mix`、`name.cimix` 等混合文件路径，程序也接受旧后缀 `.m` 和 `.cm`。
+可提供状态名或 `name.mix`、`name.cimix` 混合文件路径。
 如果有配套的 `name.lsj.lbl`，能级表还会显示匹配到的主要构型标签。
 
 [LSJ 标签生成程序](../jj2lsj/README.md) · [输入方式及输出列](../../../docs/implemented/design-0025-rlevels.md)

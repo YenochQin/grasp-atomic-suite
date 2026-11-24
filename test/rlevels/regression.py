@@ -55,7 +55,10 @@ def rows(result: subprocess.CompletedProcess[str]) -> list[list[str]]:
 
 
 def check_real_fixture(binary: Path, data: Path, work: Path) -> None:
-    result = run(binary, data / "test.m")
+    mixing = work / "test.mix"
+    shutil.copyfile(data / "test.m", mixing)
+    shutil.copyfile(data / "test.lsj.lbl", mixing.with_suffix(".lsj.lbl"))
+    result = run(binary, mixing)
     real = rows(result)
     timestamps = r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} [+-]\d{4}"
     for label in ("Date and Time:", "Finish Date and Time:"):
@@ -65,8 +68,8 @@ def check_real_fixture(binary: Path, data: Path, work: Path) -> None:
     assert len(real) == 9
     assert real[0] == ["1", "1", "4", "+", "-1519.3952877", "0.00", "0.00", "3s(2).3p(6).3d(8)3F.4s(2)_3F"]
     assert real[-1] == ["9", "2", "0", "+", "-1519.1147235", "61576.71", "35869.38", "3s(2).3p(6).3d(8)1S.4s(2)_1S"]
-    unlabelled = work / "unlabelled.m"
-    shutil.copyfile(data / "test.m", unlabelled)
+    unlabelled = work / "unlabelled.mix"
+    shutil.copyfile(mixing, unlabelled)
     result = run(binary, stdin=f"{unlabelled}\n\n")
     assert "Configuration" not in result.stdout and "Name of state:" in result.stderr
     assert rows(result) == [row[:7] for row in real]
@@ -99,7 +102,7 @@ def check_multiple_files(binary: Path, work: Path) -> None:
 
 
 def check_invalid_files(binary: Path, work: Path) -> None:
-    bad = work / "invalid.cm"
+    bad = work / "invalid.cimix"
     for payload, error in (
         (b"", "cannot read G92MIX"),
         (records(b"NOTMIX"), "expected G92MIX"),
@@ -113,8 +116,8 @@ def check_invalid_files(binary: Path, work: Path) -> None:
         assert result.returncode != 0 and error in result.stderr, result
         assert "No Pos  J " not in result.stdout
         assert "RLEVELS: Execution complete." not in result.stderr
-    result = run(binary, work / "missing.cm")
-    assert result.returncode != 0 and "missing.cm" in result.stderr, result
+    result = run(binary, work / "missing.cimix")
+    assert result.returncode != 0 and "missing.cimix" in result.stderr, result
 
 
 def check_state_selection(binary: Path, work: Path) -> None:
@@ -135,6 +138,13 @@ def check_state_selection(binary: Path, work: Path) -> None:
     assert ambiguous.returncode != 0 and str(scf) in ambiguous.stderr and str(ci) in ambiguous.stderr
     scf.unlink()
     assert rows(run(binary, stdin=str(state))) == ci_rows
+    for old_suffix in (".m", ".cm"):
+        archived = work / f"archived{old_suffix}"
+        archived.write_bytes(ci_data)
+        result = run(binary, archived)
+        assert result.returncode != 0 and "Use a .mix or .cimix" in result.stderr, result
+    result = run(binary, work / "archived")
+    assert result.returncode != 0 and "cannot open mixing file" in result.stderr, result
 
 
 def main() -> None:

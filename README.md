@@ -52,7 +52,7 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 | --- | --- | --- | --- |
 | Ordinary GRASP calculation chain | `src/apps/rangular*`, `rwfnestimate`, `rci*`, `rbiotransform*`, `rtransition*` | `rangular{,_mpi}`, `rwfnestimate`, `rci{,_mpi}`, `rbiotransform{,_mpi}`, `rtransition{,_phase,_mpi}` | Ten targets reuse the suite libraries and central capacities. See the [import record](docs/archive/2026-11-08-plan-0002-standard-grasp-integration.md). |
 | `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/design-0028-jj2lsj-openmp.md). CSFG support has been removed. |
-| `rlevels` | `src/apps/rlevels` | `rlevels` | Energy tables from RMCDHF `.m` and RCI `.cm` files with optional `jj2lsj` labels. [Usage and output format](docs/implemented/design-0025-rlevels.md). |
+| `rlevels` | `src/apps/rlevels` | Energy tables from RMCDHF `.mix` and RCI `.cimix` files with optional `jj2lsj` labels. [Usage and output format](docs/implemented/design-0025-rlevels.md). |
 | `gj` | `src/apps/gj` | `gj`, `gj_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, the state's CSF descriptor pair, `name.mix/name.cimix`, and `name.wfn`, then writes `name.gj/name.cgj`. |
 | `rhfs` | `src/apps/rhfs` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
 | `rdensity` | `src/apps/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/design-0026-rdensity-mpi.md). |
@@ -190,12 +190,11 @@ up to 23 characters for the state name.
 MCP data belongs to the working directory. Finish the SCF run for a basis
 before generating another basis there, or use separate work and MPI scratch
 directories. States named `A` and `A.initial` also share the path `A.initial.wfn`
-and need separate directories. State readers prefer `.wfn`, `.mix` and `.cimix`
-and can open archived `.w`, `.m` and `.cm` files when the corresponding new file is absent.
+and need separate directories. State readers use `.wfn` for orbitals, `.mix` for
+RMCDHF coefficients, and `.cimix` for RCI coefficients.
 
 An empty state selects `rcsf_desc.parquet`, `rcsf_header.toml`, `rwfn.inp`,
-`rwfn.out` and `rmix.out`. When the short descriptor filename is absent,
-the suite also accepts the previous `*_descriptors.parquet` filename.
+`rwfn.out` and `rmix.out`.
 Existing answer files starting with a y/n settings
 response still work. For a single-letter state `Y` or `N` (either case), the
 matching header in the input directory takes precedence. An (E)AL rerun leaves any existing mixing file for that state untouched. Fixed-name runs can
@@ -218,7 +217,7 @@ Common output files:
 
 `gj_mpi` accepts a state name with `--nonci` or `--ci`. Run it from the
 calculation directory and set `suite_bin` to the absolute path of the build's
-`bin` directory. CI mode requires `name.cimix` or the archived `name.cm`.
+`bin` directory. CI mode reads `name.cimix`.
 
 ```fish
 mpiexec -n 2 "$suite_bin/gj_mpi" name --nonci
@@ -242,14 +241,16 @@ data/test.gj
 To reproduce `data/test.gj`, run the following from the Suite root with a
 V3-capable `rcsfs` on `PATH`. Use your actual build directory in `suite_bin`.
 `rcsfs convert` creates both the Parquet descriptor and its matching TOML
-header. The sample's `test.m` and `test.w` use the supported archived suffixes.
+header. Copy the sample orbitals and mixing coefficients to `test.wfn` and `test.mix`.
 
 ```fish
 set suite_root (pwd)
 set suite_bin (realpath build-gf16/bin)
 mkdir -p ../temp/tests
 set gj_work (mktemp -d ../temp/tests/gj-example.XXXXXXXX)
-cp data/isodata data/test.c data/test.m data/test.w "$gj_work/"
+cp data/isodata data/test.c "$gj_work/"
+cp data/test.m "$gj_work/test.mix"
+cp data/test.w "$gj_work/test.wfn"
 cd "$gj_work"
 rcsfs convert test.c test_desc.parquet
 printf '%s\n' y test n | "$suite_bin/gj"

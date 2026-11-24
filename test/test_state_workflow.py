@@ -114,7 +114,34 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
     ):
         assert not list(root.rglob(generic)), generic
 
+    saved_wave = permanent / "N_3s.wfn"
+    archived_wave = saved_wave.with_suffix(".w")
+    saved_wave.rename(archived_wave)
+    result = subprocess.run(
+        [*launcher, binaries / ("rci" + suffix)],
+        cwd=launch,
+        input="y\nN_3s\n" + ("n\n" if launcher else "") + "n\n" * 6 + "1\n",
+        text=True,
+        capture_output=True,
+        timeout=45,
+        check=False,
+    )
+    assert result.returncode != 0 and "N_3s.wfn" in result.stderr, result.stderr
+    assert not saved_wave.exists()
+    assert archived_wave.read_bytes() == previous_files[saved_wave]
+
     if not launcher:
+        result = subprocess.run(
+            [binaries / "rwfnestimate"],
+            cwd=permanent,
+            input="N_3s\ny\n1\nN_3s.w\n*\n",
+            text=True,
+            capture_output=True,
+            timeout=15,
+            check=False,
+        )
+        assert result.returncode != 0 and "Use a .wfn" in result.stderr, result.stderr
+        assert (permanent / "N_3s.initial.wfn").read_bytes() == previous_files[permanent / "N_3s.initial.wfn"]
         (permanent / "N.initial_header.toml").write_bytes(
             (permanent / "N_header.toml").read_bytes()
         )
@@ -139,7 +166,7 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
         legacy.mkdir()
         for source, target in (
             ("N_header.toml", "rcsf_header.toml"),
-            ("N_desc.parquet", "rcsf_descriptors.parquet"),
+            ("N_desc.parquet", "rcsf_desc.parquet"),
             ("isodata", "isodata"),
         ):
             (legacy / target).write_bytes((permanent / source).read_bytes())

@@ -27,7 +27,7 @@ program rangular_main
     use hamiltonian_symmetry_blocks, only: csf_counts_by_block, symmetry_block_count
     use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals
     use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes, csf_angular_code_count
-    use calculation_state_files, only: state_files, state_name_length, files_for_state, select_state, resolve_descriptor_input
+    use calculation_state_files, only: state_files, state_name_length, files_for_state, select_state
     use run_timer, only: begin_run_timer, finish_run_timer
 
     ! Procedure interfaces
@@ -67,7 +67,7 @@ program rangular_main
     call begin_run_timer (start_clock_count, "RANGULAR")
     call select_state(state, "Full interaction? (y/n)", yes)
     files = files_for_state(state)
-    if (input_options%input_filename == "") input_options%input_filename = resolve_descriptor_input(files%descriptors)
+    if (input_options%input_filename == "") input_options%input_filename = files%descriptors
     input_format_name = "descriptors"
     program_start_count = stage_clock()
     write(*,*) "This program performs angular integration "

@@ -15,8 +15,10 @@ def main() -> None:
     for higher_order in ("n", "y"):
         with tempfile.TemporaryDirectory(prefix="ris4-cache-reuse-") as temporary:
             work = Path(temporary)
-            for name in ("isodata", "test.c", "test.w", "test.m"):
+            for name in ("isodata", "test.c"):
                 shutil.copyfile(data / name, work / name)
+            shutil.copyfile(data / "test.m", work / "test.mix")
+            shutil.copyfile(data / "test.w", work / "test.wfn")
 
             answers = f"y\ntest\nn\n{higher_order}\n"
             run(command, work, answers + "y\n")

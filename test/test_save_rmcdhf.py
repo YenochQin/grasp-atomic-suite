@@ -36,27 +36,36 @@ def check_archive(script: Path, run: Path) -> None:
         assert (archive / f"case.{program}.log").read_bytes() == (
             run / f"{program}.log"
         ).read_bytes()
-    assert (archive / "case.w").readlink() == Path(inputs["rwfn.out"][0])
-    assert (archive / "case.m").readlink() == Path(inputs["rmix.out"][0])
+    assert not (archive / "case.w").exists()
+    assert not (archive / "case.w").is_symlink()
+    assert not (archive / "case.m").exists()
+    assert not (archive / "case.m").is_symlink()
     assert not (archive / "case.c").exists()
 
     (io_dir / "rwfn.out").write_bytes(b"next calculation")
     assert subprocess.run(command, cwd=run, check=False).returncode != 0
-    assert (archive / "case.w").read_bytes() == inputs["rwfn.out"][1]
+    assert (archive / "case.wfn").read_bytes() == inputs["rwfn.out"][1]
 
     # Serial layout. An average-level run can leave an earlier run's rmix.out in place.
     (io_dir / "rmcdhf.sum").write_text(" (E)AL calculation.\n")
     (io_dir / "rmcdhf.log").touch()
     (io_dir / "npol.inp").unlink()
-    (io_dir / "rcsf_desc.parquet").replace(io_dir / "rcsf_descriptors.parquet")
+    native_descriptor = io_dir / "rcsf_desc.parquet"
+    old_descriptor = io_dir / "rcsf_descriptors.parquet"
+    native_descriptor.replace(old_descriptor)
+    rejected = subprocess.run(
+        [script, "average"], cwd=io_dir, capture_output=True, text=True, check=False
+    )
+    assert rejected.returncode != 0 and "rcsf_desc.parquet" in rejected.stderr, rejected
+    assert not (io_dir / "average").exists()
+    old_descriptor.rename(native_descriptor)
     subprocess.run([script, "average"], cwd=io_dir, check=True)
     average = io_dir / "average"
-    assert (average / "average.w").is_file()
+    assert (average / "average.wfn").is_file()
     assert not (average / "average.m").is_symlink()
     assert not (average / "average.mix").exists()
     assert not (average / "average.rangular.log").exists()
     assert (average / "average_desc.parquet").read_bytes() == inputs["rcsf_desc.parquet"][1]
-    (io_dir / "rcsf_descriptors.parquet").rename(io_dir / "rcsf_desc.parquet")
 
     # An OL archive needs mixing. A legacy text file cannot replace half of a descriptor pair.
     (io_dir / "rmcdhf.sum").write_text(" OL calculation.\n")
@@ -71,7 +80,7 @@ def check_archive(script: Path, run: Path) -> None:
         assert not list(io_dir.glob(".save_rmcdhf.*"))
         (io_dir / source).write_bytes(inputs[source][1])
     subprocess.run([script, partial], cwd=io_dir, check=True)
-    assert (partial / "partial.m").read_bytes() == inputs["rmix.out"][1]
+    assert (partial / "partial.mix").read_bytes() == inputs["rmix.out"][1]
 
 
 if __name__ == "__main__":

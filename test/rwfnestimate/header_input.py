@@ -52,7 +52,7 @@ class HeaderInput(unittest.TestCase):
         if csf is not None:
             (directory / "rcsf.inp").write_text(csf)
         if descriptor is not None:
-            (directory / "rcsf_descriptors.parquet").write_bytes(descriptor)
+            (directory / "rcsf_desc.parquet").write_bytes(descriptor)
         if toml is None and csf is not None and arguments is None:
             import re
             lines = csf.splitlines()[:5]

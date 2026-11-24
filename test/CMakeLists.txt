@@ -158,6 +158,10 @@ if(Python3_Interpreter_FOUND)
     add_test(NAME save_rmcdhf
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_save_rmcdhf.py"
             "${PROJECT_BINARY_DIR}/bin/save_rmcdhf")
+    add_test(NAME import_rsave
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_import_rsave.py"
+            "${PROJECT_BINARY_DIR}/bin/import_rsave" $<TARGET_FILE:gj> "${PROJECT_SOURCE_DIR}/data")
+    set_tests_properties(import_rsave PROPERTIES TIMEOUT 120 SKIP_RETURN_CODE 77)
     if(TARGET rangular_mpi AND MPIEXEC_EXECUTABLE)
         add_test(NAME rangular_mpi_descriptors
             COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rangular/test_mpi_descriptors.py"

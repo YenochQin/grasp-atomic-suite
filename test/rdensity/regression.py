@@ -90,8 +90,8 @@ def fixture(folder: Path, gap: bool, multiblock: bool) -> None:
             doubles([-0.125, 0.0]),
             doubles([1.0]),
         ]
-    write_records(folder / "case.m", rows)
-    shutil.copyfile(folder / "case.m", folder / "case.cm")
+    write_records(folder / "case.mix", rows)
+    shutil.copyfile(folder / "case.mix", folder / "case.cimix")
     grid = [2e-6 * math.expm1(0.05 * i) for i in range(590)]
     rows = [b"G92RWF"]
     for n, kappa in orbitals:
@@ -109,7 +109,7 @@ def fixture(folder: Path, gap: bool, multiblock: bool) -> None:
             doubles([pz] + p + [0.0] * len(grid)),
             doubles(grid),
         ]
-    write_records(folder / "case.w", rows)
+    write_records(folder / "case.wfn", rows)
 
 
 def run(
@@ -301,8 +301,6 @@ def main() -> None:
             check_analytic(output, baseline, multiblock)
             target = root / (case + "-candidate")
             fixture(target, gap, multiblock)
-            (target / "case.w").rename(target / "case.wfn")
-            (target / "case.cm").rename(target / "case.cimix")
             output = run(parallel + ["case", "--ci"], target)
             # Compare CI output to the same data in the non-CI format.
             shutil.copyfile(target / "case.cd", target / "case.d")
@@ -312,16 +310,20 @@ def main() -> None:
         # Existing repository data: 1042 CSFs, 5 J blocks, 9 levels.
         baseline = root / "ni-serial"
         baseline.mkdir()
-        for name in ["isodata", "test.c", "test.m", "test.w"]:
+        for name in ["isodata", "test.c"]:
             shutil.copyfile(args.data / name, baseline / name)
+        shutil.copyfile(args.data / "test.m", baseline / "test.mix")
+        shutil.copyfile(args.data / "test.w", baseline / "test.wfn")
         ni_output = run(serial + ["test", "--nonci"], baseline)
         occupations = read_blocks(ni_output, "occupations in output orbital order:")
         close(sum(row[0] for block in occupations.values() for row in block), 28.0)
         if args.mpi:
             target = root / "ni-mpi"
             target.mkdir()
-            for name in ["isodata", "test.c", "test.m", "test.w"]:
+            for name in ["isodata", "test.c"]:
                 shutil.copyfile(args.data / name, target / name)
+            shutil.copyfile(args.data / "test.m", target / "test.mix")
+            shutil.copyfile(args.data / "test.w", target / "test.wfn")
             run(parallel + ["test", "--nonci"], target)
             compare_outputs(baseline, target, "test")
         target = root / "interactive"
@@ -335,6 +337,14 @@ def main() -> None:
             output = run(parallel + [invalid], root, success=False)
             assert "1 to 23 characters" in output, output
         run(parallel + ["missing"], root, success=False)
+        if not args.mpi:
+            target = root / "archived-mixing"
+            fixture(target, False, False)
+            for native_suffix, old_suffix, flag in ((".mix", ".m", "--nonci"), (".cimix", ".cm", "--ci")):
+                native = target / f"case{native_suffix}"
+                archived = native.rename(native.with_suffix(old_suffix))
+                output = run(serial + ["case", flag], target, success=False)
+                assert native.name in output and not native.exists() and archived.stat().st_size > 0
         # Interactive READ failures must report the runtime message and reach
         # the shared failure path without consuming invalid input or hanging MPI.
         output = run_interactive_failure(parallel, root, "y\n")
@@ -351,7 +361,7 @@ def main() -> None:
         # indefinitely for a collective. Subprocess timeout checks this too.
         target = root / "truncated"
         fixture(target, False, False)
-        (target / "case.m").write_bytes((target / "case.m").read_bytes()[:-8])
+        (target / "case.mix").write_bytes((target / "case.mix").read_bytes()[:-8])
         run(parallel + ["case"], target, success=False)
     print(f"rdensity regression passed ({args.ranks if args.mpi else 0} MPI ranks)")
 

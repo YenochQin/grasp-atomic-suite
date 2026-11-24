@@ -91,7 +91,7 @@ def run_logged(
     if input_csf is not None:
         shutil.copyfile(input_csf, directory / "rcsf.inp")
     if input_descriptors is not None:
-        shutil.copyfile(input_descriptors, directory / "rcsf_descriptors.parquet")
+        shutil.copyfile(input_descriptors, directory / "rcsf_desc.parquet")
         shutil.copyfile(input_descriptors.with_name("csfs_header.toml"), directory / "rcsf_header.toml")
     thread_environment = THREAD_ENVIRONMENT.copy()
     execution: dict[str, Any] = {
@@ -293,7 +293,7 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                     "csf": "rcsf.inp",
                     "stdin_file": "rangular.stdin",
                     "binary": "csfs.bin",
-                    "descriptors": "csfs_descriptors.parquet",
+                    "descriptors": "csfs_desc.parquet",
                     "header": "csfs_header.toml",
                 }[name]
             )
@@ -305,12 +305,12 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
             stdin_path.write_bytes(b"y\n")
         summary["effective_stdin"] = file_identity(stdin_path)
         if descriptor_mode:
-            summary["effective_binary"] = file_identity(snapshots / "csfs_descriptors.parquet")
+            summary["effective_binary"] = file_identity(snapshots / "csfs_desc.parquet")
             verification_directory = output / "array_verification"
             summary["array_verification"] = run_logged(
                 [
                     str(paths["verifier"]),
-                    str(snapshots / "csfs_descriptors.parquet"),
+                    str(snapshots / "csfs_desc.parquet"),
                     str(snapshots / "rcsf.inp"),
                 ],
                 verification_directory,
@@ -345,7 +345,7 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                     )
                 command = [str(executable)]
                 if mode == "candidate_descriptors":
-                    command += ["--csf-descriptors", str(snapshots / "csfs_descriptors.parquet")]
+                    command += ["--csf-descriptors", str(snapshots / "csfs_desc.parquet")]
                 if mode not in ("reference_text", "reference_default") or arguments.reference_timings:
                     command += ["--timings", "timings.csv"]
                 if mode not in ("reference_text", "reference_default"):
@@ -362,7 +362,7 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                     input_csf=None
                     if descriptor_mode and mode != "reference_text"
                     else snapshots / "rcsf.inp",
-                    input_descriptors=(snapshots / "csfs_descriptors.parquet") if descriptor_mode and mode in ("reference_default", "candidate_default") else None,
+                    input_descriptors=(snapshots / "csfs_desc.parquet") if descriptor_mode and mode in ("reference_default", "candidate_default") else None,
                 )
                 if (
                     file_identity(executable)["sha256"]

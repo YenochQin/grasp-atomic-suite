@@ -2,7 +2,7 @@
 module rmcdhf_csf_input
     ! Module dependencies
     use iso_fortran_env, only: int8, int64
-    use calculation_state_files, only: descriptor_input_path, resolve_descriptor_input
+    use calculation_state_files, only: descriptor_input_path
     use csf_descriptor_reader, only: descriptor_source, open_descriptor_source, close_descriptor_source, &
         descriptor_block_label, read_descriptor_block
     use grasp_parameters, only: max_orbitals
@@ -70,7 +70,7 @@ contains
         ! Local declarations
         type(descriptor_source) :: basis_reader
 
-        call open_descriptor_source(basis_reader, resolve_descriptor_input(descriptor_path(state_name)), &
+        call open_descriptor_source(basis_reader, descriptor_path(state_name), &
             size(packed_block_symmetries), status=status)
         if (status /= 0) return
         if (present(expected_basis_id)) then
