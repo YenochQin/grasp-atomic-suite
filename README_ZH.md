@@ -203,6 +203,10 @@ mpiexec -n 2 "$suite_bin/gj_mpi" name --ci
 
 不带参数时，程序回到交互式输入流程。
 
+### 径向波函数二进制流
+
+`rwfnestimate` 和 RMCDHF 以 `GRWFRAD1` 二进制流保存波函数。文件依次包含 16 字节文件头、每轨道 32 字节的参数表和 `float64` 径向矩阵。数值采用小端序。矩阵沿径向点连续存储，Python 形状为 `(2*K+1, L)`。第 0 行保存共享网格，后续按轨道顺序排列 `P` 和 `Q`。每条轨道仅前 `point_count` 点有效。Suite 也能读取已有的 `G92RWF` 文件。具体字段和 NumPy 示例见 [二进制布局](README.md#radial-wavefunction-stream)。
+
 ## 验证数据
 
 `data/` 目录包含名为 `test` 的示例数据集：

@@ -12,6 +12,8 @@ contains
     ! Written by Per Jonsson                              June 1996
     subroutine read_final_radial_wavefunctions(state_name, global_trace_level)
         ! Module dependencies
+        use radial_wavefunction_format, only: wavefunction_layout, read_wavefunction_header, read_orbital_metadata, &
+            open_wavefunction_input, read_orbital_payload
         use, intrinsic :: iso_fortran_env, only: output_unit
         use calculation_state_files, only: orbital_input_path
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
@@ -36,13 +38,13 @@ contains
         integer, intent(in) :: global_trace_level
         character, intent(in) :: state_name*128
         integer  :: nak(max_orbitals), np(max_orbitals)
-        integer :: local_trace_level, trace_level, j, k, i, nwin, io_status, npy, naky, my, jj, kk, jjj&
+        integer :: local_trace_level, trace_level, j, k, nwin, io_status, npy, naky, my, jj, kk, jjj&
             , kkk, ierr
         real(real64) :: gama(max_orbitals)
         real(real64) :: con, fkk, ey, dnorm, pzy
         real(real64), pointer :: pa(:), qa(:), ra(:)
         character  :: nh(max_orbitals)*2
-        character :: radial_file_signature*6
+        type(wavefunction_layout) :: layout
         ! Common relevant for the final state
         local_trace_level = 0
         trace_level = max0(local_trace_level,global_trace_level)
@@ -50,8 +52,8 @@ contains
 
         write (output_unit, *) "Loading Radial WaveFunction File for final state..."
         ! Open the radial wave function file
-        open(newunit=wavefunction_input_unit,file=orbital_input_path(state_name),form="UNFORMATTED",         &
-            status="OLD",position="asis")
+        call open_wavefunction_input(wavefunction_input_unit, orbital_input_path(state_name), io_status)
+        if (io_status /= 0) error stop "Cannot open radial wavefunction"
         ! Save NAK, NP and NH
         nak(:final_orbital_count) = final_orbital_kappa(:final_orbital_count)
         np(:final_orbital_count) = final_orbital_principal_n(:final_orbital_count)
@@ -81,11 +83,8 @@ contains
         end do
         ! Read orbital information from Read Orbitals File;
         nwin = 0
-        read (wavefunction_input_unit, iostat=io_status) radial_file_signature
-        if (io_status/=0 .or. radial_file_signature/="G92RWF") then
-            write (output_unit, *) "This is not a Radial WaveFunction File;"
-            close(wavefunction_input_unit)
-        end if
+        call read_wavefunction_header(wavefunction_input_unit, layout, io_status)
+        if (io_status /= 0) error stop "Invalid radial wavefunction header"
 
         if (trace_level >= 100) then
             write (*, *) "******************"
@@ -94,13 +93,14 @@ contains
         end if
 
         do
-            read (wavefunction_input_unit, iostat=io_status) npy, naky, ey, my
-            if (io_status /= 0) exit
+            call read_orbital_metadata(wavefunction_input_unit, layout, npy, naky, ey, my, io_status)
+            if (is_iostat_end(io_status)) exit
+            if (io_status /= 0) error stop "Invalid orbital metadata"
             call alloc (pa, my, "PA", "read_final_radial_wavefunctions")
             call alloc (qa, my, "QA", "read_final_radial_wavefunctions")
             call alloc (ra, my, "RA", "read_final_radial_wavefunctions")
-            read (wavefunction_input_unit) pzy, (pa(i),i=1,my), (qa(i),i=1,my)
-            read (wavefunction_input_unit) (ra(i),i=1,my)
+            call read_orbital_payload(wavefunction_input_unit, layout, pzy, pa, qa, ra, io_status)
+            if (io_status /= 0) error stop "Invalid radial wavefunction payload"
             ! Orbital order as defined in kapdata
             jj = 0
             do k = 1, kappa_group_count

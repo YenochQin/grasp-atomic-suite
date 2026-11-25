@@ -47,6 +47,6 @@ Thomas–Fermi、屏蔽氢样或自定义有效核电荷生成初猜。
 | --- | --- |
 | [`open_summary_file.f90`](open_summary_file.f90) | 打开格式化的初猜摘要文件，检查 I/O 状态并关联到后续写出例程。 |
 | [`print_uninitialized_orbitals.f90`](print_uninitialized_orbitals.f90) | 扫描初始化标记，把仍缺少径向函数的轨道按谱学标签列出，供交互选择下一批轨道。 |
-| [`write_initial_radial_wavefunctions.f90`](write_initial_radial_wavefunctions.f90) | 写 `G92RWF` 文件标记，再按轨道写量子数、能量、原点参数、有效长度与对应的 $P,Q,r$ 数组。 |
+| [`write_initial_radial_wavefunctions.f90`](write_initial_radial_wavefunctions.f90) | 按 `GRWFRAD1` 写初猜轨道和共享径向网格。 |
 | [`write_initial_wavefunction_summary.f90`](write_initial_wavefunction_summary.f90) | 按轨道输出初猜方法及来源说明，区分复用记录和程序生成的估计。 |
 | [`write_input_summary.f90`](write_input_summary.f90) | 写入时间、核电荷、电子／轨道计数和当前径向配置，为后续初猜来源表提供输入上下文。 |

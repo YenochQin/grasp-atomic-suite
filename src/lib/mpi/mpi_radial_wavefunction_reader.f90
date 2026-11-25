@@ -8,6 +8,9 @@ contains
     ! Read orbital records on rank 0 and interpolate the broadcast wavefunctions on each rank.
     subroutine read_mpi_radial_wavefunction_records (wavefunction_input_unit, load_status)
         ! Module dependencies
+        use radial_wavefunction_format, only: wavefunction_layout, read_wavefunction_header, read_orbital_metadata, &
+            read_orbital_payload
+        use mpi_io_errors, only: fail_input_io_mpi
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
 
         use, intrinsic :: iso_fortran_env, only: real64
@@ -29,6 +32,8 @@ contains
         ! Arguments
         integer, intent(in) :: wavefunction_input_unit
         integer, intent(out) :: load_status
+
+        type(wavefunction_layout) :: layout
 
         ! Local declarations
         integer :: orbital_index, radial_index, abs_orbital_kappa, loaded_orbital_count
@@ -71,28 +76,32 @@ contains
             write (angular_debug_unit,'(/"From SUBROUTINE LODRWFmpi:"/" Orbital",8x,&
                 &"Eigenvalue",19x,"Norm")')
         end if
+        if (mpi_rank == 0) then
+            call read_wavefunction_header(wavefunction_input_unit, layout, read_status)
+            if (read_status /= 0) call fail_input_io_mpi(read_status, wavefunction_input_unit, "Invalid radial wavefunction header")
+        end if
         loaded_orbital_count = 0
         ! Each orbital starts with a record containing its identifier, energy parameter and grid size.
         do
-            if (mpi_rank == 0) read (wavefunction_input_unit,iostat = read_status) file_principal_n,file_kappa, &
-                file_energy_parameter,file_grid_size
+            if (mpi_rank == 0) call read_orbital_metadata(wavefunction_input_unit, layout, file_principal_n, file_kappa, &
+                file_energy_parameter, file_grid_size, read_status)
             ! Share the read status so all ranks take the same branch before allocating and receiving the payload.
             call mpi_bcast (read_status,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
+            if (is_iostat_end(read_status)) exit
+            if (read_status /= 0) call fail_input_io_mpi(read_status, wavefunction_input_unit, "Invalid orbital metadata")
             call mpi_bcast (file_principal_n,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
             call mpi_bcast (file_kappa,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
             call mpi_bcast (file_grid_size,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
             call mpi_bcast (file_energy_parameter,1,mpi_double_precision,0,mpi_comm_world,mpi_error_code)
-            if (read_status /= 0) exit
 
             call alloc (file_large_component,file_grid_size, "file_large_component", "read_mpi_radial_wavefunction_records")
             call alloc (file_small_component,file_grid_size, "file_small_component", "read_mpi_radial_wavefunction_records")
             call alloc (file_radial_grid,file_grid_size, "file_radial_grid", "read_mpi_radial_wavefunction_records")
 
             if (mpi_rank == 0) then
-                read (wavefunction_input_unit) file_origin_coefficient, (file_large_component(radial_index), radial_index = 1, &
-                    file_grid_size), &
-                    (file_small_component(radial_index), radial_index = 1,file_grid_size)
-                read (wavefunction_input_unit) (file_radial_grid(radial_index),radial_index = 1,file_grid_size)
+                call read_orbital_payload(wavefunction_input_unit, layout, file_origin_coefficient, file_large_component, &
+                    file_small_component, file_radial_grid, read_status)
+                if (read_status /= 0) call fail_input_io_mpi(read_status, wavefunction_input_unit, "Invalid orbital payload")
             end if
 
             call mpi_bcast (file_origin_coefficient,1,mpi_double_precision,0, &

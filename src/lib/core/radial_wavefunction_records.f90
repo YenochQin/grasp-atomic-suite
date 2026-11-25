@@ -9,6 +9,8 @@ module radial_wavefunction_records
 contains
     subroutine read_radial_wavefunction_records(wavefunction_input_unit, load_status)
         ! Module dependencies
+        use radial_wavefunction_format, only: wavefunction_layout, read_wavefunction_header, read_orbital_metadata, &
+            read_orbital_payload
         use, intrinsic :: iso_fortran_env, only: output_unit
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
@@ -29,8 +31,10 @@ contains
         integer, intent(in) :: wavefunction_input_unit
         integer, intent(out) :: load_status
 
+        type(wavefunction_layout) :: layout
+
         ! Local declarations
-        integer :: orbital_index, radial_index, abs_orbital_kappa, loaded_orbital_count, read_status, file_principal_n, &
+        integer :: orbital_index, abs_orbital_kappa, loaded_orbital_count, read_status, file_principal_n, &
             & file_kappa, file_grid_size
         real(real64) :: charge_times_alpha_squared, kappa_squared, file_energy_parameter, file_origin_coefficient, &
             & original_norm_squared
@@ -63,20 +67,22 @@ contains
             call ensure_debug_output()
             write (angular_debug_unit, '(/,"From SUBROUTINE LODRWF:"/," Orbital",8x,"Eigenvalue",19x,"Norm")')
         end if
+        call read_wavefunction_header(wavefunction_input_unit, layout, read_status)
+        if (read_status /= 0) error stop "Invalid radial wavefunction header"
         loaded_orbital_count = 0
         ! Load each binary record in file order and install it only in matching orbital slots.
         do
-            read (wavefunction_input_unit, iostat=read_status) file_principal_n, file_kappa, file_energy_parameter, file_grid_size
-            if (read_status /= 0) exit
+            call read_orbital_metadata(wavefunction_input_unit, layout, file_principal_n, file_kappa, &
+                file_energy_parameter, file_grid_size, read_status)
+            if (is_iostat_end(read_status)) exit
+            if (read_status /= 0) error stop "Invalid orbital metadata"
             call alloc (file_large_component,file_grid_size, "file_large_component", "read_radial_wavefunction_records")
             call alloc (file_small_component,file_grid_size, "file_small_component", "read_radial_wavefunction_records")
             call alloc (file_radial_grid,file_grid_size, "file_radial_grid", "read_radial_wavefunction_records")
 
-            ! The binary format stores the coefficient and both components together, then radii separately.
-            read (wavefunction_input_unit) file_origin_coefficient, (file_large_component(radial_index),radial_index=1, &
-                file_grid_size), &
-                & (file_small_component(radial_index),radial_index=1,file_grid_size)
-            read (wavefunction_input_unit) (file_radial_grid(radial_index),radial_index=1,file_grid_size)
+            call read_orbital_payload(wavefunction_input_unit, layout, file_origin_coefficient, file_large_component, &
+                file_small_component, file_radial_grid, read_status)
+            if (read_status /= 0) error stop "Invalid radial wavefunction payload"
 
             do orbital_index = 1, orbital_count
                 if (.not.(orbital_energy_parameters(orbital_index)<0.0_real64 .and. &

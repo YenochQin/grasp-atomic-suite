@@ -119,11 +119,12 @@ def check_binary_files(work: Path) -> None:
         path = work / name
         if not path.is_file() or not path.stat().st_size:
             raise ValueError(f"Missing/empty required output: {name}")
-        endian = detect_endian(path) if name.startswith(("rwfn", "rmix")) else "<"
-        with path.open("rb") as stream:
-            records = []
-            while (record := read_record(stream, endian)) is not None:
-                records.append(record)
+        records = []
+        if not name.startswith("rwfn"):
+            endian = detect_endian(path) if name.startswith("rmix") else "<"
+            with path.open("rb") as stream:
+                while (record := read_record(stream, endian)) is not None:
+                    records.append(record)
         if name in MCP_RECORD_SIZES and [len(record) for record in records] != MCP_RECORD_SIZES[name]:
             raise ValueError(f"Incomplete/unexpected MCP records for the frozen single-CSF fixture: {name}")
         if name.startswith("rwfn"):

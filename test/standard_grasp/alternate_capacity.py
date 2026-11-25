@@ -47,6 +47,7 @@ PROCEDURE_SOURCES = (
     "lib/core/file_open.f90",
     "lib/core/weighted_radial_overlap.f90",
     "lib/core/radial_orbital_interpolation.f90",
+    "lib/core/radial_wavefunction_format.f90",
     "apps/rwfnestimate/estimate_from_saved_orbitals.f90",
     "apps/rwfnestimate/write_initial_wavefunction_summary.f90",
 )

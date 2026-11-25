@@ -12,8 +12,8 @@ import json
 import math
 from pathlib import Path
 import shutil
-import struct
 import subprocess
+import sys
 import json
 import tempfile
 
@@ -52,20 +52,9 @@ def run(binary: Path, directory: Path, stdin: str) -> str:
     return log
 
 
-def records(path: Path) -> tuple[str, list[bytes]]:
-    data = path.read_bytes()
-    endian = "<" if struct.unpack_from("<i", data)[0] == 6 else ">"
-    result = []
-    offset = 0
-    while offset < len(data):
-        length = struct.unpack_from(endian + "i", data, offset)[0]
-        assert 0 <= length <= len(data) - offset - 8
-        end = offset + 4 + length
-        assert struct.unpack_from(endian + "i", data, end)[0] == length
-        result.append(data[offset + 4:end])
-        offset = end + 4
-    assert result[0] == b"G92RWF" and (len(result) - 1) % 3 == 0
-    return endian, result
+# Share the independent binary reader with RMCDHF regression utilities.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "rmcdhf"))
+from compare_rwfn import read_radial_stream
 
 
 def norm(p: tuple[float, ...], q: tuple[float, ...], r: tuple[float, ...],
@@ -79,17 +68,11 @@ def norm(p: tuple[float, ...], q: tuple[float, ...], r: tuple[float, ...],
 
 
 def validate(path: Path, expected: set[tuple[int, int]], z: int) -> list[dict]:
-    endian, data = records(path)
-    seen = set()
+    orbitals = read_radial_stream(path)
     summary = []
-    for index in range(1, len(data), 3):
-        n, kappa, energy, points = struct.unpack(endian + "iidi", data[index])
-        assert (n, kappa) not in seen
-        seen.add((n, kappa))
-        values = struct.unpack(endian + f"{1 + 2 * points}d", data[index + 1])
-        r = struct.unpack(endian + f"{points}d", data[index + 2])
-        p, q = values[1:1 + points], values[1 + points:]
-        assert all(math.isfinite(value) for value in (energy, *values, *r)), (n, kappa)
+    for (n, kappa), orbital in orbitals.items():
+        p, q, r, energy = orbital.p, orbital.q, orbital.r, orbital.energy
+        assert all(math.isfinite(value) for value in (energy, *p, *q, *r)), (n, kappa)
         assert energy > 0 and any(p), (n, kappa)
         assert r[0] == 0 and all(a < b for a, b in zip(r, r[1:])), (n, kappa)
         integral = norm(p, q, r, z)
@@ -101,6 +84,7 @@ def validate(path: Path, expected: set[tuple[int, int]], z: int) -> list[dict]:
             significant = [value for value in p if abs(value) > 0.1 * 0.05**6]
             assert significant and all(value * significant[0] > 0 for value in significant)
         summary.append({"n": n, "kappa": kappa, "energy": energy, "norm": integral})
+    seen = set(orbitals)
     assert seen == expected, (seen - expected, expected - seen)
     return summary
 

@@ -1,0 +1,23 @@
+{
+  "description": "Write the optimized radial orbitals through the shared marker-free wavefunction stream.",
+  "files": {
+    "src/appl/rmcdhf/orbout.f90": {
+      "after_suite_sha256": "b006e97c6e5bf70798121ab1d0b7ffe59568e934605b9517af6b9d298b36bbc8",
+      "before_suite_sha256": "45970e91a9add3a28aae2d965876f4912780cae791754fd5f15a08074a36d7fc"
+    },
+    "src/appl/rmcdhf_mem/orbout.f90": {
+      "after_suite_sha256": "b006e97c6e5bf70798121ab1d0b7ffe59568e934605b9517af6b9d298b36bbc8",
+      "before_suite_sha256": "45970e91a9add3a28aae2d965876f4912780cae791754fd5f15a08074a36d7fc"
+    },
+    "src/appl/rmcdhf_mem_mpi/orbout.f90": {
+      "after_suite_sha256": "b006e97c6e5bf70798121ab1d0b7ffe59568e934605b9517af6b9d298b36bbc8",
+      "before_suite_sha256": "45970e91a9add3a28aae2d965876f4912780cae791754fd5f15a08074a36d7fc"
+    },
+    "src/appl/rmcdhf_mpi/orbout.f90": {
+      "after_suite_sha256": "b006e97c6e5bf70798121ab1d0b7ffe59568e934605b9517af6b9d298b36bbc8",
+      "before_suite_sha256": "45970e91a9add3a28aae2d965876f4912780cae791754fd5f15a08074a36d7fc"
+    }
+  },
+  "previous_manifest_sha256": "c30005180093f58bb093fe1e6146294d313d1dc84ad0f12e62784734e8110263",
+  "schema_version": 1
+}

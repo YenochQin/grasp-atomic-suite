@@ -14,40 +14,20 @@ contains
     subroutine write_initial_radial_wavefunctions(file_path)
         ! Module dependencies
         use array_memory_management, only: dalloc
-        use radial_grid_state, only: radial_grid
-        use orbital_csf_basis, only: orbital_count, orbital_energy_parameters, orbital_kappa, orbital_principal_n
-        use radial_wavefunctions, only: orbital_origin_parameters, radial_large_components, radial_small_components, &
-            orbital_last_grid_index
-        use standard_io_units, only: stderr_unit
-        use file_open, only: open_calculation_file
+        use radial_wavefunction_format, only: write_radial_orbitals
+        use radial_wavefunctions, only: radial_large_components, radial_small_components
         implicit none (type, external)
 
         ! Arguments
         character(len=*), intent(in) :: file_path
 
         ! Local declarations
-        integer :: wavefunction_output_unit, open_status, orbital_index, last_radial_index, radial_index
+        integer :: wavefunction_output_unit, open_status
 
-        call open_calculation_file (wavefunction_output_unit, file_path, "UNFORMATTED", "NEW", open_status)
-        if (open_status == 1) then
-            write (stderr_unit, *) 'Error when opening "', file_path(1:len_trim(file_path)), &
-                '"'
-
-            stop
-        end if
-        ! Write the file header
-        write (wavefunction_output_unit) "G92RWF"
-        ! Write out the radial wavefunctions
-        do orbital_index = 1, orbital_count
-            last_radial_index = orbital_last_grid_index(orbital_index)
-            write (wavefunction_output_unit) orbital_principal_n(orbital_index), orbital_kappa(orbital_index), &
-                & orbital_energy_parameters(orbital_index), last_radial_index
-            write (wavefunction_output_unit) orbital_origin_parameters(orbital_index), &
-                & (radial_large_components(radial_index,orbital_index), &
-                & radial_index=1,last_radial_index), &
-                & (radial_small_components(radial_index,orbital_index),radial_index=1,last_radial_index)
-            write (wavefunction_output_unit) (radial_grid(radial_index),radial_index=1,last_radial_index)
-        end do
+        open(newunit=wavefunction_output_unit, file=file_path, status="replace", form="unformatted", &
+            access="stream", action="write", iostat=open_status)
+        if (open_status /= 0) error stop "Cannot create initial radial wavefunction: "//trim(file_path)
+        call write_radial_orbitals(wavefunction_output_unit)
 
         close(wavefunction_output_unit)
         ! Deallocate the storage for the radial wavefunctions

@@ -8,6 +8,7 @@ module radial_wavefunction_input
 contains
     subroutine read_radial_wavefunction_file(radial_file_path)
         ! Module dependencies
+        use radial_wavefunction_format, only: open_wavefunction_input
         use standard_io_units, only: stderr_unit
         use radial_wavefunction_records, only: read_radial_wavefunction_records
         implicit none (type, external)
@@ -15,18 +16,10 @@ contains
         ! Arguments and local declarations
         integer :: wavefunction_input_unit
         character (len = *), intent(in) :: radial_file_path
-        integer :: load_status, read_status
-        character :: file_signature*6
+        integer :: load_status
 
-        open(newunit=wavefunction_input_unit, file=radial_file_path, form="UNFORMATTED", &
-            status="OLD", action="READ", iostat=load_status)
+        call open_wavefunction_input(wavefunction_input_unit, radial_file_path, load_status)
         if (load_status /= 0) error stop "Cannot open radial wavefunction file: "//trim(radial_file_path)
-        read (wavefunction_input_unit, iostat=read_status) file_signature
-        if (read_status/=0 .or. file_signature/="G92RWF") then
-            write (stderr_unit, *) "This is not a Radial WaveFunction File;"
-            close(wavefunction_input_unit)
-            stop
-        end if
         call read_radial_wavefunction_records (wavefunction_input_unit, load_status)
 
         if (load_status /= 0) then

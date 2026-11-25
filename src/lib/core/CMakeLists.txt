@@ -48,6 +48,7 @@ add_library(core STATIC
     csf_byte_packing.f90
     isotope_data_records.f90
     radial_orbital_orthogonalization.f90
+    radial_wavefunction_format.f90
     radial_wavefunction_records.f90
     block_level_selection.f90
     subshell_parent_table.f90

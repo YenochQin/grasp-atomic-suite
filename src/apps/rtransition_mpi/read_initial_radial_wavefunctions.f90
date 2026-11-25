@@ -12,6 +12,8 @@ contains
     ! Written by Per Jonsson                              June 1996
     subroutine read_initial_radial_wavefunctions(state_name)
         ! Module dependencies
+        use radial_wavefunction_format, only: wavefunction_layout, read_wavefunction_header, read_orbital_metadata, &
+            open_wavefunction_input, read_orbital_payload
         use, intrinsic :: iso_fortran_env, only: output_unit
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_radial_points
@@ -27,16 +29,16 @@ contains
         ! Arguments and local declarations
         integer :: wavefunction_input_unit
         character , intent(in) :: state_name*128
-        integer :: j, i, k, nwin, io_status, npyii, nakyii, myii, jj
+        integer :: j, k, nwin, io_status, npyii, nakyii, myii, jj
         real(real64) :: con, fkk, eyii, pzy
         real(real64), pointer :: pa(:), qa(:), ra(:)
-        character :: radial_file_signature*6
+        type(wavefunction_layout) :: layout
         ! Common relevant for the initial state
         !
         ! Open the radial wave function file
         j = index(state_name," ")
-        open(newunit=wavefunction_input_unit, file=state_name(1:j-1)//".bw", form="UNFORMATTED", status="OLD", &
-            position="asis")
+        call open_wavefunction_input(wavefunction_input_unit, state_name(1:j-1)//".bw", io_status)
+        if (io_status /= 0) error stop "Cannot open radial wavefunction"
         ! Allocate storage to orbital arrays
         call alloc (initial_radial_large_components, max_radial_points, initial_orbital_count, "initial_radial_large_components", &
             "read_initial_radial_wavefunctions")
@@ -69,20 +71,18 @@ contains
         end do
         ! Read orbital information from Read Orbitals File;
         nwin = 0
-        read (wavefunction_input_unit, iostat=io_status) radial_file_signature
-        if (io_status/=0 .or. radial_file_signature/="G92RWF") then
-            write (output_unit, *) "This is not a Radial WaveFunction File;"
-            close(wavefunction_input_unit)
-        end if
+        call read_wavefunction_header(wavefunction_input_unit, layout, io_status)
+        if (io_status /= 0) error stop "Invalid radial wavefunction header"
 
         do
-            read (wavefunction_input_unit, iostat=io_status) npyii, nakyii, eyii, myii
-            if (io_status /= 0) exit
+            call read_orbital_metadata(wavefunction_input_unit, layout, npyii, nakyii, eyii, myii, io_status)
+            if (is_iostat_end(io_status)) exit
+            if (io_status /= 0) error stop "Invalid orbital metadata"
             call alloc (pa, myii, "PA", "read_initial_radial_wavefunctions")
             call alloc (qa, myii, "QA", "read_initial_radial_wavefunctions")
             call alloc (ra, myii, "RA", "read_initial_radial_wavefunctions")
-            read (wavefunction_input_unit) pzy, (pa(i),i=1,myii), (qa(i),i=1,myii)
-            read (wavefunction_input_unit) (ra(i),i=1,myii)
+            call read_orbital_payload(wavefunction_input_unit, layout, pzy, pa, qa, ra, io_status)
+            if (io_status /= 0) error stop "Invalid radial wavefunction payload"
 
             do j = 1, initial_orbital_count
                 if (.not.(initial_orbital_energy_parameters(j)<0.0_real64 .and. npyii==initial_orbital_principal_n(j) .and. &

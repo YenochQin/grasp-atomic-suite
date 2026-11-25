@@ -31,7 +31,7 @@
 | [`load_merged_csf_basis.f90`](load_merged_csf_basis.f90) | 加载指定状态的原生描述符基组及块信息。按加载阶段释放旧占据／耦合数组或保留相应状态映射，供双正交角系数处理。 |
 | [`rbiotransform_mpi_main.f90`](rbiotransform_mpi_main.f90) | 初始化 MPI，广播状态名和 CI 模式。建立同一网格，读两套轨道并算双正交变换，各 rank 生成局部重耦合记录，再完成态向量变换与输出。 |
 | [`read_final_radial_wavefunctions.f90`](read_final_radial_wavefunctions.f90) | 同样验证并扫描末态径向文件，按末态轨道顺序保留成功匹配的记录，对其 $P,Q$ 执行末态插值。 |
-| [`read_initial_radial_wavefunctions.f90`](read_initial_radial_wavefunctions.f90) | 读初态 `G92RWF`，按量子数匹配轨道，保存能量和原点参数，再把初态大小分量插值至工作网格。 |
+| [`read_initial_radial_wavefunctions.f90`](read_initial_radial_wavefunctions.f90) | 读初态 `GRWFRAD1` 或 `G92RWF`，按量子数匹配轨道，保存能量和原点参数，再把初态大小分量插值至工作网格。 |
 | [`read_state_filenames.f90`](read_state_filenames.f90) | 读取初末态名，处理同名计算并询问是否继续。若只变换特定 $J$，把用户的 `2J` 转成程序的 `2J+1` 选择列表。 |
 | [`read_state_mixing_coefficients.f90`](read_state_mixing_coefficients.f90) | 打开态的混合文件并按指定块取得电子、轨道和态维数、能量偏移、目标根及 CSF 向量，供反变换器使用。 |
 

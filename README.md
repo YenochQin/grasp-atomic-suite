@@ -211,7 +211,7 @@ Common input files:
 
 - `isodata`: nuclear and isotope data.
 - `name_desc.parquet` and `name_header.toml`: CSF descriptors and matching header.
-- `name.wfn`: radial orbital wavefunctions.
+- `name.wfn`: radial orbital wavefunctions in the [radial wavefunction stream](#radial-wavefunction-stream).
 - `name.mix`: MCDHF/non-CI mixing-coefficient file.
 - `name.cimix`: CI mixing-coefficient file.
 
@@ -232,6 +232,52 @@ mpiexec -n 2 "$suite_bin/gj_mpi" name --ci
 ```
 
 Without arguments, it falls back to the interactive input flow.
+
+### Radial wavefunction stream
+
+The `rwfnestimate` and RMCDHF wavefunction outputs use the `GRWFRAD1` raw binary stream.
+Integers are little-endian signed 32-bit values and floating-point values are little-endian IEEE binary64.
+Offsets below are zero-based bytes. Suite readers also accept archived sequential Fortran `G92RWF` files.
+
+| Byte offset | Data |
+| --- | --- |
+| 0 | Eight ASCII bytes `GRWFRAD1` |
+| 8 | Integers `K` (orbital count) and `L` (largest orbital point count) |
+| 16 | `K` consecutive 32-byte orbital entries, each containing `n`, `kappa`, `point_count`, a reserved zero integer, `energy`, and `origin_parameter` in that order |
+| `16 + 32*K` | `float64` matrix with C/NumPy shape `(2*K+1, L)` and Fortran shape `(L, 2*K+1)` |
+
+The first matrix row contains the shared radial coordinates in bohr. The following rows contain `P` then `Q`
+for each orbital in table order. Only the first `point_count` samples of each orbital are active and the rest are zero.
+Orbital energies use the Suite binding-energy convention in hartree.
+
+```python
+import struct
+
+import numpy as np
+
+filename = "state.wfn"
+with open(filename, "rb") as stream:
+    magic, count, longest = struct.unpack("<8sii", stream.read(16))
+    if magic != b"GRWFRAD1":
+        raise ValueError("Unknown wavefunction format")
+
+orbitals = np.memmap(
+    filename, mode="r", offset=16, shape=(count,),
+    dtype=[
+        ("n", "<i4"), ("kappa", "<i4"), ("point_count", "<i4"),
+        ("reserved", "<i4"), ("energy", "<f8"), ("origin_parameter", "<f8"),
+    ],
+)
+radial = np.memmap(
+    filename, mode="r", dtype="<f8", offset=16 + 32 * count,
+    shape=(2 * count + 1, longest),
+)
+index = 0
+points = int(orbitals[index]["point_count"])
+r = radial[0, :points]
+p = radial[2 * index + 1, :points]
+q = radial[2 * index + 2, :points]
+```
 
 ## Verification Data
 

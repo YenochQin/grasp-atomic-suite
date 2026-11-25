@@ -5,11 +5,12 @@ module mpi_radial_wavefunction_file
     private
     public :: read_mpi_radial_wavefunction_file
 contains
-    ! Rank 0 opens the unformatted radial-wavefunction file and checks the G92RWF header.
+    ! Rank 0 opens the unformatted radial-wavefunction file.
     ! All ranks call the reader to receive the orbital records.
     subroutine read_mpi_radial_wavefunction_file (wavefunction_path)
 
         ! Module dependencies
+        use radial_wavefunction_format, only: open_wavefunction_input
         use mpi_state, only: mpi_rank
         use standard_io_units, only: stderr_unit
         use mpi_io_errors, only: fail_input_io_mpi
@@ -19,21 +20,12 @@ contains
         ! Arguments and local declarations
         integer :: wavefunction_input_unit
         character (len = *) :: wavefunction_path
-        integer :: header_read_status, setup_status
-        character (len = 6) :: file_header
+        integer :: setup_status
         wavefunction_input_unit = -1
         if (mpi_rank == 0) then
-            open(newunit=wavefunction_input_unit, file=wavefunction_path, form="UNFORMATTED", &
-                status="OLD", action="READ", iostat=setup_status)
+            call open_wavefunction_input(wavefunction_input_unit, wavefunction_path, setup_status)
             if (setup_status /= 0) call fail_input_io_mpi(setup_status, wavefunction_input_unit, &
                 "Cannot open radial wavefunction file: "//trim(wavefunction_path))
-
-            read (wavefunction_input_unit,iostat = header_read_status) file_header
-            if ((header_read_status /= 0) .or. (file_header /= "G92RWF")) then
-                write (stderr_unit,*) "This is not a Radial WaveFunction File;"
-                close (wavefunction_input_unit)
-                stop
-            end if
         end if
 
         call read_mpi_radial_wavefunction_records (wavefunction_input_unit, setup_status)
