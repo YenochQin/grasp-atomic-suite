@@ -28,7 +28,7 @@ contains
         use standard_io_units, only: stderr_unit
         use radial_grid_state, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale
         use orbital_inversion_flags, only: suppress_radial_inversion
-        use rmcdhf_mcp_options, only: mcp_diagonal_only, mcp_first_order_perturbation
+        use rmcdhf_mcp_options, only: mcp_diagonal_only
         use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, mpi_logical, mpi_rank
         use expected_orbital_nodes, only: expected_radial_node_counts
         use nuclear_model_parameters_state, only: nuclear_model_parameter_count
@@ -44,7 +44,6 @@ contains
         use mpi_radial_wavefunction_file, only: read_mpi_radial_wavefunction_file
 
         ! Procedure interfaces
-        use read_al_average_options_mpi_interface, only: read_al_average_options_mpi
         use read_eol_average_options_mpi_interface, only: read_eol_average_options_mpi
 
         ! Module dependencies
@@ -175,25 +174,10 @@ contains
             expected_radial_node_counts(:orbital_count) = orbital_principal_n(:orbital_count) - orbital_kappa(:orbital_count) - 1
         end where
 
-        if (mcp_diagonal_only) then
-            extended_optimal_level = .false.
-            call read_al_average_options_mpi       ! (E)AL type calculation,
-        ! H(DC) will not be diagonalised
-        else if (mcp_first_order_perturbation) then
-            extended_optimal_level = .true.
-            call read_eol_average_options_mpi (block_labels)   ! EOL type calculation
-        else
-            if (mpi_rank == 0) then
-                extended_optimal_level = .true.
-            end if
-            call mpi_bcast (extended_optimal_level, 1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
-            if (extended_optimal_level) then
-                call read_eol_average_options_mpi (block_labels)
-            else
-                call read_al_average_options_mpi    ! (E)AL type calculation,
-                ! H(DC) will not be diagonalised
-            end if
-        end if
+        if (mcp_diagonal_only) error stop &
+            "RMCDHF requires ASF roots in every J/parity block. Regenerate diagonal-only MCP with rangular."
+        extended_optimal_level = .true.
+        call read_eol_average_options_mpi (block_labels)
 
         if(mpi_rank == 0) then
             write (stderr_unit,*) "Enter the maximum number of read_scf_options_mpi cycles:"

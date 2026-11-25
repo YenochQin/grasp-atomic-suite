@@ -7,7 +7,7 @@ module mpi_io_errors
 
     ! Module interface
     private
-    public :: fail_input_io_mpi
+    public :: fail_input_io_mpi, abort_input_mpi
 
 contains
 

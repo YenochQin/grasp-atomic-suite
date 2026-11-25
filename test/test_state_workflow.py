@@ -3,10 +3,13 @@
 import argparse
 import os
 import subprocess
+import struct
 import tempfile
 from pathlib import Path
 
 from native_fixture import descriptors
+from rdensity.regression import records, write_records
+from test_csf_descriptors import Record, Shell, text_record
 
 CSF = """Core subshells:
 
@@ -35,7 +38,9 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
         (Path(__file__).resolve().parents[1] / "data/isodata").read_bytes()
     )
 
-    def run(program: str, answers: str, directory: Path | None = None) -> None:
+    def run(
+        program: str, answers: str, directory: Path | None = None, *, failure: str | None = None
+    ) -> None:
         mpi = program.endswith("_mpi")
         result = subprocess.run(
             [*(launcher if mpi else []), binaries / program],
@@ -48,7 +53,11 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
             check=False,
         )
         output = result.stdout + result.stderr
-        assert result.returncode == 0 and "Execution complete." in output, output
+        if failure:
+            assert result.returncode != 0 and failure in output, output
+            assert "Execution complete." not in output, output
+        else:
+            assert result.returncode == 0 and "Execution complete." in output, output
         assert output.count("Name of state:") == 1, output
 
     suffix = "_mpi" if launcher else ""
@@ -183,6 +192,76 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
         ):
             assert (legacy / source).read_bytes() == (permanent / target).read_bytes()
         assert {p.name: p.read_bytes() for p in legacy.glob("mcp.*")} == first_mcp
+
+    # Request roots in two blocks with equal J and opposite parity.
+    even = [Record((Shell(label, 2),), 0) for label in ("1s", "2s")]
+    odd = [
+        Record((Shell(label, 1, 1, 1), Shell("2p-", 1, 1, 1)), 0, -1)
+        for label in ("1s", "2s")
+    ]
+    basis = permanent / "blocks.c"
+    basis.write_text(
+        "Core subshells:\n\nPeel subshells:\n1s 2s 2p-\nCSF(s):\n"
+        + "".join(map(text_record, even)) + " *\n" + "".join(map(text_record, odd))
+    )
+    descriptors(basis)
+    basis.unlink()
+    run("rwfnestimate", "blocks\ny\n2\n*\n")
+    run("rangular" + suffix, "blocks\n" + ("n\n" if launcher else "y\n"))
+
+    def check_roots(path: Path) -> None:
+        mixing = records(path)
+        assert len(mixing) == 10, path
+        assert struct.unpack("=5i", mixing[2]) == (1, 2, 2, 1, 1), path
+        assert struct.unpack("=5i", mixing[6]) == (2, 2, 1, 1, -1), path
+
+    root_requirement = "Block 2 (0-) requires at least one valid ASF root"
+    missing_root = "Missing ASF selection. " + root_requirement
+    blank_selections = ["\n", " \t\n"]
+    for solver in ("rmcdhf", "rmcdhf_mem"):
+        run(solver + suffix, "blocks\ny\n1-2\n1\n1\n1s\n\n1\n")
+        path = permanent / "blocks.mix"
+        check_roots(path)
+        original = path.read_bytes()
+        for blank_selection in blank_selections:
+            run(solver + suffix, "blocks\ny\n1\n" + blank_selection, failure=missing_root)
+            assert path.read_bytes() == original
+
+    ci_answers = "y\nblocks\n" + ("n\n" if launcher else "") + "n\n" * 6
+    run("rci" + suffix, ci_answers + "1\t2\n1\n")
+    path = permanent / "blocks.cimix"
+    check_roots(path)
+    outputs = {item: item.read_bytes() for item in [path, *root.rglob("rci*.res")]}
+    assert len(outputs) == (3 if launcher else 2)
+    run("rci" + suffix, ci_answers + "\n1\n", failure="Missing ASF selection. Block 1 (0+)")
+    assert all(item.read_bytes() == previous for item, previous in outputs.items())
+    bad_choices = [(choice, missing_root) for choice in blank_selections]
+    bad_choices += [(choice, root_requirement) for choice in ("0\n", "1-3\n", "1-\n")]
+    if not launcher:
+        # Open MPI's stdin forwarding may leave rank 0 waiting after the launcher sees EOF.
+        bad_choices.append(("", missing_root))
+    for bad_choice, expected_error in bad_choices:
+        run("rci" + suffix, ci_answers + "1\n" + bad_choice, failure=expected_error)
+        assert all(item.read_bytes() == previous for item, previous in outputs.items())
+    run("rci" + suffix, "n\nblocks\ny\nn\n1-2\n1\n")
+    check_roots(path)
+
+    # Mark the disposable MCP headers as diagonal-only to exercise the legacy EAL rejection.
+    if launcher:
+        for shard in scratch.glob("*/mcp.mcpidx"):
+            data = bytearray(shard.read_bytes())
+            flags_offset = struct.calcsize("=8s8i8q")
+            struct.pack_into("=q", data, flags_offset, 1)
+            shard.write_bytes(data)
+    else:
+        for channel in permanent.glob("mcp.[0-9][0-9]"):
+            data = records(channel)
+            flags_index = 5 if channel.name == "mcp.30" else 2
+            data[flags_index] = struct.pack("=i", 1) + data[flags_index][4:]
+            write_records(channel, data)
+    for solver in ("rmcdhf", "rmcdhf_mem"):
+        run(solver + suffix, "blocks\ny\n1\n1\n1\n1s\n\n1\n",
+            failure="Regenerate diagonal-only MCP")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,31 @@
+{
+  "description": "Require an ASF root in every RMCDHF symmetry block and reject legacy diagonal-only MCP input.",
+  "files": {
+    "src/appl/rmcdhf/getscd.f90": {
+      "after_suite_sha256": "a83b9a56c2124a32abc66f1b7377e5d2ba9e7975e293ef75d3b7614ad3251dfb",
+      "before_suite_sha256": "7a8fba75f37036635f81cad64eb11a4c152e5d161e7760f2dc90601d3f96abe9"
+    },
+    "src/appl/rmcdhf_mem/getscd.f90": {
+      "after_suite_sha256": "a83b9a56c2124a32abc66f1b7377e5d2ba9e7975e293ef75d3b7614ad3251dfb",
+      "before_suite_sha256": "7a8fba75f37036635f81cad64eb11a4c152e5d161e7760f2dc90601d3f96abe9"
+    },
+    "src/appl/rmcdhf_mem_mpi/getoldmpi.f90": {
+      "after_suite_sha256": "b3d3320c040c5608ab36183ebafb21ed08c78c82df330151e2b3ae6f31899feb",
+      "before_suite_sha256": "4a90476860977aa7b4e2aa374969cb075d56b547ed7af8b5eacf74f6b24435bc"
+    },
+    "src/appl/rmcdhf_mem_mpi/getscdmpi.f90": {
+      "after_suite_sha256": "b3de39bae1785440a3fc7a1fe34b2eabdf3dc7e411839cfa11dd5c7bf5989da5",
+      "before_suite_sha256": "6abeb7f00ee95b304db4ed62b347043c32bc16c223d49228b4694497a8cb0d53"
+    },
+    "src/appl/rmcdhf_mpi/getoldmpi.f90": {
+      "after_suite_sha256": "74d56c22683167fbd1a0d6faca326f5175db1f91ba3df24a74ca84064ed57bcf",
+      "before_suite_sha256": "186cd12afb1830193d1d08c5d23dd7aff9c56e09df0b208e97cb4363083aaeb9"
+    },
+    "src/appl/rmcdhf_mpi/getscdmpi.f90": {
+      "after_suite_sha256": "12260fdfd9ae320e09389464ed84d9bbc518ed05b16d2dd3df41435f12aa0d66",
+      "before_suite_sha256": "65c2603f29537e8737ba04a8269f12e9ca9a5d7329c1b401717bbee65df28101"
+    }
+  },
+  "previous_manifest_sha256": "cd26d4db569430d177502b7d42fe214df5cf8c2fa5ba7ac305f060bca186b38b",
+  "schema_version": 1
+}

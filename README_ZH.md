@@ -173,9 +173,11 @@ CMake 会自动查找 BLAS/LAPACK，并要求 GNU Fortran 15 或更新版本。
 
 MPI 版本由 rank 0 询问状态名。`rangular_mpi` 在每个 rank 的临时目录写入 `mcp.mcpidx`，随后用相同基组和 rank 布局运行 `rmcdhf_mpi` 或 `rmcdhf_mem_mpi`。已有旧格式的作业需用当前 `rangular_mpi` 重新生成。描述符和轨道位于永久 I/O 目录，角系数程序和 SCF 的日志位于启动目录。`isodata` 和适用的 `npol.inp` 按目录共用。`rci` 沿用先询问默认设置、再询问状态名的顺序。供 `gj` 等性质程序使用的状态名应控制在 23 个字符以内。[MPI MCP 格式和验收](docs/implemented/design-0020-rmcdhf-mcp-io.md)
 
+RMCDHF 和 RCI 的串行与 MPI 版本都要求为 CSF 基组中的每个 `J/Parity` 块选择至少一个有效 ASF 根。每块输入一行根编号。空行、`0` 或其他无效选择会终止运行并指出对应的块。RMCDHF 将选中的各根纳入共同的轨道优化。选择多个根时，还需输入 EOL 权重选项。旧的仅对角 (E)AL MCP 数据需要用 Suite 对应的 `rangular` 程序重新生成角系数。
+
 每个工作目录共用一套 MCP。应先完成本基组的 RMCDHF，再在同一目录为下一基组生成角系数。并行计算不同基组时，分别使用独立的工作目录和 MPI scratch 目录。`A` 和 `A.initial` 两个状态也应分目录保存，因为两者都会写 `A.initial.wfn`。下游程序读取 `.wfn` 轨道文件、`.mix` 的 RMCDHF 系数或 `.cimix` 的 RCI 系数。
 
-状态名留空会使用 `rcsf_desc.parquet`、`rcsf_header.toml`、`rwfn.inp`、`rwfn.out` 和 `rmix.out`。以 y/n 回答设置开头的旧输入脚本仍可使用。若状态名恰为单字母 Y 或 N（含小写），相应输入目录里的同名头文件优先。同名重算时，(E)AL 不更新该状态已有的混合系数文件。固定文件名的已有计算仍可通过 [save_rmcdhf 归档](scripts/README.md#保存-rmcdhf-计算结果)。
+状态名留空会使用 `rcsf_desc.parquet`、`rcsf_header.toml`、`rwfn.inp`、`rwfn.out` 和 `rmix.out`。旧输入格式以 y/n 设置回答开头。若状态名恰为单字母 Y 或 N（含小写），相应输入目录里的同名头文件优先。固定文件名的已有计算仍可通过 [save_rmcdhf 归档](scripts/README.md#保存-rmcdhf-计算结果)。
 
 常用输入文件：
 

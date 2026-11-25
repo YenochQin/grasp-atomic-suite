@@ -29,7 +29,7 @@ contains
         use standard_io_units, only: stderr_unit
         use radial_grid_state, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale, radial_grid
         use orbital_inversion_flags, only: suppress_radial_inversion
-        use rmcdhf_mcp_options, only: mcp_diagonal_only, mcp_first_order_perturbation
+        use rmcdhf_mcp_options, only: mcp_diagonal_only
         use serial_mpi_context, only: mpi_rank
         use expected_orbital_nodes, only: expected_radial_node_counts
         use nuclear_model_parameters_state, only: nuclear_model_parameter_count
@@ -49,7 +49,6 @@ contains
         use radial_wavefunction_input, only: read_radial_wavefunction_file
 
         ! Procedure interfaces
-        use read_al_average_options_interface, only: read_al_average_options
         use read_eol_average_options_interface, only: read_eol_average_options
 
         ! Module dependencies
@@ -174,22 +173,10 @@ contains
             expected_radial_node_counts(:orbital_count) = orbital_principal_n(:orbital_count) - orbital_kappa(:orbital_count) - 1
         end where
 
-        if (mcp_diagonal_only) then
-            extended_optimal_level = .false.
-            call read_al_average_options                             ! (E)AL type calculation,
-        ! H(DC) will not be diagonalised
-        else if (mcp_first_order_perturbation) then
-            extended_optimal_level = .true.
-            call read_eol_average_options (block_labels)                     ! EOL type calculation
-        else
-            extended_optimal_level = .true.
-            if (extended_optimal_level) then
-                call read_eol_average_options (block_labels)
-            else
-                call read_al_average_options                          ! (E)AL type calculation,
-                ! H(DC) will not be diagonalised
-            end if
-        end if
+        if (mcp_diagonal_only) error stop &
+            "RMCDHF requires ASF roots in every J/parity block. Regenerate diagonal-only MCP with rangular."
+        extended_optimal_level = .true.
+        call read_eol_average_options (block_labels)
 
         write (stderr_unit, *) "Enter the maximum number of read_scf_options cycles:"
         read (*, *) maximum_scf_iterations

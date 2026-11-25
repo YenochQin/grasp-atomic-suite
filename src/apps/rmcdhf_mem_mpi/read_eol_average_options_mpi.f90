@@ -28,6 +28,7 @@ contains
         use scf_iteration_state, only: orbital_self_consistency_errors, radial_solution_methods
         use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, mpi_rank
         use block_level_selection, only: read_block_level_selection
+        use mpi_io_errors, only: abort_input_mpi
 
         ! Procedure interfaces
         use read_eol_level_weights_interface, only: read_eol_level_weights
@@ -59,7 +60,7 @@ contains
 
         ! cjb LODSTATE(NBLOCK, NCFBLK, IDBLK, NEVBLK, NCMAXBLK) -> (IDBLK)
         if (mpi_rank == 0) then
-            call read_block_level_selection (idblk)
+            call read_block_level_selection (idblk, abort_input_mpi)
         end if
 
         call mpi_bcast (selected_level_count, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)

@@ -20,7 +20,7 @@ HEADER = struct.Struct("=8s8i12q64s")
 BLOCK = struct.Struct("=8s5q")
 GROUP = struct.Struct("=4q")
 FOOTER = struct.Struct("=8s3q")
-ANSWERS = "case\ny\n1\n\n1s\n1s\n2\n"
+ANSWERS = "case\ny\n1\n1\n1\n1s\n1s\n2\n"
 ISODATA = Path(__file__).resolve().parents[1] / "data" / "isodata"
 
 
@@ -117,7 +117,7 @@ def run_paths(root: Path, binaries: Path, mpiexec: str) -> None:
         work = shutil.copytree(indexed, root / name)
         log = execute([*launcher, solver, "--mcp-trace", "--mcp-verify"], work, ANSWERS, name="scf")
         assert re.findall(r"Iteration number\s+(\d+)", log) == ["1", "2"], log
-        assert len(re.findall(r"^Level +1 +Energy = ", log, re.M)) == 3, log
+        assert len(re.findall(r"^Level +1 +Energy = ", log, re.M)) == 6, log
         for suffix in (".mix", ".wfn"):
             data = (work / ("case" + suffix)).read_bytes()
             assert retained_outputs.setdefault(suffix, data) == data
@@ -144,10 +144,8 @@ def run_paths(root: Path, binaries: Path, mpiexec: str) -> None:
                 hits = sum(int(row["groups_read"]) for row in scans if row["epoch"] == epoch)
                 assert hits == len(used), (rank, epoch, hits, used)
             run_reads += sum(int(row["bytes_read"]) for row in scans)
-            skipped = [row for row in trace if row["source"] == "matrix_skip"]
-            assert skipped and {row["block"] for row in skipped} == {"2"}
-            assert all(int(row["bytes_read"]) == 0 for row in skipped)
-            assert not any(row["source"] == "matrix" and row["block"] == "2" for row in trace)
+            assert not any(row["source"] == "matrix_skip" for row in trace)
+            assert {row["block"] for row in trace if row["source"] == "matrix"} == {"1", "2"}
             for row in trace:
                 if row["source"] == "matrix" and row["phase"] == "channel":
                     block, channel = int(row["block"]) - 1, int(row["channel"]) - 31

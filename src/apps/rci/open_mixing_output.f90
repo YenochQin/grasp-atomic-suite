@@ -24,7 +24,8 @@ contains
 
         ! Arguments
         character(len=*) , intent(in) :: name
-        character(len=8) :: block_labels(*)
+        character(len=8), intent(in) :: block_labels(*)
+        integer :: mixing_header(6)
 
         ! Local constants
         character(len=11), parameter :: form = "UNFORMATTED"
@@ -33,13 +34,14 @@ contains
         ! Local declarations
         integer :: k, open_status
 
+        call read_ci_mixing_coefficients (block_labels, mixing_header)
+
         k = index(name," ")
         call open_calculation_file (mixing_output_unit, name(1:k-1)//ci_mixing_suffix, form, status, open_status)
         if (open_status /= 0) stop "open_mixing_output: Error when opening .cimix file"
 
         write (mixing_output_unit) "G92MIX"
-
-        call read_ci_mixing_coefficients (block_labels)
+        write (mixing_output_unit) mixing_header
 
         return
     end subroutine open_mixing_output

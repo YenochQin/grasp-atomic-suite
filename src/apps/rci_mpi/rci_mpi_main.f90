@@ -33,6 +33,7 @@ program rci_mpi_main
     ! Procedure interfaces
     use open_summary_file_interface, only: open_summary_file
     use connect_ci_restart_file_interface, only: connect_ci_restart_file
+    use read_ci_options_interface, only: write_ci_restart_header
     use open_mixing_output_mpi_interface, only: open_mixing_output_mpi
     use write_input_summary_interface, only: write_input_summary
 
@@ -54,6 +55,7 @@ program rci_mpi_main
     integer(int64) :: start_clock_count
     integer :: core_subshell_count, max_orbital_two_j
     logical :: yes
+    logical :: is_restart
     character(len=128) :: startup_directory, state_name, scratch_directory, permanent_directory
     character(:), allocatable :: name, isotope_file_path, orbital_path, descriptor_file_path
     character(len=8) :: block_labels(maximum_input_symmetry_blocks)
@@ -108,8 +110,10 @@ program rci_mpi_main
         call initialize_physical_constants
         if (mpi_rank == 0)  call open_summary_file (name)
         call open_csf_blocks_mpi (descriptor_file_path, core_subshell_count, block_labels)
-        call connect_ci_restart_file (isotope_file_path, orbital_path, block_labels)
+        call connect_ci_restart_file (isotope_file_path, orbital_path, block_labels, is_restart)
+        ! Validate the requested eigenpairs before writing mixing and restart records.
         call open_mixing_output_mpi (name, block_labels)
+        if (.not. is_restart) call write_ci_restart_header()
         if (mpi_rank == 0)  call write_input_summary
         call initialize_log_factorial_table
 

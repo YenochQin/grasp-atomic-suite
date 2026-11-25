@@ -28,11 +28,14 @@ contains
 
         ! Arguments
         character(len=*) , intent(in) :: name
-        character(len=8) :: block_labels(*)
+        character(len=8), intent(in) :: block_labels(*)
+        integer :: mixing_header(6)
 
         ! Local constants
         character(len=11), parameter :: form = "UNFORMATTED"
         character(len=7), parameter  :: status = "UNKNOWN"
+
+        call read_ci_mixing_coefficients_mpi (block_labels, mixing_header)
 
         if (mpi_rank == 0) then
             call open_calculation_file (mixing_output_unit, trim(name)//ci_mixing_suffix, form, status, mpi_error_code)
@@ -41,9 +44,8 @@ contains
             end if
 
             write (mixing_output_unit) "G92MIX"
+            write (mixing_output_unit) mixing_header
         end if
-
-        call read_ci_mixing_coefficients_mpi (block_labels)
 
         return
     end subroutine open_mixing_output_mpi

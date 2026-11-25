@@ -187,6 +187,14 @@ angular and SCF logs live in the launch directory. `isodata` and applicable
 RCI keeps its settings-first prompt order. Property programs such as `gj` use
 up to 23 characters for the state name.
 
+RMCDHF and RCI, including their MPI variants, require at least one valid ASF
+root for every `J/parity` block in the CSF basis. Enter one line of root indices
+per block. A blank line, a zero, or another invalid selection stops the run and
+identifies the affected block. RMCDHF includes each selected root in the shared
+orbital optimization and reads the EOL weight option when multiple roots are
+selected. For legacy diagonal-only (E)AL MCP data, regenerate the angular
+coefficients with the corresponding Suite `rangular` program.
+
 MCP data belongs to the working directory. Finish the SCF run for a basis
 before generating another basis there, or use separate work and MPI scratch
 directories. States named `A` and `A.initial` also share the path `A.initial.wfn`
@@ -194,10 +202,9 @@ and need separate directories. State readers use `.wfn` for orbitals, `.mix` for
 RMCDHF coefficients, and `.cimix` for RCI coefficients.
 
 An empty state selects `rcsf_desc.parquet`, `rcsf_header.toml`, `rwfn.inp`,
-`rwfn.out` and `rmix.out`.
-Existing answer files starting with a y/n settings
-response still work. For a single-letter state `Y` or `N` (either case), the
-matching header in the input directory takes precedence. An (E)AL rerun leaves any existing mixing file for that state untouched. Fixed-name runs can
+`rwfn.out` and `rmix.out`. The legacy answer format starts with the y/n settings
+response. For a single-letter state `Y` or `N` (either case), the
+matching header in the input directory takes precedence. Fixed-name runs can
 still be archived with [save_rmcdhf](scripts/README.md#保存-rmcdhf-计算结果).
 
 Common input files:

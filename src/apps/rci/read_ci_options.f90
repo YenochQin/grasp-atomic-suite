@@ -4,7 +4,7 @@ module read_ci_options_interface
 
     ! Module interface
     private
-    public :: read_ci_options
+    public :: read_ci_options, write_ci_restart_header
 contains
 
     !
@@ -18,20 +18,14 @@ contains
         use hamiltonian_correction_flags, only: use_first_order_csf_perturbation, include_normal_mass_shift, &
             estimate_self_energy, include_specific_mass_shift, include_transverse_interaction, include_vacuum_polarization
         use atomic_calculation_state,           only: vacuum_speed_of_light_au, speed_of_light_au, nuclear_charge, &
-            working_tolerance, electron_count, nuclear_mass_in_electron_masses
+            working_tolerance
         use calculation_input_defaults, only: nondefault_options_flag
-        use radial_grid_state, only: radial_point_count, radial_grid, radial_grid_derivative, radial_derivative_over_radius, &
+        use radial_grid_state, only: radial_point_count, &
             radial_grid_scale, transformed_grid_step, asymptotic_grid_step
         use hamiltonian_symmetry_blocks, only: csf_counts_by_block, symmetry_block_count
         use csf_block_cutoffs, only: csf_cutoff_by_block
         use standard_io_units, only: stderr_unit, stdin_unit
-        use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
-        use nuclear_potential_state,          only: negative_radius_times_potential, first_grid_index_beyond_fermi_c
-        use orbital_csf_basis, only: csf_count, orbital_count, orbital_energy_parameters, orbital_origin_exponents
-        use radial_wavefunctions, only: orbital_last_grid_index, orbital_origin_parameters, radial_large_components, &
-            radial_small_components
         use breit_frequency_scale, only: transverse_photon_frequency_scale
-        use ci_restart_units, only: restart_matrix_unit
         use qed_orbital_cutoffs, only: self_energy_cutoff_flag, self_energy_max_principal_n
         use yes_no_input, only: read_yes_no
         use nuclear_coulomb_potential, only: calculate_nuclear_coulomb_potential
@@ -47,7 +41,7 @@ contains
 
         ! Local declarations
         logical :: yes
-        integer :: symmetry_block_index, jblock, ntmp, np10, orbital_index
+        integer :: symmetry_block_index, jblock, ntmp
         ! Load the nuclear and isotope parameters for the CI Hamiltonian.
         call read_isotope_data (isotope_file_path)
         ! Allow the default speed of light to be overridden for this calculation.
@@ -194,9 +188,30 @@ contains
         call calculate_nuclear_coulomb_potential
         ! Load the radial wavefunctions
         call read_radial_wavefunction_file (radial_file_path)
+    end subroutine read_ci_options
+
+    subroutine write_ci_restart_header()
+        use atomic_calculation_state, only: electron_count, nuclear_charge, nuclear_mass_in_electron_masses, speed_of_light_au
+        use hamiltonian_symmetry_blocks, only: symmetry_block_count
+        use orbital_csf_basis, only: csf_count, orbital_count, orbital_energy_parameters, orbital_origin_exponents
+        use radial_wavefunctions, only: orbital_last_grid_index, orbital_origin_parameters, radial_large_components, &
+            radial_small_components
+        use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
+        use nuclear_potential_state, only: negative_radius_times_potential, first_grid_index_beyond_fermi_c
+        use radial_grid_state, only: radial_point_count, radial_grid, radial_grid_derivative, radial_derivative_over_radius, &
+            radial_grid_scale, transformed_grid_step, asymptotic_grid_step
+        use ci_restart_units, only: restart_matrix_unit
+        use csf_block_cutoffs, only: csf_cutoff_by_block
+        use hamiltonian_correction_flags, only: use_first_order_csf_perturbation, include_normal_mass_shift, &
+            include_specific_mass_shift, include_transverse_interaction, include_vacuum_polarization
+        use breit_frequency_scale, only: transverse_photon_frequency_scale
+
+        integer :: symmetry_block_index, np10, orbital_index
+
+        write (restart_matrix_unit) "R92RES"
         ! Write the basic parameters of the model electron cloud to the
         ! .res  file; this is the second record on the file --- the
-        ! first is the header (see SUBROUTINE SETRES)
+        ! first is the file signature
         write (restart_matrix_unit) electron_count, csf_count, orbital_count, symmetry_block_count ! ncf is ncftot, from setcsll
         ! Write the nuclear parameters and $- r \times V_ (r)$
         ! to the  .res  file; these are the third, fourth, and fifth
@@ -235,6 +250,5 @@ contains
                 (radial_small_components(symmetry_block_index,orbital_index) &
                 & , symmetry_block_index = 1, orbital_last_grid_index(orbital_index))
         end do
-        return
-    end subroutine read_ci_options
+    end subroutine write_ci_restart_header
 end module read_ci_options_interface

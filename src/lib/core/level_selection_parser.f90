@@ -4,7 +4,10 @@ module level_selection_parser
 
     ! Module interface
     private
-    public :: parse_level_selection
+    public :: parse_level_selection, no_levels_selected
+
+    integer, parameter :: no_levels_selected = 1
+    character(len=*), parameter :: level_separators = " ,"//achar(9)
 contains
     subroutine parse_level_selection(selected_level_count, maximum_level_index, input_line, parse_status)
         ! Module dependencies
@@ -21,15 +24,18 @@ contains
         character (len = *), intent(in) :: input_line
 
         ! Local declarations
-        integer :: length_of_record, initial_level_count, allocated_level_capacity, range_start_position, token_start, &
+        integer :: length_of_record, allocated_level_capacity, range_start_position, token_start, &
             & character_index, token_end, &
             token_width, width_text_length, read_status, parsed_level_index, range_start_level, additional_level_count, &
             & range_offset
         character :: current_character, integer_format*7, width_text*3
 
-        length_of_record = len_trim(input_line)
+        if (verify(input_line, level_separators) == 0) then
+            parse_status = no_levels_selected
+            return
+        end if
 
-        initial_level_count = selected_level_count
+        length_of_record = len_trim(input_line)
         allocated_level_capacity = selected_level_count
 
         if (allocated_level_capacity == 0) then
@@ -40,7 +46,7 @@ contains
         character_index = 1
         do while (character_index <= length_of_record)
             current_character = input_line(character_index:character_index)
-            if (current_character == " " .or. current_character == ",") then
+            if (index(level_separators, current_character) > 0) then
                 character_index = character_index + 1
                 cycle
             end if
@@ -48,11 +54,16 @@ contains
             token_start = character_index
             do while (character_index <= length_of_record)
                 current_character = input_line(character_index:character_index)
-                if (current_character == " " .or. current_character == "," .or. current_character == "-") exit
+                if (index(level_separators//"-", current_character) > 0) exit
                 character_index = character_index + 1
             end do
             token_end = character_index - 1
             token_width = token_end - token_start + 1
+            if (token_width == 0) then
+                write (stderr_unit, *) "parse_level_selection: missing range endpoint"
+                parse_status = -1
+                return
+            end if
             call format_integer (token_width, width_text, width_text_length)
             integer_format = "(1i"//width_text(1:width_text_length)//")"
             read (input_line(token_start:token_end), integer_format, iostat=read_status) parsed_level_index
@@ -61,19 +72,18 @@ contains
                 parse_status = -1
                 return
             end if
+            if (parsed_level_index < 1 .or. parsed_level_index > maximum_level_index) then
+                write (stderr_unit, *) "parse_level_selection: serial numbers must be", &
+                    " in the range [1,", maximum_level_index, "];"
+                parse_status = -2
+                return
+            end if
 
             if (range_start_position == 0) then
                 selected_level_count = selected_level_count + 1
                 if (selected_level_count > allocated_level_capacity) then
                     call ralloc (requested_level_indices, selected_level_count, "requested_level_indices", "parse_level_selection")
                     allocated_level_capacity = selected_level_count
-                end if
-
-                if (parsed_level_index<1 .or. parsed_level_index>maximum_level_index) then
-                    write (stderr_unit, *) "parse_level_selection: serial numbers must be", &
-                        " in the range [1,", maximum_level_index, "];"
-                    parse_status = -2
-                    return
                 end if
 
                 requested_level_indices(selected_level_count) = parsed_level_index
@@ -103,10 +113,12 @@ contains
 
         end do
 
-        if (selected_level_count == initial_level_count) then
-            parse_status = 1
+        if (range_start_position /= 0) then
+            write (stderr_unit, *) "parse_level_selection: missing range endpoint"
+            parse_status = -1
             return
         end if
+
         if (selected_level_count /= allocated_level_capacity) then
             write (stderr_unit, *) "parse_level_selection: selected level count differs from allocated capacity"
             call ralloc (requested_level_indices, selected_level_count, "requested_level_indices", "parse_level_selection")

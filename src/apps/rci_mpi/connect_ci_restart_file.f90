@@ -11,7 +11,7 @@ contains
     !
     ! Written by Farid A. Parpia. Last revision: 06 Oct 1992
     ! Modified by Xinghong. Last revision: 23 Jun 1998
-    subroutine connect_ci_restart_file(isotope_file_path, radial_file_path, block_labels)
+    subroutine connect_ci_restart_file(isotope_file_path, radial_file_path, block_labels, is_restart)
         ! Module dependencies
         use array_memory_management, only: alloc
         use calculation_input_defaults, only: nondefault_options_flag
@@ -36,6 +36,8 @@ contains
         character  :: radial_file_path*(*)
         character(len=8)  :: block_labels(*)
 
+        logical, intent(out) :: is_restart
+
         ! Local constants
         character(len=11), parameter :: form = "UNFORMATTED"
         character(len=7), parameter :: status = "UNKNOWN"
@@ -43,7 +45,7 @@ contains
 
         ! Local declarations
         integer :: io_status
-        logical :: found, is_restart
+        logical :: found
         character :: r92res*6, file_path*11, block_label_text*3
         ! Compose the "rciXXX.res" file names (for each node)
         write (block_label_text, "(I3.3)") mpi_rank
@@ -90,9 +92,6 @@ contains
 
         else
 
-            ! ...Write the file header
-            ! ...Generate the first part of the .res file
-            write (restart_matrix_unit) restitle
             call read_ci_options (isotope_file_path, radial_file_path, block_labels)
 
         end if

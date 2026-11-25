@@ -11,9 +11,8 @@ contains
     !
     ! Written by Farid A. Parpia. Last revision: 24 Nov 1992
     ! Block version by Xinghong He. Last revision:  9 Jun 1998
-    subroutine read_ci_mixing_coefficients_mpi (block_labels)
+    subroutine read_ci_mixing_coefficients_mpi (block_labels, mixing_header)
         ! Module dependencies
-        use calculation_file_units, only: mixing_output_unit
         use array_memory_management, only: alloc
         use atomic_calculation_state, only: electron_count, requested_level_indices, selected_level_count
         use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, &
@@ -22,14 +21,15 @@ contains
         use orbital_csf_basis, only: orbital_count
         use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_integer4, mpi_rank
         use block_level_selection, only: read_block_level_selection
+        use mpi_io_errors, only: abort_input_mpi
         implicit none (type, external)
 
         ! Arguments
-        character(len=8), intent(in):: block_labels(*)
+        character(len=8), intent(in) :: block_labels(*)
+        integer, intent(out) :: mixing_header(6)
 
         ! Local declarations
         integer :: total_csf_count, noffset, vector_size, symmetry_block_index, level_index
-        integer :: nelec4, ncftot4, nw4, ncmin4, nvecsiz4, nblock4
 
         ! lodstate generates
         !    nevblk(), ncmaxblk()
@@ -42,7 +42,7 @@ contains
             "read_ci_mixing_coefficients_mpi")
 
         if (mpi_rank == 0) then
-            call read_block_level_selection (block_labels)
+            call read_block_level_selection (block_labels, abort_input_mpi)
         end if
 
         call mpi_bcast (eigenvector_counts_by_block, symmetry_block_count, mpi_integer, 0,               &
@@ -79,16 +79,8 @@ contains
                 & symmetry_block_index)
         end do
         if (noffset /= selected_level_count) stop "read_ci_mixing_coefficients_mpi: selected level count mismatch"
-        ! Write header data to the  .mix  file
-        if (mpi_rank == 0) then
-            nelec4 = electron_count
-            ncftot4 = total_csf_count
-            nw4 = orbital_count
-            ncmin4 = selected_level_count
-            nvecsiz4 = vector_size
-            nblock4 = symmetry_block_count
-            write (mixing_output_unit) nelec4, ncftot4, nw4, ncmin4, nvecsiz4, nblock4
-        end if
+        mixing_header = [electron_count, total_csf_count, orbital_count, selected_level_count, vector_size, &
+            symmetry_block_count]
         return
     end subroutine read_ci_mixing_coefficients_mpi
 end module read_ci_mixing_coefficients_mpi_interface

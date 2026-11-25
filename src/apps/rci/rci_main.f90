@@ -31,6 +31,7 @@ program rci_main
     use open_summary_file_interface, only: open_summary_file
     use load_csf_basis_data_interface, only: load_csf_basis_data
     use connect_ci_restart_file_interface, only: connect_ci_restart_file
+    use read_ci_options_interface, only: write_ci_restart_header
     use open_mixing_output_interface, only: open_mixing_output
     use write_input_summary_interface, only: write_input_summary
 
@@ -51,6 +52,7 @@ program rci_main
     integer(int64) :: start_clock_count
     integer :: mpi_rank, mpi_process_count, core_subshell_count, integral_count, max_orbital_two_j
     logical :: yes
+    logical :: is_restart
     character(len=128) :: name, isotope_file_path
     character(len=8) :: block_labels(maximum_input_symmetry_blocks)
 
@@ -98,9 +100,10 @@ program rci_main
 
         call load_csf_basis_data (descriptor_input_path(name), core_subshell_count, maximum_input_symmetry_blocks, block_labels)
         ! Set up the  .res  file; determine if this is a restart.
-        call connect_ci_restart_file (isotope_file_path, orbital_input_path(name), block_labels)
-        ! Open the CI mixing file and select the requested eigenpairs.
+        call connect_ci_restart_file (isotope_file_path, orbital_input_path(name), block_labels, is_restart)
+        ! Validate the requested eigenpairs before writing mixing and restart records.
         call open_mixing_output (name, block_labels)
+        if (.not. is_restart) call write_ci_restart_header()
         ! Record the input settings in the calculation report.
         write (output_unit, *) "Calling write_input_summary..."
         call write_input_summary
