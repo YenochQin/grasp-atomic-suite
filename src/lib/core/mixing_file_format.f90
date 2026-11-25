@@ -8,7 +8,8 @@ module mixing_file_format
     public :: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, read_mixing_vectors, skip_mixing_vectors
     public :: open_mixing_stream, write_mixing_block
 
-    character(8), parameter :: stream_signature = "GRMIX001", incomplete_signature = "GRMIXTMP"
+    character(8), parameter :: stream_signature = "CSF--MIX", previous_stream_signature = "GRMIX001"
+    character(8), parameter :: incomplete_signature = "GRMIXTMP"
     integer(int64), parameter :: header_bytes = 112, block_bytes = 48, level_bytes = 16
     integer, parameter :: buffer_values = 131072
 
@@ -124,15 +125,15 @@ contains
         open(newunit=file%unit,file=path,status="old",action="read",access="stream",form="unformatted",iostat=status)
         if (status /= 0) call fail_input_io(status,-1,"cannot open mixing file: "//trim(path))
         read(file%unit,iostat=status) signature
-        if (status /= 0) call fail_input_io(status,file%unit,"cannot read G92MIX or GRMIX001 signature")
+        if (status /= 0) call fail_input_io(status,file%unit,"cannot read G92MIX or CSF--MIX signature")
         if (signature == incomplete_signature) call fail_input_io(0,file%unit,"Incomplete mixing stream")
-        if (signature /= stream_signature) then
+        if (signature /= stream_signature .and. signature /= previous_stream_signature) then
             close(file%unit)
             open(newunit=file%unit,file=path,status="old",action="read",form="unformatted",iostat=status)
             if (status /= 0) call fail_input_io(status,-1,"Cannot open legacy mixing file: "//trim(path))
             read(file%unit,iostat=status) signature(:6)
             if (status /= 0 .or. signature(:6) /= "G92MIX") &
-                call fail_input_io(status,file%unit,"expected G92MIX or GRMIX001 signature")
+                call fail_input_io(status,file%unit,"expected G92MIX or CSF--MIX signature")
             read(file%unit,iostat=status) file%electron_count, file%csf_count, file%orbital_count, file%level_count, &
                 legacy_count, file%block_count
             if (status /= 0) call fail_input_io(status,file%unit,"Cannot read mixing header")

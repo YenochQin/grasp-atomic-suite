@@ -7,7 +7,7 @@ module radial_wavefunction_format
     public :: wavefunction_layout, write_radial_orbitals, open_wavefunction_input, read_wavefunction_header, &
         read_orbital_metadata, read_orbital_payload, skip_orbital_payload
 
-    character(8), parameter :: stream_signature = "GRWFRAD1"
+    character(8), parameter :: stream_signature = "RAD--WFN", previous_stream_signature = "GRWFRAD1"
     integer, parameter :: header_bytes = 16, orbital_bytes = 32
 
     type :: wavefunction_layout
@@ -67,7 +67,7 @@ contains
         if (status /= 0) return
         read(unit, iostat=status) signature
         if (status == 0) then
-            if (signature == stream_signature) then
+            if (signature == stream_signature .or. signature == previous_stream_signature) then
                 rewind(unit, iostat=status)
                 return
             end if
@@ -103,7 +103,8 @@ contains
         count = dimensions(1)
         points = dimensions(2)
         status = 1
-        if (signature /= stream_signature .or. min(count,points) < 1 .or. count > (huge(0)-1)/2) return
+        if (signature /= stream_signature .and. signature /= previous_stream_signature) return
+        if (min(count,points) < 1 .or. count > (huge(0)-1)/2) return
 
         inquire(unit=unit, size=file_bytes, iostat=status)
         if (status /= 0) return

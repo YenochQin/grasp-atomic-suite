@@ -50,12 +50,12 @@ def detect_endian(path: Path) -> str:
     raise ValueError("unsupported Fortran record format")
 
 
-def read_radial_stream(path: Path) -> dict[tuple[int, int], Orbital]:
+def read_radial_stream(path: Path, *, expected_signature: bytes = b"RAD--WFN") -> dict[tuple[int, int], Orbital]:
     """Decode the Suite stream independently of the Fortran and GraspKit readers."""
     raw = path.read_bytes()
     signature, count, longest = struct.unpack_from("<8sii", raw)
     matrix_offset = 16 + 32 * count
-    if signature != b"GRWFRAD1" or min(count, longest) < 1 or (
+    if signature != expected_signature or min(count, longest) < 1 or (
         len(raw) != matrix_offset + 8 * longest * (2 * count + 1)
     ):
         raise ValueError(f"{path}: invalid wavefunction stream")
@@ -80,8 +80,9 @@ def read_radial_stream(path: Path) -> dict[tuple[int, int], Orbital]:
 
 def read_rwfn(path: Path) -> dict[tuple[int, int], Orbital]:
     with path.open("rb") as stream:
-        if stream.read(8) == b"GRWFRAD1":
-            return read_radial_stream(path)
+        signature = stream.read(8)
+    if signature in (b"RAD--WFN", b"GRWFRAD1"):
+        return read_radial_stream(path, expected_signature=signature)
     endian = detect_endian(path)
     orbitals: dict[tuple[int, int], Orbital] = {}
     with path.open("rb") as stream:

@@ -16,13 +16,13 @@ class Block:
     coefficients: bytes
 
 
-def read_stream(path: Path, descriptor: Path | None = None) -> list[Block]:
+def read_stream(path: Path, descriptor: Path | None = None, *, signature: bytes = b"CSF--MIX") -> list[Block]:
     raw = path.read_bytes()
     header = Struct("<8s5q64s")
     directory = Struct("<6q")
     level = Struct("<qd")
     magic, electrons, orbitals, blocks, csfs, roots, basis_id = header.unpack_from(raw)
-    assert magic == b"GRMIX001" and min(electrons, orbitals, blocks, csfs, roots) > 0
+    assert magic == signature and min(electrons, orbitals, blocks, csfs, roots) > 0
     if descriptor is not None:
         assert basis_id == sha256(descriptor.read_bytes()).hexdigest().encode()
     table = header.size + directory.size * blocks
@@ -47,8 +47,10 @@ def read_stream(path: Path, descriptor: Path | None = None) -> list[Block]:
 
 
 def mixing_blocks(path: Path) -> list[Block]:
-    if path.read_bytes()[:8] == b"GRMIX001":
-        return read_stream(path)
+    with path.open("rb") as stream:
+        signature = stream.read(8)
+    if signature in (b"CSF--MIX", b"GRMIX001"):
+        return read_stream(path, signature=signature)
     from rdensity.regression import records
 
     data = records(path)

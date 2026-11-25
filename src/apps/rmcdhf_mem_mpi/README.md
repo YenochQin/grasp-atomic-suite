@@ -99,7 +99,7 @@ SCF 日志写入启动目录。
 | [`write_hamiltonian_records_mpi.f90`](write_hamiltonian_records_mpi.f90) | 遍历当前 rank 负责的稀疏列和对角索引，将所选的矩阵元输出到调试单元。 |
 | [`write_input_summary.f90`](write_input_summary.f90) | 记录核模型、离化电荷、基组规模、径向网格、优化轨道和目标能级设置，建立计算报告的输入部分。 |
 | [`write_scf_energies.f90`](write_scf_energies.f90) | 对请求的根恢复块平均能量偏移，按 `2J+1` 和宇称标注级能量，打印 Hartree、cm⁻¹ 和 eV 及当前模式要求的能差。 |
-| [`write_scf_radial_wavefunctions.f90`](write_scf_radial_wavefunctions.f90) | 按 `GRWFRAD1` 写优化轨道和共享径向网格。 |
+| [`write_scf_radial_wavefunctions.f90`](write_scf_radial_wavefunctions.f90) | 按 `RAD--WFN` 写优化轨道和共享径向网格。 |
 
 ### 支持例程
 

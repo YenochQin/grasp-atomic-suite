@@ -235,13 +235,13 @@ Without arguments, it falls back to the interactive input flow.
 
 ### Radial wavefunction stream
 
-The `rwfnestimate` and RMCDHF wavefunction outputs use the `GRWFRAD1` raw binary stream.
+The `rwfnestimate` and RMCDHF wavefunction outputs use the `RAD--WFN` raw binary stream.
 Integers are little-endian signed 32-bit values and floating-point values are little-endian IEEE binary64.
-Offsets below are zero-based bytes. Suite readers also accept archived sequential Fortran `G92RWF` files.
+Offsets below are zero-based bytes. Suite readers also accept earlier `GRWFRAD1` streams and sequential Fortran `G92RWF` files.
 
 | Byte offset | Data |
 | --- | --- |
-| 0 | Eight ASCII bytes `GRWFRAD1` |
+| 0 | Eight ASCII bytes `RAD--WFN` |
 | 8 | Integers `K` (orbital count) and `L` (largest orbital point count) |
 | 16 | `K` consecutive 32-byte orbital entries, each containing `n`, `kappa`, `point_count`, a reserved zero integer, `energy`, and `origin_parameter` in that order |
 | `16 + 32*K` | `float64` matrix with C/NumPy shape `(2*K+1, L)` and Fortran shape `(L, 2*K+1)` |
@@ -258,7 +258,7 @@ import numpy as np
 filename = "state.wfn"
 with open(filename, "rb") as stream:
     magic, count, longest = struct.unpack("<8sii", stream.read(16))
-    if magic != b"GRWFRAD1":
+    if magic not in (b"RAD--WFN", b"GRWFRAD1"):
         raise ValueError("Unknown wavefunction format")
 
 orbitals = np.memmap(
@@ -281,13 +281,13 @@ q = radial[2 * index + 2, :points]
 
 ### Indexed ASF mixing stream
 
-RMCDHF `.mix` and RCI `.cimix` use the same `GRMIX001` format. The stream uses little-endian signed
+RMCDHF `.mix` and RCI `.cimix` use the same `CSF--MIX` format. The stream uses little-endian signed
 64-bit integers and IEEE binary64 floating-point values. Offsets and table row numbers are zero-based.
 The descriptor SHA-256 is 64 lowercase ASCII hex digits.
 
 | Region | Encoding |
 | --- | --- |
-| File header | Eight ASCII bytes `GRMIX001`, five integers (electrons, orbitals, blocks, total CSFs, total ASF roots), then the descriptor SHA-256 |
+| File header | Eight ASCII bytes `CSF--MIX`, five integers (electrons, orbitals, blocks, total CSFs, total ASF roots), then the descriptor SHA-256 |
 | Block directory | One 48-byte entry per descriptor block. The six integers are physical `2J`, parity `+1/-1`, CSF count, root count, first row in the level table, and byte offset of this block's coefficients |
 | Level table | One 16-byte entry per root, with its original one-based root number inside the block and absolute energy in hartree |
 | Coefficients | Signed binary64 values in descriptor order. All CSFs for one root are contiguous. A block has NumPy/C shape `(n_roots, n_csfs)` and Fortran shape `(n_csfs, n_roots)` |
@@ -295,8 +295,8 @@ The descriptor SHA-256 is 64 lowercase ASCII hex digits.
 The block directory starts at byte 112 and the level table starts at `112 + 48*n_blocks`. The position
 of a root's first coefficient is the block offset plus `8*n_csfs*root_row`, where `root_row` is its
 zero-based position in the block's level table. Readers can use the file tables without reading the
-coefficient payload. `GRMIXTMP` marks an incomplete write. The format readers accept existing
-sequential Fortran `G92MIX` files.
+coefficient payload. `GRMIXTMP` marks an incomplete write. The format readers accept earlier
+`GRMIX001` streams and sequential Fortran `G92MIX` files.
 
 ```python
 from struct import unpack
@@ -309,7 +309,7 @@ with open(filename, "rb") as stream:
     magic, electrons, orbitals, blocks, csfs, levels, basis_sha = unpack(
         "<8s5q64s", stream.read(112)
     )
-    if magic != b"GRMIX001" or not 0 <= block_index < blocks:
+    if magic not in (b"CSF--MIX", b"GRMIX001") or not 0 <= block_index < blocks:
         raise ValueError("Unknown mixing format or block index")
     stream.seek(112 + 48 * block_index)
     two_j, parity, n_csfs, n_roots, first_level, coefficients_offset = unpack(
