@@ -11,6 +11,7 @@ module csf_descriptor_reader
 
     ! Module interface
     private
+    character(64), public :: loaded_csf_basis_id = ""
     public :: descriptor_source, open_descriptor_source, close_descriptor_source
     public :: read_descriptor_block, install_descriptor_header, descriptor_block_label
     public :: read_descriptor_zero_order_counts
@@ -220,6 +221,7 @@ contains
         use orbital_csf_basis, only: csf_count, orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, &
             orbital_symmetry_labels
         use atomic_calculation_state, only: electron_count
+        use level_symmetry_metadata, only: packed_block_symmetries
         use hamiltonian_symmetry_blocks, only: symmetry_block_count, csf_counts_by_block
 
         ! Arguments
@@ -243,6 +245,8 @@ contains
         core_count = source%core_count
         orbital_count = source%orbital_count
         csf_count = source%total_csf_count
+        loaded_csf_basis_id = source%basis_id
+        packed_block_symmetries(:source%block_count) = (source%block_two_j+1)*source%block_parities
         electron_count = source%electron_count
         symmetry_block_count = source%block_count
         orbital_principal_n(:orbital_count) = source%principal_numbers

@@ -10,7 +10,9 @@ contains
     ! Translated by Charlotte Froese Fischer
     !                        Gediminas Gaigalas  10/05/17
     subroutine load_initial_transition_basis (initial_core_subshell_count,state_name)
-        !  Module dependencies
+        ! Module dependencies
+        use csf_descriptor_reader, only: loaded_csf_basis_id
+        use transition_basis_blocks, only: transition_csf_basis_ids
         use grasp_parameters,   only: max_orbitals
         use array_memory_management, only: alloc, dalloc
         use atomic_calculation_state, only: electron_count, initial_electron_count, left_electron_count
@@ -78,6 +80,7 @@ contains
         call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "load_initial_transition_basis")
         call dalloc (csf_angular_codes, "csf_angular_codes", "load_initial_transition_basis")
 
+        transition_csf_basis_ids(1) = loaded_csf_basis_id
         return
     end subroutine load_initial_transition_basis
 end module load_initial_transition_basis_interface

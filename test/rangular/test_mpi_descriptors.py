@@ -15,7 +15,8 @@ import unittest
 SUITE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(SUITE / "test"))
 sys.path.insert(0, str(SUITE / "scripts"))
-from rdensity.regression import fixture, floats, records
+from rdensity.regression import fixture
+from mixing_stream import read_stream
 from test_csf_descriptors import Record, Shell, basic_blocks, write_fixture
 import mcp_compare
 
@@ -183,8 +184,8 @@ class MpiDescriptorTests(unittest.TestCase):
                 self.assertTrue((directory / "case.cimix").is_file())
                 summary = (directory / "case.csum").read_text()
                 self.assertEqual("CSFs 1--1 constitute the zero-order space" in summary, answer == "y")
-                shift, shifted_energy = floats(records(directory / "case.cimix")[-2])
-                energy = shift + shifted_energy
+                block, = read_stream(directory / "case.cimix", directory / "case_desc.parquet")
+                energy, = block.energies
                 self.assertTrue(math.isfinite(energy), f"{name}: nonfinite CI energy {energy}")
                 energies[name] = energy
         self.assertEqual(len(energies), 4, f"RCI cases with finite energies: {list(energies)}")

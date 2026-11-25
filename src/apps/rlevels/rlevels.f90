@@ -4,6 +4,7 @@ program rlevels
     ! Module dependencies
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use, intrinsic :: iso_fortran_env, only: error_unit, int64, iostat_end, output_unit, real64
+    use mixing_file_format, only: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, skip_mixing_vectors
     use calculation_state_files, only: read_state_entry, resolve_mixing_file
     use run_timer, only: begin_run_timer, finish_run_timer
     implicit none (type, external)
@@ -79,28 +80,21 @@ contains
         ! Local declarations
         type(level), allocatable :: grown(:)
         type(symmetry_block), allocatable :: blocks(:)
-        character(len=6) :: magic
         character(len=12) :: j_text
         character :: parity
-        integer :: unit, status, electron_count, csf_count, orbital_count, file_level_count, mixing_coefficient_count, &
-            & symmetry_block_count
+        integer :: status, file_level_count, symmetry_block_count
         integer :: symmetry_block_index, last_block, block_csf_count, block_level_count, two_j_plus_one, parity_code, first, &
             & last, file_end, suffix
-        integer(int64) :: coefficient_index
-        real(real64) :: hamiltonian_energy_shift, discarded_coefficient
+        real(real64) :: hamiltonian_energy_shift
+        type(mixing_file) :: input_file
         logical :: mcdhf
 
         suffix = index(name, '.', back=.true.)
         mcdhf = .false.
         if (suffix > 0) mcdhf = name(suffix:) == '.mix'
-        open (newunit=unit, file=name, form='unformatted', status='old', action='read', iostat=status)
-        if (status /= 0) call fail(name, 'cannot open mixing file')
-        read (unit, iostat=status) magic
-        if (status /= 0) call fail(name, 'cannot read G92MIX signature')
-        if (magic /= 'G92MIX') call fail(name, 'expected G92MIX signature')
-        read (unit, iostat=status) electron_count, csf_count, orbital_count, file_level_count, mixing_coefficient_count, &
-            & symmetry_block_count
-        if (status /= 0) call fail(name, 'cannot read mixing header')
+        call open_mixing_input(input_file, name)
+        file_level_count = input_file%level_count
+        symmetry_block_count = input_file%block_count
         if (file_level_count < 0 .or. symmetry_block_count < 0 .or. file_level_count > huge(used) - used) &
             call fail(name, 'invalid mixing header counts')
 
@@ -116,7 +110,8 @@ contains
         last = used
         last_block = 0
         do
-            read (unit, iostat=status) symmetry_block_index, block_csf_count, block_level_count, two_j_plus_one, parity_code
+            call next_mixing_block(input_file, symmetry_block_index, block_csf_count, block_level_count, &
+                two_j_plus_one, parity_code, status)
             if (status == iostat_end) exit
             if (status /= 0) call fail(name, 'cannot read symmetry block header')
             ! RMCDHF omits blocks with no requested roots. RCI writes their headers.
@@ -134,22 +129,15 @@ contains
             first = last + 1
             last = last + block_level_count
             blocks(symmetry_block_index) = symmetry_block(first, block_level_count)
-            read (unit, iostat=status) entries(first:last)%root_position_in_symmetry_block
-            if (status /= 0) call fail(name, 'cannot read root positions')
+            call read_mixing_levels(input_file, entries(first:last)%root_position_in_symmetry_block, &
+                hamiltonian_energy_shift, entries(first:last)%energy)
             if (any(entries(first:last)%root_position_in_symmetry_block < 1)) call fail(name, 'invalid root position')
-            read (unit, iostat=status) hamiltonian_energy_shift, entries(first:last)%energy
-            if (status /= 0) call fail(name, 'cannot read block energies')
-            if (.not. ieee_is_finite(hamiltonian_energy_shift) .or. .not. all(ieee_is_finite(entries(first:last)%energy))) &
-                call fail(name, 'nonfinite block energy')
-            ! Consume the coefficient record without storing the eigenvectors.
-            read (unit, iostat=status) &
-                (discarded_coefficient, coefficient_index=1_int64, int(block_csf_count, int64)*block_level_count)
-            if (status /= 0) call fail(name, 'cannot read mixing coefficient record')
+            call skip_mixing_vectors(input_file)
             entries(first:last)%energy = entries(first:last)%energy + hamiltonian_energy_shift
             entries(first:last)%j_text = j_text
             entries(first:last)%parity = parity
         end do
-        close (unit)
+        close (input_file%unit)
         if (last /= file_end .or. (.not. mcdhf .and. last_block /= symmetry_block_count)) &
             call fail(name, 'mixing records disagree with header counts')
 
@@ -160,8 +148,9 @@ contains
             end select
         end if
         used = file_end
-        write (output_unit, *) 'nblock = ', symmetry_block_count, '  ncftot = ', csf_count, '  nw = ', orbital_count, &
-            & '  nelec = ', electron_count
+        write (output_unit, *) 'nblock = ', symmetry_block_count, '  ncftot = ', input_file%csf_count, &
+            & '  nw = ', input_file%orbital_count, &
+            & '  nelec = ', input_file%electron_count
     end subroutine read_mixing_file
 
     function format_j(two_j) result(j_text)

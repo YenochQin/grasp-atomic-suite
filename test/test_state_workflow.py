@@ -2,11 +2,12 @@
 
 import argparse
 import os
-import subprocess
 import struct
+import subprocess
 import tempfile
 from pathlib import Path
 
+from mixing_stream import read_stream
 from native_fixture import descriptors
 from rdensity.regression import records, write_records
 from test_csf_descriptors import Record, Shell, text_record
@@ -210,10 +211,10 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
     run("rangular" + suffix, "blocks\n" + ("n\n" if launcher else "y\n"))
 
     def check_roots(path: Path) -> None:
-        mixing = records(path)
-        assert len(mixing) == 10, path
-        assert struct.unpack("=5i", mixing[2]) == (1, 2, 2, 1, 1), path
-        assert struct.unpack("=5i", mixing[6]) == (2, 2, 1, 1, -1), path
+        blocks = read_stream(path, permanent / "blocks_desc.parquet")
+        assert [(block.csf_count, block.roots, block.two_j, block.parity) for block in blocks] == [
+            (2, [1, 2], 0, 1), (2, [1], 0, -1),
+        ], path
 
     root_requirement = "Block 2 (0-) requires at least one valid ASF root"
     missing_root = "Missing ASF selection. " + root_requirement

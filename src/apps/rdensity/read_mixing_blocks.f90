@@ -17,6 +17,8 @@ contains
     ! written by Per Jonsson, September 2003
     subroutine read_mixing_blocks(state_name, ci_input_mode)
         ! Module dependencies
+        use mixing_file_format, only: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, read_mixing_vectors
+        use csf_descriptor_reader, only: loaded_csf_basis_id
         use, intrinsic :: iso_fortran_env, only: output_unit
         use, intrinsic :: iso_fortran_env, only: real64
         use calculation_state_files, only: mixing_input_path
@@ -29,34 +31,25 @@ contains
         use orbital_csf_basis, only: csf_count, orbital_count
         use selected_level_indices, only: active_level_indices, active_level_count
         use level_symmetry_metadata, only: level_parity_signs, level_two_j_plus_one
-        use standard_io_units, only: stderr_unit
         implicit none (type, external)
 
         ! Arguments and local declarations
-        integer :: mixing_input_unit
         integer, intent(in)           :: ci_input_mode
         character(len=24), intent(in) :: state_name
-        integer :: open_status, io_status, total_csf_count, nvectot, vector_size, nblock, i, nvecpat, &
-            ncfpat, nvecsizpat, neavsum, jb, nb, ncfblk, nevblk, iatjp, iaspa, j
+        integer :: total_csf_count, nvectot, nblock, i, nvecpat, &
+            ncfpat, nvecsizpat, neavsum, jb, nb, ncfblk, nevblk, iatjp, iaspa
         integer :: nelecmix, nwmix
         real(real64) :: eavsum
-        character :: file_path*256, mixing_file_signature*6
-        ! The  .mix  file is UNFORMATTED; it must exist
+        character :: file_path*256
+        type(mixing_file) :: input_file
+
         file_path = mixing_input_path(state_name, ci_input_mode == 0)
-        open(newunit=mixing_input_unit, file=file_path, form="UNFORMATTED", &
-            status="OLD", action="READ", iostat=open_status)
-        if (open_status /= 0) call density_fail("Cannot open mixing file: "//trim(file_path))
-
-        ! Check the header of the file; if not as expected, try again
-        read (mixing_input_unit, iostat=io_status) mixing_file_signature
-        if (io_status/=0 .or. mixing_file_signature/="G92MIX") then
-            write (stderr_unit, *) "Not a GRASP92 MIXing Coefficients File;"
-            close(mixing_input_unit)
-            call density_fail("Cannot read mixing coefficients")
-        end if
-
-        read (mixing_input_unit, iostat=io_status) nelecmix, total_csf_count, nwmix, nvectot, vector_size, nblock
-        if (io_status /= 0) call density_fail("Truncated mixing header")
+        call open_mixing_input(input_file, file_path, loaded_csf_basis_id)
+        nelecmix = input_file%electron_count
+        nwmix = input_file%orbital_count
+        total_csf_count = input_file%csf_count
+        nvectot = input_file%level_count
+        nblock = input_file%block_count
         if (nelecmix /= electron_count .or. total_csf_count /= csf_count .or. nwmix /= orbital_count) &
             call density_fail("CSF and mixing-file dimensions do not match")
         if (total_csf_count < 1 .or. nvectot < 1 .or. nblock < 1) &
@@ -98,8 +91,7 @@ contains
         write (*, *) "  block     ncf     nev    2j+1  parity"
         do jb = 1, nblock
 
-            read (mixing_input_unit, iostat=io_status) nb, ncfblk, nevblk, iatjp, iaspa
-            if (io_status /= 0) call density_fail("Truncated mixing block header")
+            call next_mixing_block(input_file, nb, ncfblk, nevblk, iatjp, iaspa)
             if (ncfblk < 0 .or. nevblk < 0 .or. nevblk > ncfblk .or. &
                 ncfblk > total_csf_count-ncfpat .or. nevblk > nvectot-nvecpat .or. &
                 iatjp < 1 .or. abs(iaspa) /= 1) call density_fail("Invalid mixing block")
@@ -108,15 +100,12 @@ contains
 
             if (nevblk > 0) then
 
-                read (mixing_input_unit, iostat=io_status) (active_level_indices(nvecpat + i),i=1,nevblk)
-                if (io_status /= 0) call density_fail("Truncated mixing state indices")
+                call read_mixing_levels(input_file, active_level_indices(nvecpat+1:nvecpat+nevblk), &
+                    hamiltonian_energy_shift, shifted_eigenvalues(nvecpat+1:nvecpat+nevblk))
                 ! ivec(i)   = ivec(i) + ncfpat ! serial # of the state
                 level_two_j_plus_one(nvecpat+1:nevblk+nvecpat) = iatjp
                 level_parity_signs(nvecpat+1:nevblk+nvecpat) = iaspa
 
-                read (mixing_input_unit, iostat=io_status) hamiltonian_energy_shift, (shifted_eigenvalues(nvecpat+i),i=1,nevblk)
-
-                if (io_status /= 0) call density_fail("Truncated mixing energies")
                 ! ...Construct the true energy by adding up the average
                 shifted_eigenvalues(nvecpat+1:nevblk+nvecpat) = shifted_eigenvalues(nvecpat+1:nevblk+nvecpat) + &
                     hamiltonian_energy_shift
@@ -124,10 +113,7 @@ contains
                 eavsum = eavsum + hamiltonian_energy_shift*ncfblk
                 neavsum = neavsum + ncfblk
 
-                read (mixing_input_unit, iostat=io_status) ((csf_mixing_coefficients(nvecsizpat+ncfpat+i+(j-1)*total_csf_count), &
-                    & i=1,ncfblk),j=1,&
-                    nevblk)
-                if (io_status /= 0) call density_fail("Truncated mixing eigenvectors")
+                call read_mixing_vectors(input_file, csf_mixing_coefficients(nvecsizpat+ncfpat+1:), total_csf_count)
             end if
 
             nvecpat = nvecpat + nevblk
@@ -155,7 +141,7 @@ contains
         ! ...Substrct the overal average energy
         shifted_eigenvalues(:nvectot) = shifted_eigenvalues(:nvectot) - hamiltonian_energy_shift
 
-        close(mixing_input_unit)
+        close(input_file%unit)
 
         csf_count = total_csf_count
         active_level_count = nvectot

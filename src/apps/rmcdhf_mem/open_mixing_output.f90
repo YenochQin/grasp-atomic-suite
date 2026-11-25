@@ -14,11 +14,8 @@ contains
     subroutine open_mixing_output(name)
         ! Module dependencies
         use calculation_file_units, only: mixing_output_unit
-        use atomic_calculation_state, only: electron_count
-        use orbital_csf_basis, only: csf_count, orbital_count
-        use hamiltonian_symmetry_blocks, only: symmetry_block_count
-        use standard_io_units, only: stderr_unit
-        use file_open, only: open_calculation_file
+        use mixing_file_format, only: open_mixing_stream
+        use input_error_handling, only: fail_input_io
         implicit none (type, external)
 
         ! Arguments
@@ -26,18 +23,9 @@ contains
 
         ! Local declarations
         integer :: open_status
-        ! !...Wants nblock only
-        call open_calculation_file (mixing_output_unit, name, "UNFORMATTED", "NEW", open_status)
-        if (open_status /= 0) then
-            write (stderr_unit, *) "Error when opening ", name(1:len_trim(name))
-            stop
-        end if
-        ! Write the file header
-        write (mixing_output_unit) "G92MIX"
-        write (mixing_output_unit) electron_count, csf_count, orbital_count, 0, 0, symmetry_block_count
-        ! ...The above record will be overidden in matrix.f
-        !    with the final form of
-
+        call open_mixing_stream(name, mixing_output_unit, open_status)
+        if (open_status /= 0) call fail_input_io(open_status, mixing_output_unit, &
+            "Cannot create RMCDHF mixing stream: "//trim(name))
         return
     end subroutine open_mixing_output
 end module open_mixing_output_interface

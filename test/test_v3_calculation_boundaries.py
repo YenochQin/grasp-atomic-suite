@@ -5,13 +5,13 @@ import math
 import os
 import re
 import shutil
-import struct
 import subprocess
 import tempfile
 from pathlib import Path
 
+from mixing_stream import read_stream
+from rdensity.regression import records
 from native_fixture import descriptors
-from rdensity.regression import floats, records
 from test_csf_descriptors import Record, Shell, text_record
 
 ISODATA = Path(__file__).resolve().parents[1] / "data" / "isodata"
@@ -140,9 +140,9 @@ def verify(binaries: Path, root: Path, mpiexec: str | None) -> None:
             assert re.search(
                 r"Computing\s+[1-9]\d*\s+Breit integrals of type 2", out
             ), out
-        mixing = records(work / "case.cimix")
-        assert struct.unpack("=5i", mixing[2]) == (1, len(rows), 1, two_j + 1, parity)
-        assert math.isfinite(sum(floats(mixing[-2])))
+        block, = read_stream(work / "case.cimix", work / "case_desc.parquet")
+        assert (block.csf_count, block.roots, block.two_j, block.parity) == (len(rows), [1], two_j, parity)
+        assert math.isfinite(block.energies[0])
         run("gj", work, "y\ncase\ny\n")
         level = rf"(?m)^\s*1\s+{re.escape(j_text)}\s+{re.escape(sign)}\s+[-+0-9]"
         for suffix in (".csum", ".cgj"):

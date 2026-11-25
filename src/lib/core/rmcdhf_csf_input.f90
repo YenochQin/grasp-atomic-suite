@@ -3,6 +3,7 @@ module rmcdhf_csf_input
     ! Module dependencies
     use iso_fortran_env, only: int8, int64
     use calculation_state_files, only: descriptor_input_path
+    use csf_descriptor_reader, only: loaded_csf_basis_id
     use csf_descriptor_reader, only: descriptor_source, open_descriptor_source, close_descriptor_source, &
         descriptor_block_label, read_descriptor_block
     use grasp_parameters, only: max_orbitals
@@ -132,6 +133,7 @@ contains
         orbital_l(:orbital_count) = basis_reader%orbital_momenta
         orbital_two_j(:orbital_count) = basis_reader%single_electron_two_j
         orbital_symmetry_labels(:orbital_count) = basis_reader%orbital_labels
+        loaded_csf_basis_id = basis_reader%basis_id
         packed_block_symmetries = 0
         packed_block_symmetries(:symmetry_block_count) = (basis_reader%block_two_j+1)*basis_reader%block_parities
     end subroutine read_rmcdhf_basis

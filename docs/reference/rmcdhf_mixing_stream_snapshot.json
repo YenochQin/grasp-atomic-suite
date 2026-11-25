@@ -1,0 +1,39 @@
+{
+  "description": "Write block-indexed GRMIX001 streams with absolute ASF energies in all RMCDHF variants.",
+  "files": {
+    "src/appl/rmcdhf/matrix.f90": {
+      "after_suite_sha256": "2dc897a3f5c8f4c83a85fc9c616bcd92effa32fe13700710255d8b02740fe10f",
+      "before_suite_sha256": "e29b1c89bfa2c2e3b8ccd098a0d3d1be88ac25a9f44d01d1c864674b648aaee8"
+    },
+    "src/appl/rmcdhf/setmix.f90": {
+      "after_suite_sha256": "05023974f5001caa1d98c9430f82271b91b28054e4dedb680a975006194e9fca",
+      "before_suite_sha256": "68f96eefbe695424745c2a2a37ddd050d87f86cde6c9145e7bae77d76c22eec1"
+    },
+    "src/appl/rmcdhf_mem/matrix.f90": {
+      "after_suite_sha256": "f0a591ec0010886e4c9c35737b189b92074965125801635407f59a45bf591268",
+      "before_suite_sha256": "803a46c521dffb385d05b64ceababb1b91078bb6479156865564155d63cb5740"
+    },
+    "src/appl/rmcdhf_mem/setmix.f90": {
+      "after_suite_sha256": "05023974f5001caa1d98c9430f82271b91b28054e4dedb680a975006194e9fca",
+      "before_suite_sha256": "41fe52cde37081f0dca0666eef8be053d45275634d2b65d9695c0e3381c4aae7"
+    },
+    "src/appl/rmcdhf_mem_mpi/matrixmpi.f90": {
+      "after_suite_sha256": "11b76117f8a90842783ce5ce752d07d5d13e973ca0b1a4b52226999ff966d276",
+      "before_suite_sha256": "280a7594ccd03e319b8447ab075bf64d03ccecddc53474a80fda921cf93e69b3"
+    },
+    "src/appl/rmcdhf_mem_mpi/setmix.f90": {
+      "after_suite_sha256": "e0272d8fff70f1f19fd66521e5bd826fb3b91188b27789f6806112fad7d5174a",
+      "before_suite_sha256": "41fe52cde37081f0dca0666eef8be053d45275634d2b65d9695c0e3381c4aae7"
+    },
+    "src/appl/rmcdhf_mpi/matrixmpi.f90": {
+      "after_suite_sha256": "1aebf8c2ecd30ab49faf0086bd0a5190ff198ecb990707f55c76692d43dcf25a",
+      "before_suite_sha256": "99612486a496f3231e32d7d59c21e7c7527c45ab18e99b2f62123c82a7417af2"
+    },
+    "src/appl/rmcdhf_mpi/setmix.f90": {
+      "after_suite_sha256": "e0272d8fff70f1f19fd66521e5bd826fb3b91188b27789f6806112fad7d5174a",
+      "before_suite_sha256": "68f96eefbe695424745c2a2a37ddd050d87f86cde6c9145e7bae77d76c22eec1"
+    }
+  },
+  "previous_manifest_sha256": "14b13eda741be1aae2ebc83b962b4d31710c8f74948c98df898206cb1426b240",
+  "schema_version": 1
+}

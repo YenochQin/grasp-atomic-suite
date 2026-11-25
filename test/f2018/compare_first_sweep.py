@@ -16,8 +16,10 @@ import struct
 import subprocess
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "rmcdhf"))
-from compare_rwfn import detect_endian, read_record, read_rwfn
+from mixing_stream import mixing_blocks
+from compare_rwfn import read_record, read_rwfn
 
 ISODATA = (
     "Atomic number:\n10\nMass number (integer) :\n20\n"
@@ -120,8 +122,8 @@ def check_binary_files(work: Path) -> None:
         if not path.is_file() or not path.stat().st_size:
             raise ValueError(f"Missing/empty required output: {name}")
         records = []
-        if not name.startswith("rwfn"):
-            endian = detect_endian(path) if name.startswith("rmix") else "<"
+        if not name.startswith(("rwfn", "rmix")):
+            endian = "<"
             with path.open("rb") as stream:
                 while (record := read_record(stream, endian)) is not None:
                     records.append(record)
@@ -135,15 +137,10 @@ def check_binary_files(work: Path) -> None:
             if not orbital.r or not all(math.isfinite(v) for v in (orbital.energy, *orbital.r, *orbital.p, *orbital.q)):
                 raise ValueError(f"Nonfinite/empty orbital: {name}")
         if name == "rmix.out":
-            if len(records) != 6 or records[0] != b"G92MIX":
-                raise ValueError("Incomplete mixing records")
-            if struct.unpack(f"{endian}6i", records[1]) != (2, 1, 1, 1, 1, 1):
-                raise ValueError("Wrong mixing identity/counts")
-            if struct.unpack(f"{endian}5i", records[2]) != (1, 1, 1, 1, 1):
-                raise ValueError("Wrong mixing block")
-            if struct.unpack(f"{endian}i", records[3]) != (1,):
-                raise ValueError("Wrong root identity")
-            values = struct.unpack(f"{endian}2d", records[4]) + struct.unpack(f"{endian}d", records[5])
+            block, = mixing_blocks(path)
+            if (block.csf_count, block.roots, block.two_j, block.parity) != (1, [1], 0, 1):
+                raise ValueError("Wrong mixing block or root identity")
+            values = block.energies + list(struct.unpack("=d", block.coefficients))
             if not all(map(math.isfinite, values)):
                 raise ValueError("Nonfinite mixing coefficients/energy")
 

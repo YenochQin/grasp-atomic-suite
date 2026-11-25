@@ -23,7 +23,8 @@ contains
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use array_memory_management, only: alloc, dalloc
         use scf_damping_factors, only: mixing_damping_factors
-        use atomic_calculation_state, only: requested_level_indices, selected_level_count
+        use atomic_calculation_state, only: requested_level_indices
+        use mixing_file_format, only: write_mixing_block
         use debug_output_settings, only: ldbpg
         use eigenstate_expansions, only: hamiltonian_energy_shift, shifted_eigenvalues, csf_mixing_coefficients
         use hamiltonian_symmetry_blocks, only: eigenvector_counts_by_block, symmetry_block_count
@@ -32,11 +33,10 @@ contains
         use mcp_file_metadata, only: max_mcp_file_multipole_rank
         use mpi_state, only: mpi_allreduce, mpi_barrier, mpi_comm_world, mpi_double_precision, mpi_error_code, &
             mpi_process_count, mpi_rank, mpi_sum
-        use orbital_csf_basis, only: csf_count, orbital_count
+        use orbital_csf_basis, only: csf_count
         use symmetry_block_offsets, only: total_csf_count, mixing_coefficient_storage_size, csf_offsets_by_block, &
             eigenvalue_offsets_by_block, mixing_offsets_by_block
         use block_mean_energies, only: mean_energy_by_block
-        use level_symmetry_metadata,          only: packed_block_symmetries
         use rmcdhf_mcp_memory,    only: imin1_30, imax1_30,imin2_30, imax2_30
 
         ! Procedure interfaces
@@ -51,9 +51,9 @@ contains
         logical, intent(in) ::  first_davidson_solve
 
         ! Local declarations
-        integer :: mcp_channel, file_electron_count, discarded_header_value, symmetry_block_index, i, block_csf_offset, &
+        integer :: mcp_channel, symmetry_block_index, i, block_csf_offset, &
             block_eigenvalue_offset, block_mixing_offset, lab, contribution_count, csf_index, idiag, level_index, iofset, &
-            jother, ia, jofset, iattmp, iastmp, nelmntgg
+            jother, ia, jofset, nelmntgg
         real(real64), pointer :: cmvl(:)
         real(real64) :: amax, cdampj, dnfac, evecij, sum,  tmp, omcdaj, ovrlap, wa
         logical :: first
@@ -72,19 +72,6 @@ contains
         if (.not.first) then
             call alloc (cmvl, mixing_coefficient_storage_size, "CMVL", "solve_hamiltonian_blocks_mpi")
             call dcopy (mixing_coefficient_storage_size, csf_mixing_coefficients, 1, cmvl, 1)
-        end if
-
-        ! To put in ncmin and nvecsiz. Values read here are the same
-        ! as the values already loaded in the shared modules.
-        if (mpi_rank == 0) then
-            rewind (mixing_output_unit)
-            read (mixing_output_unit)                               ! 'G92MIX'
-            read (mixing_output_unit) file_electron_count, total_csf_count, orbital_count, discarded_header_value, &
-                & discarded_header_value, symmetry_block_count
-            backspace (mixing_output_unit)
-            write (mixing_output_unit) file_electron_count, total_csf_count, orbital_count, selected_level_count, &
-                mixing_coefficient_storage_size, &
-                symmetry_block_count
         end if
 
         ! Do the job block by block
@@ -231,35 +218,17 @@ contains
                 end do
             end if
 
-            ! Write out the eigenpair information: ASF symmetries, eigenvalues,
-            ! and eigenvectors to GRASP92 mixing coefficients File
-
-            if (eigenvector_counts_by_block(symmetry_block_index) == 0) then
-                iattmp = 999
-                iastmp = 999
-            else
-                iattmp = iabs(packed_block_symmetries(symmetry_block_index))
-                if(packed_block_symmetries(symmetry_block_index) >= 0) then
-                    iastmp = 1
-                else
-                    iastmp = -1
-                end if
-                ! IATTMP = IATJPO(NCMINPAT + 1)
-                ! IASTMP = IASPAR(NCMINPAT + 1)
-            end if
-
             if (mpi_rank == 0) then
-                write (mixing_output_unit) symmetry_block_index, csf_count, eigenvector_counts_by_block(symmetry_block_index), &
-                    & iattmp, iastmp
-                write (mixing_output_unit) (requested_level_indices(i + block_eigenvalue_offset),i=1, &
-                    eigenvector_counts_by_block(symmetry_block_index))
-                write (mixing_output_unit) hamiltonian_energy_shift, (shifted_eigenvalues(i + block_eigenvalue_offset),i=1, &
-                    eigenvector_counts_by_block(symmetry_block_index))
-                write (mixing_output_unit) ((csf_mixing_coefficients(i+(level_index-1)*csf_count+block_mixing_offset),i=1, &
-                    csf_count), &
-                    & level_index=1, &
-                    eigenvector_counts_by_block(symmetry_block_index)&
-                    )
+                block
+                    integer :: roots
+                    integer(int64) :: coefficients
+                    roots = eigenvector_counts_by_block(symmetry_block_index)
+                    coefficients = int(csf_count,int64)*roots
+                    call write_mixing_block(mixing_output_unit, symmetry_block_index, &
+                        requested_level_indices(block_eigenvalue_offset+1:block_eigenvalue_offset+roots), &
+                        hamiltonian_energy_shift + shifted_eigenvalues(block_eigenvalue_offset+1:block_eigenvalue_offset+roots), &
+                        csf_mixing_coefficients(block_mixing_offset+1:block_mixing_offset+coefficients))
+                end block
             end if
 
             call dalloc (hamiltonian_values, "hamiltonian_values", "solve_hamiltonian_blocks_mpi")

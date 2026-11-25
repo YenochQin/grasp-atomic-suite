@@ -17,6 +17,8 @@ contains
     ! written by Per Jonsson, September 2003
     subroutine read_mixing_blocks(state_name, ci_input_mode)
         ! Module dependencies
+        use mixing_file_format, only: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, read_mixing_vectors
+        use csf_descriptor_reader, only: loaded_csf_basis_id
         use, intrinsic :: iso_fortran_env, only: output_unit
         use, intrinsic :: iso_fortran_env, only: real64
         use calculation_state_files, only: mixing_input_path
@@ -26,34 +28,26 @@ contains
         use orbital_csf_basis, only: csf_count, orbital_count
         use selected_level_indices, only: active_level_indices, active_level_count
         use level_symmetry_metadata, only: level_parity_signs, level_two_j_plus_one
-        use standard_io_units, only: stderr_unit
         implicit none (type, external)
 
         ! Arguments and local declarations
-        integer :: mixing_input_unit
         integer, intent(in)           :: ci_input_mode
         character(len=24), intent(in) :: state_name
-        integer :: open_status, io_status, total_csf_count, total_level_count, vector_size, block_count, item_index, &
+        integer :: total_csf_count, total_level_count, block_count, &
                 & preceding_level_count, &
             preceding_csf_count, preceding_mixing_size, contributing_csf_count, block_index, stored_block_index, &
-                & block_csf_count, block_level_count, block_two_j_plus_one, block_parity_sign, block_level_index
+                & block_csf_count, block_level_count, block_two_j_plus_one, block_parity_sign
         real(real64) :: weighted_energy_shift_sum
-        character :: file_path*256, mixing_file_signature*6
-        ! The  .mix  file is UNFORMATTED; it must exist
+        character :: file_path*256
+        type(mixing_file) :: input_file
+
         file_path = mixing_input_path(state_name, ci_input_mode == 0)
-        open(newunit=mixing_input_unit, file=file_path, form="UNFORMATTED", &
-            status="OLD", action="READ", iostat=open_status)
-        if (open_status /= 0) error stop "Cannot open mixing file: "//trim(file_path)
-
-        ! Check the header of the file; if not as expected, try again
-        read (mixing_input_unit, iostat=io_status) mixing_file_signature
-        if (io_status/=0 .or. mixing_file_signature/="G92MIX") then
-            write (stderr_unit, *) "Not a GRASP92 MIXing Coefficients File;"
-            close(mixing_input_unit)
-            stop
-        end if
-
-        read (mixing_input_unit) electron_count, total_csf_count, orbital_count, total_level_count, vector_size, block_count
+        call open_mixing_input(input_file, file_path, loaded_csf_basis_id)
+        electron_count = input_file%electron_count
+        orbital_count = input_file%orbital_count
+        total_csf_count = input_file%csf_count
+        total_level_count = input_file%level_count
+        block_count = input_file%block_count
         write (*, *) "   nelec  = ", electron_count
         write (*, *) "   ncftot = ", total_csf_count
         write (*, *) "   nw     = ", orbital_count
@@ -89,19 +83,19 @@ contains
         write (*, *) "  block     ncf     nev    2j+1  parity"
         do block_index = 1, block_count
 
-            read (mixing_input_unit) stored_block_index, block_csf_count, block_level_count, block_two_j_plus_one, block_parity_sign
+            call next_mixing_block(input_file, stored_block_index, block_csf_count, block_level_count, &
+                block_two_j_plus_one, block_parity_sign)
             write (*, "(5I8)") stored_block_index, block_csf_count, block_level_count, block_two_j_plus_one, block_parity_sign
             if (block_index /= stored_block_index) stop "jb .NE. nb"
 
             if (block_level_count > 0) then
 
-                read (mixing_input_unit) (active_level_indices(preceding_level_count + item_index),item_index=1,block_level_count)
+                call read_mixing_levels(input_file, &
+                    active_level_indices(preceding_level_count+1:preceding_level_count+block_level_count), &
+                    hamiltonian_energy_shift, shifted_eigenvalues(preceding_level_count+1:preceding_level_count+block_level_count))
                 ! ivec(i)   = ivec(i) + ncfpat ! serial # of the state
                 level_two_j_plus_one(preceding_level_count+1:block_level_count+preceding_level_count) = block_two_j_plus_one
                 level_parity_signs(preceding_level_count+1:block_level_count+preceding_level_count) = block_parity_sign
-
-                read (mixing_input_unit) hamiltonian_energy_shift, (shifted_eigenvalues(preceding_level_count+item_index), &
-                & item_index=1,block_level_count)
 
                 ! ...Construct the true energy by adding up the average
                 shifted_eigenvalues(preceding_level_count+1:block_level_count+ &
@@ -111,9 +105,8 @@ contains
                 weighted_energy_shift_sum = weighted_energy_shift_sum + hamiltonian_energy_shift*block_csf_count
                 contributing_csf_count = contributing_csf_count + block_csf_count
 
-                read (mixing_input_unit) ((csf_mixing_coefficients(preceding_mixing_size+preceding_csf_count+item_index+ &
-                & (block_level_index-1)*total_csf_count),item_index=1,block_csf_count),block_level_index=1,&
-                    block_level_count)
+                call read_mixing_vectors(input_file, &
+                    csf_mixing_coefficients(preceding_mixing_size+preceding_csf_count+1:), total_csf_count)
             end if
 
             preceding_level_count = preceding_level_count + block_level_count
@@ -134,7 +127,7 @@ contains
         ! ...Substrct the overal average energy
         shifted_eigenvalues(:total_level_count) = shifted_eigenvalues(:total_level_count) - hamiltonian_energy_shift
 
-        close(mixing_input_unit)
+        close(input_file%unit)
 
         csf_count = total_csf_count
         active_level_count = total_level_count

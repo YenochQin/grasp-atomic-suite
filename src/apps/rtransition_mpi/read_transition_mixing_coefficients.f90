@@ -9,9 +9,9 @@ contains
     ! Open and read the mixing coefficent files
     !
     ! Written by Per Jonsson
-    subroutine read_transition_mixing_coefficients(name, inpci, init)
+    subroutine read_transition_mixing_coefficients(input_file, init)
         ! Module dependencies
-        use transition_matrix_workspace, only: final_mixing_unit, initial_mixing_unit
+        use mixing_file_format, only: mixing_file, next_mixing_block, read_mixing_levels, read_mixing_vectors
         use array_memory_management, only: alloc
         use biorthogonal_orbital_sets, only: final_csf_count, initial_csf_count
         use eigenstate_expansions, only: final_hamiltonian_energy_shift, initial_hamiltonian_energy_shift, &
@@ -22,16 +22,15 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        integer  :: inpci
+        type(mixing_file), intent(inout) :: input_file
         integer , intent(in) :: init
-        character  :: name(2)*24
 
         ! Local declarations
-        integer :: ib, iatjp, iaspa, i, j
+        integer :: ib, iatjp, iaspa
 
         if (init == 1) then
             ! Read the initial state mixing file
-            read (initial_mixing_unit) ib, initial_csf_count, initial_level_count, iatjp, iaspa
+            call next_mixing_block(input_file, ib, initial_csf_count, initial_level_count, iatjp, iaspa)
             call alloc (initial_shifted_eigenvalues, initial_level_count, "initial_shifted_eigenvalues", &
                 "read_transition_mixing_coefficients")
             call alloc (initial_csf_mixing_coefficients, initial_csf_count*initial_level_count, "initial_csf_mixing_coefficients", &
@@ -41,18 +40,16 @@ contains
                 "read_transition_mixing_coefficients")
             call alloc (initial_level_parity_signs, initial_level_count, "initial_level_parity_signs", &
                 "read_transition_mixing_coefficients")
-            read (initial_mixing_unit) (initial_level_indices(i),i=1,initial_level_count)
             initial_level_two_j_plus_one(:initial_level_count) = iatjp
             initial_level_parity_signs(:initial_level_count) = iaspa
-            read (initial_mixing_unit) initial_hamiltonian_energy_shift, (initial_shifted_eigenvalues(i),i=1,initial_level_count)
-
-            read (initial_mixing_unit) ((initial_csf_mixing_coefficients(i + (j - 1)*initial_csf_count),i=1, &
-                initial_csf_count),j=1,initial_level_count)
+            call read_mixing_levels(input_file, initial_level_indices, initial_hamiltonian_energy_shift, &
+                initial_shifted_eigenvalues)
+            call read_mixing_vectors(input_file, initial_csf_mixing_coefficients, initial_csf_count)
 
         else
             ! Read the final state mixing file
 
-            read (final_mixing_unit) ib, final_csf_count, final_level_count, iatjp, iaspa
+            call next_mixing_block(input_file, ib, final_csf_count, final_level_count, iatjp, iaspa)
             call alloc (final_shifted_eigenvalues, final_level_count, "final_shifted_eigenvalues", &
                 "read_transition_mixing_coefficients")
             call alloc (final_csf_mixing_coefficients, final_csf_count*final_level_count, "final_csf_mixing_coefficients", &
@@ -62,13 +59,11 @@ contains
                 "read_transition_mixing_coefficients")
             call alloc (final_level_parity_signs, final_level_count, "final_level_parity_signs", &
                 "read_transition_mixing_coefficients")
-            read (final_mixing_unit) (final_level_indices(i),i=1,final_level_count)
             final_level_two_j_plus_one(:final_level_count) = iatjp
             final_level_parity_signs(:final_level_count) = iaspa
-            read (final_mixing_unit) final_hamiltonian_energy_shift, (final_shifted_eigenvalues(i),i=1,final_level_count)
-
-            read (final_mixing_unit) ((final_csf_mixing_coefficients(i + (j - 1)*final_csf_count),i=1,final_csf_count),j=1, &
-                final_level_count)
+            call read_mixing_levels(input_file, final_level_indices, final_hamiltonian_energy_shift, &
+                final_shifted_eigenvalues)
+            call read_mixing_vectors(input_file, final_csf_mixing_coefficients, final_csf_count)
             ! Close the initial state mixing  file
         end if
 

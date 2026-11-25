@@ -1,8 +1,10 @@
 program ci_damping
+    use mixing_file_format, only: open_mixing_stream
+    use csf_descriptor_reader, only: loaded_csf_basis_id
     use ci_fixture, only: shifted_eigenvalues, csf_mixing_coefficients, solves
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use scf_damping_factors, only: mixing_damping_factors
-    use atomic_calculation_state, only: requested_level_indices, selected_level_count, highest_requested_level_index
+    use atomic_calculation_state, only: electron_count, requested_level_indices, selected_level_count, highest_requested_level_index
     use debug_output_settings, only: ldbpg
     use hamiltonian_symmetry_blocks, only: symmetry_block_count, csf_counts_by_block, eigenvector_counts_by_block, &
         highest_selected_level_by_block
@@ -30,7 +32,7 @@ program ci_damping
 #endif
     use, intrinsic :: iso_fortran_env, only: real64
     implicit none (type, external)
-    integer :: channel_suffix, i, records, local_size
+    integer :: channel_suffix, i, records, local_size, output_status
     real(real64), parameter :: tol = 1e-12_real64
 #ifdef CI_MPI
     call initialize_mpi_runtime(mpi_rank,mpi_process_count,processor_name,processor_name_length)
@@ -77,9 +79,10 @@ program ci_damping
     end do
 #endif
     if(mpi_rank==0) then
-        open(newunit=mixing_output_unit,status="scratch",form="unformatted")
-        write(mixing_output_unit) "G92MIX"
-        write(mixing_output_unit) 2,2,1,2,8,1
+        electron_count = 2
+        loaded_csf_basis_id = repeat("0", 64)
+        call open_mixing_stream("ci-damping.mix", mixing_output_unit, output_status)
+        if (output_status /= 0) error stop "Cannot create mixing fixture"
     end if
     call matrix_step(.true.)
     ! With fcheck=all, the production allocation/zeroing must include IENDC(0).
@@ -101,7 +104,7 @@ program ci_damping
         error stop "zero damping control"
     if(solves/=3) error stop "fixture did not execute three production calls"
     if(mpi_rank==0) then
-        close(mixing_output_unit)
+        close(mixing_output_unit,status="delete")
         print *, "PASS: production FIRST / nonzero multi-root DDOT / zero damping"
     end if
 #if defined(CI_INDEXED)

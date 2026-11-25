@@ -2,6 +2,7 @@
 module csf_full_basis_reader
     ! Module dependencies
     use iso_fortran_env, only: int8, int64
+    use csf_descriptor_reader, only: loaded_csf_basis_id
     use csf_descriptor_reader, only: descriptor_source, open_descriptor_source, close_descriptor_source, read_descriptor_block
     use rmcdhf_csf_input, only: descriptor_path
     use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations, orbital_principal_n, orbital_kappa, &
@@ -66,6 +67,7 @@ contains
                 return
             end if
         end do
+        loaded_csf_basis_id = basis_reader%basis_id
         csf_count=basis_reader%total_csf_count
         core_subshell_count=basis_reader%core_count
         electron_count=basis_reader%electron_count

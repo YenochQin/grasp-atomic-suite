@@ -21,6 +21,8 @@ contains
     ! Modified by C. Cychen. 2021
     subroutine read_mixing_blocks(state_name, ci_input_mode)
         ! Module dependencies
+        use mixing_file_format, only: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, read_mixing_vectors
+        use csf_descriptor_reader, only: loaded_csf_basis_id
         use, intrinsic :: iso_fortran_env, only: output_unit
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use calculation_state_files, only: mixing_input_path
@@ -30,38 +32,29 @@ contains
         use csf_quantum_queries, only: csf_total_j_code, csf_parity_code
         use selected_level_indices, only: active_level_indices, active_level_count
         use level_symmetry_metadata, only: level_parity_signs, level_two_j_plus_one
-        use standard_io_units, only: stderr_unit
         use transition_basis_blocks,            only: transition_level_counts_by_block, transition_csf_counts_by_block, &
             transition_two_j_by_block, transition_block_count, cumulative_csf_counts
         implicit none (type, external)
 
         ! Arguments and local declarations
-        integer :: mixing_input_unit, mix_electron_count, mix_orbital_count
+        integer :: mix_electron_count, mix_orbital_count
         integer , intent(in) :: ci_input_mode
         character(len=24), intent(in) :: state_name
-        integer :: open_status, io_status, total_csf_count, nvectot, vector_size, nblock, i, nvecpat, &
-            ncfpat, neavsum, jb, nb, ncfblk, nevblk, iatjp, iaspa, j
+        integer :: total_csf_count, nvectot, nblock, nvecpat, &
+            ncfpat, neavsum, jb, nb, ncfblk, nevblk, iatjp, iaspa
         real(real64) :: eavsum
         integer(int64) :: nvecsizpat, ncftot_i8
-        character(len=6)   :: mixing_file_signature
         character(len=256) :: file_path
-        ! The  .mix  file is UNFORMATTED; it must exist
+        type(mixing_file) :: input_file
+
         file_path = mixing_input_path(state_name, ci_input_mode == 0)
-        open(newunit=mixing_input_unit, file=file_path, form="UNFORMATTED", &
-            status="OLD", action="READ", iostat=open_status)
-        if (open_status /= 0) error stop "Cannot open mixing file: "//trim(file_path)
+        call open_mixing_input(input_file, file_path, loaded_csf_basis_id)
+        mix_electron_count = input_file%electron_count
+        mix_orbital_count = input_file%orbital_count
+        total_csf_count = input_file%csf_count
+        nvectot = input_file%level_count
+        nblock = input_file%block_count
 
-        ! Check the header of the file; if not as expected, try again
-        read (mixing_input_unit, iostat=io_status) mixing_file_signature
-        if (io_status/=0 .or. mixing_file_signature/="G92MIX") then
-            write (stderr_unit, *) "Not a GRASP92 MIXing Coefficients File;"
-            close(mixing_input_unit)
-            stop
-        end if
-
-        ! The V3 basis has already removed unused peel orbitals. Mixing columns
-        ! index CSFs, so the producer's full orbital count must stay local.
-        read (mixing_input_unit) mix_electron_count, total_csf_count, mix_orbital_count, nvectot, vector_size, nblock
         if (mix_electron_count /= electron_count .or. total_csf_count /= csf_count .or. &
             mix_orbital_count < orbital_count .or. nblock /= transition_block_count) then
             error stop "JJ2LSJ mixing header does not match descriptor basis"
@@ -103,7 +96,7 @@ contains
         write (*, *) "  block     ncf     nev    2j+1  parity"
         do jb = 1, nblock
 
-            read (mixing_input_unit) nb, ncfblk, nevblk, iatjp, iaspa
+            call next_mixing_block(input_file, nb, ncfblk, nevblk, iatjp, iaspa)
             write (*, "(5I8)") nb, ncfblk, nevblk, iatjp, iaspa
             if (jb /= nb .or. ncfblk /= cumulative_csf_counts(jb) - ncfpat) then
                 error stop "JJ2LSJ mixing block does not match descriptor CSF partition"
@@ -122,12 +115,11 @@ contains
 
             if (nevblk > 0) then
 
-                read (mixing_input_unit) (active_level_indices(nvecpat + i),i=1,nevblk)
+                call read_mixing_levels(input_file, active_level_indices(nvecpat+1:nvecpat+nevblk), &
+                    hamiltonian_energy_shift, shifted_eigenvalues(nvecpat+1:nvecpat+nevblk))
                 ! ivec(i)   = ivec(i) + ncfpat ! serial # of the state
                 level_two_j_plus_one(nvecpat+1:nevblk+nvecpat) = iatjp
                 level_parity_signs(nvecpat+1:nevblk+nvecpat) = iaspa
-
-                read (mixing_input_unit) hamiltonian_energy_shift, (shifted_eigenvalues(nvecpat+i),i=1,nevblk)
 
                 ! ...Construct the true energy by adding up the average
                 shifted_eigenvalues(nvecpat+1:nevblk+nvecpat) = shifted_eigenvalues(nvecpat+1:nevblk+nvecpat) + &
@@ -136,8 +128,7 @@ contains
                 eavsum = eavsum + hamiltonian_energy_shift*ncfblk
                 neavsum = neavsum + ncfblk
 
-                read (mixing_input_unit) ((csf_mixing_coefficients(nvecsizpat+ncfpat+i+(j-1)*ncftot_i8),i=1,ncfblk),j=1,&
-                    nevblk)
+                call read_mixing_vectors(input_file, csf_mixing_coefficients(nvecsizpat+ncfpat+1:), total_csf_count)
             end if
             nvecpat = nvecpat + nevblk
             ncfpat = ncfpat + ncfblk
@@ -156,7 +147,7 @@ contains
 
         ! ...Substrct the overal average energy
         shifted_eigenvalues(:nvectot) = shifted_eigenvalues(:nvectot) - hamiltonian_energy_shift
-        close(mixing_input_unit)
+        close(input_file%unit)
         active_level_count = nvectot
         return
     end subroutine read_mixing_blocks

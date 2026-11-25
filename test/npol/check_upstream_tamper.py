@@ -17,6 +17,7 @@ from check_upstream import (
     DIAGNOSTIC_LABELS_SNAPSHOT,
     MPI_MCP_IO_SNAPSHOT,
     MPI_RUN_LOGGING_SNAPSHOT,
+    MIXING_STREAM_SNAPSHOT,
     RADIAL_STREAM_SNAPSHOT,
     REQUIRED_ASF_ROOTS_SNAPSHOT,
     RUN_TIMER_SNAPSHOT,
@@ -77,6 +78,7 @@ def main() -> None:
                          RUN_TIMER_SNAPSHOT,
                          REQUIRED_ASF_ROOTS_SNAPSHOT,
                          RADIAL_STREAM_SNAPSHOT,
+                         MIXING_STREAM_SNAPSHOT,
                          "src/apps/rmcdhf_mpi/mcp_density_contractions.f90",
                          "docs/reference/rmcdhf_grasp_mpi_naming_snapshot.json",
                          "docs/reference/rmcdhf_grasp_shared_naming_snapshot.json",
@@ -108,7 +110,8 @@ def main() -> None:
             target = work / relative
             original = target.read_bytes()
             if relative in (V3_J_LABELS_SNAPSHOT, APP_COMMENTS_SNAPSHOT, MPI_RUN_LOGGING_SNAPSHOT,
-                            MPI_MCP_IO_SNAPSHOT, RUN_TIMER_SNAPSHOT, REQUIRED_ASF_ROOTS_SNAPSHOT, RADIAL_STREAM_SNAPSHOT):
+                            MPI_MCP_IO_SNAPSHOT, RUN_TIMER_SNAPSHOT, REQUIRED_ASF_ROOTS_SNAPSHOT,
+                     RADIAL_STREAM_SNAPSHOT, MIXING_STREAM_SNAPSHOT):
                 snapshot = json.loads(original)
                 next(iter(snapshot["files"].values()))["after_suite_sha256"] = "0" * 64
                 target.write_text(json.dumps(snapshot))

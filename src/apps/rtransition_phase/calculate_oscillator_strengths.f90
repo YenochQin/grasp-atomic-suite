@@ -12,7 +12,8 @@ contains
     ! Dirac-Fock energy levels.
     subroutine calculate_oscillator_strengths(name)
         ! Module dependencies
-        use transition_matrix_workspace, only: final_mixing_unit, initial_mixing_unit
+        use mixing_file_format, only: mixing_file, open_mixing_input
+        use transition_basis_blocks, only: transition_csf_basis_ids
         use calculation_file_units, only: lsj_transition_output_unit, summary_output_unit
         use, intrinsic :: iso_fortran_env, only: real32
         use, intrinsic :: iso_fortran_env, only: real64
@@ -68,14 +69,16 @@ contains
 
         ! Local declarations
         integer :: copied_mixing_unit
-        integer :: kka, transition_type_index, transition_angular_unit, io_status, my_nelec, initial_csf_count, &
-            initial_orbital_count, initial_mixing_storage_size, iopar, initial_block_index, final_csf_count, &
-            final_orbital_count, final_mixing_storage_size, final_block_index, level_pair_count, m, ielec, initial_level_index, &
+        type(mixing_file) :: initial_mixing, final_mixing
+        character(:), allocatable :: mixing_suffix
+        integer :: kka, transition_type_index, transition_angular_unit, my_nelec, initial_csf_count, &
+            initial_orbital_count, iopar, initial_block_index, final_csf_count, &
+            final_orbital_count, final_block_index, level_pair_count, m, ielec, initial_level_index, &
             final_level_index, itkpo, itest, nlp, lines, ilbl, inum_ii, inum_ff, icount1, icount2
         real(real64) :: factor, transition_angular_frequency, bessel_argument, coulomb_or_magnetic_amplitude, babushkin_amplitude
         real(real64), pointer :: et(:), et1(:), ipr(:), ipr1(:), next(:)
         logical :: same_initial_and_final_state
-        character :: iunits*4, mixing_file_signature*6
+        character :: iunits*4
         ! NCFI(I): the end position of the Ith block for the initial states in the globle CSF list
         ! NCFF(I): the end position of the Ith block for the final states in the globle CSF list
         !
@@ -131,24 +134,18 @@ contains
         !             =  (-1)**(N+1)  Magnetic N-pole.
         !                             N > 0
         kka = 1
+        mixing_suffix = trim(merge(".cbm", ".bm ", input_mixing_file_kind == 0))
         do transition_type_index = 1, requested_multipole_count
             ! read the head of the file of mixing coef. for initial
             if (same_initial_and_final_state) name(1) = trim(name(2))//"_CP"
-            if (input_mixing_file_kind == 0) then
-                open(newunit=initial_mixing_unit, file=trim(name(1))//".cbm", form="UNFORMATTED", &
-                    status="OLD")
-            else
-                open(newunit=initial_mixing_unit, file=trim(name(1))//".bm", form="UNFORMATTED", &
-                    status="OLD")
-            end if
+            call open_mixing_input(initial_mixing, trim(name(1))//mixing_suffix, &
+                transition_csf_basis_ids(1))
             if (same_initial_and_final_state) name(1) = name(2)
-            read (initial_mixing_unit, iostat=io_status) mixing_file_signature
-            if (io_status/=0 .or. mixing_file_signature/="G92MIX") then
-                write (*, *) "Not a GRASP mixing file"
-                stop
-            end if
-            read (initial_mixing_unit) electron_count, initial_csf_count, initial_orbital_count, nvectoti, &
-                & initial_mixing_storage_size, initial_transition_block_count
+            electron_count = initial_mixing%electron_count
+            initial_csf_count = initial_mixing%csf_count
+            initial_orbital_count = initial_mixing%orbital_count
+            nvectoti = initial_mixing%level_count
+            initial_transition_block_count = initial_mixing%block_count
             write (*, *) "   nelec  = ", my_nelec
             write (*, *) "   ncftoti = ", initial_csf_count
             write (*, *) "   nwi     = ", initial_orbital_count
@@ -160,24 +157,17 @@ contains
             ! If not available generate angular coefficients for all pares of blocks
             call write_transition_angular_coefficients (iopar, transition_type_index, name, transition_angular_unit)
             do initial_block_index = 1, initial_transition_block_count
-                call read_transition_mixing_coefficients (name, input_mixing_file_kind, 1)
+                call read_transition_mixing_coefficients(initial_mixing, 1)
                 ! lbl
                 icount1 = initial_level_count + icount1
                 ! read the head of the file of mixing coef. for final
-                if (input_mixing_file_kind == 0) then
-                    open(newunit=final_mixing_unit,file=trim(name(2))//".cbm",              &
-                        form="UNFORMATTED",status="OLD")
-                else
-                    open(newunit=final_mixing_unit, file=trim(name(2))//".bm",              &
-                        form="UNFORMATTED",status="OLD")
-                end if
-                read (final_mixing_unit, iostat=io_status) mixing_file_signature
-                if (io_status/=0 .or. mixing_file_signature/="G92MIX") then
-                    write (*, *) "Not a GRASP mixing file"
-                    stop
-                end if
-                read (final_mixing_unit) electron_count, final_csf_count, final_orbital_count, nvectotf, &
-                    & final_mixing_storage_size, final_transition_block_count
+                call open_mixing_input(final_mixing, trim(name(2))//mixing_suffix, &
+                    transition_csf_basis_ids(2))
+                electron_count = final_mixing%electron_count
+                final_csf_count = final_mixing%csf_count
+                final_orbital_count = final_mixing%orbital_count
+                nvectotf = final_mixing%level_count
+                final_transition_block_count = final_mixing%block_count
                 write (*, *) "   nelec  = ", my_nelec
                 write (*, *) "   ncftotf = ", final_csf_count
                 write (*, *) "   nwf     = ", final_orbital_count
@@ -197,7 +187,7 @@ contains
                 icount2 = 0
                 ! lbl end
                 do final_block_index = 1, final_transition_block_count
-                    call read_transition_mixing_coefficients (name, input_mixing_file_kind, 2)
+                    call read_transition_mixing_coefficients(final_mixing, 2)
                     ! lbl
                     icount2 = final_level_count + icount2
                     ! Allocate storage
@@ -318,7 +308,7 @@ contains
                     call dalloc (final_level_parity_signs, "final_level_parity_signs", "calculate_oscillator_strengths")
 
                 end do
-                close(final_mixing_unit)
+                close(final_mixing%unit)
                 ! Deallocate storage; this is allocated in READMIX
                 call dalloc (initial_shifted_eigenvalues, "initial_shifted_eigenvalues", "calculate_oscillator_strengths")
                 call dalloc (initial_csf_mixing_coefficients, "initial_csf_mixing_coefficients", "calculate_oscillator_strengths")
@@ -327,7 +317,7 @@ contains
                 call dalloc (initial_level_parity_signs, "initial_level_parity_signs", "calculate_oscillator_strengths")
 
             end do
-            close(initial_mixing_unit)
+            close(initial_mixing%unit)
             close(transition_angular_unit)
         end do
         call dalloc (requested_multipole_codes, "requested_multipole_codes", "calculate_oscillator_strengths")

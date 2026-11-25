@@ -13,7 +13,8 @@ module transition_basis_blocks
     integer :: transition_block_count
     real(real64), pointer :: level_block_indices(:)
     integer :: mixing_file_electron_count, mixing_file_csf_count, mixing_file_orbital_count, mixing_file_level_count, &
-        mixing_file_coefficient_count, mixing_file_block_count
+        mixing_file_block_count
+    character(64) :: transition_csf_basis_ids(2) = ""
     integer :: initial_transition_block_count
     integer :: final_transition_block_count
     integer :: initial_cumulative_csf_counts(10)

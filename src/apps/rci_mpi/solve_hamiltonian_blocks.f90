@@ -18,6 +18,7 @@ contains
     subroutine solve_hamiltonian_blocks (unused_core_subshell_count, max_orbital_two_j)
         ! Module dependencies
         use calculation_file_units, only: mixing_output_unit, summary_output_unit
+        use mixing_file_format, only: write_mixing_block
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use mpi_csf_collectives, only: allocate_descriptor_arrays
         use grasp_parameters,   only: max_orbitals
@@ -166,7 +167,7 @@ contains
             end if
 
             if (active_level_count <= 0) then
-                if (mpi_rank == 0) write (mixing_output_unit) symmetry_block_index, csf_count, active_level_count, 999, 999
+
                 ! ...Generate H matrix of the current block and write to disk
                 ! ...eav, nelmnt are also obtained from genmat
                 call assemble_ci_matrix (inverse_nuclear_mass, symmetry_block_index, mpi_rank, mpi_process_count, &
@@ -216,15 +217,10 @@ contains
 
                     ! ...Write ASF symmetries, eigenvalues, and eigenvectors to RCI92
                     ! ...MIXing coefficients File; close the file; print a report
-                    write (mixing_output_unit) symmetry_block_index, csf_count, active_level_count, block_two_j_plus_one, &
-                        & block_parity_sign
-                    write (mixing_output_unit) (active_level_indices(level_index), level_index = 1, active_level_count)
-                    write (mixing_output_unit) hamiltonian_energy_shift,(shifted_eigenvalues(level_index),level_index = &
-                        & 1,active_level_count)
-                    write (mixing_output_unit) &
-                        & ((csf_mixing_coefficients(coefficient_csf_index+(level_index-1)*csf_count),coefficient_csf_index = &
-                        & 1,csf_count),level_index = 1, &
-                        active_level_count)
+                    call write_mixing_block(mixing_output_unit, symmetry_block_index, &
+                        active_level_indices(:active_level_count), &
+                        hamiltonian_energy_shift + shifted_eigenvalues(:active_level_count), &
+                        csf_mixing_coefficients(:int(csf_count,int64)*active_level_count))
 
                     print *, "RCI90 MIXing coefficients File generated."
                 end if

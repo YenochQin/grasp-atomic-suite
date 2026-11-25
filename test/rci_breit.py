@@ -12,7 +12,7 @@ import tempfile
 from pathlib import Path
 
 from native_fixture import descriptors
-from rdensity.regression import floats, records
+from mixing_stream import read_stream
 
 
 def run_case(
@@ -40,8 +40,8 @@ def run_case(
     # ordered orbital pairs. Type 2 combines two such pairs of equal rank.
     type2_counts = re.findall(r"Computing\s+(\d+)\s+Breit integrals of type 2", output)
     assert type2_counts == (["24558"] if breit else []), output
-    shift, shifted_energy = floats(records(work / "case.cimix")[-2])
-    energy = shift + shifted_energy
+    block, = read_stream(work / "case.cimix", work / "case_desc.parquet")
+    energy, = block.energies
     assert math.isfinite(energy), output
     return energy
 

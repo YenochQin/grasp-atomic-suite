@@ -10,6 +10,7 @@ import tempfile
 from pathlib import Path
 
 from native_fixture import descriptors
+from mixing_stream import Block, mixing_blocks
 from rdensity.regression import fixture
 
 
@@ -45,7 +46,7 @@ def execute(binary: Path, directory: Path, stdin: str, launcher: list[str], *, n
 
 def pipeline(
     binaries: Path, root: Path, native: bool, launcher: list[str]
-) -> dict[str, bytes]:
+) -> dict[str, bytes | list[Block]]:
     root.mkdir(parents=True)
     template = root / "template"
     fixture(template, False, True)
@@ -64,7 +65,7 @@ def pipeline(
     execute(
         binaries / ("rbiotransform" + suffix), work, "y\nn\nleft\nright\ny\n", launcher, native=native
     )
-    outputs = {
+    outputs: dict[str, bytes | list[Block]] = {
         file.name: file.read_bytes()
         for pattern in ("*.bm", "*.bw")
         for file in work.glob(pattern)
@@ -90,7 +91,7 @@ def pipeline(
         launcher,
         native=native,
     )
-    outputs["rci.mixing"] = (rci_work / ("case.cimix" if native else "case.cm")).read_bytes()
+    outputs["rci.mixing"] = mixing_blocks(rci_work / ("case.cimix" if native else "case.cm"))
     for program, extensions in [
         ("gj", ["gj"]),
         ("rhfs", ["h", "hoffd"]),

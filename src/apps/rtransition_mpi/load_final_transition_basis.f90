@@ -12,7 +12,9 @@ contains
     ! Translated by Charlotte Froese Fischer
     !                        Gediminas Gaigalas  10/05/17
     subroutine load_final_transition_basis(final_core_subshell_count, state_name)
-        !  Module dependencies
+        ! Module dependencies
+        use csf_descriptor_reader, only: loaded_csf_basis_id
+        use transition_basis_blocks, only: transition_csf_basis_ids
         use atomic_calculation_state, only: electron_count, final_electron_count
         use orbital_csf_basis, only: csf_count, orbital_count, orbital_kappa, orbital_l, orbital_principal_n, &
             orbital_symmetry_labels, orbital_two_j
@@ -49,6 +51,7 @@ contains
         final_orbital_kappa(:orbital_count) = orbital_kappa(:orbital_count)
         final_orbital_l(:orbital_count) = orbital_l(:orbital_count)
         final_orbital_two_j(:orbital_count) = orbital_two_j(:orbital_count)
+        transition_csf_basis_ids(2) = loaded_csf_basis_id
         return
     end subroutine load_final_transition_basis
 end module load_final_transition_basis_interface

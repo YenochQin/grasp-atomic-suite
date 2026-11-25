@@ -5,6 +5,7 @@ module mpi_csf_basis_input
     use mpi
     use mpi_state, only: mpi_rank
     use csf_full_basis_reader, only: load_csf_basis
+    use csf_descriptor_reader, only: loaded_csf_basis_id
     use grasp_parameters, only: max_orbitals
     use orbital_csf_basis, only: csf_count, orbital_count, csf_subshell_occupations, orbital_principal_n, orbital_kappa, &
         orbital_l, orbital_two_j, orbital_symmetry_labels
@@ -30,6 +31,7 @@ contains
         call require_collective_success(descriptor_status)
         if (mpi_rank == 0) basis_counts=[csf_count,orbital_count,electron_count,transition_block_count,core_subshell_count]
         call MPI_Bcast(basis_counts,5,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_return_code)
+        call MPI_Bcast(loaded_csf_basis_id,len(loaded_csf_basis_id),MPI_CHARACTER,0,MPI_COMM_WORLD,mpi_return_code)
         csf_count=basis_counts(1)
         orbital_count=basis_counts(2)
         electron_count=basis_counts(3)

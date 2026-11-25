@@ -279,6 +279,55 @@ p = radial[2 * index + 1, :points]
 q = radial[2 * index + 2, :points]
 ```
 
+### Indexed ASF mixing stream
+
+RMCDHF `.mix` and RCI `.cimix` use the same `GRMIX001` format. The stream uses little-endian signed
+64-bit integers and IEEE binary64 floating-point values. Offsets and table row numbers are zero-based.
+The descriptor SHA-256 is 64 lowercase ASCII hex digits.
+
+| Region | Encoding |
+| --- | --- |
+| File header | Eight ASCII bytes `GRMIX001`, five integers (electrons, orbitals, blocks, total CSFs, total ASF roots), then the descriptor SHA-256 |
+| Block directory | One 48-byte entry per descriptor block. The six integers are physical `2J`, parity `+1/-1`, CSF count, root count, first row in the level table, and byte offset of this block's coefficients |
+| Level table | One 16-byte entry per root, with its original one-based root number inside the block and absolute energy in hartree |
+| Coefficients | Signed binary64 values in descriptor order. All CSFs for one root are contiguous. A block has NumPy/C shape `(n_roots, n_csfs)` and Fortran shape `(n_csfs, n_roots)` |
+
+The block directory starts at byte 112 and the level table starts at `112 + 48*n_blocks`. The position
+of a root's first coefficient is the block offset plus `8*n_csfs*root_row`, where `root_row` is its
+zero-based position in the block's level table. Readers can use the file tables without reading the
+coefficient payload. `GRMIXTMP` marks an incomplete write. The format readers accept existing
+sequential Fortran `G92MIX` files.
+
+```python
+from struct import unpack
+
+import numpy as np
+
+filename = "state.cimix"
+block_index = 0
+with open(filename, "rb") as stream:
+    magic, electrons, orbitals, blocks, csfs, levels, basis_sha = unpack(
+        "<8s5q64s", stream.read(112)
+    )
+    if magic != b"GRMIX001" or not 0 <= block_index < blocks:
+        raise ValueError("Unknown mixing format or block index")
+    stream.seek(112 + 48 * block_index)
+    two_j, parity, n_csfs, n_roots, first_level, coefficients_offset = unpack(
+        "<6q", stream.read(48)
+    )
+
+level_table = np.memmap(
+    filename, mode="r", offset=112 + 48 * blocks + 16 * first_level,
+    dtype=[("root", "<i8"), ("energy_hartree", "<f8")], shape=(n_roots,),
+)
+coefficients = np.memmap(
+    filename, mode="r", offset=coefficients_offset,
+    dtype="<f8", shape=(n_roots, n_csfs),
+)
+first_root = level_table[0]
+first_root_coefficients = coefficients[0]
+```
+
 ## Verification Data
 
 The `data/` directory contains a `test` data set:
