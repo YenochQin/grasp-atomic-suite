@@ -10,7 +10,7 @@
 - 容量与网格：[共同参数](implemented/design-0003-shared-grid-parameters.md)；参数容量与运行时网格点数分别核定。
 - 普通计算链：[rangular 流程](implemented/design-0017-rangular-flow-and-state.md) →
   [rmcdhf 流程](implemented/design-0019-rmcdhf-flow-and-state.md)。
-- 后续验收：[径向网格](plans/plan-0001-radial-grid-validation.md)、[F2018](plans/plan-0004-f2018-follow-up-validation.md)、
+- 后续验收：[径向网格](plans/plan-0001-radial-grid-validation.md)、[F2018 现代化实施计划](plans/plan-0004-f2018-follow-up-validation.md)、
   [MPI MCP 生产对照](plans/plan-0005-rmcdhf-mcp-production-io.md)。
 
 `implemented/` 保留功能契约，`plans/` 保留未完成工作，`reviews/` 保留独立分析和验证证据，
@@ -62,7 +62,7 @@
 | [RMCDHF 的 MCP 读取优化实施计划](plans/plan-0005-rmcdhf-mcp-production-io.md) | 阶段 0–2 已通过本地回归。阶段 3 已完成 Zn I 服务器矩阵分段和逐轮驻留诊断、Cd I 首组冷态 A/C 对照。Cd I 重复配对、生成期磁盘峰值、资源预算及 B 对照待验收。 |
 | [plan-0003-rmcdhf-mpi-stall-diagnostics.md](plans/plan-0003-rmcdhf-mpi-stall-diagnostics.md) | 诊断计划，D0 首版已实现；普通/memory MPI 在大规模 CSF 下全程反复 D 状态；记录单节点条件、SETLAG 冻结侧冗余和 Davidson 候选。普通 MPI 已有 MCP 阶段计时。服务器联合采样、扩展性与根因诊断待完成。 |
 | [plan-0001-radial-grid-validation.md](plans/plan-0001-radial-grid-validation.md) | 待执行；修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
-| [F2018 后续验收](plans/plan-0004-f2018-follow-up-validation.md) | 当前接口与状态诊断、真实多根、完整性质和平台对照。 |
+| [F2018 现代化实施与验收计划](plans/plan-0004-f2018-follow-up-validation.md) | 以 `f211a0a` 为基准。首批处理 RCI 续算边界、MPI 单 rank 失败和 V3 首轮夹具。列出 25 个应用目标、7 个库目录及真实多根与性质验收条件，待实施。 |
 
 ## 实施过程记录
 
