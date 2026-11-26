@@ -3,8 +3,8 @@
 2026-11-22，基准源码为 Suite `c1377aa0`。`3.4dev1` 的 `rangular_mpi`、
 `rmcdhf_mpi` 和 `rmcdhf_mem_mpi` 使用相同的带目录格式。生产冷／热缓存、峰值 RSS 和
 最慢 rank 墙钟的验收步骤见[实施计划](../plans/plan-0005-rmcdhf-mcp-production-io.md)。
-Zn I AS2 已完成目标 XFS 的 A/C 全 SCF 和势系数分段对照，并在本机做了矩阵分段及逐轮页驻留诊断。
-目标服务器的矩阵分段与实际读盘验收仍在计划中。[阶段 3 实测记录](../reviews/evidence-0025-rmcdhf-mcp-phase3-benchmark.md) · [实施过程](../plans/2026-11-23-plan-0005-rmcdhf-mcp-phase3.md)
+Zn I AS2 已完成目标 XFS 的矩阵分段及逐轮页驻留诊断，Cd I 已完成首组生产冷态 A/C 对照。
+作业 19–32 的结果及后续验收见上述实施计划。[早期实测记录](../reviews/evidence-0025-rmcdhf-mcp-phase3-benchmark.md) · [11 月 23 日实施过程](../plans/2026-11-23-plan-0005-rmcdhf-mcp-phase3.md)
 
 ## MPI 计算链
 

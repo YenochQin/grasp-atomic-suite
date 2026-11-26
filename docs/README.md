@@ -59,7 +59,7 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
-| [RMCDHF 的 MCP 读取优化实施计划](plans/plan-0005-rmcdhf-mcp-production-io.md) | 阶段 0–2 已通过本地回归。阶段 3 已完成服务器 XFS 势系数分段、本机 Btrfs 与 XFS 矩阵分段及逐轮页驻留诊断。服务器矩阵分段、生产读盘、B 对照和资源预算待验收。 |
+| [RMCDHF 的 MCP 读取优化实施计划](plans/plan-0005-rmcdhf-mcp-production-io.md) | 阶段 0–2 已通过本地回归。阶段 3 已完成 Zn I 服务器矩阵分段和逐轮驻留诊断、Cd I 首组冷态 A/C 对照。Cd I 重复配对、生成期磁盘峰值、资源预算及 B 对照待验收。 |
 | [plan-0003-rmcdhf-mpi-stall-diagnostics.md](plans/plan-0003-rmcdhf-mpi-stall-diagnostics.md) | 诊断计划，D0 首版已实现；普通/memory MPI 在大规模 CSF 下全程反复 D 状态；记录单节点条件、SETLAG 冻结侧冗余和 Davidson 候选。普通 MPI 已有 MCP 阶段计时。服务器联合采样、扩展性与根因诊断待完成。 |
 | [plan-0001-radial-grid-validation.md](plans/plan-0001-radial-grid-validation.md) | 待执行；修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
 | [F2018 后续验收](plans/plan-0004-f2018-follow-up-validation.md) | 当前接口与状态诊断、真实多根、完整性质和平台对照。 |
