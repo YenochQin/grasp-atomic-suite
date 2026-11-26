@@ -12,8 +12,8 @@ def check_archive(script: Path, run: Path) -> None:
     inputs = {
         "rcsf_desc.parquet": ("case_desc.parquet", b"PAR1\0\xffPAR1"),
         "rcsf_header.toml": ("case_header.toml", b"# byte-bound header\r\n"),
-        "rwfn.out": ("case.wfn", b"G92RWF\0"),
-        "rmix.out": ("case.mix", b"G92MIX\0"),
+        "rwfn.out": ("case.wfn", b"RAD--WFN\0"),
+        "rmix.out": ("case.mix", b"CSF--MIX\0"),
         "rmcdhf.sum": ("case.rmcdhf.summary", b" EOL calculation.\n"),
         "isodata": ("isodata", b"nucleus\n"),
         "npol.inp": ("npol.inp", b"nuclear polarization\n"),

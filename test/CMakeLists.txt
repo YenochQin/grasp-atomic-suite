@@ -158,10 +158,6 @@ if(Python3_Interpreter_FOUND)
     add_test(NAME save_rmcdhf
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_save_rmcdhf.py"
             "${PROJECT_BINARY_DIR}/bin/save_rmcdhf")
-    add_test(NAME import_rsave
-        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_import_rsave.py"
-            "${PROJECT_BINARY_DIR}/bin/import_rsave" $<TARGET_FILE:gj> "${PROJECT_SOURCE_DIR}/data")
-    set_tests_properties(import_rsave PROPERTIES TIMEOUT 120 SKIP_RETURN_CODE 77)
     if(TARGET rangular_mpi AND MPIEXEC_EXECUTABLE)
         add_test(NAME rangular_mpi_descriptors
             COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rangular/test_mpi_descriptors.py"
@@ -276,6 +272,12 @@ if(TARGET rbiotransform AND TARGET rtransition AND TARGET rtransition_phase AND 
     add_test(NAME descriptor_dual_basis_pipeline COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/test_descriptor_pipeline.py --bin $<TARGET_FILE_DIR:rbiotransform>)
     set_tests_properties(descriptor_dual_basis_pipeline PROPERTIES TIMEOUT 180)
+    if(TARGET rbiotransform_mpi AND TARGET rtransition_mpi AND MPIEXEC_EXECUTABLE)
+        add_test(NAME descriptor_dual_basis_pipeline_mpi COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_descriptor_pipeline.py --bin $<TARGET_FILE_DIR:rbiotransform_mpi>
+            --mpiexec "${MPIEXEC_EXECUTABLE}" --ci)
+        set_tests_properties(descriptor_dual_basis_pipeline_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
+    endif()
 endif()
 if(TARGET grasp_mpi)
     add_executable(test.descriptor_collectives descriptor_collectives.f90)

@@ -27,7 +27,7 @@
 | [`connect_ci_restart_file.f90`](connect_ci_restart_file.f90) | 为新算例创建 `.res` 并写 `RCI92` 标记，或打开既有续算文件并校验标记。分别调用计算选项或续算读入路径。MPI 按 rank 选择文件。 |
 | [`load_csf_basis_data.f90`](load_csf_basis_data.f90) | 调用 `open_csf_blocks` 安装描述符头及块标签，准备按对称性块装入 CSF。矩阵求解循环访问各块。 |
 | [`rci_main.f90`](rci_main.f90) | 读取运行模式与状态，打开基组、续算、混合及摘要文件，制备 Slater 与可选 Breit 积分表，再按对称性块求本征对。 |
-| [`read_ci_mixing_coefficients.f90`](read_ci_mixing_coefficients.f90) | 按块读取目标根编号，计算每块请求根数、最大根号、根到块的映射和向量总大小，写 `G92MIX` 头供结果输出。 |
+| [`read_ci_mixing_coefficients.f90`](read_ci_mixing_coefficients.f90) | 按块读取目标根编号，计算每块请求根数、最大根号、根到块的映射和向量总大小，供混合流写入器建立块目录。 |
 | [`read_ci_options.f90`](read_ci_options.f90) | 读取核质量和电荷以及交互的一阶截止、Breit、质量位移、真空极化和自能选项。生成网格与核势并读取径向波函数，再把计算设置写入续算文件头。 |
 | [`read_ci_restart.f90`](read_ci_restart.f90) | 恢复核模型、物理修正、径向网格与轨道记录，对照当前基组的电子、轨道和分块计数，并重建径向差分权重。 |
 
@@ -101,7 +101,7 @@
 
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
-| [`open_mixing_output.f90`](open_mixing_output.f90) | 打开该状态的 CI 混合文件，进入目标根选择以及 `G92MIX` 头和维数记录的写出。 |
+| [`open_mixing_output.f90`](open_mixing_output.f90) | 打开该状态的 CI 混合文件，进入目标根选择以及 `CSF--MIX` 头和维数记录的写出。 |
 | [`open_summary_file.f90`](open_summary_file.f90) | 打开状态的 `.csum` 文件并设置共享摘要单元，供选项、矩阵规模和能级结果写出。 |
 | [`read_ci_level_selection.f90`](read_ci_level_selection.f90) | 扫描已求出的每个态的 CSF 系数，用有序插入保留绝对值最大的至多五项，然后将带符号系数与块内 CSF 索引写入总结。 |
 | [`write_ci_eigenvectors.f90`](write_ci_eigenvectors.f90) | 把所选根和对应本征向量按每页八列展开输出，每行对应一个 CSF，供诊断完整混合系数。 |

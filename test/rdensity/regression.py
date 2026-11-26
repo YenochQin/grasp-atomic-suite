@@ -19,7 +19,11 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from native_fixture import descriptors
+from native_fixture import descriptors, write_radial_stream
+from mixing_stream import Block, write_stream
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "rmcdhf"))
+from compare_rwfn import read_radial_stream
 
 
 def records(path: Path) -> list[bytes]:
@@ -47,11 +51,7 @@ def doubles(values: list[float]) -> bytes:
     return struct.pack(f"={len(values)}d", *values)
 
 
-def floats(data: bytes) -> tuple[float, ...]:
-    return struct.unpack(f"={len(data) // 8}d", data)
-
-
-def fixture(folder: Path, gap: bool, multiblock: bool) -> None:
+def fixture(folder: Path, gap: bool, multiblock: bool, *, native: bool = True) -> None:
     """s state = .8|1s> + .6|ns>; optional pure p_3/2 state.
 
     The two J weights are 2 and 4. The expected s block is therefore
@@ -72,28 +72,25 @@ def fixture(folder: Path, gap: bool, multiblock: bool) -> None:
         "Fermi c:\n1.0\nMass:\n1.0\nSpin:\n0.5\nDipole:\n1.0\nQuadrupole:\n0.0\n"
     )
     count = len(orbitals)
-    states = 2 if multiblock else 1
-    rows = [
-        b"G92MIX",
-        struct.pack("=6i", 1, count, count, states, 3 if multiblock else 2, states),
-    ]
-    rows += [
-        struct.pack("=5i", 1, 2, 1, 2, 1),
-        struct.pack("=i", 1),
-        doubles([-0.5, 0.0]),
-        doubles([0.8, 0.6]),
-    ]
+    blocks = [Block(1, 1, 2, [1], [-0.5], doubles([0.8, 0.6]))]
     if multiblock:
-        rows += [
-            struct.pack("=5i", 2, 1, 1, 4, -1),
-            struct.pack("=i", 1),
-            doubles([-0.125, 0.0]),
-            doubles([1.0]),
-        ]
-    write_records(folder / "case.mix", rows)
+        blocks.append(Block(3, -1, 1, [1], [-0.125], doubles([1.0])))
+    if native:
+        descriptors(folder / "case.c")
+        write_stream(folder / "case.mix", 1, count, blocks, folder / "case_desc.parquet")
+    else:
+        rows = [b"G92MIX", struct.pack("=6i", 1, count, count, len(blocks), count, len(blocks))]
+        for index, block in enumerate(blocks, 1):
+            rows += [
+                struct.pack("=5i", index, block.csf_count, 1, block.two_j + 1, block.parity),
+                struct.pack("=i", 1),
+                doubles([block.energies[0], 0.0]),
+                block.coefficients,
+            ]
+        write_records(folder / "case.mix", rows)
     shutil.copyfile(folder / "case.mix", folder / "case.cimix")
     grid = [2e-6 * math.expm1(0.05 * i) for i in range(590)]
-    rows = [b"G92RWF"]
+    radial_orbitals = []
     for n, kappa in orbitals:
         if kappa == -2:
             p = [r * r * math.exp(-r / 2) / math.sqrt(24) for r in grid]
@@ -104,12 +101,14 @@ def fixture(folder: Path, gap: bool, multiblock: bool) -> None:
         else:
             p = [r * (2 - r) * math.exp(-r / 2) / math.sqrt(8) for r in grid]
             pz = 1 / math.sqrt(2)
-        rows += [
-            struct.pack("=iidi", n, kappa, 0.5 / n**2, len(grid)),
-            doubles([pz] + p + [0.0] * len(grid)),
-            doubles(grid),
-        ]
-    write_records(folder / "case.wfn", rows)
+        radial_orbitals.append((n, kappa, 0.5 / n**2, pz, p, [0.0] * len(grid)))
+    if native:
+        write_radial_stream(folder / "case.wfn", grid, radial_orbitals)
+    else:
+        rows = [b"G92RWF"]
+        for n, kappa, energy, origin, p, q in radial_orbitals:
+            rows += [struct.pack("=iidi", n, kappa, energy, len(grid)), doubles([origin] + p + q), doubles(grid)]
+        write_records(folder / "case.wfn", rows)
 
 
 def run(
@@ -205,26 +204,16 @@ def check_analytic(output: str, folder: Path, multiblock: bool) -> None:
     close(sum(row[0] for block in occupations.values() for row in block), 1.0)
     # Check the binary NOs reconstruct the weighted radial density. This also
     # exercises the cross term and the P/Q rotations independently of MPI.
-    raw = records(folder / "case.nw")
-    assert raw[0] == b"G92RWF"
+    orbitals = read_radial_stream(folder / "case.nw")
     by_kappa: dict[int, int] = {}
-    reconstructed: list[float] = []
-    grid: tuple[float, ...] = ()
-    for start in range(1, len(raw), 3):
-        _, kappa, _, points = struct.unpack("=iidi", raw[start])
-        values = floats(raw[start + 1])
-        grid_orbit = floats(raw[start + 2])
-        assert len(values) == 1 + 2 * points and values[0] >= 0
-        slot = by_kappa.get(kappa, 0)
-        occupation = occupations[kappa][slot][0]
-        by_kappa[kappa] = slot + 1
-        if points > len(reconstructed):
-            reconstructed += [0.0] * (points - len(reconstructed))
-            grid = grid_orbit
-        for j in range(points):
-            reconstructed[j] += occupation * (
-                values[1 + j] ** 2 + values[1 + points + j] ** 2
-            )
+    grid = max((orbital.r for orbital in orbitals.values()), key=len)
+    reconstructed = [0.0] * len(grid)
+    for orbital in orbitals.values():
+        slot = by_kappa.get(orbital.kappa, 0)
+        occupation = occupations[orbital.kappa][slot][0]
+        by_kappa[orbital.kappa] = slot + 1
+        for index, (p, q) in enumerate(zip(orbital.p, orbital.q, strict=True)):
+            reconstructed[index] += occupation * (p * p + q * q)
     densities: list[dict[float, float]] = []
     for line in (folder / "case.d").read_text().splitlines()[2:]:
         parts = line.split()
@@ -243,13 +232,15 @@ def check_analytic(output: str, folder: Path, multiblock: bool) -> None:
 
 
 def compare_outputs(reference: Path, actual: Path, name: str, ci: bool = False) -> None:
-    first, second = records(reference / f"{name}.nw"), records(actual / f"{name}.nw")
-    assert len(first) == len(second) and first[0] == second[0]
-    for i in range(1, len(first)):
-        if i % 3 == 1:
-            assert first[i] == second[i]
-        else:
-            for x, y in zip(floats(first[i]), floats(second[i]), strict=True):
+    first = read_radial_stream(reference / f"{name}.nw")
+    second = read_radial_stream(actual / f"{name}.nw")
+    assert list(first) == list(second)
+    for key, orbital in first.items():
+        other = second[key]
+        assert orbital.energy == other.energy and len(orbital.r) == len(other.r)
+        close(orbital.origin, other.origin, 2e-8)
+        for values, actual_values in ((orbital.p, other.p), (orbital.q, other.q), (orbital.r, other.r)):
+            for x, y in zip(values, actual_values, strict=True):
                 close(x, y, 2e-8)
     suffix = ".cd" if ci else ".d"
 
@@ -310,20 +301,16 @@ def main() -> None:
         # Existing repository data: 1042 CSFs, 5 J blocks, 9 levels.
         baseline = root / "ni-serial"
         baseline.mkdir()
-        for name in ["isodata", "test.c"]:
+        for name in ("isodata", "test.mix", "test.wfn", "test_desc.parquet", "test_header.toml"):
             shutil.copyfile(args.data / name, baseline / name)
-        shutil.copyfile(args.data / "test.m", baseline / "test.mix")
-        shutil.copyfile(args.data / "test.w", baseline / "test.wfn")
         ni_output = run(serial + ["test", "--nonci"], baseline)
         occupations = read_blocks(ni_output, "occupations in output orbital order:")
         close(sum(row[0] for block in occupations.values() for row in block), 28.0)
         if args.mpi:
             target = root / "ni-mpi"
             target.mkdir()
-            for name in ["isodata", "test.c"]:
+            for name in ("isodata", "test.mix", "test.wfn", "test_desc.parquet", "test_header.toml"):
                 shutil.copyfile(args.data / name, target / name)
-            shutil.copyfile(args.data / "test.m", target / "test.mix")
-            shutil.copyfile(args.data / "test.w", target / "test.wfn")
             run(parallel + ["test", "--nonci"], target)
             compare_outputs(baseline, target, "test")
         target = root / "interactive"
@@ -357,6 +344,14 @@ def main() -> None:
             assert "Cannot read orbital ordering:" in output, output
             assert not (target / "case.d").exists()
             assert not (target / "case.nw").exists()
+        target = root / "unsupported-wavefunction"
+        fixture(target, False, False)
+        wavefunction = target / "case.wfn"
+        previous_stream = b"GRWFRAD1" + wavefunction.read_bytes()[8:]
+        for payload in (previous_stream, (args.data / "test.w").read_bytes()):
+            wavefunction.write_bytes(payload)
+            output = run(parallel + ["case", "--nonci"], target, success=False)
+            assert "Invalid radial wavefunction header" in output, output
         # All ranks must terminate on malformed mixing data instead of waiting
         # indefinitely for a collective. Subprocess timeout checks this too.
         target = root / "truncated"

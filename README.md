@@ -235,9 +235,10 @@ Without arguments, it falls back to the interactive input flow.
 
 ### Radial wavefunction stream
 
-The `rwfnestimate` and RMCDHF wavefunction outputs use the `RAD--WFN` raw binary stream.
+Initial, optimized, biorthogonal and natural orbitals use the `RAD--WFN` raw binary stream.
 Integers are little-endian signed 32-bit values and floating-point values are little-endian IEEE binary64.
-Offsets below are zero-based bytes. Suite readers also accept earlier `GRWFRAD1` streams and sequential Fortran `G92RWF` files.
+Offsets below are zero-based bytes. Readers require the `RAD--WFN` signature.
+Sequential Fortran `G92RWF` files must be regenerated as Suite streams.
 
 | Byte offset | Data |
 | --- | --- |
@@ -258,7 +259,7 @@ import numpy as np
 filename = "state.wfn"
 with open(filename, "rb") as stream:
     magic, count, longest = struct.unpack("<8sii", stream.read(16))
-    if magic not in (b"RAD--WFN", b"GRWFRAD1"):
+    if magic != b"RAD--WFN":
         raise ValueError("Unknown wavefunction format")
 
 orbitals = np.memmap(
@@ -295,8 +296,9 @@ The descriptor SHA-256 is 64 lowercase ASCII hex digits.
 The block directory starts at byte 112 and the level table starts at `112 + 48*n_blocks`. The position
 of a root's first coefficient is the block offset plus `8*n_csfs*root_row`, where `root_row` is its
 zero-based position in the block's level table. Readers can use the file tables without reading the
-coefficient payload. `GRMIXTMP` marks an incomplete write. The format readers accept earlier
-`GRMIX001` streams and sequential Fortran `G92MIX` files.
+coefficient payload. Readers require the `CSF--MIX` signature. `GRMIXTMP` marks an incomplete write.
+Biorthogonal `.bm` and `.cbm` files use the same stream and retain the source basis SHA-256.
+Sequential Fortran `G92MIX` files must be regenerated as Suite streams.
 
 ```python
 from struct import unpack
@@ -309,7 +311,7 @@ with open(filename, "rb") as stream:
     magic, electrons, orbitals, blocks, csfs, levels, basis_sha = unpack(
         "<8s5q64s", stream.read(112)
     )
-    if magic not in (b"CSF--MIX", b"GRMIX001") or not 0 <= block_index < blocks:
+    if magic != b"CSF--MIX" or not 0 <= block_index < blocks:
         raise ValueError("Unknown mixing format or block index")
     stream.seek(112 + 48 * block_index)
     two_j, parity, n_csfs, n_roots, first_level, coefficients_offset = unpack(
@@ -334,27 +336,23 @@ The `data/` directory contains a `test` data set:
 
 ```text
 data/isodata
-data/test.c
-data/test.m
-data/test.w
+data/test_desc.parquet
+data/test_header.toml
+data/test.mix
+data/test.wfn
 data/test.gj
 ```
 
-To reproduce `data/test.gj`, run the following from the Suite root with a
-V3-capable `rcsfs` on `PATH`. Use your actual build directory in `suite_bin`.
-`rcsfs convert` creates both the Parquet descriptor and its matching TOML
-header. Copy the sample orbitals and mixing coefficients to `test.wfn` and `test.mix`.
+To reproduce the sample Landé factors, use the supplied mixing stream and its
+matching descriptor/header pair. Set `suite_bin` to the actual build directory.
 
 ```fish
 set suite_root (pwd)
 set suite_bin (realpath build-gf16/bin)
 mkdir -p ../temp/tests
 set gj_work (mktemp -d ../temp/tests/gj-example.XXXXXXXX)
-cp data/isodata data/test.c "$gj_work/"
-cp data/test.m "$gj_work/test.mix"
-cp data/test.w "$gj_work/test.wfn"
+cp data/isodata data/test_desc.parquet data/test_header.toml data/test.mix data/test.wfn "$gj_work/"
 cd "$gj_work"
-rcsfs convert test.c test_desc.parquet
 printf '%s\n' y test n | "$suite_bin/gj"
 diff -u "$suite_root/data/test.gj" test.gj
 cd "$suite_root"

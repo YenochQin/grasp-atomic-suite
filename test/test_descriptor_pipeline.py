@@ -7,11 +7,15 @@ import os
 import shutil
 import subprocess
 import tempfile
+import sys
 from pathlib import Path
 
 from native_fixture import descriptors
-from mixing_stream import Block, mixing_blocks
+from mixing_stream import Block, mixing_blocks, read_stream
 from rdensity.regression import fixture
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / "rmcdhf"))
+from compare_rwfn import Orbital, read_radial_stream, read_rwfn
 
 
 def execute(binary: Path, directory: Path, stdin: str, launcher: list[str], *, native: bool) -> None:
@@ -45,36 +49,45 @@ def execute(binary: Path, directory: Path, stdin: str, launcher: list[str], *, n
 
 
 def pipeline(
-    binaries: Path, root: Path, native: bool, launcher: list[str]
-) -> dict[str, bytes | list[Block]]:
+    binaries: Path, root: Path, native: bool, launcher: list[str], ci: bool
+) -> dict[str, bytes | list[Block] | dict[tuple[int, int], Orbital]]:
     root.mkdir(parents=True)
-    template = root / "template"
-    fixture(template, False, True)
     work = root / "biotransform"
     work.mkdir()
-    shutil.copyfile(template / "isodata", work / "isodata")
     wave_suffix = "wfn" if native else "w"
-    mix_suffix = "mix" if native else "m"
-    for stem in ("left", "right"):
-        for source, target in (("c", "c"), ("wfn", wave_suffix), ("mix", mix_suffix)):
-            shutil.copyfile(template / f"case.{source}", work / f"{stem}.{target}")
+    mix_suffix = ("cimix" if ci else "mix") if native else ("cm" if ci else "m")
+    transformed_mix_suffix = "cbm" if ci else "bm"
+    ci_answer = "y" if ci else "n"
+    transition_name = "left.right.ct" if ci else "left.right.t"
+    for stem, gap in (("left", False), ("right", True)):
+        template = root / stem
+        fixture(template, gap, True, native=native)
+        shutil.copyfile(template / "isodata", work / "isodata")
+        shutil.copyfile(template / "case.wfn", work / f"{stem}.{wave_suffix}")
+        shutil.copyfile(template / "case.mix", work / f"{stem}.{mix_suffix}")
         if native:
-            descriptors(work / f"{stem}.c")
-            (work / f"{stem}.c").unlink()
+            for file_suffix in ("_desc.parquet", "_header.toml"):
+                shutil.copyfile(template / f"case{file_suffix}", work / f"{stem}{file_suffix}")
+        else:
+            shutil.copyfile(template / "case.c", work / f"{stem}.c")
     suffix = "_mpi" if launcher else ""
     execute(
-        binaries / ("rbiotransform" + suffix), work, "y\nn\nleft\nright\ny\n", launcher, native=native
+        binaries / ("rbiotransform" + suffix), work, f"y\n{ci_answer}\nleft\nright\ny\n", launcher, native=native
     )
-    outputs: dict[str, bytes | list[Block]] = {
-        file.name: file.read_bytes()
-        for pattern in ("*.bm", "*.bw")
-        for file in work.glob(pattern)
-    }
-    assert len(outputs) == 4, outputs.keys()
+    outputs: dict[str, bytes | list[Block] | dict[tuple[int, int], Orbital]] = {}
+    for stem in ("left", "right"):
+        wavefunction = work / f"{stem}.bw"
+        mixing = work / f"{stem}.{transformed_mix_suffix}"
+        if native:
+            outputs[wavefunction.name] = read_radial_stream(wavefunction)
+            outputs[mixing.name] = read_stream(mixing, work / f"{stem}_desc.parquet")
+        else:
+            outputs[wavefunction.name] = read_rwfn(wavefunction)
+            outputs[mixing.name] = mixing_blocks(mixing)
     # RCI's existing solver requires at least as many CSFs in every block
     # as MPI ranks. Use a single two-CSF block for the two-rank regression.
     rci_work = root / "rci"
-    fixture(rci_work, False, False)
+    fixture(rci_work, False, False, native=native)
     if native:
         for filename in ("case.w", "case.m", "case.cm"):
             (rci_work / filename).write_bytes(b"stale legacy file")
@@ -110,11 +123,11 @@ def pipeline(
     ):
         destination = root / program
         shutil.copytree(work, destination)
-        execute(binaries / program, destination, "y\nn\nleft\nright\nE1\n", launcher, native=native)
-        assert (destination / "left.right.t").stat().st_size > 0
+        execute(binaries / program, destination, f"y\n{ci_answer}\nleft\nright\nE1\n", launcher, native=native)
+        assert (destination / transition_name).stat().st_size > 0
         if native:
             assert not (destination / "SLASK").exists()
-        outputs[program + ".t"] = (destination / "left.right.t").read_bytes()
+        outputs[program + ".t"] = (destination / transition_name).read_bytes()
     return outputs
 
 
@@ -125,15 +138,16 @@ def main() -> None:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--mpiexec")
     parser.add_argument("--ranks", type=int, default=2)
+    parser.add_argument("--ci", action="store_true")
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix="descriptor-pipeline-") as temporary:
         root = args.output.resolve() if args.output else Path(temporary)
         root.mkdir(exist_ok=True)
         launcher = [args.mpiexec, "-n", str(args.ranks)] if args.mpiexec else []
-        candidate = pipeline(args.bin.resolve(), root / "native", True, launcher)
+        candidate = pipeline(args.bin.resolve(), root / "native", True, launcher, args.ci)
         if args.baseline:
             reference = pipeline(
-                args.baseline.resolve(), root / "baseline", False, launcher
+                args.baseline.resolve(), root / "baseline", False, launcher, args.ci
             )
             assert candidate == reference, "Pipeline output differs from baseline"
     print("PASS descriptor-only biotransform/transition pipeline")

@@ -4,7 +4,7 @@
 module density_calculation
     ! Module dependencies
     use grasp_parameters, only: max_orbitals
-    use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count, orbital_energy_parameters, &
+    use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count, &
         orbital_kappa, orbital_principal_n
     use radial_wavefunctions, only: max_orbitals, orbital_last_grid_index, orbital_origin_parameters, &
         final_orbital_last_grid_index, final_orbital_origin_parameters, initial_orbital_last_grid_index, &
@@ -155,6 +155,7 @@ contains
     recursive subroutine make_natural_orbitals(name, ordering, rho)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
+        use radial_wavefunction_format, only: write_radial_orbitals
 
         ! Arguments
         character(*), intent(in) :: name
@@ -218,18 +219,10 @@ contains
             end do
             deallocate(orbits, matrix, rotation, occupation, p, q, origin)
         end do
-        open(newunit=unit, file=trim(name)//".nw", form="unformatted", status="replace", iostat=io_status)
+        open(newunit=unit, file=trim(name)//".nw", access="stream", form="unformatted", status="replace", &
+            action="write", iostat=io_status)
         if (io_status /= 0) call density_fail("Cannot create natural-orbital file")
-        write(unit) "G92RWF"
-        do orbital_index = 1,orbital_count
-            ! E is retained for GRASP file compatibility; it is not an NO energy.
-            write(unit) orbital_principal_n(orbital_index), orbital_kappa(orbital_index), &
-                & orbital_energy_parameters(orbital_index), orbital_last_grid_index(orbital_index)
-            write(unit) orbital_origin_parameters(orbital_index), radial_large_components(:orbital_last_grid_index( &
-                & orbital_index),orbital_index), &
-                & radial_small_components(:orbital_last_grid_index(orbital_index),orbital_index)
-            write(unit) radial_grid(:orbital_last_grid_index(orbital_index))
-        end do
+        call write_radial_orbitals(unit)
         close(unit, iostat=io_status)
         if (io_status /= 0) call density_fail("Error writing natural-orbital file")
         write(*,*) "Natural orbitals written to ", trim(name)//".nw"

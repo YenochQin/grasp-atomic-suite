@@ -193,8 +193,7 @@ message("* GRASP_BUILD_SERIAL_APPS:        ${GRASP_BUILD_SERIAL_APPS}")
 
 # GRASP application programs
 configure_file(scripts/save_rmcdhf "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/save_rmcdhf" COPYONLY)
-configure_file(scripts/import_rsave "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/import_rsave" COPYONLY)
-install(PROGRAMS scripts/save_rmcdhf scripts/import_rsave DESTINATION bin)
+install(PROGRAMS scripts/save_rmcdhf DESTINATION bin)
 add_subdirectory("src/apps/gj")
 add_subdirectory("src/apps/rhfs")
 add_subdirectory("src/apps/rdensity")

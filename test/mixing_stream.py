@@ -16,13 +16,38 @@ class Block:
     coefficients: bytes
 
 
-def read_stream(path: Path, descriptor: Path | None = None, *, signature: bytes = b"CSF--MIX") -> list[Block]:
+def write_stream(
+    path: Path, electrons: int, orbitals: int, blocks: list[Block], descriptor: Path | None = None
+) -> None:
+    """Write a native mixing fixture, optionally bound to its V3 descriptor."""
+    digest = sha256(descriptor.read_bytes()).hexdigest() if descriptor else "0" * 64
+    total_levels = sum(len(block.roots) for block in blocks)
+    total_csfs = sum(block.csf_count for block in blocks)
+    header = Struct("<8s5q64s")
+    directory = Struct("<6q")
+    level = Struct("<qd")
+    offset = header.size + directory.size * len(blocks) + level.size * total_levels
+    with path.open("wb") as stream:
+        stream.write(header.pack(b"CSF--MIX", electrons, orbitals, len(blocks), total_csfs, total_levels, digest.encode()))
+        row = 0
+        for block in blocks:
+            stream.write(directory.pack(block.two_j, block.parity, block.csf_count, len(block.roots), row, offset))
+            row += len(block.roots)
+            offset += len(block.coefficients)
+        for block in blocks:
+            for root, energy in zip(block.roots, block.energies, strict=True):
+                stream.write(level.pack(root, energy))
+        for block in blocks:
+            stream.write(block.coefficients)
+
+
+def read_stream(path: Path, descriptor: Path | None = None) -> list[Block]:
     raw = path.read_bytes()
     header = Struct("<8s5q64s")
     directory = Struct("<6q")
     level = Struct("<qd")
     magic, electrons, orbitals, blocks, csfs, roots, basis_id = header.unpack_from(raw)
-    assert magic == signature and min(electrons, orbitals, blocks, csfs, roots) > 0
+    assert magic == b"CSF--MIX" and min(electrons, orbitals, blocks, csfs, roots) > 0
     if descriptor is not None:
         assert basis_id == sha256(descriptor.read_bytes()).hexdigest().encode()
     table = header.size + directory.size * blocks
@@ -49,8 +74,8 @@ def read_stream(path: Path, descriptor: Path | None = None, *, signature: bytes 
 def mixing_blocks(path: Path) -> list[Block]:
     with path.open("rb") as stream:
         signature = stream.read(8)
-    if signature in (b"CSF--MIX", b"GRMIX001"):
-        return read_stream(path, signature=signature)
+    if signature == b"CSF--MIX":
+        return read_stream(path)
     from rdensity.regression import records
 
     data = records(path)

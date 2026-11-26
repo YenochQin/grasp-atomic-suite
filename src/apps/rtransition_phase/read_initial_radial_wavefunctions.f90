@@ -75,14 +75,13 @@ contains
         if (io_status /= 0) error stop "Invalid radial wavefunction header"
 
         do
-            call read_orbital_metadata(wavefunction_input_unit, layout, npyii, nakyii, eyii, myii, io_status)
+            call read_orbital_metadata(layout, npyii, nakyii, eyii, myii, io_status)
             if (is_iostat_end(io_status)) exit
             if (io_status /= 0) error stop "Invalid orbital metadata"
             call alloc (pa, myii, "PA", "read_initial_radial_wavefunctions")
             call alloc (qa, myii, "QA", "read_initial_radial_wavefunctions")
             call alloc (ra, myii, "RA", "read_initial_radial_wavefunctions")
-            call read_orbital_payload(wavefunction_input_unit, layout, pzy, pa, qa, ra, io_status)
-            if (io_status /= 0) error stop "Invalid radial wavefunction payload"
+            call read_orbital_payload(layout, pzy, pa, qa, ra)
 
             do j = 1, initial_orbital_count
                 if (.not.(initial_orbital_energy_parameters(j)<0.0_real64 .and. npyii==initial_orbital_principal_n(j) .and. &

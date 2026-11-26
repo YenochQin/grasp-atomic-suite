@@ -96,14 +96,13 @@ contains
         end if
 
         do
-            call read_orbital_metadata(wavefunction_input_unit, layout, npy, naky, ey, my, io_status)
+            call read_orbital_metadata(layout, npy, naky, ey, my, io_status)
             if (is_iostat_end(io_status)) exit
             if (io_status /= 0) error stop "Invalid orbital metadata"
             call alloc (pa, my, "PA", "read_initial_radial_wavefunctions")
             call alloc (qa, my, "QA", "read_initial_radial_wavefunctions")
             call alloc (ra, my, "RA", "read_initial_radial_wavefunctions")
-            call read_orbital_payload(wavefunction_input_unit, layout, pzy, pa, qa, ra, io_status)
-            if (io_status /= 0) error stop "Invalid radial wavefunction payload"
+            call read_orbital_payload(layout, pzy, pa, qa, ra)
             ! Orbital order as defined in kapdata
             jj = 0
             do k = 1, kappa_group_count

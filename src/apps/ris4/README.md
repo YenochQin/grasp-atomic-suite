@@ -48,7 +48,7 @@ cmake --build build-gf16 --target fical
 | --- | --- |
 | [`configure_debug_output.f90`](configure_debug_output.f90) | 初始化诊断位，读取允许的非默认诊断选择，按需连接 `.dbg` 单元，供输入、积分与结果检查使用。 |
 | [`prepare_isotope_calculation.f90`](prepare_isotope_calculation.f90) | 解析核电荷、核质量、核分布及非默认轨道设置，生成网格、差分表和核势，再读取径向波函数供所有位移算符使用。 |
-| [`read_mixing_blocks.f90`](read_mixing_blocks.f90) | 读取状态对应的 `G92MIX`，逐块提取根编号、$J$、宇称、偏移能量和本征向量，将其按 CSF 偏移铺到共享数组，供各算符按态收缩。 |
+| [`read_mixing_blocks.f90`](read_mixing_blocks.f90) | 读取状态对应的 `CSF--MIX`，逐块提取根编号、$J$、宇称、绝对能量和本征向量，将其按 CSF 偏移铺到共享数组，供各算符按态收缩。 |
 | [`ris4_main.f90`](ris4_main.f90) | 选择 MCDHF／CI，装入状态基组、核和径向数据，再读各级混合向量，调用 RIS4 的电子因子计算并输出每态报告。 |
 | [`ris4_mpi_main.f90`](ris4_mpi_main.f90) | 由 rank 0 解析设置并打开报告，集体读入描述符基组。载入径向、核和混合数据后调用 MPI 位移计算。 |
 

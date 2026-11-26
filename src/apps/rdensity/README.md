@@ -25,7 +25,7 @@
 | --- | --- |
 | [`configure_debug_output.f90`](configure_debug_output.f90) | 初始化诊断位，读取允许的非默认诊断选择，按需连接 `.dbg` 单元，供输入、积分与结果检查使用。 |
 | [`rdensity.f90`](rdensity.f90) | 解析状态、混合文件来源及自然轨道排序方式，检查输入并装入基组和径向轨道。初始化后调用密度组装，MPI 与串行都用同一入口。 |
-| [`read_mixing_blocks.f90`](read_mixing_blocks.f90) | 读取状态对应的 `G92MIX`，逐块提取根编号、$J$、宇称、偏移能量和本征向量，将其按 CSF 偏移铺到共享数组，供各算符按态收缩。 |
+| [`read_mixing_blocks.f90`](read_mixing_blocks.f90) | 读取状态对应的 `CSF--MIX`，逐块提取根编号、$J$、宇称、绝对能量和本征向量，将其按 CSF 偏移铺到共享数组，供各算符按态收缩。 |
 | [`read_radial_density_input.f90`](read_radial_density_input.f90) | 读取核数据、光速和径向网格设置，初始化径向差分和网格，载入 `name.wfn` 中用于构造密度的径向函数。 |
 
 ### 性质与后处理

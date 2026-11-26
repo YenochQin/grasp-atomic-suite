@@ -1,14 +1,14 @@
-! Indexed little-endian ASF mixing streams and sequential G92MIX archive input.
+! Indexed little-endian ASF mixing streams.
 module mixing_file_format
     use, intrinsic :: iso_fortran_env, only: int8, int32, int64, real64, file_storage_size, iostat_end
     use, intrinsic :: ieee_arithmetic, only: ieee_support_datatype, ieee_is_finite
     use input_error_handling, only: fail_input_io
     implicit none (type, external)
     private
-    public :: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, read_mixing_vectors, skip_mixing_vectors
-    public :: open_mixing_stream, write_mixing_block
+    public :: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, read_mixing_vectors
+    public :: open_mixing_stream, open_transformed_mixing_stream, write_mixing_block
 
-    character(8), parameter :: stream_signature = "CSF--MIX", previous_stream_signature = "GRMIX001"
+    character(8), parameter :: stream_signature = "CSF--MIX"
     character(8), parameter :: incomplete_signature = "GRMIXTMP"
     integer(int64), parameter :: header_bytes = 112, block_bytes = 48, level_bytes = 16
     integer, parameter :: buffer_values = 131072
@@ -22,7 +22,7 @@ module mixing_file_format
         integer :: block = 0, active_csfs = 0, active_levels = 0
     end type
 
-    ! One output file per RCI or RMCDHF execution. MPI writers use this on rank zero.
+    ! Each program writes one mixing stream at a time. MPI writers use this on rank zero.
     type(mixing_file), save :: output
 contains
     logical function supports_stream_encoding()
@@ -47,6 +47,9 @@ contains
         if (allocated(output%directory)) deallocate(output%directory)
         allocate(output%directory(6,symmetry_block_count), stat=status)
         if (status /= 0) return
+        output%electron_count = electron_count
+        output%orbital_count = orbital_count
+        output%basis_id = loaded_csf_basis_id
         output%block_count = symmetry_block_count
         output%csf_count = sum(csf_counts_by_block(1:symmetry_block_count))
         output%level_count = sum(eigenvector_counts_by_block(:symmetry_block_count))
@@ -69,11 +72,30 @@ contains
             offset = offset + 8*values
             output%coefficient_count = output%coefficient_count + values
         end do
+        call open_mixing_output(path, unit, status)
+    end subroutine
+
+    subroutine open_transformed_mixing_stream(input_file, path, unit, status)
+        type(mixing_file), intent(in) :: input_file
+        character(*), intent(in) :: path
+        integer, intent(out) :: unit, status
+
+        ! The transformation changes coefficients, not the source block layout or basis digest.
+        output = input_file
+        call open_mixing_output(path, unit, status)
+    end subroutine
+
+    subroutine open_mixing_output(path, unit, status)
+        character(*), intent(in) :: path
+        integer, intent(out) :: unit, status
+
+        unit = -1
         open(newunit=unit, file=path, status="replace", action="write", access="stream", form="unformatted", iostat=status)
         if (status /= 0) return
-        write(unit,iostat=status) incomplete_signature, transfer([int(electron_count,int64), int(orbital_count,int64), &
-            int(symmetry_block_count,int64), int(output%csf_count,int64), int(output%level_count,int64)], [0_int8]), &
-            loaded_csf_basis_id, transfer(output%directory,[0_int8])
+        write(unit,iostat=status) incomplete_signature, transfer([int(output%electron_count,int64), &
+            int(output%orbital_count,int64), int(output%block_count,int64), int(output%csf_count,int64), &
+            int(output%level_count,int64)], [0_int8]), output%basis_id, transfer(output%directory,[0_int8])
+        if (status /= 0) close(unit)
     end subroutine
 
     subroutine write_mixing_block(unit, block, roots, energies, coefficients)
@@ -117,7 +139,7 @@ contains
         character(*), intent(in) :: path
         character(*), intent(in), optional :: basis_id
         character(8) :: signature
-        integer :: status, legacy_count, block
+        integer :: status, block
         integer(int64) :: fields(5), file_size, offset, levels, csfs, values
         integer(int8) :: header(40)
         integer(int8), allocatable :: directory(:)
@@ -125,21 +147,10 @@ contains
         open(newunit=file%unit,file=path,status="old",action="read",access="stream",form="unformatted",iostat=status)
         if (status /= 0) call fail_input_io(status,-1,"cannot open mixing file: "//trim(path))
         read(file%unit,iostat=status) signature
-        if (status /= 0) call fail_input_io(status,file%unit,"cannot read G92MIX or CSF--MIX signature")
+        if (status /= 0) call fail_input_io(status,file%unit,"Cannot read mixing stream signature: "//trim(path))
         if (signature == incomplete_signature) call fail_input_io(0,file%unit,"Incomplete mixing stream")
-        if (signature /= stream_signature .and. signature /= previous_stream_signature) then
-            close(file%unit)
-            open(newunit=file%unit,file=path,status="old",action="read",form="unformatted",iostat=status)
-            if (status /= 0) call fail_input_io(status,-1,"Cannot open legacy mixing file: "//trim(path))
-            read(file%unit,iostat=status) signature(:6)
-            if (status /= 0 .or. signature(:6) /= "G92MIX") &
-                call fail_input_io(status,file%unit,"expected G92MIX or CSF--MIX signature")
-            read(file%unit,iostat=status) file%electron_count, file%csf_count, file%orbital_count, file%level_count, &
-                legacy_count, file%block_count
-            if (status /= 0) call fail_input_io(status,file%unit,"Cannot read mixing header")
-            file%coefficient_count = legacy_count
-            return
-        end if
+        if (signature /= stream_signature) &
+            call fail_input_io(0,file%unit,"Expected CSF--MIX signature: "//trim(path))
         if (.not. supports_stream_encoding()) call fail_input_io(0,file%unit,"Mixing stream requires little-endian IEEE binary64")
         read(file%unit,iostat=status) header, file%basis_id
         if (status /= 0) call fail_input_io(status,file%unit,"Cannot read mixing stream header")
@@ -193,19 +204,15 @@ contains
         integer :: io_status
 
         io_status = 0
-        if (allocated(file%directory)) then
-            if (file%block == file%block_count) then
-                io_status = iostat_end
-            else
-                file%block = file%block + 1
-                block = file%block
-                csfs = int(file%directory(3,block))
-                levels = int(file%directory(4,block))
-                j_code = int(file%directory(1,block))+1
-                parity = int(file%directory(2,block))
-            end if
+        if (file%block == file%block_count) then
+            io_status = iostat_end
         else
-            read(file%unit,iostat=io_status) block, csfs, levels, j_code, parity
+            file%block = file%block + 1
+            block = file%block
+            csfs = int(file%directory(3,block))
+            levels = int(file%directory(4,block))
+            j_code = int(file%directory(1,block))+1
+            parity = int(file%directory(2,block))
         end if
         if (present(status)) then
             status = io_status
@@ -213,7 +220,6 @@ contains
             call fail_input_io(io_status,file%unit,"Cannot read mixing block")
         end if
         if (io_status == 0) then
-            if (csfs < 1 .or. levels < 0 .or. levels > csfs) call fail_input_io(0,file%unit,"Invalid mixing block size")
             file%active_csfs = csfs
             file%active_levels = levels
         end if
@@ -227,22 +233,16 @@ contains
         integer(int64) :: position, root_id
         integer(int8) :: table(16,size(roots))
 
-        if (allocated(file%directory)) then
-            position = header_bytes + block_bytes*file%block_count + level_bytes*file%directory(5,file%block)+1
-            read(file%unit,pos=position,iostat=status) table
-            if (status /= 0) call fail_input_io(status,file%unit,"Cannot read mixing stream levels")
-            shift = 0.0_real64
-            do root = 1, size(roots)
-                root_id = transfer(table(:8,root),root_id)
-                if (root_id < 1 .or. root_id > file%active_csfs) call fail_input_io(0,file%unit,"Invalid ASF root index")
-                roots(root) = int(root_id)
-                energies(root) = transfer(table(9:,root),shift)
-            end do
-        else
-            read(file%unit,iostat=status) roots
-            if (status == 0) read(file%unit,iostat=status) shift, energies
-            if (status /= 0) call fail_input_io(status,file%unit,"cannot read root positions or block energies")
-        end if
+        position = header_bytes + block_bytes*file%block_count + level_bytes*file%directory(5,file%block)+1
+        read(file%unit,pos=position,iostat=status) table
+        if (status /= 0) call fail_input_io(status,file%unit,"Cannot read mixing stream levels")
+        shift = 0.0_real64
+        do root = 1, size(roots)
+            root_id = transfer(table(:8,root),root_id)
+            if (root_id < 1 .or. root_id > file%active_csfs) call fail_input_io(0,file%unit,"Invalid ASF root index")
+            roots(root) = int(root_id)
+            energies(root) = transfer(table(9:,root),shift)
+        end do
         if (.not. ieee_is_finite(shift) .or. .not. all(ieee_is_finite(energies))) &
             call fail_input_io(0,file%unit,"Nonfinite ASF energy")
     end subroutine
@@ -252,39 +252,22 @@ contains
         type(mixing_file), intent(in) :: file
         real(real64), intent(inout) :: coefficients(:)
         integer, intent(in) :: stride
-        integer :: status, csf, level, count
+        integer :: status, level, count
         integer(int64) :: row, offset, first, last
         integer(int8), allocatable :: buffer(:)
 
-        if (allocated(file%directory)) then
-            allocate(buffer(8*min(buffer_values,file%active_csfs)))
-            offset = file%directory(6,file%block)+1
-            do level = 1, file%active_levels
-                row = int(level-1,int64)*stride
-                do first = 1, file%active_csfs, buffer_values
-                    last = min(first+buffer_values-1,int(file%active_csfs,int64))
-                    count = int(last-first+1)
-                    read(file%unit,pos=offset,iostat=status) buffer(:8*count)
-                    if (status /= 0) call fail_input_io(status,file%unit,"Cannot read mixing coefficient matrix")
-                    coefficients(row+first:row+last) = transfer(buffer(:8*count),[0.0_real64])
-                    offset = offset + 8_int64*count
-                end do
+        allocate(buffer(8*min(buffer_values,file%active_csfs)))
+        offset = file%directory(6,file%block)+1
+        do level = 1, file%active_levels
+            row = int(level-1,int64)*stride
+            do first = 1, file%active_csfs, buffer_values
+                last = min(first+buffer_values-1,int(file%active_csfs,int64))
+                count = int(last-first+1)
+                read(file%unit,pos=offset,iostat=status) buffer(:8*count)
+                if (status /= 0) call fail_input_io(status,file%unit,"Cannot read mixing coefficient matrix")
+                coefficients(row+first:row+last) = transfer(buffer(:8*count),[0.0_real64])
+                offset = offset + 8_int64*count
             end do
-        else
-            read(file%unit,iostat=status) ((coefficients(csf+int(level-1,int64)*stride),csf=1,file%active_csfs), &
-                level=1,file%active_levels)
-            if (status /= 0) call fail_input_io(status,file%unit,"Cannot read legacy mixing coefficient matrix")
-        end if
-    end subroutine
-
-    subroutine skip_mixing_vectors(file)
-        type(mixing_file), intent(in) :: file
-        integer :: status
-        integer(int64) :: coefficient
-        real(real64) :: discard
-
-        if (allocated(file%directory)) return
-        read(file%unit,iostat=status) (discard, coefficient=1_int64, int(file%active_csfs,int64)*file%active_levels)
-        if (status /= 0) call fail_input_io(status,file%unit,"cannot read mixing coefficient record")
+        end do
     end subroutine
 end module mixing_file_format

@@ -72,7 +72,7 @@ contains
         loaded_orbital_count = 0
         ! Load each binary record in file order and install it only in matching orbital slots.
         do
-            call read_orbital_metadata(wavefunction_input_unit, layout, file_principal_n, file_kappa, &
+            call read_orbital_metadata(layout, file_principal_n, file_kappa, &
                 file_energy_parameter, file_grid_size, read_status)
             if (is_iostat_end(read_status)) exit
             if (read_status /= 0) error stop "Invalid orbital metadata"
@@ -80,9 +80,8 @@ contains
             call alloc (file_small_component,file_grid_size, "file_small_component", "read_radial_wavefunction_records")
             call alloc (file_radial_grid,file_grid_size, "file_radial_grid", "read_radial_wavefunction_records")
 
-            call read_orbital_payload(wavefunction_input_unit, layout, file_origin_coefficient, file_large_component, &
-                file_small_component, file_radial_grid, read_status)
-            if (read_status /= 0) error stop "Invalid radial wavefunction payload"
+            call read_orbital_payload(layout, file_origin_coefficient, file_large_component, &
+                file_small_component, file_radial_grid)
 
             do orbital_index = 1, orbital_count
                 if (.not.(orbital_energy_parameters(orbital_index)<0.0_real64 .and. &

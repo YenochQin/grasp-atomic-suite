@@ -14,7 +14,7 @@ contains
     subroutine estimate_from_saved_orbitals(matched_orbital_indices, matched_subshell_count, file_path)
         ! Module dependencies
         use radial_wavefunction_format, only: wavefunction_layout, read_wavefunction_header, read_orbital_metadata, &
-            open_wavefunction_input, read_orbital_payload, skip_orbital_payload
+            open_wavefunction_input, read_orbital_payload
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
         use array_memory_management, only: alloc, dalloc
@@ -35,7 +35,6 @@ contains
             & orbital_index, file_path_length
         real(real64) :: saved_orbital_energy, radial_norm
         real(real64), pointer :: saved_large_component(:), saved_small_component(:), saved_radial_grid(:)
-        logical :: found
         type(wavefunction_layout) :: layout
 
         call open_wavefunction_input(wavefunction_input_unit, file_path, open_status)
@@ -50,8 +49,7 @@ contains
             write (angular_debug_unit, '(/,"From SUBROUTINE FRMRWF:"/," Orbital",8x,"Eigenvalue",19x,"Norm")')
         end if
         do
-            found = .false.
-            call read_orbital_metadata(wavefunction_input_unit, layout, saved_principal_n, saved_kappa, &
+            call read_orbital_metadata(layout, saved_principal_n, saved_kappa, &
                 saved_orbital_energy, saved_grid_point_count, io_status)
             if (is_iostat_end(io_status)) exit
             if (io_status /= 0) error stop "Invalid orbital metadata"
@@ -61,14 +59,12 @@ contains
                     orbital_principal_n(orbital_index)==saved_principal_n .and. &
                     & orbital_kappa(orbital_index)==saved_kappa)) &
                     cycle
-                found = .true.
                 orbital_energy_parameters(orbital_index) = saved_orbital_energy
                 call alloc (saved_large_component, saved_grid_point_count, "saved_large_component", "estimate_from_saved_orbitals")
                 call alloc (saved_small_component, saved_grid_point_count, "saved_small_component", "estimate_from_saved_orbitals")
                 call alloc (saved_radial_grid, saved_grid_point_count, "saved_radial_grid", "estimate_from_saved_orbitals")
-                call read_orbital_payload(wavefunction_input_unit, layout, orbital_origin_parameters(orbital_index), &
-                    saved_large_component, saved_small_component, saved_radial_grid, io_status)
-                if (io_status /= 0) error stop "Invalid radial wavefunction payload"
+                call read_orbital_payload(layout, orbital_origin_parameters(orbital_index), &
+                    saved_large_component, saved_small_component, saved_radial_grid)
                 call interpolate_radial_orbital (saved_large_component, saved_small_component, saved_grid_point_count, &
                     & saved_radial_grid, orbital_index, radial_norm)
                 if (rmcdhf_debug_flags(3)) then
@@ -85,10 +81,6 @@ contains
                 orbital_source_description(orbital_index) = file_path(1:3)
                 exit
             end do
-            if (.not.found) then
-                call skip_orbital_payload(wavefunction_input_unit, layout, io_status)
-                if (io_status /= 0) error stop "Invalid skipped orbital payload"
-            end if
         end do
         if (rmcdhf_debug_flags(3)) then
             call ensure_debug_output()

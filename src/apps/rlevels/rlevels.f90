@@ -4,7 +4,7 @@ program rlevels
     ! Module dependencies
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use, intrinsic :: iso_fortran_env, only: error_unit, int64, iostat_end, output_unit, real64
-    use mixing_file_format, only: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, skip_mixing_vectors
+    use mixing_file_format, only: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels
     use calculation_state_files, only: read_state_entry, resolve_mixing_file
     use run_timer, only: begin_run_timer, finish_run_timer
     implicit none (type, external)
@@ -83,15 +83,12 @@ contains
         character(len=12) :: j_text
         character :: parity
         integer :: status, file_level_count, symmetry_block_count
-        integer :: symmetry_block_index, last_block, block_csf_count, block_level_count, two_j_plus_one, parity_code, first, &
+        integer :: symmetry_block_index, block_csf_count, block_level_count, two_j_plus_one, parity_code, first, &
             & last, file_end, suffix
         real(real64) :: hamiltonian_energy_shift
         type(mixing_file) :: input_file
-        logical :: mcdhf
 
         suffix = index(name, '.', back=.true.)
-        mcdhf = .false.
-        if (suffix > 0) mcdhf = name(suffix:) == '.mix'
         call open_mixing_input(input_file, name)
         file_level_count = input_file%level_count
         symmetry_block_count = input_file%block_count
@@ -108,22 +105,12 @@ contains
         allocate(blocks(symmetry_block_count), stat=status)
         if (status /= 0) call fail(name, 'cannot allocate symmetry blocks')
         last = used
-        last_block = 0
         do
             call next_mixing_block(input_file, symmetry_block_index, block_csf_count, block_level_count, &
                 two_j_plus_one, parity_code, status)
             if (status == iostat_end) exit
             if (status /= 0) call fail(name, 'cannot read symmetry block header')
-            ! RMCDHF omits blocks with no requested roots. RCI writes their headers.
-            if (symmetry_block_index <= last_block .or. symmetry_block_index > symmetry_block_count .or. (.not. mcdhf .and. &
-                & symmetry_block_index /= last_block + 1)) &
-                call fail(name, 'unexpected symmetry block number')
-            last_block = symmetry_block_index
-            if (block_level_count < 0 .or. block_level_count > block_csf_count .or. block_level_count > file_end - last) &
-                call fail(name, 'invalid root count in symmetry block')
-            if (block_level_count == 0) cycle
-            if (two_j_plus_one < 1 .or. (parity_code /= 1 .and. parity_code /= -1)) &
-                call fail(name, 'invalid J or parity in symmetry block')
+            if (block_level_count > file_end - last) call fail(name, 'invalid root count in symmetry block')
             j_text = format_j(two_j_plus_one - 1)
             parity = merge('+', '-', parity_code == 1)
             first = last + 1
@@ -132,14 +119,12 @@ contains
             call read_mixing_levels(input_file, entries(first:last)%root_position_in_symmetry_block, &
                 hamiltonian_energy_shift, entries(first:last)%energy)
             if (any(entries(first:last)%root_position_in_symmetry_block < 1)) call fail(name, 'invalid root position')
-            call skip_mixing_vectors(input_file)
             entries(first:last)%energy = entries(first:last)%energy + hamiltonian_energy_shift
             entries(first:last)%j_text = j_text
             entries(first:last)%parity = parity
         end do
         close (input_file%unit)
-        if (last /= file_end .or. (.not. mcdhf .and. last_block /= symmetry_block_count)) &
-            call fail(name, 'mixing records disagree with header counts')
+        if (last /= file_end) call fail(name, 'mixing records disagree with header counts')
 
         if (suffix > 0 .and. file_level_count > 0) then
             select case (name(suffix:))
@@ -202,7 +187,7 @@ contains
             if (status /= 0) call fail(name, 'cannot read leading LSJ component')
             if (line(:7) /= '' .or. len_trim(line) < label_column) call fail(name, 'missing leading LSJ configuration')
 
-            ! jj2lsj prints the ordinal in the block, which can differ from the root position in G92MIX.
+            ! jj2lsj prints the ordinal in the block, which can differ from the root position in the mixing stream.
             do block = 1, size(blocks)
                 if (ordinal > blocks(block)%block_level_count) cycle
                 index_in_table = blocks(block)%first_level_index + ordinal - 1

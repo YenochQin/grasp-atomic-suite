@@ -61,13 +61,8 @@ GETHFD -> SETRWFA(TRIM(NAME)//'.wfn') -> LODRWF -> INTRPQ -> ORTHSC
 
 #### 第一步：打开并校验文件头
 
-`SETRWFA` 位于 `src/lib/core/radial_wavefunction_input.f90`。它做三件事：
-
-1. 以非格式化二进制方式打开 `name.wfn`
-2. 读入文件头字符串
-3. 检查该字符串是否为 `G92RWF`
-
-如果文件头不对，程序立即停止。也就是说，`rhfs` 期待的是标准 GRASP 的径向波函数文件格式。
+`SETRWFA` 经共享读取器打开 `name.wfn`，校验 `RAD--WFN` 签名、轨道数、径向点数及文件长度。
+[波函数格式](../../README.md#radial-wavefunction-stream)
 
 #### 第二步：为所有目标轨道分配存储
 
@@ -100,14 +95,7 @@ GETHFD -> SETRWFA(TRIM(NAME)//'.wfn') -> LODRWF -> INTRPQ -> ORTHSC
 3. 文件自带径向网格：
    - `RA(1:MY)`
 
-这一点也能从写 `.wfn` 文件的工具程序中反向验证，写出顺序是：
-
-```text
-'G92RWF'
-NP, NAK, E, MF
-PZ, PF(1:MF), QF(1:MF)
-R(1:MF)
-```
+Suite 流文件共用一列径向网格。每条轨道的大、小分量各有一列，只使用该轨道点数以内的数据。
 
 #### 第四步：把文件中的轨道与当前计算所需轨道匹配
 

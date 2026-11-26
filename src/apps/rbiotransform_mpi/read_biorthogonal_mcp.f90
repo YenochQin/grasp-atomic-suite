@@ -23,13 +23,13 @@ contains
     subroutine read_biorthogonal_mcp (name,startup_directory,ik,global_trace_level,mixing_file_kind)
         ! Module dependencies
         use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
-        use calculation_file_units, only: mixing_input_unit
+        use mixing_file_format, only: mixing_file, open_transformed_mixing_stream, write_mixing_block
+        use input_error_handling, only: fail_input_io
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: orbital_index_radix, max_orbitals
         use array_memory_management, only: alloc, dalloc
-        use atomic_calculation_state, only: electron_count
         use eigenstate_expansions, only: hamiltonian_energy_shift, shifted_eigenvalues, csf_mixing_coefficients
-        use orbital_csf_basis,           only: csf_count, orbital_count
+        use orbital_csf_basis,           only: csf_count
         use selected_level_indices, only: active_level_indices, active_level_count
         use level_symmetry_metadata, only: level_parity_signs, level_two_j_plus_one
         use mcp_coefficient_storage, only: mcp_coefficient_values, mcp_packed_orbital_pairs, mcp_coefficient_end_offsets, &
@@ -40,7 +40,7 @@ contains
             initial_kappa_group_by_orbital, final_kappa_group_by_orbital, max_biorthogonal_kappa_groups
         use biorthogonal_subshell_mapping,        only: active_orbitals_by_group, active_orbital_positions_by_group
         use biorthogonal_orbital_rotations,         only: initial_orbital_rotation_values, final_orbital_rotation_values
-        use transition_basis_blocks, only: transition_block_count, mixing_file_csf_count, mixing_file_level_count
+        use transition_basis_blocks, only: transition_block_count
         use mpi_state, only: mpi_rank
 
         ! Procedure interfaces
@@ -49,7 +49,9 @@ contains
         implicit none (type, external)
 
         ! Local declarations
-        integer :: biorthogonal_mixing_output_unit
+        type(mixing_file) :: input_file
+        character(:), allocatable :: output_path
+        integer :: biorthogonal_mixing_output_unit, io_status
 
         ! Arguments
         character(len=24), intent(in)  :: name
@@ -68,7 +70,7 @@ contains
         real(real64), pointer :: transfer_power_workspace(:), transformed_ci_workspace(:)
         integer :: trace_level, local_trace_level, i, j, symmetry_block_index, cached_csf_count, cached_orbital_count, &
                 & cached_symmetry_count,  &
-            symmetry_index, ci_rotation_offset, nvecsize
+            symmetry_index, ci_rotation_offset
         local_trace_level = 00
         trace_level = max(global_trace_level,local_trace_level)
         trace_level = 00
@@ -131,7 +133,8 @@ contains
         rewind (biorthogonal_angular_unit)
         do symmetry_block_index = 1, transition_block_count
             ! Read the CI vectors
-            call read_state_mixing_coefficients(trim(startup_directory)//"/"//name,mixing_file_kind,symmetry_block_index)
+            call read_state_mixing_coefficients(trim(startup_directory)//"/"//name, mixing_file_kind, &
+                symmetry_block_index, input_file)
             ! Allocate memory for use in CITRAG
             call alloc (transfer_power_workspace, csf_count*active_level_count, "transfer_power_workspace", "read_biorthogonal_mcp")
             call alloc (transformed_ci_workspace, csf_count*active_level_count, "transformed_ci_workspace", "read_biorthogonal_mcp")
@@ -187,30 +190,17 @@ contains
 
             call dalloc (transfer_power_workspace, "transfer_power_workspace", "read_biorthogonal_mcp")
             call dalloc (transformed_ci_workspace, "transformed_ci_workspace", "read_biorthogonal_mcp")
-            ! Write the rotated CI vectors on file
-            if(mpi_rank == 0) then
-                if(symmetry_block_index==1) then
-                    j = index(name," ")
-                    if (mixing_file_kind==0) then
-                        open (newunit=biorthogonal_mixing_output_unit,file=trim(startup_directory)//"/"//name(1:j-1)//".cbm", &
-                            form="UNFORMATTED",status="UNKNOWN")
-                    else
-                        open (newunit=biorthogonal_mixing_output_unit,file=trim(startup_directory)//"/"//name(1:j-1)//".bm",  &
-                            form="UNFORMATTED",status="UNKNOWN")
-                    end if
-
-                    write(biorthogonal_mixing_output_unit) "G92MIX"
-                    write(biorthogonal_mixing_output_unit) electron_count,mixing_file_csf_count,orbital_count, &
-                        mixing_file_level_count,nvecsize, &
-                        transition_block_count
+            ! Write the rotated CI vectors using the source symmetry directory and basis digest.
+            if (mpi_rank == 0) then
+                if (symmetry_block_index == 1) then
+                    output_path = trim(startup_directory)//"/"//trim(name)//merge(".cbm", ".bm ", mixing_file_kind == 0)
+                    call open_transformed_mixing_stream(input_file, trim(output_path), &
+                        biorthogonal_mixing_output_unit, io_status)
+                    if (io_status /= 0) call fail_input_io(io_status, -1, "Cannot create "//trim(output_path))
                 end if
-                write(biorthogonal_mixing_output_unit) symmetry_block_index,csf_count,active_level_count,level_two_j_plus_one(1), &
-                    level_parity_signs(1)
-                write(biorthogonal_mixing_output_unit) (active_level_indices(i),i = 1,active_level_count)
-                write(biorthogonal_mixing_output_unit) hamiltonian_energy_shift,(shifted_eigenvalues(i),i = 1,active_level_count)
-                write(biorthogonal_mixing_output_unit) ((csf_mixing_coefficients(i+(j-1)*csf_count),i = 1,csf_count),j = 1, &
-                    active_level_count)
-            end if !myid=0
+                call write_mixing_block(biorthogonal_mixing_output_unit, symmetry_block_index, active_level_indices, &
+                    hamiltonian_energy_shift + shifted_eigenvalues, csf_mixing_coefficients)
+            end if
 
             call dalloc (shifted_eigenvalues, "shifted_eigenvalues", "read_biorthogonal_mcp")
             call dalloc (csf_mixing_coefficients, "csf_mixing_coefficients", "read_biorthogonal_mcp")
@@ -220,8 +210,8 @@ contains
         end do
         close (biorthogonal_angular_unit)
         ! Close the  mixing  file
-        close (mixing_input_unit)
-        close (biorthogonal_mixing_output_unit)
+        close (input_file%unit)
+        if (mpi_rank == 0) close (biorthogonal_mixing_output_unit)
         return
     end subroutine read_biorthogonal_mcp
 end module read_biorthogonal_mcp_interface

@@ -59,7 +59,7 @@ def main() -> None:
         inputs = root / "inputs"
         inputs.mkdir()
         shutil.copyfile(data / "isodata", inputs / "isodata")
-        shutil.copyfile(data / "test.w", inputs / "case.wfn")
+        shutil.copyfile(data / "test.wfn", inputs / "case.wfn")
         text = inputs / "case.c"
         with (data / "test.c").open() as source:
             text.write_text("".join(next(source) for _ in range(5 + 3 * 7)))

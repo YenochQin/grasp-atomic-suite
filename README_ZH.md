@@ -205,14 +205,14 @@ mpiexec -n 2 "$suite_bin/gj_mpi" name --ci
 
 ### 径向波函数二进制流
 
-`rwfnestimate` 和 RMCDHF 以 `RAD--WFN` 二进制流保存波函数。文件依次包含 16 字节文件头、每轨道 32 字节的参数表和 `float64` 径向矩阵。数值采用小端序。矩阵沿径向点连续存储，Python 形状为 `(2*K+1, L)`。第 0 行保存共享网格，后续按轨道顺序排列 `P` 和 `Q`。每条轨道仅前 `point_count` 点有效。Suite 也能读取早期 `GRWFRAD1` 和 `G92RWF` 文件。具体字段和 NumPy 示例见 [二进制布局](README.md#radial-wavefunction-stream)。
+初猜轨道、优化轨道、双正交轨道和自然轨道都采用 `RAD--WFN` 二进制流。文件依次包含 16 字节文件头、每轨道 32 字节的参数表和 `float64` 径向矩阵。数值采用小端序。矩阵沿径向点连续存储，Python 形状为 `(2*K+1, L)`。第 0 行保存共享网格，后续按轨道顺序排列 `P` 和 `Q`。每条轨道仅前 `point_count` 点有效。读取器要求 `RAD--WFN` 签名。旧 `G92RWF` 顺序记录需重新生成 Suite 流文件。具体字段和 NumPy 示例见 [二进制布局](README.md#radial-wavefunction-stream)。
 
 ### ASF 混合系数二进制流
 
 RMCDHF 的 `.mix` 与 RCI 的 `.cimix` 共用 `CSF--MIX`。文件依次包含基组 SHA-256、
 对称性块目录、ASF 根编号与绝对总能量以及混合系数。每个 ASF 的有符号
-`float64` 系数连续存放，列顺序与对应 V3 描述符块一致。Suite 也能读取早期
-`GRMIX001` 和 `G92MIX` 文件。[字段布局和 NumPy 示例](README.md#indexed-asf-mixing-stream)
+`float64` 系数连续存放，列顺序与对应 V3 描述符块一致。双正交输出 `.bm` 和 `.cbm` 使用相同格式，保留来源基组的 SHA-256。
+读取器要求 `CSF--MIX` 签名。旧 `G92MIX` 顺序记录需重新生成 Suite 流文件。[字段布局和 NumPy 示例](README.md#indexed-asf-mixing-stream)
 
 ## 验证数据
 
@@ -220,26 +220,22 @@ RMCDHF 的 `.mix` 与 RCI 的 `.cimix` 共用 `CSF--MIX`。文件依次包含基
 
 ```text
 data/isodata
-data/test.c
-data/test.m
-data/test.w
+data/test_desc.parquet
+data/test_header.toml
+data/test.mix
+data/test.wfn
 data/test.gj
 ```
 
-复现 `data/test.gj` 时，从 Suite 根目录运行下列命令，并将支持 V3 的
-`rcsfs` 加入 `PATH`。按实际构建目录设置 `suite_bin`。
-`rcsfs convert` 会生成 Parquet 描述符和配套的 TOML 头文件。将样本轨道和混合系数复制为 `test.wfn` 和 `test.mix`。
+复现示例 Landé 因子时，使用配套的混合文件、描述符及头文件。按实际构建目录设置 `suite_bin`。
 
 ```fish
 set suite_root (pwd)
 set suite_bin (realpath build-gf16/bin)
 mkdir -p ../temp/tests
 set gj_work (mktemp -d ../temp/tests/gj-example.XXXXXXXX)
-cp data/isodata data/test.c "$gj_work/"
-cp data/test.m "$gj_work/test.mix"
-cp data/test.w "$gj_work/test.wfn"
+cp data/isodata data/test_desc.parquet data/test_header.toml data/test.mix data/test.wfn "$gj_work/"
 cd "$gj_work"
-rcsfs convert test.c test_desc.parquet
 printf '%s\n' y test n | "$suite_bin/gj"
 diff -u "$suite_root/data/test.gj" test.gj
 cd "$suite_root"

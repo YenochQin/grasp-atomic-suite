@@ -52,29 +52,6 @@ MPI 通过 `disks` 单独配置永久 I/O 目录时，从含有 `rmcdhf.log` 的
 save_rmcdhf --io-dir /path/to/serial-io results/Zn_odd_AS1
 ```
 
-## 导入原版 GRASP 的 rsave 结果
-
-在原版 `rsave` 结果所在目录，运行 [import_rsave](import_rsave) 并传入当时使用的状态名。
-命令安装到 Suite 的 `bin/`，使用 Python 3.10 或以上版本和支持 V3 的 `rcsfs`。
-
-```fish
-cd /path/to/grasp-results
-import_rsave Zn_odd_AS1
-```
-
-`rcsfs` 默认从 `PATH` 查找，也可用 `--rcsfs /path/to/rcsfs` 指定。
-
-| 原版结果 | 同目录生成的 Suite 文件 |
-| --- | --- |
-| `name.c` | `name_desc.parquet`、`name_header.toml`，保留 CSF 行顺序和对称性块 |
-| `name.w` | `name.wfn` |
-| `name.m`、`name.cm` | `name.mix`、`name.cimix`，分别在源文件存在时生成 |
-| `name.sum`、`name.log`、`name.alog` | `name.rmcdhf.summary`、`name.rmcdhf.log`、`name.rangular.log`，分别在源文件存在时生成 |
-
-脚本要求同一状态的 `.c` 和 `.w`。摘要标明 `(E)AL` 时跳过原目录中遗留的 `.m`。
-轨道和混合系数原样复制，要求原版输出与 Suite 的 Fortran 二进制记录格式兼容。已有 `isodata`、LSJ 标签和能级表继续在原目录使用。
-原始文件与同名 Suite 文件受保护，目标文件已存在时命令报错退出。
-
 ## 批量修改 grasp-atomic-suite 径向网格
 
 `patch_grasp_grid.py` 根据脚本文件的实际位置找到与 `scripts/` 同级的 `src/`。

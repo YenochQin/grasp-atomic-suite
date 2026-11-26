@@ -51,7 +51,7 @@ finite nuclei default to `N=NNNP=590`, with `NNN1=600`. Use the
 Only rank zero writes `name.nw` and `name.d`/`name.cd`. Existing density files
 cause an error before calculation; `.nw` is replaced, as in upstream. Occupations
 and rotation coefficients are printed in output orbital order. The unformatted
-`.nw` file keeps the `G92RWF` record structure and original orbital energy fields;
+`.nw` file uses the Suite `RAD--WFN` stream and retains the original orbital energy fields;
 these fields are not natural-orbital energies. CI coefficients are not rotated
 or written: perform a subsequent RCI calculation in the new orbital basis when
 new mixing coefficients are needed.

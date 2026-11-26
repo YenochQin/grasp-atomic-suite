@@ -1,0 +1,43 @@
+descriptor_sha256 = "1a965eff0498dd3641f914f1fbdcb626fe8518045431c3ec6bb33b1b3b43acc5"
+[header_info]
+header_lines = ["Core subshells:", "  1s   2s   2p-  2p", "Peel subshells:", "  3s   3p-  3p   3d-  3d   4s   4p-  4p   4d-  4d   4f-  4f", "CSF(s):"]
+electron_count = 28
+
+[block_info]
+block_count = 5
+block_lengths = [81, 172, 270, 265, 254]
+
+[[block_info.blocks]]
+two_j = 0
+parity = 1
+start_row = 0
+length = 81
+
+[[block_info.blocks]]
+two_j = 2
+parity = 1
+start_row = 81
+length = 172
+
+[[block_info.blocks]]
+two_j = 4
+parity = 1
+start_row = 253
+length = 270
+
+[[block_info.blocks]]
+two_j = 6
+parity = 1
+start_row = 523
+length = 265
+
+[[block_info.blocks]]
+two_j = 8
+parity = 1
+start_row = 788
+length = 254
+
+[conversion_stats]
+csf_count = 1042
+total_lines = 3126
+truncated_count = 0

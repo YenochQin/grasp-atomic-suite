@@ -14,6 +14,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from native_fixture import descriptors
+from mixing_stream import Block, write_stream
 import re
 import shutil
 import struct
@@ -45,37 +46,24 @@ def prepare(work: Path, case: str, identity: bool = False, unused_orbitals: bool
     nw = len(text[3].split())
     nvec = counts if identity else [min(2, n) for n in counts]
 
-    def ints(*values: int) -> bytes:
-        return struct.pack(f"={len(values)}i", *values)
-
-    def doubles(values: list[float]) -> bytes:
-        return struct.pack(f"={len(values)}d", *values)
-
-    with (work / "test.mix").open("wb") as stream:
-        def record(data: bytes) -> None:
-            stream.write(ints(len(data)) + data + ints(len(data)))
-
-        record(b"G92MIX")
-        record(ints(electrons, sum(counts), nw, sum(nvec),
-                    sum(n * v for n, v in zip(counts, nvec)), len(groups)))
-        for block, (group, n, v) in enumerate(zip(groups, counts, nvec), 1):
-            last = group[2].strip().split()[-1]
-            twice_j = int(2 * Fraction(last[:-1]))
-            parity = 1 if last[-1] == "+" else -1
-            record(ints(block, n, v, twice_j + 1, parity))
-            record(ints(*range(1, v + 1)))
-            record(doubles([-10.0] + [0.01 * i for i in range(v)]))
-            vectors: list[float] = []
-            for k in range(v):
-                if identity:
-                    values = [float(j == k) for j in range(n)]
-                else:
-                    # All configurations survive default EPSNEW; concentrate
-                    # norm in the first configuration to exercise early stop.
-                    values = [0.01 * (-1.0 if (j + k) % 2 else 1.0) for j in range(n)]
-                    values[k] = math.sqrt(1.0 - (n - 1) * 0.0001)
-                vectors.extend(values)
-            record(doubles(vectors))
+    blocks = []
+    for group, n, v in zip(groups, counts, nvec, strict=True):
+        last = group[2].strip().split()[-1]
+        twice_j = int(2 * Fraction(last[:-1]))
+        parity = 1 if last[-1] == "+" else -1
+        vectors: list[float] = []
+        for k in range(v):
+            if identity:
+                values = [float(j == k) for j in range(n)]
+            else:
+                # All configurations survive default EPSNEW; concentrate
+                # norm in the first configuration to exercise early stop.
+                values = [0.01 * (-1.0 if (j + k) % 2 else 1.0) for j in range(n)]
+                values[k] = math.sqrt(1.0 - (n - 1) * 0.0001)
+            vectors.extend(values)
+        blocks.append(Block(twice_j, parity, n, list(range(1, v + 1)), [-10.0 + 0.01 * i for i in range(v)],
+                            struct.pack(f"<{len(vectors)}d", *vectors)))
+    write_stream(work / "test.mix", electrons, nw, blocks, work / "test_desc.parquet")
     # Point-nucleus metadata for parser tests only.
     (work / "isodata").write_text(
         "Atomic number:\n10\nMass number:\n20\n"
@@ -157,10 +145,11 @@ def main() -> None:
 
         # A same-width block with the wrong parity cannot label this basis.
         mixing = padded / "test.mix"
-        raw = mixing.read_bytes()
-        first_block = struct.pack("=7i", 20, 1, 2, 2, 2, -1, 20)
-        assert raw.count(first_block) == 1
-        mixing.write_bytes(raw.replace(first_block, struct.pack("=7i", 20, 1, 2, 2, 2, 1, 20)))
+        raw = bytearray(mixing.read_bytes())
+        first_block_parity = struct.calcsize("<8s5q64sq")
+        old_parity, = struct.unpack_from("<q", raw, first_block_parity)
+        struct.pack_into("<q", raw, first_block_parity, -old_parity)
+        mixing.write_bytes(raw)
         result = subprocess.run([executable], cwd=padded, input=input_text("default"), text=True,
                                 capture_output=True, timeout=30)
         assert result.returncode != 0 and "does not match descriptor symmetry" in result.stderr

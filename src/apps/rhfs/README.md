@@ -25,7 +25,7 @@ CI 模式写出 `name.ch` 和 `name.choffd`。
 | --- | --- |
 | [`configure_debug_output.f90`](configure_debug_output.f90) | 初始化诊断位，读取允许的非默认诊断选择，按需连接 `.dbg` 单元，供输入、积分与结果检查使用。 |
 | [`read_hyperfine_options.f90`](read_hyperfine_options.f90) | 读核自旋和核矩等同位素数据，以及可选光速、网格和一阶 CSF 截止。初始化网格、差分和核势，再把径向轨道装入内存。 |
-| [`read_mixing_blocks.f90`](read_mixing_blocks.f90) | 读取状态对应的 `G92MIX`，逐块提取根编号、$J$、宇称、偏移能量和本征向量，将其按 CSF 偏移铺到共享数组，供各算符按态收缩。 |
+| [`read_mixing_blocks.f90`](read_mixing_blocks.f90) | 读取状态对应的 `CSF--MIX`，逐块提取根编号、$J$、宇称、绝对能量和本征向量，将其按 CSF 偏移铺到共享数组，供各算符按态收缩。 |
 | [`rhfs_main.f90`](rhfs_main.f90) | 读取状态与混合来源，装入 CSF、isodata、径向网格及波函数，核对混合记录后调用超精细矩阵例程并关闭报告。 |
 | [`rhfs_mpi_main.f90`](rhfs_mpi_main.f90) | rank 0 选择状态与混合来源并广播。集体加载 CSF，准备径向数据和混合向量，运行分布式矩阵元计算并归约各阶段最长耗时。 |
 

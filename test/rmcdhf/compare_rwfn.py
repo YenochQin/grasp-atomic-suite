@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compute independent radial metrics from successive G92RWF files."""
+"""Compute independent radial metrics from Suite and historical GRASP outputs."""
 
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ class Orbital:
     n: int
     kappa: int
     energy: float
+    origin: float
     p: tuple[float, ...]
     q: tuple[float, ...]
     r: tuple[float, ...]
@@ -50,12 +51,12 @@ def detect_endian(path: Path) -> str:
     raise ValueError("unsupported Fortran record format")
 
 
-def read_radial_stream(path: Path, *, expected_signature: bytes = b"RAD--WFN") -> dict[tuple[int, int], Orbital]:
+def read_radial_stream(path: Path) -> dict[tuple[int, int], Orbital]:
     """Decode the Suite stream independently of the Fortran and GraspKit readers."""
     raw = path.read_bytes()
     signature, count, longest = struct.unpack_from("<8sii", raw)
     matrix_offset = 16 + 32 * count
-    if signature != expected_signature or min(count, longest) < 1 or (
+    if signature != b"RAD--WFN" or min(count, longest) < 1 or (
         len(raw) != matrix_offset + 8 * longest * (2 * count + 1)
     ):
         raise ValueError(f"{path}: invalid wavefunction stream")
@@ -64,14 +65,16 @@ def read_radial_stream(path: Path, *, expected_signature: bytes = b"RAD--WFN") -
     orbitals = {}
     longest_orbital = 0
     for index in range(count):
-        n, kappa, points, reserved, energy, _ = struct.unpack_from("<4i2d", raw, 16 + 32 * index)
+        n, kappa, points, reserved, energy, origin = struct.unpack_from("<4i2d", raw, 16 + 32 * index)
         if not 0 < points <= longest or reserved or (n, kappa) in orbitals:
             raise ValueError(f"{path}: invalid orbital {(n, kappa)}")
         p = row.unpack_from(raw, matrix_offset + row.size * (2 * index + 1))
         q = row.unpack_from(raw, matrix_offset + row.size * (2 * index + 2))
         if any(p[points:]) or any(q[points:]):
             raise ValueError(f"{path}: unexpected orbital padding")
-        orbitals[n, kappa] = Orbital(n=n, kappa=kappa, energy=energy, p=p[:points], q=q[:points], r=grid[:points])
+        orbitals[n, kappa] = Orbital(
+            n=n, kappa=kappa, energy=energy, origin=origin, p=p[:points], q=q[:points], r=grid[:points]
+        )
         longest_orbital = max(longest_orbital, points)
     if longest_orbital != longest:
         raise ValueError(f"{path}: wrong grid length")
@@ -81,8 +84,8 @@ def read_radial_stream(path: Path, *, expected_signature: bytes = b"RAD--WFN") -
 def read_rwfn(path: Path) -> dict[tuple[int, int], Orbital]:
     with path.open("rb") as stream:
         signature = stream.read(8)
-    if signature in (b"RAD--WFN", b"GRWFRAD1"):
-        return read_radial_stream(path, expected_signature=signature)
+    if signature == b"RAD--WFN":
+        return read_radial_stream(path)
     endian = detect_endian(path)
     orbitals: dict[tuple[int, int], Orbital] = {}
     with path.open("rb") as stream:
@@ -109,6 +112,7 @@ def read_rwfn(path: Path) -> dict[tuple[int, int], Orbital]:
                 n=n,
                 kappa=kappa,
                 energy=energy,
+                origin=values[0],
                 p=tuple(values[1 : 1 + points]),
                 q=tuple(values[1 + points :]),
                 r=tuple(radii),

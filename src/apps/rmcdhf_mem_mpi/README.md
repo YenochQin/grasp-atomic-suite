@@ -87,7 +87,7 @@ SCF 日志写入启动目录。
 | [`cache_mcp_files.f90`](cache_mcp_files.f90) | 根据目录分配原有内存数组，按块装入稀疏结构和各通道积分组。读取失败时报告相关分片。 |
 | [`finish_summary.f90`](finish_summary.f90) | 输出最后一轮的能量、能级权重和组态成分，按选取的平均模式完成报告并关闭相应输出单元。 |
 | [`load_mcp_records_into_memory.f90`](load_mcp_records_into_memory.f90) | 按通道编号及累计记录位置返回该积分标签和贡献数，供矩阵或势构造遍历缓存。 |
-| [`open_mixing_output.f90`](open_mixing_output.f90) | 为 OL/EOL 创建混合文件并写 `G92MIX` 标记和预备维数，供每轮矩阵求解写各块系数。 |
+| [`open_mixing_output.f90`](open_mixing_output.f90) | 为 OL/EOL 创建混合文件并建立 `CSF--MIX` 块目录，供每轮矩阵求解写各块系数。 |
 | [`open_summary_file.f90`](open_summary_file.f90) | 将状态摘要路径连接到 SCF 文本单元，检查是否成功打开，供初始设置和结束时的能量表写入。 |
 | [`print_radial_wavefunction.f90`](print_radial_wavefunction.f90) | 按列打印网格上的大、小分量及相关势的诊断样本，可调用 ASCII 绘图例程查看径向形状。 |
 | [`print_scf_results.f90`](print_scf_results.f90) | 把轨道编号转换为谱学标签，列出将优化的轨道及其控制选项，供交互核对轨道选择。 |

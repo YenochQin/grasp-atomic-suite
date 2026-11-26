@@ -83,7 +83,7 @@ contains
         loaded_orbital_count = 0
         ! Each orbital starts with a record containing its identifier, energy parameter and grid size.
         do
-            if (mpi_rank == 0) call read_orbital_metadata(wavefunction_input_unit, layout, file_principal_n, file_kappa, &
+            if (mpi_rank == 0) call read_orbital_metadata(layout, file_principal_n, file_kappa, &
                 file_energy_parameter, file_grid_size, read_status)
             ! Share the read status so all ranks take the same branch before allocating and receiving the payload.
             call mpi_bcast (read_status,1,mpi_integer,0,mpi_comm_world,mpi_error_code)
@@ -99,9 +99,8 @@ contains
             call alloc (file_radial_grid,file_grid_size, "file_radial_grid", "read_mpi_radial_wavefunction_records")
 
             if (mpi_rank == 0) then
-                call read_orbital_payload(wavefunction_input_unit, layout, file_origin_coefficient, file_large_component, &
-                    file_small_component, file_radial_grid, read_status)
-                if (read_status /= 0) call fail_input_io_mpi(read_status, wavefunction_input_unit, "Invalid orbital payload")
+                call read_orbital_payload(layout, file_origin_coefficient, file_large_component, &
+                    file_small_component, file_radial_grid)
             end if
 
             call mpi_bcast (file_origin_coefficient,1,mpi_double_precision,0, &
