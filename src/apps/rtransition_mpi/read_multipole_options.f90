@@ -97,7 +97,8 @@ contains
         ! Trim the multipole array to the number of accepted requests.
         if (ndkp /= requested_multipole_count) call ralloc (requested_multipole_codes, requested_multipole_count, &
             "requested_multipole_codes", "read_multipole_options")
-        call mpi_bcast(requested_multipole_codes(1),requested_multipole_count,mpi_integer,0,mpi_comm_world, mpi_error_code)
+        call mpi_bcast(requested_multipole_codes(:requested_multipole_count), requested_multipole_count, mpi_integer, &
+            0, mpi_comm_world, mpi_error_code)
         ! For M1 and E2, ask whether the two levels must have different J.
         if(mpi_rank == 0) then
             do i = 1, requested_multipole_count

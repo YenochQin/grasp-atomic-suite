@@ -42,6 +42,8 @@ contains
         use angular_momentum_triangle, only: satisfies_angular_triangle
         use one_electron_tensor_coefficients, only: calculate_one_electron_tensor_coefficients
         use racah_coefficients_scott_fischer, only: scott_fischer_racah_coefficient
+        use mpi_f08, only: mpi_count_kind
+        use mpi_element_counts, only: checked_mpi_count
         use mpi_utilities, only: reduce_mpi_real_sum_to_root
         implicit none (type, external)
 
@@ -49,6 +51,7 @@ contains
         real(real64), parameter :: contribution_magnitude_cutoff = 1.0e-10_real64
 
         ! Local declarations
+        integer :: level_pair_count, hyperfine_value_count
         integer :: lowest_two_f, highest_two_f, two_f, first_orbital_index, second_orbital_index, tensor_rank, operator_parity, &
                 & column_csf_index, row_csf_index, column_csf_j_code, &
             & row_csf_j_code&
@@ -82,17 +85,19 @@ contains
             second_level_column_amplitude, second_level_row_amplitude
         ! Matrix elements smaller than CUTOFF are not accumulated
         !
+        level_pair_count = checked_mpi_count(int(active_level_count,mpi_count_kind)*active_level_count, "RHFS level pairs")
+        hyperfine_value_count = checked_mpi_count(5_mpi_count_kind*level_pair_count, "RHFS matrix reduction")
         ! Allocate storage for local arrays
-        call alloc (reduced_hyperfine_elements, 5, active_level_count*active_level_count, "reduced_hyperfine_elements", &
+        call alloc (reduced_hyperfine_elements, 5, level_pair_count, "reduced_hyperfine_elements", &
             "calculate_hyperfine_matrix_elements_mpi")
-        call alloc (reduced_lande_g_elements, active_level_count*active_level_count, "reduced_lande_g_elements", &
+        call alloc (reduced_lande_g_elements, level_pair_count, "reduced_lande_g_elements", &
             "calculate_hyperfine_matrix_elements_mpi")
-        call alloc (reduced_lande_correction_elements, active_level_count*active_level_count, "reduced_lande_correction_elements", &
+        call alloc (reduced_lande_correction_elements, level_pair_count, "reduced_lande_correction_elements", &
             "calculate_hyperfine_matrix_elements_mpi")
         ! Initialise
-        reduced_hyperfine_elements(:,:active_level_count*active_level_count) = 0.0_real64
-        reduced_lande_g_elements(:active_level_count*active_level_count) = 0.0_real64
-        reduced_lande_correction_elements(:active_level_count*active_level_count) = 0.0_real64
+        reduced_hyperfine_elements(:,:level_pair_count) = 0.0_real64
+        reduced_lande_g_elements(:level_pair_count) = 0.0_real64
+        reduced_lande_correction_elements(:level_pair_count) = 0.0_real64
         lande_g_orbital_elements(:,:) = 0.0_real64
         lande_correction_orbital_elements(:,:) = 0.0_real64
 
@@ -324,9 +329,9 @@ contains
                 end do
             end do
         end do
-        call reduce_mpi_real_sum_to_root(reduced_hyperfine_elements(:,:), 5*active_level_count*active_level_count)
-        call reduce_mpi_real_sum_to_root(reduced_lande_g_elements(:), active_level_count*active_level_count)
-        call reduce_mpi_real_sum_to_root(reduced_lande_correction_elements(:), active_level_count*active_level_count)
+        call reduce_mpi_real_sum_to_root(reduced_hyperfine_elements(:,:), hyperfine_value_count)
+        call reduce_mpi_real_sum_to_root(reduced_lande_g_elements(:), level_pair_count)
+        call reduce_mpi_real_sum_to_root(reduced_lande_correction_elements(:), level_pair_count)
         if (mpi_rank == 0) then
             ! These are the conversion factors to obtain the hyperfine
             ! constants in MHz

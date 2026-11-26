@@ -7,6 +7,7 @@ program descriptor_collectives
    implicit none (type, external)
    integer(int8), pointer :: occupations(:,:),quantum(:,:,:),couplings(:,:)
    integer :: rank, status, i, j
+   integer(int8) :: strided(2*max_orbitals,3), empty(max_orbitals,0)
    character(len=16) :: scenario
    call mpi_init(status)
    call mpi_comm_rank(mpi_comm_world,rank,status)
@@ -45,6 +46,11 @@ program descriptor_collectives
        any(quantum(:,2,:) /= couplings(:max_orbitals,:)) .or. any(quantum(:,3,:) /= 1)) error stop "quantum broadcast"
    if (any(couplings(csf_total_j_slot,:) /= [1,2,127]) .or. any(couplings(csf_parity_slot,:) /= [1,-1,-1])) &
        error stop "symmetry broadcast"
+   strided = -1_int8
+   if (rank == 0) strided(1::2,:) = occupations
+   call broadcast_descriptor_arrays(strided(1::2,:),csf_batch_limit=2)
+   if (any(strided(1::2,:) /= occupations) .or. any(strided(2::2,:) /= -1_int8)) error stop "strided broadcast"
+   call broadcast_descriptor_arrays(empty,csf_batch_limit=1)
    deallocate(occupations,quantum,couplings)
    call mpi_finalize(status)
    print *, "PASS one-column descriptor collectives"

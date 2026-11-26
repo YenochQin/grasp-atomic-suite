@@ -16,10 +16,5 @@ if(TARGET grasp_mpi)
     add_executable(rdensity_mpi density_parallel_mpi.f90 ${RDENSITY_SOURCES})
     setup_fortran_modules(rdensity_mpi)
     target_link_libraries_Fortran(rdensity_mpi PUBLIC grasp_mpi spin_angular core grasp_shared)
-    target_include_directories(rdensity_mpi PRIVATE ${MPI_Fortran_INCLUDE_PATH})
-    target_link_libraries(rdensity_mpi PRIVATE ${MPI_Fortran_LIBRARIES})
-    set_target_properties(rdensity_mpi PROPERTIES
-        COMPILE_FLAGS "${MPI_Fortran_COMPILE_FLAGS}"
-        LINK_FLAGS "${MPI_Fortran_LINK_FLAGS}")
     install(TARGETS rdensity_mpi DESTINATION bin/)
 endif()

@@ -45,6 +45,11 @@ SCF convergence, full RCI or transition properties.
 The interface stage additionally registers `f2018_linear_algebra_contracts`,
 `f2018_interface_rejections`, and `f2018_mpi_contracts_1/2/4`. These exercise
 LP64 BLAS/LAPACK values, rejected invalid call patterns, and actual MPI payloads.
+The MPI contracts use `mpi_f08` datatypes and statuses, with point-to-point
+messages and a variable-count gather containing zero-length contributions.
+`f2018_mpi_count_overflow_2/4` require a diagnostic and nonzero exit when only
+rank 1 exceeds the default MPI count range. The indexed MCP sparse writer
+regressions cover occupied and empty ranks at 2 and 4 processes.
 The orbopt programs are retired; their old binaries are not current test targets.
 
 `f2018_davidson_contracts` and `f2018_davidson_mpi_1/2/4` call production

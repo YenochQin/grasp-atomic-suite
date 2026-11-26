@@ -3,7 +3,8 @@
 module density_parallel
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: int64, real64
-    use mpi, only: mpi_abort, mpi_bcast, mpi_character, mpi_comm_world, mpi_integer
+    use mpi_f08, only: mpi_abort, mpi_bcast, mpi_character, mpi_comm_world, mpi_count_kind, mpi_integer
+    use mpi_element_counts, only: checked_mpi_count
     use mpi_utilities, only: start_mpi_application, finish_mpi_application, reduce_mpi_real_sum_to_root
     use mpi_state, only: mpi_rank, mpi_process_count, processor_name, processor_name_length
     implicit none (type, external)
@@ -56,7 +57,7 @@ contains
         ! Arguments
         real(real64), contiguous, intent(inout) :: matrix(:,:)
         ! Reduce one state's NW*NW block at a time, using the suite helper.
-        call reduce_mpi_real_sum_to_root(matrix, size(matrix))
+        call reduce_mpi_real_sum_to_root(matrix, checked_mpi_count(size(matrix,kind=mpi_count_kind), "RDENSITY matrix reduction"))
     end subroutine sum_density
 
     subroutine density_fail(message)

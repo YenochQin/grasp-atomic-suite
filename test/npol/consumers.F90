@@ -18,7 +18,7 @@ program npol_consumers
     use apply_off_diagonal_integrals_interface, only: apply_off_diagonal_integrals
     use one_electron_radial_integral, only: integrate_one_electron_radial
 #ifdef NPOL_MPI
-    use mpi, only: mpi_allreduce, mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_double_precision, &
+    use mpi_f08, only: mpi_allreduce, mpi_barrier, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_double_precision, &
        & mpi_finalize, mpi_init, mpi_sum
     use mpi_state, only: mpi_rank, mpi_process_count
     use mpi_nuclear_polarization, only: npol_init_mpi

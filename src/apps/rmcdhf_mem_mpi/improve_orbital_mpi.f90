@@ -24,10 +24,11 @@ contains
         use radial_grid_state, only: radial_point_count, radial_grid_derivative
         use radial_dirac_workspace, only: trial_orbital_last_grid_index, trial_large_component, trial_large_origin_parameter, &
             trial_small_component
-        use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_gather, mpi_integer, &
-            mpi_process_count, mpi_rank
+        use mpi_state, only: mpi_allgather, mpi_allgatherv, mpi_comm_world, mpi_double_precision, mpi_error_code, &
+            mpi_integer, mpi_process_count, mpi_rank
         use orbital_csf_basis, only: orbital_count, orbital_energy_parameters, orbital_origin_exponents, orbital_principal_n, &
             orbital_symmetry_labels
+        use mpi_element_counts, only: mpi_gather_displacements
         use scf_orthogonality_control, only: enforce_orbital_orthogonality
         use scf_iteration_state, only: radial_solution_methods, orbital_self_consistency_errors, direct_coefficient_count, &
             direct_coefficient_capacity, direct_coefficients, direct_orbital_indices
@@ -68,7 +69,8 @@ contains
 
         ! Local declarations
         integer :: ipr, potential_grid_point_count, orbital_sign_reversal_count, matching_grid_index, radial_node_count, i, nwww
-        integer :: i_mpi, ndcof_max, ntot, i_last, iproc, ndcip, jproc
+        integer :: total_direct_coefficients, i_last, iproc, ndcip, jproc
+        integer :: direct_displacements(mpi_process_count)
         integer :: ifound, ind_buf, k
         real(real64) :: previous_relative_energy_change, origin_exponent, old_orbital_energy, radial_norm_squared, &
             normalization_factor, relative_energy_change, normalization_error, orbital_damping_factor
@@ -82,9 +84,6 @@ contains
         data ipr/ 0/
         data previous_relative_energy_change/ 0.0_real64/
         data first/ .false./
-        ! AK Handling the -i8 option of ifort and -fdefault-integer-8 option of gfortran
-        !       ISIZE = sizeof(NCF)
-        i_mpi = mpi_integer
 
         origin_exponent = orbital_origin_exponents(orbital_index)
         ! C Froese Fischer's parameters IPR, ED1, ED2 are set and
@@ -118,33 +117,23 @@ contains
             ! AK      Consolidate NDA and DA from all nodes
             if (mpi_process_count>1) then
                 call alloc(ndcof_buffer,mpi_process_count,"ndcof_buffer","improve_orbital_mpi")
-                call mpi_gather(direct_coefficient_count, 1, i_mpi, ndcof_buffer,            &
-                    1, i_mpi, 0, mpi_comm_world, mpi_error_code)
-                call mpi_bcast (ndcof_buffer, mpi_process_count, i_mpi, 0,           &
+                call mpi_allgather(direct_coefficient_count, 1, mpi_integer, ndcof_buffer, 1, mpi_integer, &
                     mpi_comm_world, mpi_error_code)
-                ndcof_max = 0
-                do i = 1, mpi_process_count
-                    if (ndcof_buffer(i)>ndcof_max) ndcof_max=ndcof_buffer(i)
-                end do
-                if (ndcof_max>0) then
-                    ntot = ndcof_max*mpi_process_count
-                    call alloc(nda_buffer,ntot,"nda_buffer","improve_orbital_mpi")
-                    call mpi_gather(direct_orbital_indices, ndcof_max, i_mpi, nda_buffer,     &
-                        ndcof_max, i_mpi, 0, mpi_comm_world, mpi_error_code)
-                    call mpi_bcast (nda_buffer, ntot, i_mpi, 0,            &
+                call mpi_gather_displacements(ndcof_buffer, direct_displacements, total_direct_coefficients)
+                if (total_direct_coefficients > 0) then
+                    call alloc(nda_buffer, total_direct_coefficients, "nda_buffer", "improve_orbital_mpi")
+                    call alloc(da_buffer, total_direct_coefficients, "da_buffer", "improve_orbital_mpi")
+                    call mpi_allgatherv(direct_orbital_indices(:direct_coefficient_count), direct_coefficient_count, mpi_integer, &
+                        nda_buffer, ndcof_buffer, direct_displacements, mpi_integer, mpi_comm_world, mpi_error_code)
+                    call mpi_allgatherv(direct_coefficients(:direct_coefficient_count), direct_coefficient_count, &
+                        mpi_double_precision, da_buffer, ndcof_buffer, direct_displacements, mpi_double_precision, &
                         mpi_comm_world, mpi_error_code)
-                    call alloc(da_buffer, ntot, "da_buffer","improve_orbital_mpi")
-                    call mpi_gather(direct_coefficients, ndcof_max, mpi_double_precision,   &
-                        da_buffer, ndcof_max, mpi_double_precision, 0,       &
-                        mpi_comm_world, mpi_error_code)
-                    call mpi_bcast (da_buffer, ntot, mpi_double_precision, &
-                        0, mpi_comm_world, mpi_error_code)
                     i_last = 0
                     do iproc = 1, mpi_process_count
                         ndcip = ndcof_buffer(iproc)
                         do jproc = 1, ndcip
                             ifound = 0
-                            ind_buf = (iproc - 1)*ndcof_max + jproc
+                            ind_buf = direct_displacements(iproc) + jproc
                             do k = 1, i_last
                                 if (nda_buffer(ind_buf) == direct_orbital_indices(k)) then
                                     direct_coefficients(k) = direct_coefficients(k) + da_buffer(ind_buf)
@@ -159,9 +148,13 @@ contains
                                         direct_coefficient_capacity = 2*direct_coefficient_capacity
                                         call ralloc(direct_orbital_indices,direct_coefficient_capacity,"direct_orbital_indices", &
                                             "improve_orbital_mpi")
+                                        call ralloc(direct_coefficients,direct_coefficient_capacity,"direct_coefficients", &
+                                            "improve_orbital_mpi")
                                     else
                                         direct_coefficient_capacity = 64
                                         call alloc(direct_orbital_indices,direct_coefficient_capacity,"direct_orbital_indices", &
+                                            "improve_orbital_mpi")
+                                        call alloc(direct_coefficients,direct_coefficient_capacity,"direct_coefficients", &
                                             "improve_orbital_mpi")
                                     end if
                                 end do
@@ -170,7 +163,8 @@ contains
                             end if
                         end do
                     end do
-                    direct_coefficient_count = ndcof_max
+                    ! Preserve the existing radial solver's effective coefficient count.
+                    direct_coefficient_count = maxval(ndcof_buffer)
                     call dalloc(nda_buffer,"nda_buffer","improve_orbital_mpi")
                     call dalloc(da_buffer,"da_buffer","improve_orbital_mpi")
                 end if

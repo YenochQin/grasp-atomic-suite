@@ -4,6 +4,7 @@ add_library(grasp_mpi STATIC
     mpi_csf_basis_input.f90
     mpi_rmcdhf_csf_input.f90
     mpi_io_errors.f90
+    mpi_element_counts.f90
     mpi_indexed_mcp.f90
     mpi_mcp_calculation_input.f90
     mpi_nuclear_polarization.f90
@@ -24,12 +25,7 @@ add_library(grasp_mpi STATIC
 )
 setup_fortran_modules(grasp_mpi)
 target_link_libraries_Fortran(grasp_mpi PRIVATE grasp_shared core)
-target_include_directories(grasp_mpi PRIVATE ${MPI_Fortran_INCLUDE_PATH})
-target_link_libraries(grasp_mpi PRIVATE ${MPI_Fortran_LIBRARIES})
-set_target_properties(grasp_mpi PROPERTIES
-  COMPILE_FLAGS "${MPI_Fortran_COMPILE_FLAGS}"
-  LINK_FLAGS "${MPI_Fortran_LINK_FLAGS}"
-)
+target_link_libraries(grasp_mpi PUBLIC MPI::MPI_Fortran)
 install(TARGETS grasp_mpi DESTINATION lib/)
 # Check NP production routines as well as their test callers in Debug builds.
 if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")

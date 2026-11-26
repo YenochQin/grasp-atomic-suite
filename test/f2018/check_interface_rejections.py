@@ -28,9 +28,10 @@ end program
         "wrong_count_kind": (common.format(declaration="", call="call dcopy(3_int64,p(:),1,y,1)"), False),
         "wrong_return_type": (common.format(declaration="integer, external :: ddot", call="y(1)=ddot(3,p(:),1,p(:),1)"), False),
     }
-    for kind, valid in [("integer", True), ("integer(int8)", False)]:
-        cases["mpi_handle_" + str(valid)] = (
-            "program probe\n use mpi_state\n use, intrinsic :: iso_fortran_env, only: int8\n implicit none (type, external)\n"
+    for name, kind, valid in [("typed", "type(mpi_datatype)", True), ("integer", "integer", False),
+                              ("communicator", "type(mpi_comm)", False)]:
+        cases["mpi_datatype_" + name] = (
+            "program probe\n use mpi_state\n implicit none (type, external)\n"
             + kind + " :: dtype\n call create_contiguous_mpi_byte_datatype(1,dtype,mpi_error_code)\n end program\n", valid
         )
     with tempfile.TemporaryDirectory(prefix="suite-interface-") as temporary:

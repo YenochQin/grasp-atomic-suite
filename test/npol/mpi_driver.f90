@@ -1,5 +1,5 @@
 program npol_mpi_driver
-    use mpi, only: mpi_barrier, mpi_bcast, mpi_comm_rank, mpi_comm_world, mpi_double_precision, mpi_finalize, &
+    use mpi_f08, only: mpi_barrier, mpi_bcast, mpi_comm_rank, mpi_comm_world, mpi_double_precision, mpi_finalize, &
        & mpi_init
     use nuclear_polarization_state, only: npol_config, npol_message_len, npol_ready, npol_settings, vnp_e1, vnp_e2
     use mpi_nuclear_polarization, only: npol_abort_mpi, npol_init_mpi

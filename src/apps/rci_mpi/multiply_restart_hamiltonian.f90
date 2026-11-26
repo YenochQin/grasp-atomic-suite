@@ -26,6 +26,8 @@ contains
         use real_vector_initialization, only: initialize_real_vector
         use file_positioning, only: position_calculation_file
         use sparse_dot_and_scatter, only: sparse_dot_scatter
+        use mpi_f08, only: mpi_count_kind
+        use mpi_element_counts, only: checked_mpi_count
         use mpi_utilities, only: allreduce_mpi_real_sum
         implicit none (type, external)
 
@@ -36,6 +38,7 @@ contains
         real(real64), intent(inout) :: c(n, m)
 
         ! Local declarations
+        integer :: value_count
         integer :: stored_row_indices(n)
         integer ::               csf_count, file_csf_count, file_first_order_cutoff, file_mpi_rank, file_mpi_process_count, &
             & stored_column_index&
@@ -50,7 +53,8 @@ contains
         ! Initialise the result matrix; note that this is specific to the
         ! data structure of DVDSON
 
-        call initialize_real_vector (n*m, 0.0_real64, c, 1)
+        value_count = checked_mpi_count(size(c,kind=mpi_count_kind), "multiply_restart_hamiltonian")
+        call initialize_real_vector (value_count, 0.0_real64, c, 1)
 
         ! ...moved from maneig before "CALL GDVD (SPODMV..."
         call position_calculation_file (0, restart_matrix_unit, nposition)
@@ -73,7 +77,7 @@ contains
             end do
         end do
 
-        call allreduce_mpi_real_sum (c, n*m)
+        call allreduce_mpi_real_sum (c, value_count)
 
         return
     end subroutine multiply_restart_hamiltonian

@@ -29,11 +29,5 @@ if(TARGET grasp_mpi)
         rhfs_mpi_main.f90
 )
     target_link_libraries_Fortran(rhfs_mpi PUBLIC grasp_mpi spin_angular breit_angular_support core grasp_shared)
-    target_include_directories(rhfs_mpi PRIVATE ${MPI_Fortran_INCLUDE_PATH})
-    target_link_libraries(rhfs_mpi PRIVATE ${MPI_Fortran_LIBRARIES})
-    set_target_properties(rhfs_mpi PROPERTIES
-      COMPILE_FLAGS "${MPI_Fortran_COMPILE_FLAGS}"
-      LINK_FLAGS "${MPI_Fortran_LINK_FLAGS}"
-)
     install(TARGETS rhfs_mpi DESTINATION bin/)
 endif()

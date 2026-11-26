@@ -70,11 +70,5 @@ if(TARGET grasp_mpi)
         ris4_mpi_main.f90
 )
     target_link_libraries_Fortran(ris4_mpi PUBLIC grasp_mpi grasp_shared core spin_angular breit_angular_support grasp_shared core)
-    target_include_directories(ris4_mpi PRIVATE ${MPI_Fortran_INCLUDE_PATH})
-    target_link_libraries(ris4_mpi PRIVATE ${MPI_Fortran_LIBRARIES})
-    set_target_properties(ris4_mpi PROPERTIES
-      COMPILE_FLAGS "${MPI_Fortran_COMPILE_FLAGS}"
-      LINK_FLAGS "${MPI_Fortran_LINK_FLAGS}"
-)
     install(TARGETS ris4_mpi DESTINATION bin/)
 endif()

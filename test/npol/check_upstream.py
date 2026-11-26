@@ -27,6 +27,7 @@ RUN_TIMER_SNAPSHOT = Path("docs/reference/rmcdhf_run_timer_snapshot.json")
 REQUIRED_ASF_ROOTS_SNAPSHOT = Path("docs/reference/rmcdhf_required_asf_roots_snapshot.json")
 RADIAL_STREAM_SNAPSHOT = Path("docs/reference/rmcdhf_radial_stream_snapshot.json")
 MIXING_STREAM_SNAPSHOT = Path("docs/reference/rmcdhf_mixing_stream_snapshot.json")
+MPI_F08_SNAPSHOT = Path("docs/reference/rmcdhf_mpi_f08_snapshot.json")
 
 
 def suite_source_path(root: Path, upstream_path: str, renamed_paths: dict[str, str]) -> Path:
@@ -495,7 +496,7 @@ def main(root: Path) -> None:
     predecessor = AUDITED_NAMES_SNAPSHOT
     for snapshot in (DIAGNOSTIC_LABELS_SNAPSHOT, V3_J_LABELS_SNAPSHOT, APP_COMMENTS_SNAPSHOT, MPI_RUN_LOGGING_SNAPSHOT,
                      MPI_MCP_IO_SNAPSHOT, RUN_TIMER_SNAPSHOT, REQUIRED_ASF_ROOTS_SNAPSHOT,
-                     RADIAL_STREAM_SNAPSHOT, MIXING_STREAM_SNAPSHOT):
+                     RADIAL_STREAM_SNAPSHOT, MIXING_STREAM_SNAPSHOT, MPI_F08_SNAPSHOT):
         app_update = json.loads((root / snapshot).read_text())
         assert app_update["schema_version"] == 1, f"Unknown application snapshot schema: {snapshot}"
         assert app_update["previous_manifest_sha256"] == hashlib.sha256(

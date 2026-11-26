@@ -40,6 +40,8 @@ contains
         use, intrinsic :: iso_fortran_env, only: real64
         use biorthogonal_subshell_mapping, only: active_orbitals_by_group
         use orbital_csf_basis, only: orbital_kappa
+        use mpi_f08, only: mpi_count_kind
+        use mpi_element_counts, only: checked_mpi_count
         use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_sum
 
         ! Procedure interfaces
@@ -64,10 +66,13 @@ contains
         real(real64)  :: transfer_power_coefficients(csf_count,level_count)
 
         ! Local declarations
+        integer :: coefficient_payload_count
         integer :: local_trace_level, trace_level, inactive_subshell, subshell_capacity, subshell_index, transfer_order
         real(real64) :: inactive_shell_factor, diagonal_element, inverse_factorial
         real(real64)  :: scrtmp(csf_count,level_count)
 
+        coefficient_payload_count = checked_mpi_count(size(input_mixing_coefficients,kind=mpi_count_kind), &
+            "transform_ci_coefficients")
         local_trace_level = 0
         trace_level = max(global_trace_level,local_trace_level)
         trace_level = 0
@@ -95,11 +100,11 @@ contains
             !                    by (2j+1) corresponding to L)
             subshell_capacity = 2*iabs(orbital_kappa(active_orbitals_by_group(symmetry_index,inactive_subshell)))
             inactive_shell_factor = inactive_shell_factor**subshell_capacity
-            call scale_vector (input_mixing_coefficients, inactive_shell_factor, level_count*csf_count)
+            call scale_vector (input_mixing_coefficients, inactive_shell_factor, coefficient_payload_count)
         end if
         if (inactive_subshell_count == subshell_count) call copy_vector (input_mixing_coefficients, &
                 & transformed_mixing_coefficients, &
-            & level_count*csf_count)
+            & coefficient_payload_count)
         do subshell_index = inactive_subshell_count + 1, subshell_count
             if (trace_level >= 100) write (output_unit, *) " Loop I,L = ", subshell_index, symmetry_index
             ! . The diagonal contribution
@@ -108,25 +113,25 @@ contains
                 & diagonal_element, &
                 & transformed_mixing_coefficients, global_trace_level)
 
-            call copy_vector (transformed_mixing_coefficients, transfer_power_coefficients, level_count*csf_count)
+            call copy_vector (transformed_mixing_coefficients, transfer_power_coefficients, coefficient_payload_count)
             ! .  Off diagonal contributions
             inverse_factorial = 1.0_real64
             do transfer_order = 1, 2*iabs(orbital_kappa(active_orbitals_by_group(symmetry_index,subshell_index)))
                 if (trace_level >= 100) write (output_unit, *) " Loop N = ", transfer_order
                 ! T ** (N-1) is supposed to be in SCR, copy to CIIN
                 ! and apply S
-                call copy_vector (transfer_power_coefficients, input_mixing_coefficients, level_count*csf_count)
+                call copy_vector (transfer_power_coefficients, input_mixing_coefficients, coefficient_payload_count)
                 call apply_subshell_transfer (input_mixing_coefficients,csf_count,level_count,subshell_index,symmetry_index, &
                 & transformation_matrix(1,subshell_index),subshell_count, &
                     & scrtmp,global_trace_level)
-                call mpi_allreduce(scrtmp,transfer_power_coefficients,level_count*csf_count,         &
+                call mpi_allreduce(scrtmp,transfer_power_coefficients,coefficient_payload_count,         &
                     mpi_double_precision, mpi_sum, mpi_comm_world, mpi_error_code)
                 inverse_factorial = inverse_factorial/float(transfer_order)
                 call combine_vectors (transformed_mixing_coefficients, transformed_mixing_coefficients, &
                 & transfer_power_coefficients, 1.0_real64, inverse_factorial, &
-                    & level_count*csf_count)
+                    & coefficient_payload_count)
             end do
-            call copy_vector (transformed_mixing_coefficients, input_mixing_coefficients, level_count*csf_count)
+            call copy_vector (transformed_mixing_coefficients, input_mixing_coefficients, coefficient_payload_count)
         end do
         if (trace_level >= 100) then
             write (output_unit, *) " Output CI vectors L = ", symmetry_index

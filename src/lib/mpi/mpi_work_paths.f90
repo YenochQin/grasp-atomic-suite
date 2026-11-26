@@ -10,7 +10,7 @@ contains
     subroutine prepare_mpi_work_directories (startup_directory, serial_io_directory, rank_scratch_root)
         ! Module dependencies
         use mpi_state, only: mpi_abort, mpi_allreduce, mpi_barrier, mpi_character, mpi_comm_world, mpi_error_code, &
-            mpi_in_place, mpi_integer, mpi_process_count, mpi_rank, mpi_recv, mpi_send, mpi_status_buffer, mpi_sum
+            mpi_in_place, mpi_integer, mpi_process_count, mpi_rank, mpi_recv, mpi_send, mpi_status_ignore, mpi_sum
         use mpi_runtime, only: finalize_mpi_runtime
         use mpi_change_directory, only: change_mpi_directory
         use mpi_current_directory, only: get_mpi_working_directory
@@ -77,7 +77,7 @@ contains
         else
             if (mpi_process_count > 1) then
                 call mpi_recv (scratch_path, scratch_path_capacity, mpi_character, 0, mpi_rank, &
-                    mpi_comm_world, mpi_status_buffer, mpi_return_code)
+                    mpi_comm_world, mpi_status_ignore, mpi_return_code)
             end if
         end if
         scratch_path_length = len_trim (scratch_path)

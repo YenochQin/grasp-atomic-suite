@@ -27,6 +27,8 @@ contains
         use reduce_sparse_matrix_product_interface, only: reduce_sparse_matrix_product
 
         ! Module dependencies
+        use mpi_f08, only: mpi_count_kind
+        use mpi_element_counts, only: checked_mpi_count
         use mpi_utilities, only: allreduce_mpi_real_sum
         implicit none (type, external)
 
@@ -37,13 +39,15 @@ contains
         real(real64), intent(inout) :: c(n, m)
 
         ! Local declarations
+        integer :: value_count
         integer      :: ibeg, iend, icol, nelc, iv
         real(real64) :: diag, dl
 
         ! Initialise the result matrix; note that this is specific to the
         ! data structure of DVDSON --- there is no overdimensioning
 
-        call initialize_real_vector (n*m, 0.0_real64, c, 1)
+        value_count = checked_mpi_count(size(c,kind=mpi_count_kind), "multiply_sparse_hamiltonian")
+        call initialize_real_vector (value_count, 0.0_real64, c, 1)
 
         ibeg = 1
         iend = 0
@@ -59,7 +63,7 @@ contains
             ibeg = iend + 1
         end do
 
-        call allreduce_mpi_real_sum (c,n*m)
+        call allreduce_mpi_real_sum (c,value_count)
 
         return
     end subroutine multiply_sparse_hamiltonian

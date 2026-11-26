@@ -217,7 +217,7 @@ Fortran 标识符不区分大小写，表中采用小写。现行文件与模块
 | `processor_name_length` | `processor_name_length` | 处理器名称的有效字符数。 |
 | `mpi_error_code` | `mpi_error_code` | 套件程序共用的整型状态槽。 |
 | `ierrtotal` | — | 已移除，仅用于旧接口的公开变量。 |
-| `mpi_status_buffer` | `mpi_status_buffer` | MPI_Recv 的整数状态缓冲区。 |
+| `mpi_status_buffer` | — | 旧绑定的接收状态数组已移除。当前接收使用 `MPI_STATUS_IGNORE` 或局部 `MPI_Status`。 |
 
 ## [mpi_runtime.f90](../../src/lib/mpi/mpi_runtime.f90)
 

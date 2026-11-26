@@ -8,7 +8,7 @@ module mpi_run_logging
 contains
     ! All ranks supply a string of the same declared length. Rank 0 groups equal values in first-rank order.
     subroutine report_mpi_rank_values (rank, process_count, label, local_value, as_hosts)
-        use mpi, only: mpi_character, mpi_comm_world, mpi_gather
+        use mpi_f08, only: mpi_character, mpi_comm_world, mpi_gather
 
         integer, intent(in) :: rank, process_count
         character(len=*), intent(in) :: label, local_value

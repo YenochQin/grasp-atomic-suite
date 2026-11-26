@@ -67,14 +67,11 @@ contains
 
         ! Local declarations
         integer :: orbital_index, symmetry_block_index, scf_iteration, orbital_update_index, extra_orbital_update, &
-            & least_consistent_orbital, mpi_logical_type
+            & least_consistent_orbital
         real(real64) :: weighted_average_energy, previous_weighted_average_energy, maximum_orbital_damping
         logical :: scf_converged, sort_by_self_consistency, first_davidson_solve
         ! .. set the logical variable dvdfirst
         first_davidson_solve = .true.
-        ! AK Handling the -i8 option of ifort and -fdefault-integer-8 option of gfortran
-        !       ISIZE = sizeof(NCF)
-        mpi_logical_type = mpi_logical
 
         total_csf_count = csf_count
 
@@ -100,7 +97,7 @@ contains
                     exit
                 end do
             end if
-            call mpi_bcast (sort_by_self_consistency, 1, mpi_logical_type, 0, mpi_comm_world, mpi_error_code)
+            call mpi_bcast (sort_by_self_consistency, 1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
         end if
 
         ! Deallocate storage that will no longer be used

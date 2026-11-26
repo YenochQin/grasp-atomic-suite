@@ -153,6 +153,11 @@ if(TARGET grasp_mpi AND Python3_Interpreter_FOUND)
         ${MPIEXEC_PREFLAGS} $<TARGET_FILE:test.f2018_sparse_empty_rank> ${MPIEXEC_POSTFLAGS})
     set_tests_properties(f2018_sparse_empty_rank PROPERTIES TIMEOUT 30 PROCESSORS 2
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sparse-empty-rank")
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sparse-empty-rank-4")
+    add_test(NAME f2018_sparse_empty_rank_4 COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 4
+        ${MPIEXEC_PREFLAGS} $<TARGET_FILE:test.f2018_sparse_empty_rank> ${MPIEXEC_POSTFLAGS})
+    set_tests_properties(f2018_sparse_empty_rank_4 PROPERTIES TIMEOUT 30 PROCESSORS 4
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sparse-empty-rank-4")
     add_executable(test.f2018_mpi_contracts mpi_contracts.f90)
     target_link_libraries_Fortran(test.f2018_mpi_contracts PRIVATE grasp_mpi grasp_shared)
     foreach(ranks 1 2 4)
@@ -160,6 +165,13 @@ if(TARGET grasp_mpi AND Python3_Interpreter_FOUND)
             COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ranks}
             ${MPIEXEC_PREFLAGS} $<TARGET_FILE:test.f2018_mpi_contracts> ${MPIEXEC_POSTFLAGS})
         set_tests_properties(f2018_mpi_contracts_${ranks} PROPERTIES TIMEOUT 60 PROCESSORS ${ranks})
+    endforeach()
+    foreach(ranks 2 4)
+        add_test(NAME f2018_mpi_count_overflow_${ranks}
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_mpi_count_failure.py
+            ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ranks} ${MPIEXEC_PREFLAGS}
+            $<TARGET_FILE:test.f2018_mpi_contracts> ${MPIEXEC_POSTFLAGS} overflow)
+        set_tests_properties(f2018_mpi_count_overflow_${ranks} PROPERTIES TIMEOUT 30 PROCESSORS ${ranks})
     endforeach()
     set(interface_includes)
     foreach(directory IN LISTS MPI_Fortran_INCLUDE_PATH)

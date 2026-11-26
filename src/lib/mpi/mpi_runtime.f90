@@ -11,7 +11,7 @@ contains
     subroutine initialize_mpi_runtime (rank, process_count, processor_name, processor_name_length)
 
         ! Module dependencies
-        use mpi, only: mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_get_processor_name, mpi_init, mpi_success
+        use mpi_f08, only: mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_get_processor_name, mpi_init, mpi_success
         implicit none (type, external)
 
         ! Arguments
@@ -33,20 +33,17 @@ contains
     subroutine create_contiguous_mpi_byte_datatype (byte_count, byte_datatype, mpi_return_code)
 
         ! Module dependencies
-        use mpi, only: mpi_byte, mpi_type_commit, mpi_type_contiguous
+        use mpi_f08, only: mpi_byte, mpi_datatype, mpi_success, mpi_type_commit, mpi_type_contiguous
         implicit none (type, external)
 
         ! Arguments
         integer, intent(in) :: byte_count
-        integer, intent(out) :: byte_datatype, mpi_return_code
+        type(mpi_datatype), intent(out) :: byte_datatype
+        integer, intent(out) :: mpi_return_code
 
-        ! Local declarations
-        integer :: create_status
-
-        call mpi_type_contiguous (byte_count, mpi_byte, byte_datatype, create_status)
+        call mpi_type_contiguous (byte_count, mpi_byte, byte_datatype, mpi_return_code)
+        if (mpi_return_code /= mpi_success) return
         call mpi_type_commit (byte_datatype, mpi_return_code)
-
-        mpi_return_code = mpi_return_code + create_status
 
         return
     end subroutine create_contiguous_mpi_byte_datatype
@@ -55,7 +52,7 @@ contains
     subroutine finalize_mpi_runtime (message, rank)
 
         ! Module dependencies
-        use mpi, only: mpi_barrier, mpi_comm_world, mpi_finalize
+        use mpi_f08, only: mpi_barrier, mpi_comm_world, mpi_finalize
         implicit none (type, external)
 
         ! Arguments

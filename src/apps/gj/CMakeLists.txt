@@ -27,11 +27,5 @@ if(TARGET grasp_mpi)
         gj_mpi.f90
 )
     target_link_libraries_Fortran(gj_mpi PUBLIC grasp_mpi spin_angular breit_angular_support core grasp_shared)
-    target_include_directories(gj_mpi PRIVATE ${MPI_Fortran_INCLUDE_PATH})
-    target_link_libraries(gj_mpi PRIVATE ${MPI_Fortran_LIBRARIES})
-    set_target_properties(gj_mpi PROPERTIES
-      COMPILE_FLAGS "${MPI_Fortran_COMPILE_FLAGS}"
-      LINK_FLAGS "${MPI_Fortran_LINK_FLAGS}"
-)
     install(TARGETS gj_mpi DESTINATION bin/)
 endif()

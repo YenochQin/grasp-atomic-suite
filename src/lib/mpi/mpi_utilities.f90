@@ -104,7 +104,7 @@ contains
     subroutine finish_mpi_application (rank, start_ticks, program_name)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: int64, output_unit
-        use mpi, only: mpi_finalize, mpi_success
+        use mpi_f08, only: mpi_finalize, mpi_success
         use run_timer, only: finish_run_timer
         implicit none (type, external)
 
@@ -128,7 +128,7 @@ contains
     subroutine print_mpi_message (message, rank, process_count)
 
         ! Module dependencies
-        use mpi, only: mpi_character, mpi_comm_world, mpi_integer, mpi_recv, mpi_send, mpi_status_size
+        use mpi_f08, only: mpi_character, mpi_comm_world, mpi_integer, mpi_recv, mpi_send, mpi_status_ignore
         implicit none (type, external)
 
         ! Arguments
@@ -136,7 +136,7 @@ contains
         character(len=*), intent(inout) :: message
 
         ! Local declarations
-        integer :: source_rank, receive_status(mpi_status_size), mpi_return_code, message_length
+        integer :: source_rank, mpi_return_code, message_length
 
         message_length = len_trim (message)
 
@@ -149,9 +149,9 @@ contains
             print *, message(1:message_length)
             do source_rank = 1, process_count - 1
                 call mpi_recv (message_length, 1, mpi_integer, source_rank, &
-                    source_rank, mpi_comm_world, receive_status, mpi_return_code)
+                    source_rank, mpi_comm_world, mpi_status_ignore, mpi_return_code)
                 call mpi_recv (message, message_length, mpi_character, source_rank, &
-                    source_rank+process_count, mpi_comm_world, receive_status, mpi_return_code)
+                    source_rank+process_count, mpi_comm_world, mpi_status_ignore, mpi_return_code)
                 print *, message(1:message_length)
             end do
         end if
@@ -162,7 +162,7 @@ contains
     ! Pause all ranks until rank 0 receives input.
     subroutine check_mpi_checkpoint (rank, checkpoint_message)
         ! Module dependencies
-        use mpi, only: mpi_barrier, mpi_comm_world
+        use mpi_f08, only: mpi_barrier, mpi_comm_world
         implicit none (type, external)
 
         ! Arguments
@@ -187,7 +187,7 @@ contains
 
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
-        use mpi, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_sum
+        use mpi_f08, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_sum
         use blas_lapack_interfaces, only: dcopy
         use real_vector_initialization, only: initialize_real_vector
         implicit none (type, external)
@@ -214,7 +214,7 @@ contains
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use mpi_state, only: mpi_rank
-        use mpi, only: mpi_comm_world, mpi_double_precision, mpi_reduce, mpi_sum
+        use mpi_f08, only: mpi_comm_world, mpi_double_precision, mpi_reduce, mpi_sum
         use blas_lapack_interfaces, only: dcopy
         use real_vector_initialization, only: initialize_real_vector
         implicit none (type, external)
@@ -246,7 +246,7 @@ contains
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use mpi_state, only: mpi_rank
-        use mpi, only: mpi_comm_world, mpi_double_precision, mpi_max, mpi_reduce
+        use mpi_f08, only: mpi_comm_world, mpi_double_precision, mpi_max, mpi_reduce
         use blas_lapack_interfaces, only: dcopy
         implicit none (type, external)
 
@@ -273,7 +273,7 @@ contains
     ! Sum integer values element by element and return the result on every rank.
     subroutine allreduce_mpi_integer_sum (values, value_count)
         ! Module dependencies
-        use mpi, only: mpi_allreduce, mpi_comm_world, mpi_integer, mpi_sum
+        use mpi_f08, only: mpi_allreduce, mpi_comm_world, mpi_integer, mpi_sum
         use integer_vector_copy, only: copy_integer_vector
         implicit none (type, external)
 

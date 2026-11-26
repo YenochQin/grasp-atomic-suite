@@ -49,7 +49,7 @@ contains
 
         if (mpi_rank == 0) call read_al_level_weights (csf_count, level_average_weights)
 
-        call mpi_bcast (level_average_weights(1), csf_count, mpi_double_precision, 0,        &
+        call mpi_bcast (level_average_weights(:csf_count), csf_count, mpi_double_precision, 0,        &
             mpi_comm_world, mpi_error_code)
 
         do orbital_index = 1, orbital_count

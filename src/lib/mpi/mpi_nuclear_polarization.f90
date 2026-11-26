@@ -1,7 +1,7 @@
 ! Build the nuclear polarization potential on rank 0 and replicate it across the communicator.
 module mpi_nuclear_polarization
     ! Module dependencies
-    use mpi, only: mpi_comm_rank, mpi_bcast, mpi_allreduce, mpi_abort, &
+    use mpi_f08, only: mpi_comm, mpi_comm_rank, mpi_bcast, mpi_allreduce, mpi_abort, &
         mpi_integer, mpi_double_precision, mpi_logical, mpi_character, mpi_min
     use grasp_parameters, only: max_radial_points
     use nuclear_polarization_state, only: npol_capture, npol_config, npol_message_len, npol_publish, npol_reset, &
@@ -23,7 +23,8 @@ contains
         ! Arguments
         character(*), intent(in) :: config_path
         real(real64), intent(in) :: nuclear_charge, radial_grid(:)
-        integer, intent(in) :: grid_point_count, communicator
+        integer, intent(in) :: grid_point_count
+        type(mpi_comm), intent(in) :: communicator
         real(real64), intent(inout) :: negative_radius_times_potential(:)
         integer, intent(out) :: status
         character(*), intent(out) :: message
@@ -95,7 +96,8 @@ contains
 
     subroutine sync_status(communicator, rank, status, message)
         ! Arguments
-        integer, intent(in) :: communicator, rank
+        type(mpi_comm), intent(in) :: communicator
+        integer, intent(in) :: rank
         integer, intent(inout) :: status
         character(npol_message_len), intent(inout) :: message
 
@@ -117,7 +119,7 @@ contains
     subroutine broadcast_config(config, communicator)
         ! Arguments
         type(npol_config), intent(inout) :: config
-        integer, intent(in) :: communicator
+        type(mpi_comm), intent(in) :: communicator
 
         ! Local declarations
         integer :: mpi_return_code
@@ -139,7 +141,7 @@ contains
 
     subroutine npol_abort_mpi(communicator, message)
         ! Arguments
-        integer, intent(in) :: communicator
+        type(mpi_comm), intent(in) :: communicator
         character(*), intent(in) :: message
 
         ! Local declarations

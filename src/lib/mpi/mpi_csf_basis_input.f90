@@ -2,7 +2,7 @@
 module mpi_csf_basis_input
     ! Module dependencies
     use mpi_csf_collectives, only: broadcast_descriptor_arrays, require_collective_success
-    use mpi
+    use mpi_f08
     use mpi_state, only: mpi_rank
     use csf_full_basis_reader, only: load_csf_basis
     use csf_descriptor_reader, only: loaded_csf_basis_id

@@ -61,7 +61,7 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 
 已否决的 strict/diag 独立求解器及专用测试、运行入口均已[移除](docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md)。
 
-默认 CMake 配置会尝试构建 MPI 版本。如果系统没有 MPI Fortran 工具链，会跳过 MPI 目标。串行轨道与性质程序需要显式开启。`jj2lsj_omp` 默认构建，`GRASP_JJ2LSJ_OPENMP=ON` 在可用时启用 OpenMP，线程数由 `OMP_NUM_THREADS` 控制；变换文件读写模式保留串行路径。
+默认 CMake 配置启用 MPI 目标，要求配套的 MPI Fortran 工具链提供 `mpi_f08` 模块。可通过 `GRASP_ENABLE_MPI=OFF` 配置串行构建。串行轨道与性质程序需要显式开启。`jj2lsj_omp` 默认构建，`GRASP_JJ2LSJ_OPENMP=ON` 在可用时启用 OpenMP。线程数由 `OMP_NUM_THREADS` 控制，变换文件读写使用串行路径。
 
 ## 构建
 

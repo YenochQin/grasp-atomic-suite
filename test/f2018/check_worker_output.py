@@ -25,7 +25,7 @@ def main() -> None:
               "implicit none\ncharacter(1024) :: output_path\ncontains\n" + body + "end module\n")
     driver = """program output_probe
 use startup_probe
-use mpi
+use mpi_f08
 use, intrinsic :: iso_fortran_env, only: int64, output_unit
 implicit none
 integer::rank,ranks,length,status

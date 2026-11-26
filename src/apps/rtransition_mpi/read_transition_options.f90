@@ -100,7 +100,7 @@ contains
                     exit
                 end do
             end if !myid=0
-            call mpi_bcast(transition_option_flags(1),5,mpi_logical,0,mpi_comm_world,mpi_error_code)
+            call mpi_bcast(transition_option_flags(:5),5,mpi_logical,0,mpi_comm_world,mpi_error_code)
         else
             transition_option_flags(5) = .true.
         end if

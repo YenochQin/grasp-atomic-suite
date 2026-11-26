@@ -17,7 +17,7 @@ program ci_damping
     use block_mean_energies, only: mean_energy_by_block
     use level_symmetry_metadata, only: packed_block_symmetries
 #ifdef CI_MPI
-    use mpi_state, only: processor_name, mpi_error_code, mpi_status_buffer, processor_name_length, mpi_rank, &
+    use mpi_state, only: processor_name, mpi_error_code, processor_name_length, mpi_rank, &
         mpi_process_count, mpi_finalize, initialize_mpi_runtime
     use solve_hamiltonian_blocks_mpi_interface, only: solve_hamiltonian_blocks_mpi
 #else

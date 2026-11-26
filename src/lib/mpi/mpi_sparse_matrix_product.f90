@@ -14,6 +14,8 @@ contains
         use sparse_hamiltonian_storage, only: hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices
         use real_vector_initialization, only: initialize_real_vector
         use sparse_dot_and_scatter, only: sparse_dot_scatter
+        use mpi_f08, only: mpi_count_kind
+        use mpi_element_counts, only: checked_mpi_count
         use mpi_utilities, only: allreduce_mpi_real_sum
         implicit none (type, external)
 
@@ -24,9 +26,11 @@ contains
         real(real64), intent(inout) :: product_vectors(matrix_order,vector_count)
 
         ! Local declarations
+        integer :: value_count
         integer :: column_index, segment_start, segment_end, segment_element_count, vector_index
         real(real64) :: partial_product, off_diagonal_product
-        call initialize_real_vector (matrix_order*vector_count, 0.0_real64, product_vectors, 1)
+        value_count = checked_mpi_count(size(product_vectors,kind=mpi_count_kind), "multiply_mpi_sparse_matrix")
+        call initialize_real_vector (value_count, 0.0_real64, product_vectors, 1)
 
         ! Ranks own columns round-robin. Each stored segment ends with its diagonal entry.
         ! The offset array is indexed by global column. Consecutive local segments are adjacent
@@ -49,7 +53,7 @@ contains
         end do
 
         ! Sum the rank-local products and return the full result on every rank.
-        call allreduce_mpi_real_sum (product_vectors, matrix_order*vector_count)
+        call allreduce_mpi_real_sum (product_vectors, value_count)
 
         return
     end subroutine multiply_mpi_sparse_matrix

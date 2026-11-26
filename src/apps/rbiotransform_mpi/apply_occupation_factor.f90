@@ -36,6 +36,8 @@ contains
         use mcp_coefficient_storage, only: mcp_coefficient_values, mcp_packed_orbital_pairs, mcp_coefficient_end_offsets, &
             mcp_bra_csf_indices, mcp_coefficient_count, mcp_integral_count
         use biorthogonal_subshell_mapping, only: active_orbitals_by_group
+        use mpi_f08, only: mpi_count_kind
+        use mpi_element_counts, only: checked_mpi_count
         use mpi_state, only: mpi_allreduce, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_sum
 
         ! Procedure interfaces
@@ -57,17 +59,20 @@ contains
         ! Local constants
 
         ! Local declarations
+        integer :: coefficient_payload_count
         integer :: local_trace_level, trace_level, coefficient_count, packed_pair_index, first_orbital_index, &
             second_orbital_index, first_coefficient, coefficient_index, occupation_number, bra_csf_index
         real(real64) :: ciouttmp(csf_count, level_count)
         real(real64) :: occupation_factor
 
+        coefficient_payload_count = checked_mpi_count(size(input_mixing_coefficients,kind=mpi_count_kind), &
+            "apply_occupation_factor")
         local_trace_level = 0
         trace_level = max(local_trace_level,global_trace_level)
 
         if (trace_level >= 10) write (output_unit, *) " Entering TIINI"
 
-        call fill_vector (transformed_mixing_coefficients, 0.0_real64, csf_count*level_count)
+        call fill_vector (transformed_mixing_coefficients, 0.0_real64, coefficient_payload_count)
         if (mcp_coefficient_count /= 0) then
             ! .  Obtain address of first coupling coefficient for h(il,il) :  IFIRST
             ! .  Obtain number of        coupling coefficient for h(il,il) :  NFOUND
@@ -100,8 +105,8 @@ contains
                 & input_mixing_coefficients(bra_csf_index,:level_count)
             end do
         end if
-        call copy_vector(transformed_mixing_coefficients, ciouttmp, level_count*csf_count)
-        call mpi_allreduce(ciouttmp, transformed_mixing_coefficients, level_count*csf_count,      &
+        call copy_vector(transformed_mixing_coefficients, ciouttmp, coefficient_payload_count)
+        call mpi_allreduce(ciouttmp, transformed_mixing_coefficients, coefficient_payload_count,      &
             mpi_double_precision, mpi_sum, mpi_comm_world, mpi_error_code)
         ! .  The previous provided us with all
         !    terms with nonvanishing occupation.

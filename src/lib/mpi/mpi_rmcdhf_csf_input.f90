@@ -2,7 +2,7 @@
 module mpi_rmcdhf_csf_input
     ! Module dependencies
     use mpi_csf_collectives, only: broadcast_descriptor_arrays, require_collective_success
-    use mpi
+    use mpi_f08
     use mpi_state, only: mpi_rank
     use rmcdhf_csf_input, only: load_rmcdhf_descriptors
     use grasp_parameters, only: max_orbitals

@@ -129,9 +129,12 @@
         "f2018_mpi_contracts_1",
         "f2018_mpi_contracts_2",
         "f2018_mpi_contracts_4",
+        "f2018_mpi_count_overflow_2",
+        "f2018_mpi_count_overflow_4",
         "f2018_interface_rejections",
         "f2018_system_paths",
-        "f2018_sparse_empty_rank"
+        "f2018_sparse_empty_rank",
+        "f2018_sparse_empty_rank_4"
       ]
     },
     {

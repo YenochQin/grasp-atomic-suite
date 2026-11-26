@@ -1,6 +1,6 @@
 # Suite F2018 现代化实施与验收计划
 
-**状态：首批 P0 已实施，后续批次待验收。** 2026-11-26 按 Suite `3.4dev1` 的 `f211a0a35a957fab85c65a8a514d779183d0d59e` 复核。P0 实施从 `4a23261` 起步，处理 RCI 串行与 MPI 的续算读取、单 rank 失败传播，并建立从 V3 生产入口运行的首轮对照。后续批次处理 MPI 绑定、共享数值接口和多根计算链。
+**状态：首批 P0 与 P1 MPI 绑定迁移已实施。** 2026-11-26 按 Suite `3.4dev1` 的 `f211a0a35a957fab85c65a8a514d779183d0d59e` 复核。P0 提交 `88cb04a` 完成 RCI 续算边界、单 rank 失败传播及 V3 首轮对照。P1 的 MPI 绑定以 `88cb04a` 为改造前基准，后续工作包括共享数值接口与多根计算链。
 
 范围覆盖 `src/apps` 内 25 个 Fortran 应用目标，以及 `src/lib` 内 7 个库目录，含 Rust 描述符静态库及其 Fortran 调用端。OpenMP 的现行应用入口是 `jj2lsj_omp`。普通 RMCDHF 保留四个变体，各自有版本基线。目标范围以 [CMake 入口](../../CMakeLists.txt#L158)、[jj2lsj 构建定义](../../src/apps/jj2lsj/CMakeLists.txt)和[退役范围](../implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md)为准。
 
@@ -47,13 +47,34 @@
 - 串行以及 MPI 1、2、4 ranks 的四 CSF、两根夹具中，完整续算和文件尾补算与各自冷启动的最大能量差、相位对齐后的最大系数差均为 0。修复前写出的串行及双 rank 文件可由修复后程序续算。串行另外测了核模型参数为空的点核记录。
 - 串行及 MPI 双 rank 的坏记录在 Check 和 Release 均非零退出并报告位置。合法续算仍使用原有顺序无格式记录布局。显式设置续算 ACCY 时，网格脚本修改串行和 MPI 共用的赋值位置。[网格脚本说明](../../scripts/README.md)
 
+## P1 MPI 绑定、计数及分块
+
+Suite 的生产和测试 MPI 调用统一使用 `mpi_f08`。`mpi_state` 继续提供共享进程状态并转发实际 MPI 接口。CMake 在启用 MPI 时检查 `MPI_Fortran_HAVE_F08_MODULE`，通过 `MPI::MPI_Fortran` 向消费者传递编译和链接依赖。核极化入口使用 `type(MPI_Comm)`，连续字节类型使用 `type(MPI_Datatype)`，点对点消息使用 `MPI_Status` 或明确的 `MPI_STATUS_IGNORE`。rank、tag 和错误码使用默认整数。[MPI 构建入口](../../CMakeLists.txt#L170) · [运行时接口](../../src/lib/mpi/mpi_runtime.f90) · [MPI Fortran 绑定](https://www.mpi-forum.org/docs/mpi-4.1/mpi41-report/node466.htm)
+
+| 调用链 | 计数与缓冲约束 |
+| --- | --- |
+| CSF 装载与广播 | 保留每批最多 8192 个 CSF 的上限，再按最宽列和默认 MPI 元素数限额缩小批次。数组形状、可选字段和批次大小先在各 rank 对齐。通过 Fortran 的 `contiguous` 形参传入连续批次，跨步实参由编译器打包并回写。零列不发送 payload。[描述符广播](../../src/lib/mpi/mpi_csf_collectives.f90) |
+| 两个 MPI RMCDHF 变体 | 直接系数以各 rank 的实际元素数执行 `MPI_Allgatherv`，用宽整数检查累计元素位移后转成默认整数界面。空贡献发送零个元素。保留按 rank 合并的顺序与径向求解器既有的有效系数数目。[RMCDHF 汇总](../../src/apps/rmcdhf_mpi/improve_orbital_mpi.f90) · [位移校验](../../src/lib/mpi/mpi_element_counts.f90) |
+| 稀疏向量、双正交、密度和超精细矩阵 | 归约前以 `MPI_COUNT_KIND` 取得数组长度或计算维度乘积，再通过公共范围检查转换。现有密集初值与 RCI 稠密分支的阶数分别受求解器门槛约束。短标量、轨道和块元数据沿用相应 MPI 数据类型。[稀疏矩阵乘](../../src/lib/mpi/mpi_sparse_matrix_product.f90) · [双正交归约](../../src/apps/rbiotransform_mpi/transform_ci_coefficients.f90) · [密度归约](../../src/apps/rdensity/density_parallel_mpi.f90) |
+| 文件及数值 ABI | `MPI_COUNT_KIND` 用于内存中的计数计算。输入输出文件的索引、记录和偏移使用各自格式规定的 kind。BLAS/LAPACK 仍通过 Suite 的 LP64 显式接口调用，MPI datatype 句柄不参与这些数值调用。[MCP 目录](../../src/lib/mpi/mpi_indexed_mcp.f90) · [BLAS/LAPACK 接口](../../src/lib/grasp_shared/blas_lapack_interfaces.f90) |
+
+GNU Fortran 16.2.1 与本机 Open MPI 5.0.11 提供 `mpi_f08`，FindMPI 报告 MPI 标准版本 3.1。试编译仅广播一个元素的 `1_MPI_COUNT_KIND` 形式时，编译器报告没有匹配的 `MPI_Bcast` 重载。本次验收覆盖默认整数 collective 和有界分块路径。MPI-4 大计数重载须用提供该接口的部署库验证。[大计数标准接口](https://www.mpi-forum.org/docs/mpi-4.1/mpi41-report/node499.htm)
+
+### 验收范围
+
+- 1、2、4 ranks 用类型化字节及宽整数消息、点对点状态、可变长度汇总和解析求和验证接口。编译测试接受 `MPI_Datatype`，拒绝传入整数和 `MPI_Comm`。[消息契约](../../test/f2018/mpi_contracts.f90) · [类型检查](../../test/f2018/check_interface_rejections.py)
+- 描述符测试覆盖一列一批、跨步缓冲区、部分最后一批、零列、一个 rank 出错与形状不一致。实际 MCP 稀疏写入和读回在 2、4 ranks 下验证一份有列和其余空分片。[描述符用例](../../test/descriptor_collectives.f90) · [MCP 空分片用例](../../test/f2018/sparse_empty_rank.f90)
+- 2、4 ranks 的窄化回归令 rank 1 提供超限计数，要求在调用 payload collective 前非零退出，并核对源诊断。实际 RCI 续算另覆盖 1、2、4 ranks 合法分片及双 rank 单分片错误。[计数失败检查](../../test/f2018/check_mpi_count_failure.py) · [RCI 回归](../../test/test_rci_restart.py)
+
+本机 `f2018-check` 构建在 MPI 与串行目标均启用时通过 19 项 MPI 专项和另外 108 项 CTest，关闭 MPI 时另核对配置的目标范围。在相同 GNU Fortran、OpenBLAS、V3 输入及同 rank 布局下，普通和内存 MPI RMCDHF 各运行一轮。1、2、4 ranks 的 `.wfn` 和 `.mix` 与各自 P0 基线逐字节一致。RMCDHF 导入来源校验匹配 248 个文件。[来源快照](../reference/rmcdhf_mpi_f08_snapshot.json)
+
 ## 后续批次与共享库
 
 先用第一批夹具保护读写和失败语义，再迁移通信接口。改动共用矩阵、轨道或角系数之前，先取得相应消费者的固定输入数值基线。单个子项目可按自身依赖推进。以下路径以实现库为单位；描述符的 Rust 端和 Fortran 调用端共同验收。
 
 | 位置与优先级 | 实施范围和已有基础 | 验收证据 |
 | --- | --- | --- |
-| `mpi` · P1 | `mpi_state` 目前转发 `use mpi` 并保存整数状态数组。先验证部署 MPI 的 `mpi_f08` 和所需重载，再按通信调用链迁移 communicator、datatype、status 及实际使用的其他句柄。常规 rank 仍是整数。分别处理元素计数、地址位移和文件偏移。CSF 广播已有有界分块，可复用于有相同约束的路径。[状态模块](../../src/lib/mpi/mpi_state.f90) · [分块实现](../../src/lib/mpi/mpi_csf_collectives.f90#L68) · [MPI 绑定说明](https://www.mpi-forum.org/docs/mpi-4.1/mpi41-report/node465.htm) | 正常与错误路径均运行 1/2/4 ranks 中适用的组合。覆盖空分区、限小分块、非连续数据的打包或已验证的传递方式、整数边界和窄化拒绝。在支持大计数的部署上验证对应重载；在有界实现上测试跨分块结果与原顺序。 |
+| `mpi` · P1 | 本机迁移覆盖 communicator、datatype、status、常规元素计数和已有分块调用。部署库升级时重新验证可用绑定和重载。[本批验证](#p1-mpi-绑定计数及分块) | 按部署环境记录 1/2/4 ranks 正常与失败路径、空分区、分块结果和计数范围。 |
 | `grasp_shared` · P1 | 现有 BLAS/LAPACK 声明及实际运算测试已按 LP64 建立。补齐 CMake 对整数宽度的选择和部署验证。沿稀疏矩阵列尾偏移、SCF 系数与基组指针追踪分配者和有效期。`alloc` 约定传入无活跃目标的指针，先 `nullify` 再 `associated` 无法检测误传的活目标。先核对调用方，再选择拥有数据的 `allocatable` 或有明确生存期的借用视图。[BLAS 回归](../../test/f2018/linear_algebra_contracts.f90) · [分配接口](../../src/lib/grasp_shared/array_memory_management.f90#L11) · [稀疏存储](../../src/lib/grasp_shared/sparse_hamiltonian_storage.f90) | 验证实际链接库与整数、浮点 ABI 相符，记录不匹配环境的拒绝方式。对改动的分配路径测试零长度、非 1 下界、重分配保留重叠区、释放后再用。维度扩大须在算术前转换，并在转入默认整数前检查上界。 |
 | `core` · P1，写入器多实例 P2 | 混合系数写入器约定每进程一次写一个流，MPI 由 root 写。当前优先追踪打开、写块、刷新、完成标记及关闭失败能否传回正确入口。双正交代码在文件末尾关闭输入和输出。有交错输出的真实需求时再引入显式写入器对象。径向网格与稀疏矩阵乘则按已确认的共享写入依赖收紧接口。[混合流](../../src/lib/core/mixing_file_format.f90#L25) · [双正交消费者](../../src/apps/rbiotransform/read_biorthogonal_mcp.f90#L188) · [网格](../../src/lib/core/radial_grid_setup.f90) | 正常文件可由独立解析器读回。核对块目录、基组摘要、根顺序和完成标记，验证中断或截断文件及 root 写入失败。保留各程序活动网格、填充点与精度初始化时序，并用同输入核对径向数组与矩阵乘结果。 |
 | `csf_descriptor` 与 Fortran reader · P1 | 现行 V3 跨语言接口已有版本、容量及分块检查。`descriptor_source` 拥有 Rust 句柄，调用方须显式关闭并避免复制活句柄。核查双基组装载时句柄、摘要和当前块是否始终对应正确的一侧。[Fortran 所有权](../../src/lib/core/csf_descriptor_reader.f90#L19) · [C 绑定](../../src/lib/core/csf_descriptor_c_bindings.f90) · [Rust FFI](../../src/lib/csf_descriptor/src/descriptor_ffi.rs) | 双基组交替读取、失败后重开、重复关闭及错误摘要均可诊断。每个所有者只释放一次。块顺序、占据与耦合码逐项一致，分块读取记录峰值内存。 |
@@ -129,6 +150,6 @@ ctest --test-dir "$suite_run/check" --no-tests=error --output-on-failure -R '^(f
 | 交付批次 | 完成时应能查到的结果 | 编制时状态 |
 | --- | --- | --- |
 | 首批 · 基线与续算 | V3 实际首轮对照、串行/MPI 合法续算、坏记录和单 rank 失败报告 | GNU Fortran 16.2.1/OpenBLAS/Check 下，两套独立构建的 `rmcdhf`、`rmcdhf_mem` 首轮科学输出一致。串行和 Open MPI 5.0.11 的 1/2/4-rank 续算回归已完成。 |
-| MPI、ABI 与共享库 | 绑定和计数用例、链接库身份、错误传播、所有权及共享核差异报告 | 部分基础回归已注册，迁移及部署验收待实施 |
+| MPI、ABI 与共享库 | 绑定和计数用例、链接库身份、错误传播、所有权及共享核差异报告 | 本机 MPI 绑定与计数用例已实施，实际部署工具链及其余共享接口仍需按批验收。 |
 | 各程序的科学数值回归 | 四种 RMCDHF 各自的固定轮次/收敛记录、固定轨道 RCI、双正交及性质与跃迁分项对照 | 有既有夹具和专项记录，完整多根对照待实施 |
 | 整体验收 | 候选提交的 24 配置结果、正确性告警逐项处理结论及目标部署环境报告 | 历史矩阵供追溯，候选版本另行签收 |

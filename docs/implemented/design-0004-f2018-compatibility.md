@@ -41,10 +41,10 @@
 - 这次模块化改变 Fortran 链接符号。依赖旧静态库的外部项目需要重新编译和链接，
   不能将保留源码 API 理解为保留旧二进制 ABI。
 
-`0cb432b`、`5806884` 已完成分批显式导入。
-[mpi_state](../../src/lib/mpi/mpi_state.f90) 的模块级 `use mpi` 保留为已复核例外：
-它公开转发所用 MPI 实现的符号，不能为清零 C121 而随意收窄接口。
+`0cb432b`、`5806884` 已完成分批显式导入。`mpi_state` 现转发 `mpi_f08` 的类型化接口。
+外部 MPI 消费者应使用对应的 `MPI_Comm`、`MPI_Datatype` 与 `MPI_Status` 声明，并重新编译。
 后续调整 ONLY 列表仍须检查重命名、重导出、泛型、回调和条件编译分支。
+[MPI 状态模块](../../src/lib/mpi/mpi_state.f90) · [MPI 绑定验收](../plans/plan-0004-f2018-follow-up-validation.md#p1-mpi-绑定计数及分块)
 
 现行过程名见[共享库过程对照](design-0007-shared-library-procedure-names.md)。
 

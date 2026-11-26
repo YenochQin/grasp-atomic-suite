@@ -64,9 +64,9 @@ contains
         end if
 
         call mpi_bcast (selected_level_count, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
-        call mpi_bcast (eigenvector_counts_by_block(1), symmetry_block_count, mpi_integer, 0,            &
+        call mpi_bcast (eigenvector_counts_by_block(:symmetry_block_count), symmetry_block_count, mpi_integer, 0,            &
             mpi_comm_world, mpi_error_code)
-        call mpi_bcast (highest_selected_level_by_block(1), symmetry_block_count, mpi_integer, 0,          &
+        call mpi_bcast (highest_selected_level_by_block(:symmetry_block_count), symmetry_block_count, mpi_integer, 0,          &
             mpi_comm_world, mpi_error_code)
 
         ! actually, ncmin will always be positive
@@ -76,7 +76,7 @@ contains
                     "read_eol_average_options_mpi")
             end if
 
-            call mpi_bcast (requested_level_indices(1), selected_level_count, mpi_integer, 0,         &
+            call mpi_bcast (requested_level_indices(:selected_level_count), selected_level_count, mpi_integer, 0,         &
                 mpi_comm_world, mpi_error_code)
         end if
 
@@ -86,7 +86,7 @@ contains
         if (mpi_rank == 0) then
             call read_eol_level_weights (nondefault_options_flag, selected_level_count, requested_level_weights)
         end if
-        call mpi_bcast (requested_level_weights(1), selected_level_count, mpi_double_precision, 0,  &
+        call mpi_bcast (requested_level_weights(:selected_level_count), selected_level_count, mpi_double_precision, 0,  &
             mpi_comm_world, mpi_error_code)
         ! Eigenvector damping
         call alloc (mixing_damping_factors, selected_level_count, "mixing_damping_factors", "read_eol_average_options_mpi")
@@ -108,7 +108,7 @@ contains
             call select_subshell_labels (indx, nsubs)
         end if
         call mpi_bcast (nsubs, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
-        if (nsubs > 0) call mpi_bcast (indx(1), nsubs, mpi_integer, 0,  &
+        if (nsubs > 0) call mpi_bcast (indx(:nsubs), nsubs, mpi_integer, 0,  &
             mpi_comm_world, mpi_error_code)
 
         is_orbital_fixed(indx(:nsubs)) = .false.
@@ -139,7 +139,7 @@ contains
         end if
         call mpi_bcast (nsubs, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
         if (nsubs > 0) then
-            call mpi_bcast (indx(1), nsubs, mpi_integer, 0,            &
+            call mpi_bcast (indx(:nsubs), nsubs, mpi_integer, 0,            &
                 mpi_comm_world, mpi_error_code)
             do i = 1, nsubs
                 loc = indx(i)

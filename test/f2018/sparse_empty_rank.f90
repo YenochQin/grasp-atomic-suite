@@ -17,11 +17,10 @@ program sparse_empty_rank
     call mpi_init(status)
     call mpi_comm_rank(mpi_comm_world,mpi_rank,status)
     call mpi_comm_size(mpi_comm_world,mpi_process_count,status)
-    if (mpi_process_count /= 2) error stop "Fixture requires two ranks"
     write(prefix,'(A,I0)') "sparse-rank-",mpi_rank
     allocate(mcp_temporary_units(30:30))
     csf_count = 1
-    local_size = 1-mpi_rank
+    local_size = merge(1, 0, mpi_rank == 0)
     printing = .false.
     open(newunit=mcp_temporary_units(30),status="scratch",form="unformatted")
     write(mcp_temporary_units(30)) "MCP",1

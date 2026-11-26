@@ -1,7 +1,7 @@
 ! Report input errors with an MPI abort callback for an active MPI session.
 module mpi_io_errors
     ! Module dependencies
-    use mpi, only: mpi_comm_world, mpi_initialized, mpi_finalized, mpi_abort
+    use mpi_f08, only: mpi_comm_world, mpi_initialized, mpi_finalized, mpi_abort
     use input_error_handling, only: fail_input_io
     implicit none (type, external)
 
