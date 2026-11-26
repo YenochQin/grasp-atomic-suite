@@ -147,7 +147,7 @@ set build_dir ../temp/tests/suite-gf16-check
 
 ## 依赖与配置
 
-构建需要 Fortran 编译器、CMake 3.31 或更新版本、BLAS 和 LAPACK。MPI 目标还需要 MPI Fortran 编译环境，例如 `mpifort`。
+构建需要 Fortran 编译器、CMake 3.31 或更新版本，以及使用 32 位 Fortran 整数的 LP64 BLAS/LAPACK。CMake 在配置时验证所选库的接口。MPI 目标还需要提供 `mpi_f08` 的 MPI Fortran 工具链。
 
 CMake 会自动查找 BLAS/LAPACK，并要求 GNU Fortran 15 或更新版本。
 严格验收默认使用 GNU Fortran 16.2 系列的告警基线。

@@ -45,6 +45,11 @@ SCF convergence, full RCI or transition properties.
 The interface stage additionally registers `f2018_linear_algebra_contracts`,
 `f2018_interface_rejections`, and `f2018_mpi_contracts_1/2/4`. These exercise
 LP64 BLAS/LAPACK values, rejected invalid call patterns, and actual MPI payloads.
+`f2018_blas_lapack_config` exercises the configure-time LP64 checks with
+same-symbol static fixtures. It reconfigures a previously successful build
+and verifies rejection of a requested ILP64 interface, a 64-bit default
+integer caller, and ILP64 in either library position. The project runs the
+same probes against the libraries selected for each actual build.
 The MPI contracts use `mpi_f08` datatypes and statuses, with point-to-point
 messages and a variable-count gather containing zero-length contributions.
 `f2018_mpi_count_overflow_2/4` require a diagnostic and nonzero exit when only

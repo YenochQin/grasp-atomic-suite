@@ -77,8 +77,6 @@ add_library(core STATIC
 setup_fortran_modules(core)
 target_link_libraries(core PUBLIC csf_descriptor)
 target_link_libraries_Fortran(core PRIVATE grasp_shared)
-target_link_libraries(core PRIVATE ${BLAS_LIBRARIES} ${BLAS_LINKER_FLAGS})
-target_link_libraries(core PRIVATE ${LAPACK_LIBRARIES} ${LAPACK_LINKER_FLAGS})
 install(TARGETS core DESTINATION lib/)
 # Enable GNU Fortran runtime checks and backtraces for the nuclear-polarization routines in Debug builds.
 if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")

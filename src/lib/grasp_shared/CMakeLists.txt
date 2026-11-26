@@ -111,6 +111,7 @@ add_library(grasp_shared STATIC
     initial_orbital_source.f90
 )
 setup_fortran_modules(grasp_shared)
+target_link_libraries(grasp_shared PUBLIC LAPACK::LAPACK)
 install(TARGETS grasp_shared DESTINATION lib/)
 # Check NP production routines as well as their test callers in Debug builds.
 if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")

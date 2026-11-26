@@ -62,7 +62,7 @@
 | [RMCDHF 的 MCP 读取优化实施计划](plans/plan-0005-rmcdhf-mcp-production-io.md) | 阶段 0–2 已通过本地回归。阶段 3 已完成 Zn I 服务器矩阵分段和逐轮驻留诊断、Cd I 首组冷态 A/C 对照。Cd I 重复配对、生成期磁盘峰值、资源预算及 B 对照待验收。 |
 | [plan-0003-rmcdhf-mpi-stall-diagnostics.md](plans/plan-0003-rmcdhf-mpi-stall-diagnostics.md) | 诊断计划，D0 首版已实现；普通/memory MPI 在大规模 CSF 下全程反复 D 状态；记录单节点条件、SETLAG 冻结侧冗余和 Davidson 候选。普通 MPI 已有 MCP 阶段计时。服务器联合采样、扩展性与根因诊断待完成。 |
 | [plan-0001-radial-grid-validation.md](plans/plan-0001-radial-grid-validation.md) | 待执行；修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
-| [F2018 现代化实施与验收计划](plans/plan-0004-f2018-follow-up-validation.md) | 以 `f211a0a` 为复核基准。首批已完成 RCI 续算边界、MPI 单 rank 失败和 V3 首轮夹具。其余绑定、共享库改造、真实多根与性质验收待推进。 |
+| [F2018 现代化实施与验收计划](plans/plan-0004-f2018-follow-up-validation.md) | P0 续算与 V3 基线、P1 MPI 绑定及 BLAS/LAPACK LP64 配置验收已完成。共享状态、真实多根与性质验收待推进。 |
 
 ## 实施过程记录
 

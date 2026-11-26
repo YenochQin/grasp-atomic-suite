@@ -1,6 +1,6 @@
 # Suite F2018 现代化实施与验收计划
 
-**状态：首批 P0 与 P1 MPI 绑定迁移已实施。** 2026-11-26 按 Suite `3.4dev1` 的 `f211a0a35a957fab85c65a8a514d779183d0d59e` 复核。P0 提交 `88cb04a` 完成 RCI 续算边界、单 rank 失败传播及 V3 首轮对照。P1 的 MPI 绑定以 `88cb04a` 为改造前基准，后续工作包括共享数值接口与多根计算链。
+**状态：首批 P0、P1 MPI 绑定迁移和 BLAS/LAPACK LP64 配置验收已实施。** 2026-11-26 按 Suite `3.4dev1` 的 `f211a0a35a957fab85c65a8a514d779183d0d59e` 复核。P0 提交 `88cb04a` 完成 RCI 续算边界、单 rank 失败传播及 V3 首轮对照。P1 的 MPI 绑定提交为 `5d77d93`，也是本次 LP64 配置检查的改造前基准。后续工作包括共享状态的所有权和多根计算链。
 
 范围覆盖 `src/apps` 内 25 个 Fortran 应用目标，以及 `src/lib` 内 7 个库目录，含 Rust 描述符静态库及其 Fortran 调用端。OpenMP 的现行应用入口是 `jj2lsj_omp`。普通 RMCDHF 保留四个变体，各自有版本基线。目标范围以 [CMake 入口](../../CMakeLists.txt#L158)、[jj2lsj 构建定义](../../src/apps/jj2lsj/CMakeLists.txt)和[退役范围](../implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md)为准。
 
@@ -68,6 +68,22 @@ GNU Fortran 16.2.1 与本机 Open MPI 5.0.11 提供 `mpi_f08`，FindMPI 报告 M
 
 本机 `f2018-check` 构建在 MPI 与串行目标均启用时通过 19 项 MPI 专项和另外 108 项 CTest，关闭 MPI 时另核对配置的目标范围。在相同 GNU Fortran、OpenBLAS、V3 输入及同 rank 布局下，普通和内存 MPI RMCDHF 各运行一轮。1、2、4 ranks 的 `.wfn` 和 `.mix` 与各自 P0 基线逐字节一致。RMCDHF 导入来源校验匹配 248 个文件。[来源快照](../reference/rmcdhf_mpi_f08_snapshot.json)
 
+## P1 BLAS/LAPACK LP64 接口与配置验收
+
+Suite 通过 `grasp_shared` 的显式 Fortran 接口使用 BLAS/LAPACK。RMCDHF 的矩阵求解调用 `DCOPY/DDOT/DSCAL`，Davidson 使用 `DGEMV` 和返回整数索引的 `IDAMAX`。RCI 和 Davidson 的压缩矩阵求解使用 `DSPEVX`，其矩阵阶数、根索引、前导维度、返回根数、`INFO` 和整数工作区均为默认整数。配置探针确认该 kind 为 32 位，`SLAMCH` 和 `DLAMCH` 分别返回 32 位与 64 位实数。MPI 大计数及文件偏移有独立的宽度约定。[显式接口](../../src/lib/grasp_shared/blas_lapack_interfaces.f90) · [Davidson 残差扩展](../../src/lib/davidson_eigensolver/davidson_residual_expansion.f90) · [RCI MPI 特征求解](../../src/apps/rci_mpi/diagonalize_hamiltonian_block.f90)
+
+CMake 固定以 `BLA_SIZEOF_INTEGER=4` 搜索，并在发现库后运行探针。BLAS 探针单独链接 `BLAS::BLAS` 并执行有界的 `DGEMV` 和 `DDOT` 对照。LAPACK 探针和正式目标同用 `LAPACK::LAPACK` 的传递链接顺序，验证零阶 `DSPEVX` 只写入 `M` 和 `INFO` 各自的 32 位槽，再检查浮点返回与 BLAS 调用。LAPACK 目标已传递 BLAS 依赖。两项探针每次配置均重新编译并运行，替换库后会重新验收。它们的编译和运行记录保存在构建目录的 `CMakeFiles/grasp-linalg/`。[配置验收](../../cmake/BlasLapackLP64.cmake) · [运行探针](../../cmake/blas_lapack_lp64_probe.F90) · [CMake 库宽度选项](https://cmake.org/cmake/help/v3.31/module/FindBLAS.html)
+
+| 验收项 | 本机 GNU Fortran 16.2.1 / CMake 4.5.1 结果 |
+| --- | --- |
+| 正常配置及运行链接 | Check 和 Release 都选中 LP64 OpenBLAS 并通过两项配置探针。RCI 和线性代数测试的实际动态加载检查解析到 LP64 的 `libopenblas.so.0`。运行回归覆盖指针子数组和步长、`DDOT` 返回值、`DSPEVX` 本征值、残差及正交性。[生产接口回归](../../test/f2018/linear_algebra_contracts.f90) |
+| 请求 ILP64 或调用者整数为 64 位 | 显式给出 `BLA_SIZEOF_INTEGER=8` 时，CMake 在库搜索前报错。构造的 64 位默认整数调用者也在探针中被拒绝。[配置回归](../../test/f2018/check_blas_lapack_config.py) |
+| 实际选中同名符号的 ILP64 OpenBLAS | 本机两种库均为 OpenBLAS 0.3.34，其配置接口确认测试的 64 位库启用了 `USE64BITINT`。单独替换所选 BLAS 时，`DGEMV` 探针拒绝该库。保留 LP64 BLAS、只替换所选 LAPACK 时，BLAS 探针通过，`DSPEVX` 的输出槽检查拒绝 ILP64 LAPACK。回归用可独立编译的同符号库覆盖两个路径，并复用已成功配置的目录验证重新检查。 |
+
+本机 Check 构建通过 9 项专项和其余 119 项 CTest，涵盖 RCI 串行及 MPI 1、2、4 ranks 的续算和 Davidson 求解。禁用 MPI 的 Release 构建通过配置验收与线性代数两项回归。
+
+交叉配置通过 `CMAKE_CROSSCOMPILING_EMULATOR` 执行探针。配置和部署应使用相同的库与加载环境。更换编译器、供应商库或部署环境后需重新配置并运行线性代数回归。
+
 ## 后续批次与共享库
 
 先用第一批夹具保护读写和失败语义，再迁移通信接口。改动共用矩阵、轨道或角系数之前，先取得相应消费者的固定输入数值基线。单个子项目可按自身依赖推进。以下路径以实现库为单位；描述符的 Rust 端和 Fortran 调用端共同验收。
@@ -75,7 +91,7 @@ GNU Fortran 16.2.1 与本机 Open MPI 5.0.11 提供 `mpi_f08`，FindMPI 报告 M
 | 位置与优先级 | 实施范围和已有基础 | 验收证据 |
 | --- | --- | --- |
 | `mpi` · P1 | 本机迁移覆盖 communicator、datatype、status、常规元素计数和已有分块调用。部署库升级时重新验证可用绑定和重载。[本批验证](#p1-mpi-绑定计数及分块) | 按部署环境记录 1/2/4 ranks 正常与失败路径、空分区、分块结果和计数范围。 |
-| `grasp_shared` · P1 | 现有 BLAS/LAPACK 声明及实际运算测试已按 LP64 建立。补齐 CMake 对整数宽度的选择和部署验证。沿稀疏矩阵列尾偏移、SCF 系数与基组指针追踪分配者和有效期。`alloc` 约定传入无活跃目标的指针，先 `nullify` 再 `associated` 无法检测误传的活目标。先核对调用方，再选择拥有数据的 `allocatable` 或有明确生存期的借用视图。[BLAS 回归](../../test/f2018/linear_algebra_contracts.f90) · [分配接口](../../src/lib/grasp_shared/array_memory_management.f90#L11) · [稀疏存储](../../src/lib/grasp_shared/sparse_hamiltonian_storage.f90) | 验证实际链接库与整数、浮点 ABI 相符，记录不匹配环境的拒绝方式。对改动的分配路径测试零长度、非 1 下界、重分配保留重叠区、释放后再用。维度扩大须在算术前转换，并在转入默认整数前检查上界。 |
+| `grasp_shared` · P1 | LP64 配置探针和拒绝路径已验收。沿稀疏矩阵列尾偏移、SCF 系数与基组指针继续追踪分配者和有效期。`alloc` 约定传入无活跃目标的指针，先 `nullify` 再 `associated` 无法检测误传的活目标。先核对调用方，再选择拥有数据的 `allocatable` 或有明确生存期的借用视图。[LP64 配置验收](#p1-blaslapack-lp64-接口与配置验收) · [分配接口](../../src/lib/grasp_shared/array_memory_management.f90#L11) · [稀疏存储](../../src/lib/grasp_shared/sparse_hamiltonian_storage.f90) | 对改动的分配路径测试零长度、非 1 下界、重分配保留重叠区、释放后再用。维度扩大须在算术前转换，并在转入默认整数前检查上界。 |
 | `core` · P1，写入器多实例 P2 | 混合系数写入器约定每进程一次写一个流，MPI 由 root 写。当前优先追踪打开、写块、刷新、完成标记及关闭失败能否传回正确入口。双正交代码在文件末尾关闭输入和输出。有交错输出的真实需求时再引入显式写入器对象。径向网格与稀疏矩阵乘则按已确认的共享写入依赖收紧接口。[混合流](../../src/lib/core/mixing_file_format.f90#L25) · [双正交消费者](../../src/apps/rbiotransform/read_biorthogonal_mcp.f90#L188) · [网格](../../src/lib/core/radial_grid_setup.f90) | 正常文件可由独立解析器读回。核对块目录、基组摘要、根顺序和完成标记，验证中断或截断文件及 root 写入失败。保留各程序活动网格、填充点与精度初始化时序，并用同输入核对径向数组与矩阵乘结果。 |
 | `csf_descriptor` 与 Fortran reader · P1 | 现行 V3 跨语言接口已有版本、容量及分块检查。`descriptor_source` 拥有 Rust 句柄，调用方须显式关闭并避免复制活句柄。核查双基组装载时句柄、摘要和当前块是否始终对应正确的一侧。[Fortran 所有权](../../src/lib/core/csf_descriptor_reader.f90#L19) · [C 绑定](../../src/lib/core/csf_descriptor_c_bindings.f90) · [Rust FFI](../../src/lib/csf_descriptor/src/descriptor_ffi.rs) | 双基组交替读取、失败后重开、重复关闭及错误摘要均可诊断。每个所有者只释放一次。块顺序、占据与耦合码逐项一致，分块读取记录峰值内存。 |
 | `davidson_eigensolver` · P1 | 保留显式矩阵乘回调，核对内部 assumed-size 数组的实际形状、下界和调用方式，先处理影响索引校验的入口。检查工作区重用和每根的收敛标记。[回调](../../src/lib/davidson_eigensolver/davidson_eigensolver.f90) · [稀疏初值](../../src/lib/davidson_eigensolver/davidson_sparse_initial_estimates.f90) | 扩展已有解析矩阵和提前收敛用例，增加近简并多根、重启向量、空分区。分别比较每根本征残差、正交性和近简并子空间。 |
@@ -150,6 +166,6 @@ ctest --test-dir "$suite_run/check" --no-tests=error --output-on-failure -R '^(f
 | 交付批次 | 完成时应能查到的结果 | 编制时状态 |
 | --- | --- | --- |
 | 首批 · 基线与续算 | V3 实际首轮对照、串行/MPI 合法续算、坏记录和单 rank 失败报告 | GNU Fortran 16.2.1/OpenBLAS/Check 下，两套独立构建的 `rmcdhf`、`rmcdhf_mem` 首轮科学输出一致。串行和 Open MPI 5.0.11 的 1/2/4-rank 续算回归已完成。 |
-| MPI、ABI 与共享库 | 绑定和计数用例、链接库身份、错误传播、所有权及共享核差异报告 | 本机 MPI 绑定与计数用例已实施，实际部署工具链及其余共享接口仍需按批验收。 |
+| MPI、ABI 与共享库 | 绑定和计数用例、链接库身份、错误传播、所有权及共享核差异报告 | 本机 MPI 绑定与计数、LP64 配置和拒绝路径已验收。其余共享接口与部署环境继续按批核验。 |
 | 各程序的科学数值回归 | 四种 RMCDHF 各自的固定轮次/收敛记录、固定轨道 RCI、双正交及性质与跃迁分项对照 | 有既有夹具和专项记录，完整多根对照待实施 |
 | 整体验收 | 候选提交的 24 配置结果、正确性告警逐项处理结论及目标部署环境报告 | 历史矩阵供追溯，候选版本另行签收 |

@@ -46,6 +46,7 @@
         "ris4_cache_serial",
         "standard_grasp_alternate_capacity",
         "f2018_linear_algebra_contracts",
+        "f2018_blas_lapack_config",
         "f2018_storage_bytes",
         "f2018_nmtejj_parity",
         "f2018_acceptance_driver",

@@ -147,7 +147,7 @@ artifacts explicitly, run:
 
 ## Dependencies And Configuration
 
-The build requires a Fortran compiler, CMake 3.31 or newer, BLAS, and LAPACK. MPI targets require an MPI Fortran toolchain with the `mpi_f08` module.
+The build requires a Fortran compiler, CMake 3.31 or newer, and LP64 BLAS/LAPACK with 32-bit Fortran integers. CMake tests the selected libraries at configure time. MPI targets require an MPI Fortran toolchain with the `mpi_f08` module.
 
 CMake finds BLAS/LAPACK and requires GNU Fortran 15 or newer. The default strict
 acceptance budget covers GNU Fortran 16.2 releases, including 16.2.1. The default

@@ -41,17 +41,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 include(cmake/FortranProfiles.cmake)
-
-# Find the LAPACK and BLAS libraries
-# FindBLAS/FindLAPACK use intentionally implicit, argument-free link probes.
-# Keep those probes separate from the strict policy on every suite target.
-set(_grasp_target_fortran_flags "${CMAKE_Fortran_FLAGS}")
-string(REPLACE "-Werror=implicit-interface" "" CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
-string(REPLACE "-Werror=implicit-procedure" "" CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
-set(CMAKE_Fortran_FLAGS "${_grasp_target_fortran_flags}")
-unset(_grasp_target_fortran_flags)
+include(cmake/BlasLapackLP64.cmake)
 
 # We need special functions to handle linking Fortran modules between libraries
 # etc. The Fortran_MODULE_DIRECTORY_root variable is the directory where all the

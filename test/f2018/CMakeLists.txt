@@ -8,7 +8,6 @@ add_test(NAME f2018_breit_procedure_hooks COMMAND test.f2018_breit_procedure_hoo
 
 add_executable(test.f2018_davidson davidson_contracts.F90)
 target_link_libraries_Fortran(test.f2018_davidson PRIVATE davidson_eigensolver core grasp_shared)
-target_link_libraries(test.f2018_davidson PRIVATE ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
 add_test(NAME f2018_davidson_contracts COMMAND test.f2018_davidson)
 add_test(NAME f2018_davidson_early COMMAND test.f2018_davidson early)
 set_tests_properties(f2018_davidson_contracts f2018_davidson_early PROPERTIES TIMEOUT 30)
@@ -25,7 +24,6 @@ endforeach()
 add_executable(test.f2018_nmtejj nmtejj_probe.f90)
 add_executable(test.f2018_linear_algebra linear_algebra_contracts.f90)
 target_link_libraries_Fortran(test.f2018_linear_algebra PRIVATE grasp_shared)
-target_link_libraries(test.f2018_linear_algebra PRIVATE ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
 add_test(NAME f2018_linear_algebra_contracts COMMAND test.f2018_linear_algebra)
 foreach(variant rbiotransform rbiotransform_mpi)
     add_executable(test.bndinv_${variant} bndinv_precision.f90
@@ -34,6 +32,10 @@ foreach(variant rbiotransform rbiotransform_mpi)
     add_test(NAME f2018_bndinv_${variant} COMMAND test.bndinv_${variant})
 endforeach()
 if(Python3_Interpreter_FOUND)
+    add_test(NAME f2018_blas_lapack_config
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_blas_lapack_config.py
+        "${CMAKE_COMMAND}" "${CMAKE_Fortran_COMPILER}" "${CMAKE_AR}")
+    set_tests_properties(f2018_blas_lapack_config PROPERTIES TIMEOUT 120)
     add_test(NAME f2018_library_source_style COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/check_fortran_source_style.py lib)
     add_test(NAME f2018_application_source_style COMMAND ${Python3_EXECUTABLE}
@@ -102,7 +104,6 @@ foreach(variant rmcdhf rmcdhf_mem rmcdhf_mpi rmcdhf_mem_mpi)
     add_executable(${target} ci_damping.F90 ci_damping_doubles.F90 "${app}/${matrix}.f90")
     set_property(TARGET ${target} PROPERTY Fortran_MODULE_DIRECTORY "${Fortran_MODULE_DIRECTORY_root}/${target}")
     target_link_libraries_Fortran(${target} PRIVATE core grasp_shared)
-    target_link_libraries(${target} PRIVATE ${BLAS_LIBRARIES})
     target_compile_options(${target} PRIVATE -fcheck=all -fbacktrace)
     if(variant MATCHES "mem")
         target_compile_definitions(${target} PRIVATE CI_MEM)
