@@ -5,6 +5,7 @@ add_library(core STATIC
     csf_full_basis_reader.f90
     csf_basis_merging.f90
     rci_csf_block_reader.f90
+    rci_restart_records.f90
     csf_descriptor_reader.f90
     csf_quantum_queries.f90
     posix_services.f90

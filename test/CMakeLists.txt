@@ -158,6 +158,22 @@ if(Python3_Interpreter_FOUND)
     add_test(NAME save_rmcdhf
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_save_rmcdhf.py"
             "${PROJECT_BINARY_DIR}/bin/save_rmcdhf")
+    if(TARGET rwfnestimate AND TARGET rci)
+        add_test(NAME rci_restart_serial COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/test_rci_restart.py"
+            --rwfnestimate $<TARGET_FILE:rwfnestimate> --rci $<TARGET_FILE:rci>)
+        set_tests_properties(rci_restart_serial PROPERTIES TIMEOUT 120 LABELS "f2018_io;f2018_serial")
+    endif()
+    if(TARGET rwfnestimate AND TARGET rci_mpi AND MPIEXEC_EXECUTABLE)
+        foreach(ranks IN ITEMS 1 2 4)
+            add_test(NAME rci_restart_mpi_${ranks} COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/test_rci_restart.py"
+                --rwfnestimate $<TARGET_FILE:rwfnestimate> --rci $<TARGET_FILE:rci_mpi>
+                --mpiexec "${MPIEXEC_EXECUTABLE}" --numproc-flag=${MPIEXEC_NUMPROC_FLAG} --ranks ${ranks})
+            set_tests_properties(rci_restart_mpi_${ranks} PROPERTIES TIMEOUT 240 PROCESSORS ${ranks}
+                LABELS "f2018_io;f2018_mpi")
+        endforeach()
+    endif()
     if(TARGET rangular_mpi AND MPIEXEC_EXECUTABLE)
         add_test(NAME rangular_mpi_descriptors
             COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/rangular/test_mpi_descriptors.py"

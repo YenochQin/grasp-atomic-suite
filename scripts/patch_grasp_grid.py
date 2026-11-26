@@ -45,10 +45,7 @@ SUITE_GRID_FILES = (
     "src/apps/ris4/prepare_isotope_calculation.f90",
     "src/apps/rdensity/read_radial_density_input.f90",
 )
-SUITE_RESTART_FILES = (
-    "src/apps/rci/read_ci_restart.f90",
-    "src/apps/rci_mpi/read_ci_restart.f90",
-)
+SUITE_RESTART_FILES = ("src/lib/core/rci_restart_records.f90",)  # shared by rci and rci_mpi
 SUITE_CONFIG_FILE = "src/lib/grasp_shared/cal_constants.f90"
 SUITE_EXPORT_FILE = "src/lib/grasp_shared/grasp_parameters.f90"
 PATCHABLE_FILES = (SUITE_CONFIG_FILE, *SUITE_GRID_FILES, *SUITE_RESTART_FILES)

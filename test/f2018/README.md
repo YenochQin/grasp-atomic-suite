@@ -18,20 +18,23 @@ The regular CMake/CTest flow registers:
   path. Tests include quoted paths, failure states, short buffers, shell wait
   status, exit status and buffered file output. Run on Linux/POSIX.
 
-The separate baseline comparison requires both a preserved legacy build and the
-candidate build. It generates a synthetic finite-nucleus Z=10 `1s^2` input,
-runs preparation followed by **one SCF iteration**, and compares binary
+The separate baseline comparison uses two independent builds that accept V3
+descriptors and write the current radial and mixing streams. It prepares a
+synthetic finite-nucleus Z=10 `1s^2` descriptor and header with the V3
+`RCSFS_TEST_CLI`, copies the same input bytes to each run directory, runs
+preparation followed by **one SCF iteration**, and compares binary
 wavefunction/mixing/MCP outputs for the two retained original serial RMCDHF variants. Match compiler,
 math library, options and thread counts; the script does not certify the supplied
 binary directories' provenance automatically.
 
 ```fish
-set -gx FC /usr/bin/gfortran-15
-set -gx OMPI_FC /usr/bin/gfortran-15
-../graspkit-tools/.venv/bin/python test/f2018/compare_first_sweep.py \
-  --reference-bindir build-gf15-standard-import/bin \
-  --candidate-bindir build-gf15-f2018-batch/bin \
-  --output build-gf15-f2018-batch/audit/first-sweep-parity
+set suite_venv (realpath ../graspkit-tools/.venv)
+set -gx RCSFS_TEST_CLI "$suite_venv/bin/rcsfs"
+set -gx TMPDIR (realpath ../temp/tests)
+"$suite_venv/bin/python" test/f2018/compare_first_sweep.py \
+  --reference-bindir ../temp/tests/suite-f2018-reference/bin \
+  --candidate-bindir ../temp/tests/suite-f2018-candidate/bin \
+  --output ../temp/tests/suite-f2018-first-sweep
 ```
 
 The output directory must not already exist. Inputs, stdout/stderr and per-file
@@ -254,3 +257,14 @@ requires missing Linux `/proc/meminfo`; use an explicit `--solvers rmcdhf` for a
 Reference and candidate binary directories must be different. Their compiler,
 math library and flags still need independent verification; executable hashes
 are identities, not an automatic proof of matching build provenance.
+
+## RCI restart records
+
+`rci_restart_serial` and `rci_restart_mpi_{1,2,4}` use `rwfnestimate` and
+the production RCI writer to prepare a four-CSF block with two selected roots.
+Each test compares a fresh calculation, a restart with a complete matrix and
+a restart where one file ends cleanly before its matrix block. The serial and
+two-rank tests also cover missing files, invalid signatures, out-of-range
+counts and short records. In the two-rank test, each case affects only one of
+the two shards. A nonzero exit must report the relevant record and filename.
+A timeout fails the test.

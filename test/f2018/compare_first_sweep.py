@@ -12,14 +12,16 @@ import math
 import os
 from pathlib import Path
 import re
+import shutil
 import struct
 import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "rmcdhf"))
-from mixing_stream import mixing_blocks
-from compare_rwfn import read_record, read_rwfn
+from mixing_stream import read_stream
+from native_fixture import descriptors
+from compare_rwfn import read_radial_stream, read_record
 
 ISODATA = (
     "Atomic number:\n10\nMass number (integer) :\n20\n"
@@ -30,6 +32,7 @@ ISODATA = (
 CSF = "Core subshells:\n\nPeel subshells:\n  1s\nCSF(s):\n  1s ( 2)\n\n         0+\n"
 BINARY_FILES = {"rwfn.inp", "rwfn.out", "rmix.out", "mcp.30", "mcp.31", "mcp.32", "mcp.33"}
 NATIVE_TEXT_FILES = {"rangular.log", "rmcdhf.log", "rmcdhf.sum"}
+INPUT_FILES = ("isodata", "rcsf_header.toml", "rcsf_desc.parquet")
 MCP_RECORD_SIZES = {
     "mcp.30": [12, 4, 8, 15, 12, 12, 11, 4, 8],
     "mcp.31": [15, 12, 12, 15, 8],
@@ -130,25 +133,34 @@ def check_binary_files(work: Path) -> None:
         if name in MCP_RECORD_SIZES and [len(record) for record in records] != MCP_RECORD_SIZES[name]:
             raise ValueError(f"Incomplete/unexpected MCP records for the frozen single-CSF fixture: {name}")
         if name.startswith("rwfn"):
-            orbitals = read_rwfn(path)
+            orbitals = read_radial_stream(path)
             if set(orbitals) != {(1, -1)}:
                 raise ValueError(f"Unexpected orbital identity: {name}")
             orbital = orbitals[1, -1]
             if not orbital.r or not all(math.isfinite(v) for v in (orbital.energy, *orbital.r, *orbital.p, *orbital.q)):
                 raise ValueError(f"Nonfinite/empty orbital: {name}")
         if name == "rmix.out":
-            block, = mixing_blocks(path)
+            block, = read_stream(path, work / "rcsf_desc.parquet")
             if (block.csf_count, block.roots, block.two_j, block.parity) != (1, [1], 0, 1):
                 raise ValueError("Wrong mixing block or root identity")
-            values = block.energies + list(struct.unpack("=d", block.coefficients))
+            values = block.energies + list(struct.unpack("<d", block.coefficients))
             if not all(map(math.isfinite, values)):
                 raise ValueError("Nonfinite mixing coefficients/energy")
 
 
-def exercise(bindir: Path, solver: str, work: Path) -> dict:
-    work.mkdir(parents=True)
+def prepare_inputs(work: Path) -> dict[str, str]:
+    work.mkdir()
     (work / "isodata").write_text(ISODATA)
-    (work / "rcsf.inp").write_text(CSF)
+    source = work / "rcsf.c"
+    source.write_text(CSF)
+    descriptors(source)
+    return {name: sha256((work / name).read_bytes()) for name in INPUT_FILES}
+
+
+def exercise(bindir: Path, solver: str, work: Path, inputs: Path, input_hashes: dict[str, str]) -> dict:
+    work.mkdir(parents=True)
+    for name in INPUT_FILES:
+        shutil.copyfile(inputs / name, work / name)
     runs = {}
     for binary, stdin in (("rwfnestimate", "y\n2\n*\n"), ("rangular", "y\n"), (solver, solver_inputs(1))):
         runs[binary] = run(bindir / binary, stdin, work)
@@ -161,7 +173,9 @@ def exercise(bindir: Path, solver: str, work: Path) -> dict:
         text = path.read_text()
         check_diagnostics(text)
         texts[name] = normalize(text)
-    expected = BINARY_FILES | NATIVE_TEXT_FILES | {"isodata", "rcsf.inp"}
+    if any(sha256((work / name).read_bytes()) != digest for name, digest in input_hashes.items()):
+        raise ValueError(f"Production input changed: {work}")
+    expected = BINARY_FILES | NATIVE_TEXT_FILES | set(INPUT_FILES)
     for binary in runs:
         expected |= {f"{binary}.stdin", f"{binary}.stdout.log", f"{binary}.stderr.log"}
     actual = {p.name for p in work.iterdir()}
@@ -185,15 +199,19 @@ def main() -> int:
         parser.error("Reference and candidate must be independent build directories")
     output.mkdir(parents=True, exist_ok=False)
     report: dict = {"status": "running", "solvers": args.solvers, "full_serial_scope": set(args.solvers)=={"rmcdhf","rmcdhf_mem"},
-                    "threads": THREADS, "inputs": {"isodata": sha256(ISODATA.encode()), "rcsf.inp": sha256(CSF.encode()),
-                    "scf_stdin": sha256(solver_inputs(1).encode())}, "results": {}}
+                    "threads": THREADS, "results": {}}
     try:
+        inputs = output / "inputs"
+        input_hashes = prepare_inputs(inputs)
+        report["inputs"] = input_hashes | {
+            "rcsf.c": sha256(CSF.encode()), "scf_stdin": sha256(solver_inputs(1).encode())
+        }
         report["executables"] = {
             side: {name: sha256((bindir/name).read_bytes()) for name in ["rwfnestimate", "rangular", *args.solvers]}
             for side, bindir in (("reference", reference), ("candidate", candidate))}
         for solver in args.solvers:
-            old = exercise(reference, solver, output / solver / "reference")
-            new = exercise(candidate, solver, output / solver / "candidate")
+            old = exercise(reference, solver, output / solver / "reference", inputs, input_hashes)
+            new = exercise(candidate, solver, output / solver / "candidate", inputs, input_hashes)
             report["results"][solver] = {"reference": old, "candidate": new, "equal": old == new}
             if old != new:
                 raise ValueError(f"Scientific output/diagnostic difference for {solver}")

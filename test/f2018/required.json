@@ -94,6 +94,7 @@
         "rwfnestimate_Ni_high_l",
         "rwfnestimate_Zn_high_l",
         "rwfnestimate_header_input",
+        "rci_restart_serial",
         "csf_descriptor_input",
         "rangular_version_comparison"
       ]
@@ -143,7 +144,10 @@
       "tests": [
         "rdensity_mpi_1",
         "rdensity_mpi_2",
-        "rdensity_mpi_4"
+        "rdensity_mpi_4",
+        "rci_restart_mpi_1",
+        "rci_restart_mpi_2",
+        "rci_restart_mpi_4"
       ]
     },
     {

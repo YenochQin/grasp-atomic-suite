@@ -6,7 +6,7 @@ module input_error_handling
 
     ! Module interface
     private
-    public :: fail_input_io
+    public :: fail_input_io, abort_input
 
     ! Procedure interfaces
     abstract interface

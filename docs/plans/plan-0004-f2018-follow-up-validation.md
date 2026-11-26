@@ -1,6 +1,6 @@
 # Suite F2018 现代化实施与验收计划
 
-**状态：待实施。** 2026-11-26 按 Suite `3.4dev1` 的 `f211a0a35a957fab85c65a8a514d779183d0d59e` 复核。第一批处理 RCI 串行与 MPI 的续算读取、单 rank 失败传播，并建立能从 V3 生产入口运行的版本对照。后续批次处理 MPI 绑定、共享数值接口和多根计算链。本次编制只核对了源码、测试定义与历史记录，表中验收项均需由相应实施批次给出结果。
+**状态：首批 P0 已实施，后续批次待验收。** 2026-11-26 按 Suite `3.4dev1` 的 `f211a0a35a957fab85c65a8a514d779183d0d59e` 复核。P0 实施从 `4a23261` 起步，处理 RCI 串行与 MPI 的续算读取、单 rank 失败传播，并建立从 V3 生产入口运行的首轮对照。后续批次处理 MPI 绑定、共享数值接口和多根计算链。
 
 范围覆盖 `src/apps` 内 25 个 Fortran 应用目标，以及 `src/lib` 内 7 个库目录，含 Rust 描述符静态库及其 Fortran 调用端。OpenMP 的现行应用入口是 `jj2lsj_omp`。普通 RMCDHF 保留四个变体，各自有版本基线。目标范围以 [CMake 入口](../../CMakeLists.txt#L158)、[jj2lsj 构建定义](../../src/apps/jj2lsj/CMakeLists.txt)和[退役范围](../implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md)为准。
 
@@ -18,7 +18,7 @@
 
 ### P0 · 在当前入口建立首轮对照
 
-**现状。** 独立首轮比较器在新目录只写 `isodata` 和 `rcsf.inp`，随后启动 `rwfnestimate → rangular → RMCDHF`。它还严格核对输出文件清单。当前初猜从 header 取轨道表，角系数和 SCF 从 V3 文件对取基组。CTest 中的 `f2018_first_sweep_driver` 测试比较工具本身，单独跑它不能取得两个实际构建的首轮结果。[比较器](../../test/f2018/compare_first_sweep.py#L148) · [CTest 注册](../../test/f2018/CMakeLists.txt#L83) · [V3 夹具生成器](../../test/native_fixture.py)
+**原有缺口。** 独立首轮比较器原先只准备 `isodata` 和 `rcsf.inp`。当前初猜从 header 取轨道表，角系数和 SCF 从 V3 文件对取基组。更新后的比较器生成一次输入，两套构建使用相同字节，分别保存输入、输出及摘要。`f2018_first_sweep_driver` 覆盖比较器本身，实际二进制对照使用独立入口。[比较器](../../test/f2018/compare_first_sweep.py) · [CTest 注册](../../test/f2018/CMakeLists.txt#L83) · [V3 夹具生成器](../../test/native_fixture.py)
 
 **实施。** 用现有夹具生成器在独立目录生成配对的描述符和 header，给两侧提供相同的输入字节、状态名和交互应答。更新文件清单，既识别生成的输入，也检查输出完整。用相同编译器、数学库、优化选项及线程数分别构建基准和候选，存下输入、可执行文件摘要、标准输出和错误输出。先用当前源码的两个独立构建验证比较器能稳定识别一致结果，再以坏签名、缺块或改动一个科学值验证它能报告差异。历史版需要旧格式时，单独固定参考输入转换和字段映射。
 
@@ -26,7 +26,7 @@
 
 ### P0 · 修正 RCI 续算记录的读取边界
 
-**源码证据。** `rci` 与 `rci_mpi` 的 `read_ci_restart` 在一条顺序无格式 `READ` 中先取得 `radial_point_count`，随即以它为上界读入核势数组，之后才检查 `max_radial_points`。核模型参数个数也直接决定同一记录中数组的读入长度，而数组容量为 2。每轨道尾点从前一记录读出后，下一次读取直接用作 P/Q 上界。源码已能确定校验顺序，越界或异常退出在具体构建上的表现待复现。[串行读取](../../src/apps/rci/read_ci_restart.f90#L47) · [MPI 读取](../../src/apps/rci_mpi/read_ci_restart.f90#L50) · [核参数容量](../../src/lib/grasp_shared/nuclear_model_parameters_state.f90) · [径向容量](../../src/lib/grasp_shared/cal_constants.f90)
+**修复前。** `rci` 与 `rci_mpi` 的 `read_ci_restart` 在一条顺序无格式 `READ` 中先取得 `radial_point_count`，随即以它为上界读入核势数组，之后才检查 `max_radial_points`。核模型参数个数和每轨道尾点也在验证前用于读入。GNU Fortran Check 已复现这些坏记录造成的运行时错误。当前两种程序通过公共读取器先验证计数、回退记录并用已验证的边界读取。矩阵续算扫描也会核验块头、行元素数及列索引。[公共读取器](../../src/lib/core/rci_restart_records.f90) · [核参数容量](../../src/lib/grasp_shared/nuclear_model_parameters_state.f90) · [径向容量](../../src/lib/grasp_shared/cal_constants.f90)
 
 1. 从写端列出每条记录的字段、计数、目标数组和后继使用者。用实际写端生成的小型合法文件作为正例。点核的参数个数为 0，现有有限核模型为 2。核对活动网格、含 10 个填充点的工作容量、每轨道尾点，以及 CSF 和对称块计数。[模型输入](../../src/lib/core/isotope_data_records.f90) · [串行写端](../../src/apps/rci/read_ci_options.f90#L215)
 2. 在依赖计数的读取前验证取值和目标形状。对“计数与数组同记录”的情况，可先仅读计数，检查成功后 `BACKSPACE` 回到该记录再完整读取，对探读、定位和重读分别检查 `iostat`。顺序无格式文件中两次普通 `READ` 会消费两条记录，须用既有合法文件验明记录位置。尽量将记录解析供串行和 MPI 共用，由入口决定退出方式。
@@ -35,11 +35,17 @@
 
 ### P0 · 处理 RCI 的单 rank 分片失败
 
-**源码证据。** `rci_mpi` 通过 root 广播续算选择，各 rank 随后打开自己的 `rciNNN.res`。某一片缺失、打开失败或签名错误时，该 rank 可单独进入 `finalize_mpi_runtime`。这个过程先对 `MPI_COMM_WORLD` 做 barrier，再 finalize。其他 rank 的控制流可以继续读各自分片，调用序列存在分歧。实际是否挂起、报出什么以及启动器退出码，须在指定 MPI 上测量。[分片入口](../../src/apps/rci_mpi/connect_ci_restart_file.f90#L50) · [退出实现](../../src/lib/mpi/mpi_runtime.f90#L54)
+**修复前。** `rci_mpi` 通过 root 广播续算选择，各 rank 随后打开自己的 `rciNNN.res`。某一片缺失、打开失败或签名错误时，该 rank 可单独进入带 barrier 的 `finalize_mpi_runtime`。用 Open MPI 5.0.11 复现 2 ranks 下 root 或 worker 单片缺失、签名错误都达到 8 秒测试超时。当前分片解析失败由 `mpi_io_errors` 报告记录和文件后终止作业。各 rank 只有部分矩阵写完时，先汇总是否存在已写的块头，再进入相同的统计归约分支。[分片入口](../../src/apps/rci_mpi/connect_ci_restart_file.f90) · [MPI I/O 退出](../../src/lib/mpi/mpi_io_errors.f90) · [矩阵续算](../../src/apps/rci_mpi/assemble_ci_matrix.f90)
 
 **实施。** 在所有 rank 均能到达的阶段汇总本地状态，或在不可恢复的本地 I/O 错误上复用已有 `mpi_io_errors` 终止通路。保证出错 rank 能报告文件、rank 和阶段。沿 RCI 的头记录与矩阵记录调用链排查其他依赖集体到达的错误出口。正常完成仍经应用的集体收尾路径。[MPI I/O 错误处理](../../src/lib/mpi/mpi_io_errors.f90) · [续算矩阵乘](../../src/apps/rci_mpi/multiply_restart_hamiltonian.f90)
 
-**交付与退出。** 以 2 ranks 先生成匹配的文件，分别只让 root 或一个 worker 的分片缺失、签名错误或记录截断。调用真正的续算入口，检查启动器非零退出、输出命中预期分片和阶段、所有进程在测试超时前结束。将“命令超时”和“收到预期失败”记录为两种不同结果。用 1/2/4 ranks 的合法分片覆盖正常退出及结果读回，每次按对应 rank 布局准备文件。P0 的实现可以使用当前 MPI 绑定。
+**交付与退出。** `rci_restart_serial` 和 `rci_restart_mpi_{1,2,4}` 调用实际程序生成合法文件并续算。四 CSF、两根夹具比较冷启动、完整续算和从干净记录边界补算的结果。串行和 2-rank 用例另覆盖缺文件、坏签名、坏计数及短记录，MPI 分别只破坏 root 或 worker 的一片。测试要求诊断含分片及读取阶段、命令在超时前非零退出。[回归入口](../../test/test_rci_restart.py) · [运行说明](../../test/f2018/README.md#rci-restart-records)
+
+本机 GNU Fortran 16.2.1、OpenBLAS 与 Open MPI 5.0.11 的首批验收记录如下。
+
+- 两套独立 Check 构建在改动 RCI 前完成 V3 单轮基线。RCI 改动后复跑，`rmcdhf` 和 `rmcdhf_mem` 各自的七份二进制文件、科学文本和规范化诊断仍一致，停因为一轮迭代上限。
+- 串行以及 MPI 1、2、4 ranks 的四 CSF、两根夹具中，完整续算和文件尾补算与各自冷启动的最大能量差、相位对齐后的最大系数差均为 0。修复前写出的串行及双 rank 文件可由修复后程序续算。串行另外测了核模型参数为空的点核记录。
+- 串行及 MPI 双 rank 的坏记录在 Check 和 Release 均非零退出并报告位置。合法续算仍使用原有顺序无格式记录布局。显式设置续算 ACCY 时，网格脚本修改串行和 MPI 共用的赋值位置。[网格脚本说明](../../scripts/README.md)
 
 ## 后续批次与共享库
 
@@ -122,7 +128,7 @@ ctest --test-dir "$suite_run/check" --no-tests=error --output-on-failure -R '^(f
 
 | 交付批次 | 完成时应能查到的结果 | 编制时状态 |
 | --- | --- | --- |
-| 首批 · 基线与续算 | V3 实际首轮对照、串行/MPI 合法续算、坏记录和单 rank 失败报告 | 已完成源码复核，修复与运行待实施 |
+| 首批 · 基线与续算 | V3 实际首轮对照、串行/MPI 合法续算、坏记录和单 rank 失败报告 | GNU Fortran 16.2.1/OpenBLAS/Check 下，两套独立构建的 `rmcdhf`、`rmcdhf_mem` 首轮科学输出一致。串行和 Open MPI 5.0.11 的 1/2/4-rank 续算回归已完成。 |
 | MPI、ABI 与共享库 | 绑定和计数用例、链接库身份、错误传播、所有权及共享核差异报告 | 部分基础回归已注册，迁移及部署验收待实施 |
 | 各程序的科学数值回归 | 四种 RMCDHF 各自的固定轮次/收敛记录、固定轨道 RCI、双正交及性质与跃迁分项对照 | 有既有夹具和专项记录，完整多根对照待实施 |
 | 整体验收 | 候选提交的 24 配置结果、正确性告警逐项处理结论及目标部署环境报告 | 历史矩阵供追溯，候选版本另行签收 |

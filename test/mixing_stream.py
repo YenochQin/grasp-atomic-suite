@@ -47,27 +47,31 @@ def read_stream(path: Path, descriptor: Path | None = None) -> list[Block]:
     directory = Struct("<6q")
     level = Struct("<qd")
     magic, electrons, orbitals, blocks, csfs, roots, basis_id = header.unpack_from(raw)
-    assert magic == b"CSF--MIX" and min(electrons, orbitals, blocks, csfs, roots) > 0
-    if descriptor is not None:
-        assert basis_id == sha256(descriptor.read_bytes()).hexdigest().encode()
+    if magic != b"CSF--MIX" or min(electrons, orbitals, blocks, csfs, roots) <= 0:
+        raise ValueError(f"{path}: invalid mixing stream header")
+    if descriptor is not None and basis_id != sha256(descriptor.read_bytes()).hexdigest().encode():
+        raise ValueError(f"{path}: mixing stream basis digest does not match {descriptor.name}")
     table = header.size + directory.size * blocks
     end = table + level.size * roots
     results = []
     total_csfs = total_roots = 0
     for index in range(blocks):
         two_j, parity, count, levels, row, offset = directory.unpack_from(raw, header.size + index * directory.size)
-        assert parity in (-1, 1) and two_j >= 0 and offset == end and row == total_roots and 0 < levels <= count
+        if not (parity in (-1, 1) and two_j >= 0 and offset == end and row == total_roots and 0 < levels <= count):
+            raise ValueError(f"{path}: invalid mixing block directory entry {index + 1}")
         root_ids, energies = [], []
         for level_index in range(row, row + levels):
             root, energy = level.unpack_from(raw, table + level_index * level.size)
-            assert 1 <= root <= count
+            if not 1 <= root <= count:
+                raise ValueError(f"{path}: invalid mixing root {root} in block {index + 1}")
             root_ids.append(root)
             energies.append(energy)
         end = offset + 8 * count * levels
         results.append(Block(two_j, parity, count, root_ids, energies, raw[offset:end]))
         total_csfs += count
         total_roots += levels
-    assert (total_csfs, total_roots, end) == (csfs, roots, len(raw))
+    if (total_csfs, total_roots, end) != (csfs, roots, len(raw)):
+        raise ValueError(f"{path}: mixing stream dimensions do not match its payload")
     return results
 
 

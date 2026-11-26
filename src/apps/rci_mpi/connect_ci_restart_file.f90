@@ -21,14 +21,13 @@ contains
         use standard_io_units, only: stderr_unit
         use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank
         use yes_no_input, only: read_yes_no
-        use file_open, only: open_calculation_file
+        use rci_restart_records, only: open_rci_restart_file
 
         ! Procedure interfaces
         use read_ci_restart_interface, only: read_ci_restart
         use read_ci_options_interface, only: read_ci_options
 
-        ! Module dependencies
-        use mpi_utilities, only: finalize_mpi_runtime
+        use mpi_io_errors, only: abort_input_mpi
         implicit none (type, external)
 
         ! Arguments
@@ -38,15 +37,8 @@ contains
 
         logical, intent(out) :: is_restart
 
-        ! Local constants
-        character(len=11), parameter :: form = "UNFORMATTED"
-        character(len=7), parameter :: status = "UNKNOWN"
-        character(len=6), parameter :: restitle = "R92RES"
-
-        ! Local declarations
-        integer :: io_status
-        logical :: found
-        character :: r92res*6, file_path*11, block_label_text*3
+        character(11) :: file_path
+        character(3) :: block_label_text
         ! Compose the "rciXXX.res" file names (for each node)
         write (block_label_text, "(I3.3)") mpi_rank
         file_path = "rci" // block_label_text // ".res"
@@ -61,33 +53,13 @@ contains
 
         end if
         call mpi_bcast (is_restart, 1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
-        ! Do some settings and checks
-        if (is_restart) then
-            ! ...Restart, make sure file exist
-            inquire(file=file_path, exist=found)
-            if (.not. found) then
-                call finalize_mpi_runtime ("setres: .res not exist", mpi_rank)
-            end if
-        end if
-        ! Open the .res file
-        call open_calculation_file (restart_matrix_unit, file_path, form, status, mpi_error_code)
-        if (mpi_error_code /= 0) then
-            call finalize_mpi_runtime ("setres: Error openning .res file", mpi_rank)
-        end if
+        call open_rci_restart_file(restart_matrix_unit, file_path, is_restart, abort_input_mpi)
         ! If restart, load the contents. Otherwise generate them via getcid
         !
         ! But first of all, iccutblk() is needed in both cases
         call alloc (csf_cutoff_by_block, symmetry_block_count, "csf_cutoff_by_block", "connect_ci_restart_file")
 
         if (is_restart) then
-            ! ...Check the signature of the file
-            read (restart_matrix_unit, iostat=io_status) r92res
-            if (io_status/=0 .or. r92res/=restitle) then
-                close(restart_matrix_unit)
-                call finalize_mpi_runtime ("setres: Not RCI92 .res file", mpi_rank)
-            end if
-
-            ! ...Read and check restart information
             call read_ci_restart
 
         else

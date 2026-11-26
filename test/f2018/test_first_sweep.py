@@ -1,4 +1,5 @@
 """Run the comparator with controlled executable outputs, including false greens."""
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -8,13 +9,14 @@ import unittest
 from compare_first_sweep import normalize
 
 PRODUCER = r'''
+from hashlib import sha256
 from pathlib import Path
 import struct
 name=Path(__file__).name
 mode=Path(__file__).parent.name
 def record(data): return struct.pack('<i',len(data))+data+struct.pack('<i',len(data))
 def wave():
-    return record(b'G92RWF')+record(struct.pack('<iidi',1,-1,-1.,1))+record(struct.pack('<3d',0.,1.,0.))+record(struct.pack('<d',0.))
+    return struct.pack('<8s6i5d', b'RAD--WFN', 1, 1, 1, -1, 1, 0, -1., 0., 0., 1., 0.)
 if name=='rwfnestimate':
     Path('rwfn.inp').write_bytes(wave())
 elif name=='rangular':
@@ -26,9 +28,11 @@ elif name=='rangular':
     Path('rangular.log').write_text('angle 1.0\n')
 else:
     Path('rwfn.out').write_bytes(wave())
-    Path('rmix.out').write_bytes(record(b'G92MIX')+record(struct.pack('<6i',2,1,1,1,1,1))+
-        record(struct.pack('<5i',1,1,1,1,1))+record(struct.pack('<i',1))+
-        record(struct.pack('<2d',-1.,0.))+record(struct.pack('<d',1.)))
+    digest=sha256(Path('rcsf_desc.parquet').read_bytes()).hexdigest().encode()
+    if mode=='digest': digest=b'0'*64
+    signature=b'BAD--MIX' if mode=='signature' else b'CSF--MIX'
+    Path('rmix.out').write_bytes(struct.pack('<8s5q64s',signature,2,1,1,1,1,digest)+
+        struct.pack('<6qqdd',0,1,1,1,0,176,1,-1.,1.))
     Path('rmcdhf.log').write_text('input fixed\n')
     Path('rmcdhf.sum').write_text('Energy '+('2.0' if mode=='energy' else '1.0')+'\n')
     print('Iteration number '+('2' if mode=='iteration' else '1'))
@@ -44,11 +48,22 @@ print('  Time (Hr/Min/Sec): '+('23/59/59.999' if mode=='time' else '00/00/00.000
 if mode!='unfinished': print(('RMCDHF' if name.startswith('rmcdhf') else name.upper())+': Execution complete.')
 '''
 
+CONVERTER = r'''
+from pathlib import Path
+import sys
+output=Path(sys.argv[3])
+output.write_text('simulated descriptor')
+output.with_name('rcsf_header.toml').write_text('simulated header')
+'''
+
 
 class FirstSweepTests(unittest.TestCase):
     def compare(self, mode: str, *, both: bool = False, optimized: bool = False) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            converter = root / "rcsfs"
+            converter.write_text("#!" + sys.executable + "\n" + CONVERTER)
+            converter.chmod(0o700)
             dirs = [root / 'reference' / (mode if both else 'good'), root / 'candidate' / mode]
             for directory in dirs:
                 directory.mkdir(parents=True)
@@ -58,7 +73,8 @@ class FirstSweepTests(unittest.TestCase):
                     binary.chmod(0o700)
             result = subprocess.run([sys.executable, *(['-O'] if optimized else []),
                 str(Path(__file__).with_name('compare_first_sweep.py')), '--reference-bindir', str(dirs[0]),
-                '--candidate-bindir', str(dirs[1]), '--output', str(root/'result')], capture_output=True, text=True)
+                '--candidate-bindir', str(dirs[1]), '--output', str(root/'result')],
+                env=os.environ | {"RCSFS_TEST_CLI": str(converter)}, capture_output=True, text=True)
             self.assertTrue((root/'result/comparison.json').is_file())
             return result
 
@@ -82,7 +98,7 @@ class FirstSweepTests(unittest.TestCase):
                 self.assertNotEqual(self.compare(mode).returncode, 0)
 
     def test_matching_invalid_or_incomplete_outputs_fail(self) -> None:
-        for mode in ('nan', 'missing', 'empty', 'extra', 'truncated', 'unfinished', 'missing_record'):
+        for mode in ('nan', 'missing', 'empty', 'extra', 'truncated', 'unfinished', 'missing_record', 'digest', 'signature'):
             with self.subTest(mode=mode):
                 self.assertNotEqual(self.compare(mode, both=True, optimized=True).returncode, 0)
 
