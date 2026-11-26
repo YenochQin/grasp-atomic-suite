@@ -18,6 +18,7 @@ contains
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use array_memory_management, only: alloc, dalloc
+        use mpi_utilities, only: allreduce_mpi_real_sum
         use mpi_state, only: mpi_error_code, mpi_process_count, mpi_rank
 
         ! Procedure interfaces
@@ -54,6 +55,9 @@ contains
             end do
             ihmx = ihmx + i
         end do
+
+        ! Every rank must start Davidson with eigenvectors of the same leading block.
+        call allreduce_mpi_real_sum(ap, size(ap))
 
         call alloc (eigval,   ns, "EIGVAL", "initialize_dense_eigenvectors")
         call alloc (vec,   ns*initial_vector_count, "VEC", "initialize_dense_eigenvectors")

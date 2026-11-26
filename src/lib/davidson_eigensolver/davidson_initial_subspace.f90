@@ -36,7 +36,10 @@ contains
         ! Local declarations
         integer :: first_batch_vector, last_basis_vector, batch_vector_count, subspace_size
 
+        integer :: target_basis_size
+
         save first_batch_vector, last_basis_vector, batch_vector_count, subspace_size
+        target_basis_size = min(minimum_initial_basis_size, subspace_limit)
         if (operation_code /= 2) then
             if (initial_vector_count == 0) then
                 call initialize_real_vector (matrix_order, 1.0_real64/sqrt(dble(matrix_order)), basis_vectors, 1)
@@ -45,9 +48,9 @@ contains
             first_batch_vector = 1
             last_basis_vector = initial_vector_count
             batch_vector_count = initial_vector_count
-        else if (last_basis_vector < minimum_initial_basis_size) then
+        else if (last_basis_vector < target_basis_size) then
             ! Reuse the products from the previous batch to generate new trial vectors.
-            batch_vector_count = min(minimum_initial_basis_size - last_basis_vector, &
+            batch_vector_count = min(target_basis_size - last_basis_vector, &
                 last_basis_vector - first_batch_vector + 1)
             call dcopy (matrix_order*batch_vector_count, operator_basis((first_batch_vector-1)*matrix_order+1), 1, &
                 basis_vectors(1+last_basis_vector*matrix_order), 1)

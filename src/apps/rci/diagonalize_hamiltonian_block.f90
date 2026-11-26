@@ -35,7 +35,7 @@ contains
     ! All arrays allocated here are de-allocated except pneval and pnevec *
     ! which will be de-allocated in matrix.
     ! Block Version  By Xinghong He. Last revision: 18 Jun 1998
-    subroutine diagonalize_hamiltonian_block(iatjpo, iaspar)
+    subroutine diagonalize_hamiltonian_block(iatjpo, iaspar, dense_initial_csf_limit, in_memory_matrix_element_limit)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         use calculation_file_units, only: summary_output_unit
@@ -87,10 +87,7 @@ contains
         integer, intent(out) :: iatjpo
         integer, intent(out) :: iaspar
 
-        !  Local constants
-        integer, parameter      :: dense_initial_csf_limit = 2000
-        ! NINCOR
-        integer, parameter      :: in_memory_matrix_element_limit = 268435456 ! = 2 GB or  memory
+        integer, intent(in) :: dense_initial_csf_limit, in_memory_matrix_element_limit
 
         ! Local declarations
         integer(int64) :: matrix_offset, ndense_l
@@ -384,9 +381,8 @@ contains
                     ! sparse and matrix on disk **********************
                     write (output_unit, *) " Sparse - Disk,  iniestsd"
                     call position_calculation_file (0, restart_matrix_unit, nposition)! was within iniestsd before
-                    call initialize_sparse_eigenvectors (2000, csf_count, mpi_rank, mpi_process_count, initial_vector_count, &
-                        & real_workspace, &
-                        & restart_matrix_unit, hamiltonian_energy_shift)
+                    call initialize_sparse_eigenvectors (dense_initial_csf_limit, csf_count, mpi_rank, mpi_process_count, &
+                        initial_vector_count, real_workspace, restart_matrix_unit, hamiltonian_energy_shift)
 
                     ! NIV = 0   ! Why equal 0 ???
                     call solve_davidson_eigenpairs (multiply_restart_hamiltonian, csf_count, subspace_limit, matrix_diagonal, &
@@ -401,8 +397,8 @@ contains
                 case (2)
                     ! sparse and matrix in memory ********************
                     write (output_unit, *) " Sparse - Memory,  iniest2"
-                    call estimate_sparse_initial_basis (2000, csf_count, initial_vector_count, real_workspace, hamiltonian_values, &
-                        & stored_segment_end_offsets, matrix_partner_indices)
+                    call estimate_sparse_initial_basis (dense_initial_csf_limit, csf_count, initial_vector_count, &
+                        real_workspace, hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices)
 
                     call solve_davidson_eigenpairs (multiply_sparse_symmetric_matrix, csf_count, subspace_limit, &
                         & matrix_diagonal, lowest_pair_index, highest_pair_index, &
@@ -417,7 +413,8 @@ contains
                 case (3)
                     ! dense and in memory **********************
                     write (output_unit, *) " Dense - Memory,  iniestdm"
-                    call initialize_dense_eigenvectors (2000, csf_count, initial_vector_count, real_workspace, hamiltonian_values)
+                    call initialize_dense_eigenvectors (dense_initial_csf_limit, csf_count, initial_vector_count, &
+                        real_workspace, hamiltonian_values)
                     call solve_davidson_eigenpairs (multiply_sparse_hamiltonian, csf_count, subspace_limit, matrix_diagonal, &
                         & lowest_pair_index, &
                         & highest_pair_index, &

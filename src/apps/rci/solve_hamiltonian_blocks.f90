@@ -186,7 +186,8 @@ contains
                     allocate(previous_csf_mixing_coefficients(int(csf_count,int64)*active_level_count))
                 if (prerun_stage == 2) deallocate(previous_csf_mixing_coefficients)
 
-                call diagonalize_hamiltonian_block (block_two_j_plus_one, block_parity_sign)
+                call diagonalize_hamiltonian_block (block_two_j_plus_one, block_parity_sign, &
+                    dense_initial_csf_limit=2000, in_memory_matrix_element_limit=268435456)
                 !   Write out eigenvalues (ENGOUT), dominant components of the
                 !   eigenvectors (WGHTD5) to stream 24; write out ASF symmetries,
                 !   eigenvalues  and eigenvectors to RCI92 mixing coefficients file.

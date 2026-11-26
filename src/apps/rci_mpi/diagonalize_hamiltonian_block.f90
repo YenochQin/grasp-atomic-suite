@@ -50,7 +50,7 @@ contains
     !   All arrays allocated here are de-allocated except pneval and pnevec *
     !   which will be de-allocated in matrix.
     ! Block Version  By Xinghong He. Last revision: 18 Jun 1998
-    subroutine diagonalize_hamiltonian_block(iatjpo, iaspar, nelmnt_a)
+    subroutine diagonalize_hamiltonian_block(iatjpo, iaspar, nelmnt_a, dense_initial_csf_limit, in_memory_matrix_element_limit)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         use calculation_file_units, only: summary_output_unit
@@ -110,12 +110,9 @@ contains
         !  E x t e r n a l   F u n c t i o n s
         integer, intent(out) :: iatjpo
         integer, intent(out) :: iaspar
-        integer(int64)        :: nelmnt_a
+        integer(int64), intent(in) :: nelmnt_a
 
-        ! Local constants
-        integer, parameter      :: dense_initial_csf_limit = 2000
-        ! NINCOR
-        integer, parameter      :: in_memory_matrix_element_limit = 268435456 ! = 2 GB or  memory
+        integer, intent(in) :: dense_initial_csf_limit, in_memory_matrix_element_limit
 
         !  Local declarations
         ! ... variable for deciding between sparse or dense

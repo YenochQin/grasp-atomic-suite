@@ -55,7 +55,7 @@ $$
 
 该存储项写入一基下三角打包位置 $i_t+(j-1)(2h-j)/2$。`DSPEVX` 求小矩阵的最低 `initial_vector_count` 个本征对。输出工作区把回填后的全空间列向量依次堆叠，再接上对应的 $\mu_i$。[稀疏初猜源码](davidson_sparse_initial_estimates.f90)
 
-调用方也可提供已有初猜。`initialize_davidson_subspace` 计算这些初始列的 $Ab_j$，取上一批矩阵乘积中所需的前几列正交化，作为下一批初始基。`control_davidson_solver` 传入的目标初始列数为 $m+1$。令 $B_{\rm batch}$ 为上一批基的相应列，$\operatorname{MGS}_2(V;Q)$ 表示将 $V$ 相对已有列 $Q$ 做两遍正交归一化，则新增基列为
+调用方也可提供已有初猜。`initialize_davidson_subspace` 计算这些初始列的 $Ab_j$，取上一批矩阵乘积中所需的前几列正交化，作为下一批初始基。`control_davidson_solver` 传入的目标初始列数为 $m+1$，实际扩充受子空间容量限制。令 $B_{\rm batch}$ 为上一批基的相应列，$\operatorname{MGS}_2(V;Q)$ 表示将 $V$ 相对已有列 $Q$ 做两遍正交归一化，则新增基列为
 
 $$
 B_{\rm new}=\operatorname{MGS}_2(A B_{\rm batch};Q).
@@ -73,7 +73,7 @@ v_j\leftarrow v_j-q_i(q_i^{\mathsf T}v_j),
 q_j=\frac{v_j}{\sqrt{v_j^{\mathsf T}v_j}} .
 $$
 
-已有列包括给定约束和当前子空间基。公开入口用零个约束，迭代使用固定两遍正交化。[正交化源码](davidson_orthonormalization.f90)
+已有列包括给定约束和当前子空间基。第一遍保留可归一化的微小方向。第二遍的输入已归一化，若投影后范数小于或等于 $N\epsilon$，或任一遍得到的范数小于或等于浮点类型的最小正规数，就选取在已有基上投影最小的坐标单位向量，对其做两遍正交化，再归一化。这样一批线性相关的修正向量也能构造正交的扩展基。[正交化源码](davidson_orthonormalization.f90)
 
 ## 投影和收敛判定
 

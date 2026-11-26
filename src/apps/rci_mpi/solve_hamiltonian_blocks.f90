@@ -193,7 +193,8 @@ contains
                 ! from all nodes, a new var nelmnt_a is created rathan than
                 ! using the value from the shared symmetry-block state.
 
-                call diagonalize_hamiltonian_block (block_two_j_plus_one, block_parity_sign, nelmnt_a)
+                call diagonalize_hamiltonian_block (block_two_j_plus_one, block_parity_sign, nelmnt_a, &
+                    dense_initial_csf_limit=2000, in_memory_matrix_element_limit=268435456)
                 !    Write out eigenvalues (ENGOUT), dominant components of the
                 !    eigenvectors (WGHTD5) to stream 24; write out ASF symmetries,
                 !    eigenvalues  and eigenvectors to RCI92 mixing coefficients file.

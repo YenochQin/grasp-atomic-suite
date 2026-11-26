@@ -50,6 +50,15 @@ contains
                 target_vector_start = reference_vector_start + vector_length
                 vector_norm = ddot(vector_length,vectors(reference_vector_start),1,vectors(reference_vector_start),1)
                 vector_norm = sqrt(vector_norm)
+                ! A small first-pass residual can still carry an independent direction.
+                ! On pass two the input had unit norm, so an O(n*epsilon) remainder
+                ! is at projection roundoff. Replace it before normalization.
+                if (vector_norm <= tiny(vector_norm) .or. &
+                    (pass_index == 2 .and. vector_norm <= vector_length*epsilon(vector_norm))) then
+                    call complete_orthogonal_basis(vector_length, existing_vector_count + reference_vector_index - 1, &
+                        vectors(1:reference_vector_start-1), vectors(reference_vector_start:target_vector_start-1))
+                    vector_norm = norm2(vectors(reference_vector_start:target_vector_start-1))
+                end if
                 call dscal (vector_length, 1/vector_norm, vectors(reference_vector_start), 1)
                 if (reference_vector_index < new_vector_count) then
                     call dgemv ("T", vector_length, new_vector_count - reference_vector_index, 1.0_real64, &
@@ -71,4 +80,31 @@ contains
 
         return
     end subroutine orthonormalize_davidson_vectors
+
+    subroutine complete_orthogonal_basis(vector_length, basis_count, basis, vector)
+        use, intrinsic :: iso_fortran_env, only: real64
+        use blas_lapack_interfaces, only: daxpy, ddot
+        implicit none (type, external)
+        integer, intent(in) :: vector_length, basis_count
+        real(real64), intent(in) :: basis(vector_length,basis_count)
+        real(real64), intent(out) :: vector(vector_length)
+        integer :: column, coordinate, pass_index
+        real(real64) :: projection
+
+        ! The coordinate with the smallest diagonal of Q Q^T has the largest
+        ! orthogonal complement. Reuse the output column to accumulate this diagonal.
+        vector = 0.0_real64
+        do column = 1, basis_count
+            vector = vector + basis(:,column)**2
+        end do
+        coordinate = minloc(vector,dim=1)
+        vector = 0.0_real64
+        vector(coordinate) = 1.0_real64
+        do pass_index = 1, 2
+            do column = 1, basis_count
+                projection = ddot(vector_length, basis(:,column), 1, vector, 1)
+                call daxpy(vector_length, -projection, basis(:,column), 1, vector, 1)
+            end do
+        end do
+    end subroutine complete_orthogonal_basis
 end module davidson_orthonormalization

@@ -7,6 +7,7 @@ program davidson_contracts
     use sparse_eigensolver_initial_basis, only: estimate_sparse_initial_basis
     use davidson_eigensolver, only: solve_davidson_eigenpairs
     use sparse_symmetric_matvec, only: multiply_sparse_symmetric_matrix
+    use davidson_orthonormalization, only: orthonormalize_davidson_vectors
     use davidson_projected_matrix, only: update_davidson_projected_matrix
     use davidson_residual_expansion, only: expand_davidson_residuals
     use sparse_hamiltonian_storage, only: hamiltonian_values, matrix_partner_indices, stored_segment_end_offsets
@@ -53,6 +54,7 @@ program davidson_contracts
     if (maxval(abs(result-matmul(h,vectors))) > 1e-12_real64) error stop "SPICMV2 sparse result"
     deallocate(hamiltonian_values,matrix_partner_indices,stored_segment_end_offsets)
     call check_partial_updates()
+    call check_dependent_columns()
 
     ! Davidson solver reserves three restart slots, so use LIM=6 even for this small block.
     call get_command_argument(1, scenario)
@@ -204,6 +206,21 @@ contains
         deallocate(hamiltonian_values,matrix_partner_indices,stored_segment_end_offsets)
         print *, "PASS Davidson near-degenerate roots, restart and reusable vectors"
     end subroutine check_cluster
+
+    subroutine check_dependent_columns()
+        real(real64) :: columns(4,3), projections(2), gram(3,3)
+        integer :: column
+
+        columns = 0.0_real64
+        columns(1,1) = 1.0_real64
+        columns(2,2:3) = 1.0_real64
+        call orthonormalize_davidson_vectors(4,1,2,projections,columns)
+        gram = matmul(transpose(columns),columns)
+        do column = 1, 3
+            gram(column,column) = gram(column,column) - 1.0_real64
+        end do
+        if (.not. (maxval(abs(gram)) <= 1.0e-12_real64)) error stop "Dependent Davidson columns"
+    end subroutine check_dependent_columns
 
     subroutine check_partial_updates()
         real(real64) :: b(3,3), ab(3,3), packed(6), coeff(6), eigen(3), old(2), scratch(3), shifts(3)
