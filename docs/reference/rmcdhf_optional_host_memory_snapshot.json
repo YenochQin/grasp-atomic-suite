@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "description": "Keep host memory reporting optional when Linux procfs is absent.",
+  "previous_manifest_sha256": "b010daaca5f4598265051c0eb04ece4e4bb0086e3a15db071a354ac91e4f553a",
+  "files": {
+    "src/appl/rmcdhf_mem/setmcp_mem.f90": {
+      "before_suite_sha256": "d36a59fe7057fea2c2f8b1241634488e3de1981bb64e88f992c3cfd0cf1c5a4c",
+      "after_suite_sha256": "39963faaeb5d8d4ddde03e6029ba22a7ea258419949d4849c813e307e90f3ca6"
+    }
+  }
+}

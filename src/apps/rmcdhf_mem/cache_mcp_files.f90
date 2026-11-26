@@ -70,6 +70,7 @@ contains
         integer, intent(in) :: block_count, mcp_channel
 
         ! Local declarations
+        logical :: has_memory_info
         character :: mcp_channel_label*3
         real(real64) :: discarded_angular_coefficient
         real(real64) :: total_system_memory_gib, available_system_memory_gib
@@ -143,10 +144,9 @@ contains
             end if
         end do
 
+        ! Linux host-memory diagnostics are independent of MCP allocation.
+        inquire(file="/proc/meminfo", exist=has_memory_info)
         if(mcp_channel == 30) then
-            ! Total physical memory
-            total_system_memory_gib = query_total_system_memory()  ! GB
-            available_system_memory_gib = query_available_system_memory()  ! GB
             write(*,"(A53)")                                              &
                 "-----------------------------------------------------"
             write(*,"(A53)")                                              &
@@ -154,10 +154,14 @@ contains
             write(*,"(A53)")                                              &
                 "-----------------------------------------------------"
             write(*,"(A1)") ""
-            write(*,"(A30,F10.2,A3)")                                     &
-                "Total memory on computer:",total_system_memory_gib," Gb"
-            write(*,"(A30,F10.2,A3)")                       &
-                "Free  memory on computer:",available_system_memory_gib," Gb"
+            if (has_memory_info) then
+                total_system_memory_gib = query_total_system_memory()
+                available_system_memory_gib = query_available_system_memory()
+                write(*,"(A30,F10.2,A3)")                                     &
+                    "Total memory on computer:",total_system_memory_gib," Gb"
+                write(*,"(A30,F10.2,A3)")                       &
+                    "Free  memory on computer:",available_system_memory_gib," Gb"
+            end if
             write(*,"(A1)") ""
             write(*,"(A27)") "Allocation for mcp.30:"
             call alloc (iendc_30,imax1_30(block_count),"IENDC_30","cache_mcp_files")
@@ -906,8 +910,10 @@ contains
             end if
 
         end do
-        available_system_memory_gib = query_available_system_memory()  ! GB
-        write(*,"(A30,F10.2,A3)") "Free memory on computer",available_system_memory_gib," Gb"
+        if (has_memory_info) then
+            available_system_memory_gib = query_available_system_memory()
+            write(*,"(A30,F10.2,A3)") "Free memory on computer",available_system_memory_gib," Gb"
+        end if
         close(mcp_input_units(mcp_channel))
 
         return

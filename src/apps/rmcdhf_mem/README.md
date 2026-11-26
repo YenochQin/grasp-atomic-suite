@@ -2,6 +2,7 @@
 
 `rmcdhf_mem` 串行求解 MCDHF，并在内存中缓存 MCP 角系数及其索引。
 自洽场迭代组装哈密顿量和轨道方程时复用这些数据。
+缓存装载时，若主机提供 Linux 的 `/proc/meminfo`，日志还会打印系统总内存与空闲内存。缓存分配量由 MCP 记录量决定。
 
 程序读取 `isodata`、状态的描述符文件对、`name.initial.wfn` 和 `rangular` 生成的
 `mcp.NN` 通道，支持通过 `npol.inp` 启用核极化。输出包括 `name.wfn`、SCF 摘要和日志，
