@@ -1,6 +1,6 @@
 # Suite F2018 现代化实施与验收计划
 
-**状态：P1 分批实施中。** 2026-11-26 按 Suite `3.4dev1` 的 `f211a0a35a957fab85c65a8a514d779183d0d59e` 复核。P0 提交 `88cb04a` 完成 RCI 续算边界、单 rank 失败传播及 V3 首轮对照。P1 的 MPI 绑定提交为 `5d77d93`，LP64 配置提交 `f493c99` 是稀疏矩阵批次的改造前基准。后续批次已实施基组与活动系数所有权、混合流写端、Davidson 残差判定和 Breit 故障传播，并取得四种 RMCDHF 的小型多根基准对照。
+**状态：P1 分批实施中。** 2026-11-26 首轮按 Suite `3.4dev1` 的 `f211a0a35a957fab85c65a8a514d779183d0d59e` 复核。P0 提交 `88cb04a` 完成 RCI 续算边界、单 rank 失败传播及 V3 首轮对照。P1 的 MPI 绑定提交为 `5d77d93`，LP64 配置提交 `f493c99` 是稀疏矩阵批次的改造前基准。后续批次已实施基组与活动系数所有权、混合流写端、Davidson 残差判定和 Breit 故障传播，并取得四种 RMCDHF 的小型多根基准对照。2026-11-27 在 `ce342df0` 上继续验证了固定轨道 Ni I 的 RCI 存储分支，修复了 MPI 稠密内存路径的初猜及 Davidson 批量扩展的线性相关问题。同日完成四种 RMCDHF 在 Zn I AS1 上的七根收敛及逐 rank 峰值 RSS 对照。[Zn I 生产多根实测](../reviews/evidence-0026-rmcdhf-zn-multiroot.md)
 
 范围覆盖 `src/apps` 内 25 个 Fortran 应用目标，以及 `src/lib` 内 7 个库目录，含 Rust 描述符静态库及其 Fortran 调用端。OpenMP 的现行应用入口是 `jj2lsj_omp`。普通 RMCDHF 保留四个变体，各自有版本基线。目标范围以 [CMake 入口](../../CMakeLists.txt#L158)、[jj2lsj 构建定义](../../src/apps/jj2lsj/CMakeLists.txt)和[退役范围](../implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md)为准。
 
@@ -10,7 +10,7 @@
 | --- | --- |
 | 现有代码已采用显式过程接口、标准 kind 和严格构建配置。生产 `f2018-release` 默认用 `-O2`，Check/Audit 开启 `-std=f2018 -pedantic-errors` 和隐式接口诊断。GNU 16.2.1 下已有 `0f35673` 的 24 配置通过记录。 | 在基准和候选提交各记录实际编译命令、依赖库和测试清单。标准符合性、运行时检查、警告变化及数值回归各有验收结果。[构建配置](../../cmake/FortranProfiles.cmake) · [验收矩阵](../../test/f2018/README.md) |
 | 当前 CSF 输入是 V3 Parquet 描述符及 TOML 头文件。波函数和混合系数分别要求 `RAD--WFN` 和 `CSF--MIX`，双正交输出也使用当前流格式。RCI 的 `.res` 是另一套续算协议。 | 固定输入的顺序、块身份和摘要。比较跨格式历史数据时按物理字段解码，比较本次同格式、同运算顺序的改造时可加字节对照。[文件契约](../../README_ZH.md) · [RCI 续算写端](../../src/apps/rci/read_ci_options.f90#L211) |
-| 必需测试已覆盖 BLAS 调用、Davidson 小矩阵、MPI 消息、部分缓存和错误路径。`state_workflow` 已要求在两个对称块选根，检查根编号、缺根失败及已有输出。 | 在现有测试上扩展真实多根轨迹、态匹配与性质对照。历史上的 Zn I 三轮、Cd I 一轮 MCP 对照用于核验指定迭代和 I/O 行为，正常收敛需要独立算例。[已注册清单](../../test/f2018/required.json) · [选根用例](../../test/test_state_workflow.py#L197) · [MCP 对照](plan-0005-rmcdhf-mcp-production-io.md) |
+| 必需测试已覆盖 BLAS 调用、Davidson 小矩阵、MPI 消息、部分缓存和错误路径。`state_workflow` 已要求在两个对称块选根，检查根编号、缺根失败及已有输出。 | 在现有测试上扩展真实多根轨迹、态匹配与性质对照。历史上的 Zn I 三轮、Cd I 一轮 MCP 对照用于核验指定迭代和 I/O 行为，Zn I AS1 的独立正常收敛轨迹见本次生产多根实测。[已注册清单](../../test/f2018/required.json) · [选根用例](../../test/test_state_workflow.py#L197) · [MCP 对照](plan-0005-rmcdhf-mcp-production-io.md) |
 
 本文的 **P0** 表示已定位且影响正常生产入口的错误处理缺口，以及验证修复所需的最小基线。**P1** 表示按调用链推进的绑定、接口和科学数值验收。**P2** 表示有实际消费者、所有权冲突或重复维护成本时再实施的设计改进。历史 GNU 15 方案的 P0–P9 是当时的阶段编号。F2018 允许模块状态、显式 `SAVE`、`POINTER` 和 assumed-size 形参，是否重构要结合有效输入、别名、生存期、并发及可检验性判断。[兼容性实施记录](../implemented/design-0004-f2018-compatibility.md) · [历史方案](../archive/plan-0002-f2018-migration-gnu15.md)
 
@@ -102,7 +102,31 @@ RCI 用两条合法的顺序记录验证累计位置跨过 `2^31-1`，MPI MCP �
 
 四种 RMCDHF 均与各自的上一批构建对照，使用同一套 Ni 核参数、双对称块和初始轨道，每个布局共用一份 MCP 输入。偶块选根 1、2，奇块选根 1，等权并仅更新 `1s`。固定首轮均因迭代上限结束，独立运行中两种串行程序均在第 3 轮结束，两种 2-rank MPI 程序均在第 2 轮结束。各自对照的能量轨迹、混合流和径向波函数一致。固定轨道 RCI 的小稠密块由实际 `.res` 重建矩阵，核对冷启动、完整续算和部分续算的两个根。串行及 MPI 1、2、4 ranks 的最大归一化残差为 `9.548e-17`，最大正交误差为 `3.331e-16`。[RCI 残差回归](../../test/test_rci_restart.py)
 
-GNU Fortran 16.2.1、LP64 OpenBLAS 和 Open MPI 5.0.11 的 `f2018-check` 构建通过串行 87 项及 MPI 135 项 CTest。用 16 个轨道和 8,193 个 CSF 另行核对 Fortran 读取边界，检查第 8,192 和 8,193 行的占据与次序，以及末行耦合码，读取进程峰值 RSS 为 143,276 KiB。构建及日志位于工作区 `temp/tests/suite-p1-follow-up/`。代表性大基组的峰值内存、真实多根生产模型与全配置矩阵仍需验收。
+GNU Fortran 16.2.1、LP64 OpenBLAS 和 Open MPI 5.0.11 的 `f2018-check` 构建通过串行 87 项及 MPI 135 项 CTest。用 16 个轨道和 8,193 个 CSF 另行核对 Fortran 读取边界，检查第 8,192 和 8,193 行的占据与次序，以及末行耦合码，读取进程峰值 RSS 为 143,276 KiB。构建及日志位于工作区 `temp/tests/suite-p1-follow-up/`。该批次之后，Zn I AS1 的生产多根轨迹与逐 rank 峰值见后文。候选版本的全配置矩阵仍待验收。
+
+### P1 · 固定轨道 RCI 的 Davidson 存储分支
+
+2026-11-27，以 Suite `ce342df0` 为基准，在本批工作树、macOS arm64、GNU Fortran 16.2.0、LP64 OpenBLAS 0.3.34 和 Open MPI 5.0.11 下复核。解析夹具取 12 阶对称三对角矩阵，对角元为 −4，相邻非对角元为 −0.5，比较第 1、3 根与正弦解析解。把初猜阶数缩至 3，用实际 RCI 块求解器分别走串行稀疏内存、磁盘分支，以及 MPI 的稀疏内存、稠密内存、磁盘分支。每例从计算摘要确认所走分支。
+
+- 修复前，2-rank 稠密内存分支在每个 rank 上只对本地列构成的初始子矩阵调用 LAPACK，第一根能量误差为 0.398。现先归约打包的初始子矩阵，各 rank 使用同样的初猜。[MPI 稠密初猜](../../src/apps/rci_mpi/initialize_dense_eigenvectors.f90)
+- 磁盘分支一次扩展多个 Davidson 方向。线性相关的修正列在第二遍正交化后有时只剩舍入误差，归一化后仍被纳入投影。修复前串行第一根归一化残差为 0.0461。现用已有基上投影最小的坐标方向构造正交补列，实测串行和 MPI 1、2、4 ranks 的解析根、相位对齐系数、残差和正交性均通过。原有近简并双根、重启和返回向量重用回归也通过。[解析回归](../../test/f2018/rci_storage.F90) · [正交化](../../src/lib/davidson_eigensolver/davidson_orthonormalization.f90)
+
+**Ni I 固定轨道对照。** 用 Suite 的 `data/isodata`、`data/test.wfn` 与 `data/test.c` 首个完整的 81-CSF、J=0 偶宇称块，生成 V3 文件对，选根 1、3。分别跑 Coulomb，以及在 Coulomb 上单独打开 Breit（频率因子 `1e-6`）、正常质量位移、比质量位移、真空极化、自能（冷启动截止 n=4）。每个算符各用基准版串行和 2-rank 程序冷启动，取得 LAPACK 根和布局匹配的 `.res`。候选的实验构建只将调用处的初猜阶数调为 8，磁盘构建另将内存门槛设为 0。从同一组记录完整续算，检查矩阵记录摘要、终止状态、根身份和逐根误差。生产入口沿用 2,000 个 CSF 和 268,435,456 个矩阵元素的门槛。
+
+| 检查量 | 六个算符设置、两种布局和两种存储的结果 |
+| --- | --- |
+| 每个算符的矩阵和根 | 串行与 2-rank 分片重建的矩阵逐元素一致。Breit 包含闭壳层标量能移。独立稠密求解与基准根的最大能量差为 `1.14e-12 Ha`。 |
+| 两个总能量及两根间隔 | 24 次 Davidson 续算均正常结束，与各自基准混合流的差均为 `0 Ha`。 |
+| 相位对齐系数、归一化残差 | 最大系数差约为 `5.71e-10`（正常质量位移，2 ranks，稀疏内存，第 3 根的第 64 个 CSF）。最大残差约为 `5.98e-14`（自能，串行，稀疏内存，第 3 根）。 |
+| 正交性 | 两根 Gram 矩阵相对单位阵的最大元素误差约为 `2.00e-15`（Breit，2 ranks，磁盘，第 3 根的归一化误差）。 |
+
+该物理输入在内存模式选择稀疏存储。MPI 稠密内存的数值证据来自解析夹具。默认门槛下自然选到磁盘的生产规模模型、峰值内存及部署环境仍待验证。本地算例、应答、逐根结果和分片摘要保存在工作区 `temp/tests/rci-p1/ni/`，汇总文件为 `summary.json`。原始失败见同级工作目录 `temp/tests/rci-p1/` 的 `control-serial.log`、`control-mpi.log`。[回归说明](../../test/f2018/README.md#rci-davidson-storage-paths)
+
+Check 和 Release 各通过 14 项专项 CTest，含新增的 11 项存储回归和已有的 3 项 Davidson 回归。本机启用串行、MPI 和 OpenMP 的完整 Check 配置通过 143/146 项。基准 `ce342df0` 单独复跑同样的三项失败：`state_workflow_serial`、`descriptor_input_rmcdhf_mem` 读取 Linux 的 `/proc/meminfo`，`save_rmcdhf` 使用 macOS 自带 `mv` 不支持的 `-T`。同一工作目录下的 `check-targeted.log`、`release-targeted.log`、`full-ctest.log`、`baseline-platform.log` 分别保存专项、全量及基准复现结果。
+
+### P1 · Zn I 生产多根 RMCDHF 收敛与逐 rank 内存
+
+Zn I AS1 的 14,551 个 CSF 分成四个偶宇称块，按统计权重优化七根。四种程序在同输入、同布局下分别对照 `ce342df0`。串行和 2-rank MPI 的正常计算均在第 16 轮达到加权能量停止条件，逐轮混合流和径向流与各自基准逐字节相同。每个求解进程均有操作系统记录的峰值 RSS。两种内存版另与所有权改造前的 `f493c993` 对照。串行内存版修复了本机缺少 `/proc/meminfo` 时的诊断退出，前批失败的两个相关 Check 回归现已通过。[Zn I 生产多根实测](../reviews/evidence-0026-rmcdhf-zn-multiroot.md)
 
 ## 后续批次与共享库
 
@@ -186,5 +210,5 @@ ctest --test-dir "$suite_run/check" --no-tests=error --output-on-failure -R '^(f
 | --- | --- | --- |
 | 首批 · 基线与续算 | V3 实际首轮对照、串行/MPI 合法续算、坏记录和单 rank 失败报告 | GNU Fortran 16.2.1/OpenBLAS/Check 下，两套独立构建的 `rmcdhf`、`rmcdhf_mem` 首轮科学输出一致。串行和 Open MPI 5.0.11 的 1/2/4-rank 续算回归已完成。 |
 | MPI、ABI 与共享库 | 绑定和计数用例、链接库身份、错误传播、所有权及共享核差异报告 | 本机已增加 32 位边界、CSF 基组及活动系数所有权、混合流故障、Davidson 近简并和 Breit 回归。其余共享接口与部署环境继续按批核验。 |
-| 各程序的科学数值回归 | 四种 RMCDHF 各自的固定轮次/收敛记录、固定轨道 RCI、双正交及性质与跃迁分项对照 | 四个 RMCDHF 变体已有小型多根对照，固定轨道 RCI 已核对小稠密块残差。生产规模多根、RCI 存储分支及性质与跃迁完整对照仍待验收。 |
+| 各程序的科学数值回归 | 四种 RMCDHF 各自的固定轮次/收敛记录、固定轨道 RCI、双正交及性质与跃迁分项对照 | 四种 RMCDHF 已完成小型多根、Zn I AS1 七根收敛及串行／2-rank 峰值内存对照。固定轨道 RCI 已覆盖小稠密块、解析存储分支及 Ni I 六种算符设置的双根对照。双正交、性质与跃迁分项及部署环境仍待验收。 |
 | 整体验收 | 候选提交的 24 配置结果、正确性告警逐项处理结论及目标部署环境报告 | 历史矩阵供追溯，候选版本另行签收 |

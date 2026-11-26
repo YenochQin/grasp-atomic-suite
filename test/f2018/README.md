@@ -261,12 +261,25 @@ are normalized, including the legacy seconds line following `Wall time:`. Warnin
 values and stop states remain significant. Every failure leaves a structured
 `comparison.json` and the available input/output logs.
 
-Both solvers remain mandatory by default. On macOS, the upstream memory solver
-requires missing Linux `/proc/meminfo`; use an explicit `--solvers rmcdhf` for a
-**partial** comparison, or run both on Linux. No automatic skip is performed.
+The default comparison exercises both solvers. The current serial memory solver
+also runs on macOS. To compare an older build that requires Linux
+`/proc/meminfo`, use Linux or apply the same host-memory logging change to
+both builds and record that adjustment.
 Reference and candidate binary directories must be different. Their compiler,
 math library and flags still need independent verification; executable hashes
 are identities, not an automatic proof of matching build provenance.
+
+## RCI Davidson storage paths
+
+The `f2018_rci_{sparse,disk}_serial` tests and the
+`f2018_rci_{sparse,dense,disk}_mpi_{1,2,4}` tests run the RCI block solver
+on the same 12-column symmetric tridiagonal matrix. Each rank writes its
+own restart records. The fixture supplies a leading-block limit of three,
+uses a zero memory limit for disk, and stores explicit zero entries to select
+MPI dense memory. It checks the storage diagnostic, energies, phase-aligned
+coefficients, normalized residuals and orthogonality for roots 1 and 3
+against the analytic sine modes. The production applications pass limits of
+2,000 CSFs and 268,435,456 matrix elements.
 
 ## RCI restart records
 
