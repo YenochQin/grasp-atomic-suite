@@ -47,7 +47,7 @@ contains
         limit = min(n,2*root+80)
         submatrix = min(n,4000_int64)
         ! Sparse matrix, mixing vectors, Davidson work arrays and packed LAPACK initialization.
-        workspace = 12*row_count + 4*(n+1) + 16_int64*mixing_size
+        workspace = 12*row_count + 8*(n+1) + 16_int64*mixing_size
         if (n > 1) workspace = workspace + 8*(2*n*limit+2*limit**2+11*limit+root) + 24*n + 4*(7*limit+root) + &
             4*submatrix*(submatrix+1) + 8*submatrix*min(root,submatrix) + 96*submatrix
         solver_reserve = max(solver_reserve,workspace)

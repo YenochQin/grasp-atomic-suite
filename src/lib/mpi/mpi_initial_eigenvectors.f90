@@ -9,7 +9,7 @@ contains
     subroutine estimate_mpi_initial_eigenvectors (submatrix_order_limit, csf_count, initial_vector_count, basis_vectors, &
         hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices)
         ! Module dependencies
-        use, intrinsic :: iso_fortran_env, only: real64
+        use, intrinsic :: iso_fortran_env, only: real64, int64
         use array_memory_management, only: alloc, dalloc
         use mpi_state, only: mpi_error_code, mpi_process_count, mpi_rank
 
@@ -23,13 +23,14 @@ contains
         integer, intent(in) :: submatrix_order_limit
         integer, intent(in) :: csf_count
         integer  :: initial_vector_count
-        integer, intent(in) :: stored_segment_end_offsets(0:*)
+        integer(int64), intent(in) :: stored_segment_end_offsets(0:)
         integer, intent(in) :: matrix_partner_indices(*)
         real(real64)  :: basis_vectors(*)
         real(real64), intent(in) :: hamiltonian_values(*)
 
         ! Local declarations
-        integer :: submatrix_order, sparse_segment_offset, column_index, packed_column_offset, stored_element_index
+        integer(int64) :: sparse_segment_offset, stored_element_index
+        integer :: submatrix_order, column_index, packed_column_offset
         integer :: computed_pair_count, lapack_status
 
         integer, pointer :: lapack_integer_workspace(:),failed_vector_indices(:)

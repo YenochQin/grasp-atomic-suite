@@ -41,20 +41,12 @@ contains
         ! Local declarations
         integer :: block_index, first_csf, last_csf, source_orbital_index, retained_orbital_count
         integer(int64) :: csf_offset
-        integer(int8), pointer :: new_occupations(:,:), new_subshell_quantum_codes(:,:,:), new_angular_codes(:,:)
+        integer(int8), allocatable :: new_occupations(:,:), new_subshell_quantum_codes(:,:,:), new_angular_codes(:,:)
 
-        allocate(new_occupations(max_orbitals,basis_reader%total_csf_count),stat=status)
+        allocate(new_occupations(max_orbitals,basis_reader%total_csf_count), &
+            new_subshell_quantum_codes(max_orbitals,3,basis_reader%total_csf_count), &
+            new_angular_codes(csf_angular_code_count,basis_reader%total_csf_count), stat=status)
         if (status /= 0) return
-        allocate(new_subshell_quantum_codes(max_orbitals,3,basis_reader%total_csf_count),stat=status)
-        if (status /= 0) then
-            deallocate(new_occupations)
-            return
-        end if
-        allocate(new_angular_codes(csf_angular_code_count,basis_reader%total_csf_count),stat=status)
-        if (status /= 0) then
-            deallocate(new_occupations,new_subshell_quantum_codes)
-            return
-        end if
         csf_offset=0_int64
         do block_index=1,basis_reader%block_count
             first_csf=int(csf_offset+1_int64)
@@ -62,10 +54,7 @@ contains
             last_csf=int(csf_offset)
             call read_descriptor_block(basis_reader,block_index,new_occupations(:,first_csf:last_csf), &
                 new_subshell_quantum_codes(:,:,first_csf:last_csf),new_angular_codes(:,first_csf:last_csf),status)
-            if (status /= 0) then
-                deallocate(new_occupations,new_subshell_quantum_codes,new_angular_codes)
-                return
-            end if
+            if (status /= 0) return
         end do
         loaded_csf_basis_id = basis_reader%basis_id
         csf_count=basis_reader%total_csf_count
@@ -96,15 +85,12 @@ contains
                 new_angular_codes(retained_orbital_count,:)=new_angular_codes(source_orbital_index,:)
             end if
         end do
-        if (associated(csf_subshell_occupations)) deallocate(csf_subshell_occupations)
-        if (associated(csf_subshell_quantum_codes)) deallocate(csf_subshell_quantum_codes)
-        if (associated(csf_angular_codes)) deallocate(csf_angular_codes)
-        csf_subshell_occupations=>new_occupations
-        csf_subshell_quantum_codes=>new_subshell_quantum_codes
-        csf_angular_codes=>new_angular_codes
         orbital_count=retained_orbital_count
         new_occupations(retained_orbital_count+1:,:)=0
         new_subshell_quantum_codes(retained_orbital_count+1:,:,:)=0
         new_angular_codes(retained_orbital_count+1:max_orbitals,:)=0
+        call move_alloc(new_occupations, csf_subshell_occupations)
+        call move_alloc(new_subshell_quantum_codes, csf_subshell_quantum_codes)
+        call move_alloc(new_angular_codes, csf_angular_codes)
     end subroutine read_full_basis
 end module csf_full_basis_reader

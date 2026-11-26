@@ -11,10 +11,10 @@ module csf_coupling_data
     ! Module state
     ! Subshell codes are indexed by orbital, then by (seniority, w, 2J+1), then by CSF.
     ! The active arrays use signed bytes. The paired left arrays use default integers.
-    integer, pointer :: left_subshell_quantum_codes(:, :, :) => null()
-    integer(int8), pointer :: csf_subshell_quantum_codes(:, :, :) => null()
+    integer, allocatable :: left_subshell_quantum_codes(:, :, :)
+    integer(int8), allocatable :: csf_subshell_quantum_codes(:, :, :)
     ! The first orbital_count entries are cumulative 2K+1 codes in orbital order.
     ! The total 2J+1 and parity occupy separate slots beyond orbital capacity.
-    integer, pointer :: left_angular_codes(:, :) => null()
-    integer(int8), pointer :: csf_angular_codes(:, :) => null()
+    integer, allocatable :: left_angular_codes(:, :)
+    integer(int8), allocatable :: csf_angular_codes(:, :)
 end module csf_coupling_data

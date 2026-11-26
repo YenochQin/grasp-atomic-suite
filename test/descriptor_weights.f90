@@ -8,7 +8,6 @@ program descriptor_weights
    implicit none (type, external)
    real(real64) :: weights(3)
    integer :: input_unit
-   nullify(csf_angular_codes)
    symmetry_block_count=2
    allocate(csf_counts_by_block(0:2))
    csf_counts_by_block=[0,2,1]
@@ -22,7 +21,7 @@ program descriptor_weights
    call read_al_level_weights(3,weights)
    if (maxval(abs(weights-[0.2_real64,0.2_real64,0.6_real64])) > 1.0e-15_real64) &
       error stop "Standard weights disagree with 2J+1"
-   if (associated(csf_angular_codes)) error stop "Unexpected coupling allocation"
+   if (allocated(csf_angular_codes)) error stop "Unexpected coupling allocation"
    close(input_unit)
    print *, "PASS standard weights without coupling arrays"
 end program descriptor_weights

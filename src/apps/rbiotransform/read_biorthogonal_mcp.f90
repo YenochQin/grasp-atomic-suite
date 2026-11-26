@@ -23,7 +23,7 @@ contains
     subroutine read_biorthogonal_mcp (name,ik,global_trace_level,mixing_file_kind)
         ! Module dependencies
         use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
-        use mixing_file_format, only: mixing_file, open_transformed_mixing_stream, write_mixing_block
+        use mixing_file_format, only: mixing_file, open_transformed_mixing_stream, write_mixing_block, close_mixing_stream
         use input_error_handling, only: fail_input_io
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: orbital_index_radix, max_orbitals
@@ -194,8 +194,8 @@ contains
             call write_mixing_block(biorthogonal_mixing_output_unit, symmetry_block_index, active_level_indices, &
                 hamiltonian_energy_shift + shifted_eigenvalues, csf_mixing_coefficients)
 
-            call dalloc (shifted_eigenvalues, "shifted_eigenvalues", "read_biorthogonal_mcp")
-            call dalloc (csf_mixing_coefficients, "csf_mixing_coefficients", "read_biorthogonal_mcp")
+            deallocate(shifted_eigenvalues)
+            deallocate(csf_mixing_coefficients)
             call dalloc (active_level_indices, "active_level_indices", "read_biorthogonal_mcp")
             call dalloc (level_two_j_plus_one, "level_two_j_plus_one", "read_biorthogonal_mcp")
             call dalloc (level_parity_signs, "level_parity_signs", "read_biorthogonal_mcp")
@@ -203,7 +203,7 @@ contains
         close (biorthogonal_angular_unit)
         ! Close the  mixing  file
         close (input_file%unit)
-        close (biorthogonal_mixing_output_unit)
+        call close_mixing_stream(biorthogonal_mixing_output_unit)
         return
     end subroutine read_biorthogonal_mcp
 end module read_biorthogonal_mcp_interface

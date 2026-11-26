@@ -26,6 +26,7 @@ contains
         use scf_damping_factors, only: mixing_damping_factors
         use atomic_calculation_state, only: requested_level_indices
         use mixing_file_format, only: write_mixing_block
+        use mpi_io_errors, only: abort_input_mpi
         use debug_output_settings, only: ldbpg
         use eigenstate_expansions, only: hamiltonian_energy_shift, shifted_eigenvalues, csf_mixing_coefficients
         use hamiltonian_symmetry_blocks, only: csf_counts_by_block, eigenvector_counts_by_block, symmetry_block_count, &
@@ -49,8 +50,9 @@ contains
         logical, intent(in) ::  first_davidson_solve
 
         ! Local declarations
+        integer(int64) :: diagonal_element_index
         integer :: symmetry_block_index, i, &
-            block_csf_offset, block_eigenvalue_offset, block_mixing_offset, csf_index, idiag, level_index, iofset, &
+            block_csf_offset, block_eigenvalue_offset, block_mixing_offset, csf_index, level_index, iofset, &
             jother, ia, jofset
         integer(int64) :: matrix_entry
         real(real64), pointer :: cmvl(:)
@@ -88,17 +90,22 @@ contains
             end if
 
             stored_matrix_element_count = indexed_input%row_counts(symmetry_block_index)
-            call alloc(matrix_partner_indices,stored_matrix_element_count,"matrix_partner_indices","solve_hamiltonian_blocks_mpi")
-            call alloc(stored_segment_end_offsets,0,csf_count,"stored_segment_end_offsets","solve_hamiltonian_blocks_mpi")
-            stored_segment_end_offsets = 0
-            call read_sparse(symmetry_block_index, &
-                stored_segment_end_offsets(mpi_rank+1:csf_count:mpi_process_count),matrix_partner_indices,"matrix")
+            allocate(matrix_partner_indices(stored_matrix_element_count))
+            allocate(stored_segment_end_offsets(0:csf_count))
+            stored_segment_end_offsets = 0_int64
+            block
+                ! Indexed MCP ends are stored as 32-bit integers in the rank's file.
+                integer, allocatable :: mcp_column_ends(:)
+                allocate(mcp_column_ends(indexed_input%column_counts(symmetry_block_index)))
+                call read_sparse(symmetry_block_index, mcp_column_ends, matrix_partner_indices, "matrix")
+                stored_segment_end_offsets(mpi_rank+1:csf_count:mpi_process_count) = int(mcp_column_ends, int64)
+            end block
 
             block_csf_offset = csf_offsets_by_block(symmetry_block_index)
             block_eigenvalue_offset = eigenvalue_offsets_by_block(symmetry_block_index)
             block_mixing_offset = mixing_offsets_by_block(symmetry_block_index)
 
-            call alloc(hamiltonian_values,stored_matrix_element_count,"hamiltonian_values","solve_hamiltonian_blocks_mpi")
+            allocate(hamiltonian_values(stored_matrix_element_count))
             hamiltonian_values = 0.0_real64
             call record_solver_workspace(csf_count,stored_matrix_element_count, &
                 highest_selected_level_by_block(symmetry_block_index),mixing_coefficient_storage_size)
@@ -135,8 +142,8 @@ contains
             !            EMT(IENDC(NPROCS*(I-1)+MYID+1)) = EMT(IENDC(NPROCS*(I-1)+MYID+1))&
             !                - EAV
             do i = mpi_rank + 1, csf_count, mpi_process_count
-                idiag = stored_segment_end_offsets(i)     ! new mode: each row ends in diagonal
-                hamiltonian_values(idiag) = hamiltonian_values(idiag) - hamiltonian_energy_shift
+                diagonal_element_index = stored_segment_end_offsets(i)     ! new mode: each row ends in diagonal
+                hamiltonian_values(diagonal_element_index) = hamiltonian_values(diagonal_element_index) - hamiltonian_energy_shift
             end do
 
             ! Compute and store eigenpairs
@@ -210,13 +217,11 @@ contains
                     call write_mixing_block(mixing_output_unit, symmetry_block_index, &
                         requested_level_indices(block_eigenvalue_offset+1:block_eigenvalue_offset+roots), &
                         hamiltonian_energy_shift + shifted_eigenvalues(block_eigenvalue_offset+1:block_eigenvalue_offset+roots), &
-                        csf_mixing_coefficients(block_mixing_offset+1:block_mixing_offset+coefficients))
+                        csf_mixing_coefficients(block_mixing_offset+1:block_mixing_offset+coefficients), abort_input_mpi)
                 end block
             end if
 
-            call dalloc (hamiltonian_values, "hamiltonian_values", "solve_hamiltonian_blocks_mpi")
-            call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "solve_hamiltonian_blocks_mpi")
-            call dalloc (matrix_partner_indices, "matrix_partner_indices", "solve_hamiltonian_blocks_mpi")
+            deallocate(hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices)
 
         end do
         ! Deallocate the temporary storage

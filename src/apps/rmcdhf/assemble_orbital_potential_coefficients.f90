@@ -241,8 +241,7 @@ contains
             if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(30), &
                 "MCP assemble_orbital_potential_coefficients sparse element count")
             stored_matrix_element_count = int(channel_record_count,kind=int64)
-            call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", &
-                "assemble_orbital_potential_coefficients")
+            allocate(matrix_partner_indices(stored_matrix_element_count))
             read (mcp_input_units(30), iostat=io_status) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), &
                 (matrix_partner_indices(i),i=1, &
                 & stored_matrix_element_count)
@@ -269,7 +268,7 @@ contains
                 ! 0, 0 marks the end of a block. This is the normal exit
 
                 if (lab==0 .and. contribution_count==0) then
-                    call dalloc (matrix_partner_indices, "matrix_partner_indices", "assemble_orbital_potential_coefficients")
+                    deallocate(matrix_partner_indices)
                     exit                              ! Actually to next block
                 end if
 
@@ -401,8 +400,7 @@ contains
                 if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(30), &
                     "MCP assemble_orbital_potential_coefficients sparse element count")
                 stored_matrix_element_count = int(channel_record_count,kind=int64)
-                call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", &
-                    "assemble_orbital_potential_coefficients")
+                allocate(matrix_partner_indices(stored_matrix_element_count))
                 read (mcp_input_units(30), iostat=io_status) (iendcdum,i=mpi_rank + 1,csf_count,mpi_process_count), &
                     (matrix_partner_indices(i),i=1, &
                     & stored_matrix_element_count)
@@ -426,7 +424,7 @@ contains
                     if (io_status /= 0) call fail_input_io(io_status, mcp_input_units(nfile), &
                         "MCP assemble_orbital_potential_coefficients label/count")
                     if (lab==0 .and. contribution_count==0) then
-                        call dalloc (matrix_partner_indices, "matrix_partner_indices", "assemble_orbital_potential_coefficients")
+                        deallocate(matrix_partner_indices)
                         exit
                     end if
                     ! k

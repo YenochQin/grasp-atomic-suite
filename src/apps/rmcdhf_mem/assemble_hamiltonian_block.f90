@@ -45,7 +45,8 @@ contains
         character(len=*), parameter :: routine_name = "assemble_hamiltonian_block"
 
         ! Local declarations
-        integer :: block_csf_offset, orbital_index, csf_index, itmp, diagonal_element_index, km, k, k0, ib, first_orbital_two_j, &
+        integer(int64) :: diagonal_element_index
+        integer :: block_csf_offset, orbital_index, csf_index, itmp, km, k, k0, ib, first_orbital_two_j, &
             second_orbital_two_j, kmin, kmax, ndim, packed_orbital_label, contribution_count, file_csf_column, i, loc, &
             mcp_channel, id, ic
         integer(int64) :: lod      !  INTEGER*8 version of LOC

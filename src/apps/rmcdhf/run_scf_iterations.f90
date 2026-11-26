@@ -16,6 +16,7 @@ contains
     ! Modified by G. Gaigalas. 05 Feb 2017
     subroutine run_scf_iterations(extended_optimal_level, output_wavefunction_path)
         ! Module dependencies
+        use mixing_file_format, only: close_mixing_stream
         use calculation_file_units, only: mixing_output_unit
         use, intrinsic :: iso_fortran_env, only: real64
         use array_memory_management, only: alloc, dalloc
@@ -121,8 +122,8 @@ contains
             & eigenvector_counts_by_block(symmetry_block_count)*csf_counts_by_block(symmetry_block_count)
 
         if (extended_optimal_level) then
-            call alloc (shifted_eigenvalues, selected_level_count, "shifted_eigenvalues", "run_scf_iterations")
-            call alloc (csf_mixing_coefficients, mixing_coefficient_storage_size, "csf_mixing_coefficients", "run_scf_iterations")
+            allocate(shifted_eigenvalues(selected_level_count))
+            allocate(csf_mixing_coefficients(mixing_coefficient_storage_size))
 
         end if
 
@@ -229,7 +230,7 @@ contains
         end do
 
         if (mpi_rank == 0) then
-            close(mixing_output_unit)                               ! The .mix file
+            call close_mixing_stream(mixing_output_unit)
             ! Complete the summary - moved from rscf92 for easier alloc/dalloc
             call finish_summary
         end if
@@ -239,7 +240,7 @@ contains
         if (lagrange_multiplier_count > 0) then
             call dalloc (lagrange_orbital_pair_labels, "lagrange_orbital_pair_labels", "run_scf_iterations")
             call dalloc (lagrange_multiplier_values, "lagrange_multiplier_values", "run_scf_iterations")
-            call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "run_scf_iterations")
+            deallocate(csf_subshell_occupations)
         end if
 
         if (direct_coefficient_capacity > 0) then
@@ -258,8 +259,8 @@ contains
         end if
 
         if (extended_optimal_level) then
-            call dalloc (shifted_eigenvalues, "shifted_eigenvalues", "run_scf_iterations")
-            call dalloc (csf_mixing_coefficients, "csf_mixing_coefficients", "run_scf_iterations")
+            deallocate(shifted_eigenvalues)
+            deallocate(csf_mixing_coefficients)
 
             call dalloc (highest_selected_level_by_block, "highest_selected_level_by_block", "run_scf_iterations") ! getold.f
             call dalloc (mean_energy_by_block, "mean_energy_by_block", "run_scf_iterations")     ! getold.f

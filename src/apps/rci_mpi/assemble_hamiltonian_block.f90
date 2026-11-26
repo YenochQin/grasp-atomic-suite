@@ -20,7 +20,6 @@ contains
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use grasp_parameters, only: orbital_index_radix
-        use array_memory_management, only: alloc, dalloc
         ! cjb iso_fortran_env :: output_unit, error_unit
         use, intrinsic :: iso_fortran_env, only: error_unit, output_unit
         use breit_core_occupations, only: breit_core_orbital_occupations
@@ -118,8 +117,8 @@ contains
         call manage_angular_coefficient_buffer (1)
 
         ! ...Locals
-        call alloc (hamiltonian_values, csf_count, "hamiltonian_values","assemble_hamiltonian_block" )
-        call alloc (matrix_partner_indices, csf_count, "matrix_partner_indices", "assemble_hamiltonian_block")
+        allocate(hamiltonian_values(csf_count))
+        allocate(matrix_partner_indices(csf_count))
         inc1 = 1
         inc2 = 1
         ! Initialisations for contributions from the Dirac-Coulomb
@@ -396,8 +395,8 @@ contains
         call manage_angular_coefficient_buffer (3)
 
         ! ...Locals
-        call dalloc (hamiltonian_values, "hamiltonian_values", "assemble_hamiltonian_block")
-        call dalloc (matrix_partner_indices, "matrix_partner_indices", "assemble_hamiltonian_block")
+        deallocate(hamiltonian_values)
+        deallocate(matrix_partner_indices)
 
         ! Save the per-block integral and coefficient counts for the CI summary.
 

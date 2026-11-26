@@ -21,9 +21,9 @@ contains
         ! Local declarations
         integer :: status
         if (igg /= 1) then
-            if (associated(csf_subshell_occupations)) deallocate(csf_subshell_occupations)
-            if (associated(csf_subshell_quantum_codes)) deallocate(csf_subshell_quantum_codes)
-            if (associated(csf_angular_codes)) deallocate(csf_angular_codes)
+            if (allocated(csf_subshell_occupations)) deallocate(csf_subshell_occupations)
+            if (allocated(csf_subshell_quantum_codes)) deallocate(csf_subshell_quantum_codes)
+            if (allocated(csf_angular_codes)) deallocate(csf_angular_codes)
         end if
         call load_csf_basis(trim(name),core_subshell_count,status,spin_angular=.true.)
         if (status /= 0) error stop "Biotransform descriptor load failed"

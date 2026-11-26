@@ -29,7 +29,7 @@ contains
             & input_orbital_index, merged_csf_count, allocation_status
         integer(int64) :: wide_merged_csf_count
         logical :: left_orbital_in_right_tail, right_orbital_in_left_tail
-        integer(int8), pointer :: occupations(:,:), subshell_quantum_codes(:,:,:), angular_codes(:,:)
+        integer(int8), allocatable :: occupations(:,:), subshell_quantum_codes(:,:,:), angular_codes(:,:)
         status=1
         message="left and right electron counts or cores differ"
         if (electron_count /= left_electron_count .or. left_core_subshell_count /= right_core_subshell_count) return
@@ -37,10 +37,10 @@ contains
         if (any(left_principal_n(:left_core_subshell_count) /= orbital_principal_n(:right_core_subshell_count)) .or. &
             any(left_kappa(:left_core_subshell_count) /= orbital_kappa(:right_core_subshell_count))) return
         message="input basis arrays are not loaded"
-        if (.not.associated(left_occupations) .or. .not.associated(left_subshell_quantum_codes) .or. &
-            & .not.associated(left_angular_codes)) return
-        if (.not.associated(csf_subshell_occupations) .or. .not.associated(csf_subshell_quantum_codes) .or. &
-            .not.associated(csf_angular_codes)) return
+        if (.not.allocated(left_occupations) .or. .not.allocated(left_subshell_quantum_codes) .or. &
+            & .not.allocated(left_angular_codes)) return
+        if (.not.allocated(csf_subshell_occupations) .or. .not.allocated(csf_subshell_quantum_codes) .or. &
+            .not.allocated(csf_angular_codes)) return
 
         left_orbital_index=1
         right_orbital_index=1
@@ -98,18 +98,10 @@ contains
         if (wide_merged_csf_count > int(huge(merged_csf_count),int64) .or. wide_merged_csf_count < 1) return
         merged_csf_count=int(wide_merged_csf_count)
         message="cannot allocate merged CSF arrays"
-        allocate(occupations(max_orbitals,merged_csf_count),stat=allocation_status)
+        allocate(occupations(max_orbitals,merged_csf_count), &
+            subshell_quantum_codes(max_orbitals,3,merged_csf_count), &
+            angular_codes(csf_angular_code_count,merged_csf_count), stat=allocation_status)
         if (allocation_status /= 0) return
-        allocate(subshell_quantum_codes(max_orbitals,3,merged_csf_count),stat=allocation_status)
-        if (allocation_status /= 0) then
-            deallocate(occupations)
-            return
-        end if
-        allocate(angular_codes(csf_angular_code_count,merged_csf_count),stat=allocation_status)
-        if (allocation_status /= 0) then
-            deallocate(occupations,subshell_quantum_codes)
-            return
-        end if
         ! When a side has no orbital at this position it inherits its own preceding 2K+1.
         occupations=0_int8
         subshell_quantum_codes=0_int8
@@ -138,10 +130,9 @@ contains
                 angular_codes(merged_orbital_index,left_csf_count+1:)=csf_angular_codes(input_orbital_index,:)
             end if
         end do
-        deallocate(csf_subshell_occupations,csf_subshell_quantum_codes,csf_angular_codes)
-        csf_subshell_occupations=>occupations
-        csf_subshell_quantum_codes=>subshell_quantum_codes
-        csf_angular_codes=>angular_codes
+        call move_alloc(occupations, csf_subshell_occupations)
+        call move_alloc(subshell_quantum_codes, csf_subshell_quantum_codes)
+        call move_alloc(angular_codes, csf_angular_codes)
         orbital_count=merged_orbital_count
         csf_count=merged_csf_count
         orbital_principal_n(:merged_orbital_count)=merged_principal_n(:merged_orbital_count)

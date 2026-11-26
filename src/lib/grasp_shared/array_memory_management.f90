@@ -517,7 +517,7 @@ contains
     end subroutine dalloc_1c
 
 
-    ! The explicit-bound integer and byte overloads compute the old upper index as SIZE - 1.
+    ! Explicit-bound overloads preserve the intersection of the old and new index ranges.
     subroutine ralloc_0i(array_pointer, lower_bound, upper_bound, variable_label, caller_label)
         implicit none (type, external)
 
@@ -527,7 +527,7 @@ contains
         character(len=*), intent(in) :: variable_label, caller_label
 
         ! Local declarations
-        integer :: allocation_status, last_preserved_index
+        integer :: allocation_status, first_preserved_index, last_preserved_index
         if (.not.  associated(array_pointer)) then
             write(output_unit,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
                 trim(caller_label),  " not already allocated"
@@ -537,12 +537,16 @@ contains
             if (allocation_status/= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to reallocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
-                write(output_unit, "(T10,A,I15)") "Elements requested for range: ", &
+                write(output_unit, "(T10,A,I0,A,I0)") "Elements requested for range: ", &
                     lower_bound, " to ", upper_bound
                 stop
             end if
-            last_preserved_index = min(size(array_pointer), upper_bound+1) - 1
-            resized_array_pointer(lower_bound:last_preserved_index) = array_pointer(lower_bound:last_preserved_index)
+            first_preserved_index = max(lbound(array_pointer,1), lower_bound)
+            last_preserved_index = min(ubound(array_pointer,1), upper_bound)
+            if (first_preserved_index <= last_preserved_index) then
+                resized_array_pointer(first_preserved_index:last_preserved_index) = &
+                    array_pointer(first_preserved_index:last_preserved_index)
+            end if
             deallocate(array_pointer)
             array_pointer => resized_array_pointer
         end if
@@ -713,7 +717,7 @@ contains
         character(len=*), intent(in) :: variable_label, caller_label
 
         ! Local declarations
-        integer :: allocation_status, last_preserved_index
+        integer :: allocation_status, first_preserved_index, last_preserved_index
         if (.not.  associated(array_pointer)) then
             write(output_unit,"(T10,A,A,A,A,A)") "Variable ",trim(variable_label)," in subroutine ", &
                 trim(caller_label),  " not already allocated"
@@ -723,12 +727,16 @@ contains
             if (allocation_status/= 0) then
                 write(output_unit,"(T10,A,A,A,A)") "Unable to reallocate ",trim(variable_label), &
                     " in subroutine ", trim(caller_label)
-                write(output_unit, "(T10,A,I15)") "Elements requested for range: ", &
+                write(output_unit, "(T10,A,I0,A,I0)") "Elements requested for range: ", &
                     lower_bound, " to ", upper_bound
                 stop
             end if
-            last_preserved_index = min(size(array_pointer), upper_bound+1) - 1
-            resized_array_pointer(lower_bound:last_preserved_index) = array_pointer(lower_bound:last_preserved_index)
+            first_preserved_index = max(lbound(array_pointer,1), lower_bound)
+            last_preserved_index = min(ubound(array_pointer,1), upper_bound)
+            if (first_preserved_index <= last_preserved_index) then
+                resized_array_pointer(first_preserved_index:last_preserved_index) = &
+                    array_pointer(first_preserved_index:last_preserved_index)
+            end if
             deallocate(array_pointer)
             array_pointer => resized_array_pointer
         end if

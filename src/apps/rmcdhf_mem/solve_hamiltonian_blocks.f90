@@ -51,8 +51,9 @@ contains
         logical, intent(in) ::  first_davidson_solve
 
         ! Local declarations
+        integer(int64) :: diagonal_element_index
         integer :: mcp_channel, symmetry_block_index, i, block_csf_offset, &
-            block_eigenvalue_offset, block_mixing_offset, lab, contribution_count, csf_index, idiag, level_index, iofset, &
+            block_eigenvalue_offset, block_mixing_offset, lab, contribution_count, csf_index, level_index, iofset, &
             jother, ia, jofset, nelmntgg
         real(real64), pointer :: cmvl(:)
         real(real64) :: amax, cdampj, dnfac, evecij, sum, omcdaj, ovrlap, wa
@@ -86,17 +87,14 @@ contains
 
             nelmntgg = imax2_30(symmetry_block_index) - imin2_30(symmetry_block_index)
             stored_matrix_element_count = int(nelmntgg,kind=int64)
-            call alloc (matrix_partner_indices, stored_matrix_element_count, "matrix_partner_indices", "solve_hamiltonian_blocks")
-            call alloc (hamiltonian_values, stored_matrix_element_count, "hamiltonian_values", "solve_hamiltonian_blocks")
+            allocate(matrix_partner_indices(stored_matrix_element_count))
             ! ALLOC (IENDC, NCF + 1,...)  ->  ALLOC (IENDC, 0, NCF,...)
             csf_count = imax1_30(symmetry_block_index) - imin1_30(symmetry_block_index)
-            call alloc (stored_segment_end_offsets, 0, csf_count, "stored_segment_end_offsets", "solve_hamiltonian_blocks" )
+            allocate(stored_segment_end_offsets(0:csf_count))
 
             ! ! may not be necessary if iendc is ALWAYS used
             stored_segment_end_offsets(0:csf_count) = 0                        ! the way it is assigned here.
 
-            ! ...EMT will be accumulated in setham
-            hamiltonian_values(:stored_matrix_element_count) = 0.0_real64
             call read_mcp_coefficients_from_memory(symmetry_block_index)
 
             block_csf_offset = csf_offsets_by_block(symmetry_block_index)
@@ -118,14 +116,15 @@ contains
                     end do
                 end do
 
-                call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "solve_hamiltonian_blocks")
-                call dalloc (matrix_partner_indices, "matrix_partner_indices", "solve_hamiltonian_blocks")
+                deallocate(stored_segment_end_offsets, matrix_partner_indices)
 
                 cycle
 
             end if
 
             ! Generate the Hamiltonian matrix - average energy is removed here
+            allocate(hamiltonian_values(stored_matrix_element_count))
+            hamiltonian_values = 0.0_real64
 
             call assemble_hamiltonian_block (symmetry_block_index, mpi_rank, mpi_process_count, total_contribution_count, &
                 & total_secondary_contribution_count)
@@ -149,8 +148,8 @@ contains
             !            EMT(IENDC(NPROCS*(I-1)+MYID+1)) = EMT(IENDC(NPROCS*(I-1)+MYID+1))&
             !                - EAV
             do i = mpi_rank + 1, csf_count, mpi_process_count
-                idiag = stored_segment_end_offsets(i)     ! new mode: each row ends in diagonal
-                hamiltonian_values(idiag) = hamiltonian_values(idiag) - hamiltonian_energy_shift
+                diagonal_element_index = stored_segment_end_offsets(i)     ! new mode: each row ends in diagonal
+                hamiltonian_values(diagonal_element_index) = hamiltonian_values(diagonal_element_index) - hamiltonian_energy_shift
             end do
 
             ! Compute and store eigenpairs
@@ -229,9 +228,7 @@ contains
                 end block
             end if
 
-            call dalloc (hamiltonian_values, "hamiltonian_values", "solve_hamiltonian_blocks")
-            call dalloc (stored_segment_end_offsets, "stored_segment_end_offsets", "solve_hamiltonian_blocks")
-            call dalloc (matrix_partner_indices, "matrix_partner_indices", "solve_hamiltonian_blocks")
+            deallocate(hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices)
 
         end do
         ! Deallocate the temporary storage

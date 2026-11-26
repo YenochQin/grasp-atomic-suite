@@ -133,7 +133,19 @@ contains
                 & selected_pair_indices, &
                 ritz_coefficients, ritz_values, convergence_flags, eigenvalue_tolerance, coefficient_tolerance, &
                 real_scratch, integer_scratch, previous_ritz_values, expansion_count, pending_pair_indices)
-            if (.not. targets_converged .and. subspace_size < matrix_order) then
+            if (subspace_size < matrix_order) then
+                ! The recent coefficient and energy changes prioritize expansion. Use the full
+                ! residual for acceptance, including roots whose Ritz values have stopped changing.
+                if (targets_converged) then
+                    expansion_count = selected_pair_count
+                    pending_pair_indices(:selected_pair_count) = selected_pair_indices(:selected_pair_count)
+                else
+                    do pair_position = 1, selected_pair_count
+                        if (convergence_flags(selected_pair_indices(pair_position)) == 0) cycle
+                        expansion_count = expansion_count + 1
+                        pending_pair_indices(expansion_count) = selected_pair_indices(pair_position)
+                    end do
+                end if
                 if (subspace_size == subspace_limit) then
                     call restart_davidson_subspace (matrix_order, restart_size, subspace_size, real_scratch, basis_vectors, &
                         operator_basis, projected_matrix, ritz_coefficients, ritz_values)

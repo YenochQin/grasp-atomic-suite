@@ -14,7 +14,6 @@ contains
         use csf_descriptor_reader, only: loaded_csf_basis_id
         use transition_basis_blocks, only: transition_csf_basis_ids
         use grasp_parameters,   only: max_orbitals
-        use array_memory_management, only: alloc, dalloc
         use atomic_calculation_state, only: electron_count, initial_electron_count, left_electron_count
         use biorthogonal_orbital_sets, only: max_orbitals, initial_orbital_symmetry_labels, initial_csf_count, &
             initial_orbital_count, initial_orbital_principal_n, initial_orbital_kappa, initial_orbital_l, initial_orbital_two_j
@@ -50,10 +49,9 @@ contains
         initial_electron_count = electron_count
         left_csf_count = csf_count
         left_orbital_count = orbital_count
-        call alloc (left_occupations, max_orbitals, csf_count, "left_occupations", "load_initial_transition_basis" )
-        call alloc (left_subshell_quantum_codes,max_orbitals,3,csf_count, "left_subshell_quantum_codes", &
-            "load_initial_transition_basis")
-        call alloc (left_angular_codes,csf_angular_code_count, csf_count, "left_angular_codes", "load_initial_transition_basis")
+        allocate(left_occupations(max_orbitals, csf_count))
+        allocate(left_subshell_quantum_codes(max_orbitals,3,csf_count))
+        allocate(left_angular_codes(csf_angular_code_count, csf_count))
         do i = 1,csf_count
             do j = 1,max_orbitals
                 left_occupations(j,i) = csf_subshell_occupations(j,i)
@@ -76,9 +74,9 @@ contains
             left_orbital_labels(i) = orbital_symmetry_labels(i)
         end do
         ! Deallocate storage so that LODCSL can restart correctly
-        call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "load_initial_transition_basis")
-        call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "load_initial_transition_basis")
-        call dalloc (csf_angular_codes, "csf_angular_codes", "load_initial_transition_basis")
+        deallocate(csf_subshell_occupations)
+        deallocate(csf_subshell_quantum_codes)
+        deallocate(csf_angular_codes)
 
         transition_csf_basis_ids(1) = loaded_csf_basis_id
         return

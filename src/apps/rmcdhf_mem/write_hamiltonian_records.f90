@@ -13,6 +13,7 @@ contains
     ! Block Version by Xinghong He. Last revision: 30 Jan 1999
     subroutine write_hamiltonian_records(mpi_rank, mpi_process_count, block_csf_count)
         ! Module dependencies
+        use, intrinsic :: iso_fortran_env, only: int64
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use sparse_hamiltonian_storage, only: hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices
         implicit none (type, external)
@@ -24,7 +25,8 @@ contains
         integer  :: mpi_rank
         integer  :: mpi_process_count
         integer, intent(in) :: block_csf_count
-        integer :: first_matrix_element_index, column_index, diagonal_element_index, matrix_element_index, row_index
+        integer :: column_index, row_index
+        integer(int64) :: first_matrix_element_index, diagonal_element_index, matrix_element_index
         ! This is original, correct, full matrix
         !     ibeg = 1
         !        idiag = iendc(ico)

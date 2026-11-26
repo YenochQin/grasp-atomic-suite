@@ -206,9 +206,9 @@ contains
             int(one_electron_coefficient_count,int64)+sum(int(two_electron_counts_by_rank,int64)),storage="disk")
         stage_start_count = stage_clock()
         ! Deallocate storage that is no longer required
-        call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "compute_mcp_angular_coefficients_mpi")
-        call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "compute_mcp_angular_coefficients_mpi")
-        call dalloc (csf_angular_codes, "csf_angular_codes", "compute_mcp_angular_coefficients_mpi")
+        deallocate(csf_subshell_occupations)
+        deallocate(csf_subshell_quantum_codes)
+        deallocate(csf_angular_codes)
         call manage_angular_coefficient_buffer (3)
         call record_stage("csf_and_pair_buffer_release",nb,stage_start_count)
         ! Write out a report for this run

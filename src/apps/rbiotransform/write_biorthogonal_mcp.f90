@@ -23,7 +23,6 @@ contains
         use, intrinsic :: iso_fortran_env, only: output_unit
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters,   only: max_orbitals, orbital_index_radix
-        use array_memory_management, only: dalloc
         use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes
         use transition_basis_blocks, only: cumulative_csf_counts, transition_block_count
         use orbital_csf_basis,           only: csf_count, orbital_count, orbital_kappa, csf_subshell_occupations
@@ -187,9 +186,9 @@ contains
         end do
         ! Deallocate storage that is no longer required. This was
         ! allocated in lodcsl.
-        call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "write_biorthogonal_mcp")
-        call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "write_biorthogonal_mcp")
-        call dalloc (csf_angular_codes, "csf_angular_codes", "write_biorthogonal_mcp")
+        deallocate(csf_subshell_occupations)
+        deallocate(csf_subshell_quantum_codes)
+        deallocate(csf_angular_codes)
         return
     end subroutine write_biorthogonal_mcp
 end module write_biorthogonal_mcp_interface

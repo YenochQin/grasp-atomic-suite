@@ -91,7 +91,7 @@ program csf_descriptor_verify
       verified_values = verified_values + (5_int64*max_orbitals+2)*csf_count
       write(*, "(A,I0,A,I0)") "Verified block ", block_index, ", CSFs=", csf_count
       deallocate(csf_subshell_occupations, csf_subshell_quantum_codes, csf_coupling_quantum_codes)
-      nullify(csf_subshell_occupations, csf_subshell_quantum_codes, csf_coupling_quantum_codes)
+      nullify(csf_subshell_quantum_codes, csf_coupling_quantum_codes)
       deallocate(descriptor_occupations, descriptor_quantum_numbers, descriptor_couplings)
    end do
    close(csf_input_unit)

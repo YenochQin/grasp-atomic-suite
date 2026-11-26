@@ -9,7 +9,7 @@ contains
     subroutine multiply_mpi_sparse_matrix (matrix_order,vector_count,input_vectors,product_vectors)
 
         ! Module dependencies
-        use, intrinsic :: iso_fortran_env, only: real64
+        use, intrinsic :: iso_fortran_env, only: real64, int64
         use mpi_state, only: mpi_process_count, mpi_rank
         use sparse_hamiltonian_storage, only: hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices
         use real_vector_initialization, only: initialize_real_vector
@@ -27,7 +27,8 @@ contains
 
         ! Local declarations
         integer :: value_count
-        integer :: column_index, segment_start, segment_end, segment_element_count, vector_index
+        integer :: column_index, vector_index
+        integer(int64) :: segment_start, segment_end, segment_element_count
         real(real64) :: partial_product, off_diagonal_product
         value_count = checked_mpi_count(size(product_vectors,kind=mpi_count_kind), "multiply_mpi_sparse_matrix")
         call initialize_real_vector (value_count, 0.0_real64, product_vectors, 1)

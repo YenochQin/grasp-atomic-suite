@@ -1,10 +1,18 @@
 module breit_radial_integral_coefficients
+    use, intrinsic :: iso_fortran_env, only: error_unit
+    use input_error_handling, only: abort_input
     implicit none (type, external)
 
     private
-    public :: calculate_breit_radial_integral_coefficients
+    public :: calculate_breit_radial_integral_coefficients, set_breit_abort_handler
+    procedure(abort_input), pointer :: breit_abort_handler => null()
 
 contains
+
+    subroutine set_breit_abort_handler(handler)
+        procedure(abort_input) :: handler
+        breit_abort_handler => handler
+    end subroutine set_breit_abort_handler
 
     !***********************************************************************
     !                                                                      *
@@ -114,13 +122,7 @@ contains
             if (radial_integral_order - tensor_rank >= 0) then
                 if (radial_integral_order - tensor_rank <= 0) then
                     radial_integral_coefficients(1) = -(kappa_a + kappa_c)*(kappa_d + kappa_b)
-                    if (tensor_rank == 0) then
-                        write (*, &
-                            '("calculate_breit_radial_integral_coefficients: Invalid tensor_rank = 0 -"/,1x,4i3,2x,i3,2x,2i2)') &
-                            orbital_indices(1), orbital_indices(2), orbital_indices(3), orbital_indices(4), &
-                            radial_integral_order, radial_integral_case, direct_exchange_code
-                        stop
-                    end if
+                    if (tensor_rank == 0) call stop_invalid_orbital_combination("Invalid tensor_rank = 0")
                     rank_norm = tensor_rank*(tensor_rank + 1)
                     reduced_angular_product = reduced_angular_element(kappa_a,tensor_rank, &
                         & kappa_c)*reduced_angular_element(kappa_b,tensor_rank,kappa_d)
@@ -309,11 +311,20 @@ contains
     contains
 
         ! Stop on an illegal combination of orbital indices.
-        subroutine stop_invalid_orbital_combination
-            write (*, '("calculate_breit_radial_integral_coefficients: Type ",i2,"-"/,1x,i2,3x,4i3,2x,2i3,2x,i2)') &
-                radial_integral_case, orbital_indices(1), orbital_indices(2), orbital_indices(3), orbital_indices(4), &
-                radial_integral_order, tensor_rank, direct_exchange_code
-            stop
+        subroutine stop_invalid_orbital_combination(reason)
+            character(*), optional, intent(in) :: reason
+
+            if (present(reason)) then
+                write(error_unit,"(a)") "Breit integrals: "//reason
+            else
+                write(error_unit,"(a)") "Breit integrals: invalid orbital combination"
+            end if
+            write(error_unit,"(a,i0,a,4(1x,i0),a,i0,a,i0,a,i0)") "Case ", radial_integral_case, &
+                ", orbitals", orbital_indices, ", radial order ", radial_integral_order, &
+                ", tensor rank ", tensor_rank, ", direct/exchange code ", direct_exchange_code
+            flush(error_unit)
+            if (associated(breit_abort_handler)) call breit_abort_handler()
+            error stop 1
         end subroutine stop_invalid_orbital_combination
     end subroutine calculate_breit_radial_integral_coefficients
 

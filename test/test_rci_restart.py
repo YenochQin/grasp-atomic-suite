@@ -30,6 +30,47 @@ def compare_roots(cold: Path, resumed: Path) -> None:
         assert max(abs(a - phase * b) for a, b in zip(initial, continued, strict=True)) <= 1e-8
 
 
+def check_eigenpairs(work: Path, files: list[Path]) -> tuple[float, float]:
+    block, = read_stream(work / "case.cimix", work / "case_desc.parquet")
+    order = block.csf_count
+    matrix = [[0.0] * order for _ in range(order)]
+    seen_rows: set[int] = set()
+    for file in files:
+        shard = records(work / file)
+        _, _, orbitals, _ = struct.unpack("=4i", shard[1])
+        matrix_header = 7 + 2 * orbitals
+        csfs, _, rank, ranks = struct.unpack("=4i", shard[matrix_header])
+        assert csfs == order and ranks == len(files)
+        rows = range(rank, order, ranks)
+        for row, payload in zip(rows, shard[matrix_header + 1 :], strict=True):
+            assert row not in seen_rows
+            seen_rows.add(row)
+            entries, core_shift = struct.unpack_from("=id", payload)
+            assert core_shift == 0.0, "fixture uses the unshifted Coulomb matrix"
+            values = struct.unpack_from(f"={entries}d", payload, 12)
+            partners = struct.unpack_from(f"={entries}i", payload, 12 + 8 * entries)
+            assert partners[-1] == row + 1
+            for partner, value in zip(partners, values, strict=True):
+                assert 1 <= partner <= row + 1 and math.isfinite(value)
+                matrix[row][partner - 1] = matrix[partner - 1][row] = value
+    assert seen_rows == set(range(order))
+
+    vectors = [struct.unpack_from(f"<{order}d", block.coefficients, 8 * order * i)
+               for i in range(len(block.roots))]
+    matrix_norm = math.hypot(*(value for row in matrix for value in row))
+    residuals = []
+    for vector, energy in zip(vectors, block.energies, strict=True):
+        residual = math.hypot(*(math.fsum(a * b for a, b in zip(row, vector, strict=True)) - energy * component
+                                for row, component in zip(matrix, vector, strict=True)))
+        residuals.append(residual / ((matrix_norm + abs(energy)) * math.hypot(*vector)))
+    gram_error = max(
+        abs(math.fsum(a * b for a, b in zip(left, right, strict=True)) - (i == j))
+        for i, left in enumerate(vectors) for j, right in enumerate(vectors)
+    )
+    assert max(residuals) <= 1e-10 and gram_error <= 1e-12, (work, residuals, gram_error)
+    return max(residuals), gram_error
+
+
 def exercise(root: Path, estimator: Path, rci: Path, launcher: list[str], ranks: int) -> None:
     data = Path(__file__).resolve().parents[1] / "data"
     cold = root / "cold"
@@ -79,7 +120,6 @@ def exercise(root: Path, estimator: Path, rci: Path, launcher: list[str], ranks:
     assert output.count("rows read from .res") == ranks, output
     compare_roots(cold, warm)
     assert all((cold / file).read_bytes() == (warm / file).read_bytes() for file in files)
-    print(f"{rci.name}/{ranks}: normal restart reproduced both roots", flush=True)
 
     # A complete header followed by a clean EOF is a valid unfinished shard.
     partial = root / "partial"
@@ -92,6 +132,10 @@ def exercise(root: Path, estimator: Path, rci: Path, launcher: list[str], ranks:
     write_records(path, rows[:matrix_header])
     run(command, partial, restart_answers)
     compare_roots(cold, partial)
+    checks = [check_eigenpairs(work, files) for work in (cold, warm, partial)]
+    print(f"{rci.name}/{ranks}: both roots reproduced; max normalized residual "
+          f"{max(value[0] for value in checks):.3e}, max orthogonality error "
+          f"{max(value[1] for value in checks):.3e}", flush=True)
 
     cases = [
         ("missing", "cannot open restart file", None, b""),

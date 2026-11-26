@@ -30,7 +30,7 @@ contains
     subroutine allocate_descriptor_arrays(csf_count,subshell_occupations,subshell_quantum_codes,angular_codes)
         ! Arguments
         integer, intent(in) :: csf_count
-        integer(int8), pointer, intent(out) :: subshell_occupations(:,:),subshell_quantum_codes(:,:,:),angular_codes(:,:)
+        integer(int8), allocatable, intent(out) :: subshell_occupations(:,:),subshell_quantum_codes(:,:,:),angular_codes(:,:)
 
         ! Local declarations
         integer :: allocation_status

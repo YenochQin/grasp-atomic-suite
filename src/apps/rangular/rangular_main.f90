@@ -22,7 +22,6 @@ program rangular_main
     use rangular_input, only: angular_input_options, parse_angular_options, load_angular_header, &
         load_angular_block, close_angular_input
     use rangular_profile, only: stage_clock, record_stage, close_stage_profile
-    use array_memory_management, only: alloc
     use calculation_input_defaults, only: nondefault_options_flag
     use hamiltonian_symmetry_blocks, only: csf_counts_by_block, symmetry_block_count
     use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals
@@ -111,9 +110,9 @@ program rangular_main
         end if
         ! Load the current descriptor block before computing its angular coefficients.
         stage_start_count = stage_clock()
-        call alloc (csf_subshell_occupations, max_orbitals, csf_count, "csf_subshell_occupations", "rangular_main")
-        call alloc (csf_subshell_quantum_codes, max_orbitals,3,csf_count, "csf_subshell_quantum_codes", "rangular_main")
-        call alloc (csf_angular_codes, csf_angular_code_count, csf_count, "csf_angular_codes", "rangular_main")
+        allocate(csf_subshell_occupations(max_orbitals, csf_count))
+        allocate(csf_subshell_quantum_codes(max_orbitals,3,csf_count))
+        allocate(csf_angular_codes(csf_angular_code_count, csf_count))
         call record_stage("csf_allocation", symmetry_block_index, stage_start_count)
         stage_start_count = stage_clock()
         call load_angular_block(input_options, core_subshell_count, symmetry_block_index)

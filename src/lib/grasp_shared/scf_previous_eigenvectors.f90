@@ -7,5 +7,5 @@ module scf_previous_eigenvectors
     private :: real64
 
     ! Module state
-    real(real64), pointer :: previous_csf_mixing_coefficients(:)
+    real(real64), allocatable :: previous_csf_mixing_coefficients(:)
 end module scf_previous_eigenvectors

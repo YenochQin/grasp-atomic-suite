@@ -64,8 +64,8 @@ contains
 
         ! Allocate memory for old format data
 
-        call alloc (shifted_eigenvalues, nvectot, "shifted_eigenvalues", "read_mixing_blocks")
-        call alloc (csf_mixing_coefficients, total_csf_count*nvectot, "csf_mixing_coefficients", "read_mixing_blocks")
+        allocate(shifted_eigenvalues(nvectot))
+        allocate(csf_mixing_coefficients(total_csf_count*nvectot))
         call alloc (active_level_indices, nvectot, "active_level_indices", "read_mixing_blocks")
         call alloc (level_two_j_plus_one, nvectot, "level_two_j_plus_one", "read_mixing_blocks")
         call alloc (level_parity_signs, nvectot, "level_parity_signs", "read_mixing_blocks")

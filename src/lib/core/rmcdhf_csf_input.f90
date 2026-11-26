@@ -96,7 +96,7 @@ contains
         ! Local declarations
         integer :: block_index, first_csf, last_csf
         integer(int64) :: csf_offset
-        integer(int8), pointer :: new_occupations(:,:)
+        integer(int8), allocatable :: new_occupations(:,:)
 
         status = 1
         if (basis_reader%core_count /= closed_core_subshell_count .or. &
@@ -120,13 +120,9 @@ contains
             csf_offset = csf_offset+int(basis_reader%block_lengths(block_index),int64)
             last_csf = int(csf_offset)
             call read_descriptor_block(basis_reader, block_index, new_occupations(:,first_csf:last_csf), status=status)
-            if (status /= 0) then
-                deallocate(new_occupations)
-                return
-            end if
+            if (status /= 0) return
         end do
-        if (associated(csf_subshell_occupations)) deallocate(csf_subshell_occupations)
-        csf_subshell_occupations=>new_occupations
+        call move_alloc(new_occupations, csf_subshell_occupations)
         core_subshell_count = basis_reader%core_count
         orbital_principal_n(:orbital_count) = basis_reader%principal_numbers
         orbital_kappa(:orbital_count) = basis_reader%relativistic_kappas

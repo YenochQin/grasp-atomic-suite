@@ -68,13 +68,20 @@ contains
     subroutine assemble_hamiltonian_block(symmetry_block_index, mpi_rank, mpi_process_count)
 #endif
         use, intrinsic :: iso_fortran_env, only: real64, int64
-        use sparse_hamiltonian_storage, only: hamiltonian_values
+        use sparse_hamiltonian_storage, only: hamiltonian_values, matrix_partner_indices, stored_segment_end_offsets
         implicit none (type, external)
         integer, intent(in) :: symmetry_block_index, mpi_rank, mpi_process_count
 #ifdef CI_MEM
         integer(int64) :: total_contribution_count(20), total_secondary_contribution_count(20)
 #endif
+        integer :: i
         if (symmetry_block_index /= 1) error stop "Hamiltonian seam block"
+        if (.not. allocated(hamiltonian_values) .or. .not. allocated(matrix_partner_indices)) &
+            error stop "assembly needs allocated arrays even on empty ranks"
+        if (size(hamiltonian_values) /= count([(mod(i - 1, mpi_process_count) == mpi_rank, i=1,2)]) .or. &
+            size(matrix_partner_indices) /= size(hamiltonian_values)) error stop "wrong rank-local storage size"
+        if (lbound(stored_segment_end_offsets,1) /= 0 .or. stored_segment_end_offsets(0) /= 0_int64) &
+            error stop "missing zero-based offset sentinel"
         hamiltonian_values = 0.0_real64
     end subroutine assemble_hamiltonian_block
 end module assemble_hamiltonian_block_interface
@@ -116,7 +123,10 @@ contains
         integer, intent(in) :: nfile
         integer(int64), intent(in) :: total_secondary_contribution_count
         integer, intent(out) :: lab, ncontr
-        error stop "unexpected empty block seam"
+        if (nfile < 31 .or. nfile > 33 .or. total_secondary_contribution_count /= 1) &
+            error stop "unexpected empty block seam"
+        lab = 0
+        ncontr = 0
     end subroutine load_mcp_records_into_memory
 end module load_mcp_records_into_memory_interface
 #endif

@@ -2,7 +2,7 @@
 module csf_descriptor_reader
     ! Module dependencies
     use iso_fortran_env, only: int8, int64, error_unit
-    use iso_c_binding, only: c_ptr, c_null_ptr, c_null_char, c_char, c_size_t, c_int32_t, c_int64_t
+    use iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_null_char, c_char, c_size_t, c_int32_t, c_int64_t
     use csf_descriptor_c_bindings
     use grasp_parameters, only: max_orbitals, csf_orbital_letters
     use angular_symmetry_labels, only: format_j_label
@@ -20,8 +20,8 @@ module csf_descriptor_reader
     ! Owns an indexed Rust descriptor reader. Close the source explicitly and avoid copying a live handle.
     type :: descriptor_source
         ! Components
-        type(c_ptr) :: handle = c_null_ptr
-        logical :: is_open = .false., header_loaded = .false.
+        type(c_ptr), private :: handle = c_null_ptr
+        logical, private :: header_loaded = .false.
         integer :: core_count = 0, peel_count = 0, orbital_count = 0, block_count = 0
         integer :: format_version = 0
         character(len=64) :: basis_id = ""
@@ -30,6 +30,8 @@ module csf_descriptor_reader
         integer, allocatable :: orbital_momenta(:), single_electron_two_j(:)
         character(len=2), allocatable :: orbital_labels(:)
         integer, allocatable :: block_lengths(:), block_two_j(:), block_parities(:)
+    contains
+        procedure :: is_open => descriptor_source_is_open
     end type descriptor_source
 
 contains
@@ -68,13 +70,11 @@ contains
         if (open_status == 0 .and. present(spin_angular)) then
             if (spin_angular) then
                 open_status = rust_descriptor_check_spin_angular(source%handle, message, len(message,kind=c_size_t))
-                if (open_status /= 0) write(error_unit, "(2A)") "CSF descriptor input: ", message(:index(message,c_null_char)-1)
+                if (open_status /= 0) write(error_unit, "(2A)") "CSF descriptor input: ", &
+                    message(:max(0,index(message,c_null_char)-1))
             end if
         end if
-        if (open_status /= 0) then
-            call close_descriptor_source(source)
-            source = descriptor_source()
-        end if
+        if (open_status /= 0) call close_descriptor_source(source)
         if (present(status)) then
             status = open_status
         else if (open_status /= 0) then
@@ -99,7 +99,6 @@ contains
         integer :: read_status, orbital_index, kappa, orbital_l_value, path_length, allocation_status
         reader_message = c_null_char
         call close_descriptor_source(source)
-        source = descriptor_source()
         if (.not. require_descriptor(rust_descriptor_abi_version() == 3, "unsupported Rust ABI", status)) return
         if (.not. require_descriptor(rust_descriptor_format_version() == 3, "unsupported descriptor format", status)) return
         path_length = len_trim(filename)
@@ -125,7 +124,6 @@ contains
             source%handle, reader_message, 1024_c_size_t)
         if (.not. require_descriptor(read_status == 0, trim(filename)//": "// &
             reader_message(:max(0,index(reader_message,c_null_char)-1)), status)) return
-        source%is_open = .true.
         call rust_descriptor_basis_id(source%handle, source%basis_id)
         source%format_version = int(rust_descriptor_format_version())
         read_status = rust_descriptor_info(source%handle, header_counts, reader_message, 1024_c_size_t)
@@ -188,7 +186,7 @@ contains
         integer(c_int64_t) :: raw_zero_order_counts(size(counts))
         character(kind=c_char,len=1024) :: reader_message
         integer :: read_status
-        if (.not. require_descriptor(source%is_open .and. size(counts) == source%block_count, &
+        if (.not. require_descriptor(source%is_open() .and. size(counts) == source%block_count, &
             "invalid source or buffer for zero-order counts", status)) return
         read_status = rust_descriptor_zero_order_counts(source%handle, raw_zero_order_counts, int(size(counts),c_size_t), &
             reader_message, 1024_c_size_t)
@@ -203,9 +201,13 @@ contains
         ! Arguments
         type(descriptor_source), intent(inout) :: source
         call rust_descriptor_close(source%handle)
-        source%is_open = .false.
-        source%header_loaded = .false.
+        source = descriptor_source()
     end subroutine close_descriptor_source
+
+    logical function descriptor_source_is_open(source) result(is_open)
+        class(descriptor_source), intent(in) :: source
+        is_open = c_associated(source%handle)
+    end function descriptor_source_is_open
 
     ! Keep the legacy four-column J field, expanding it for three-digit half-integers.
     function descriptor_block_label(total_two_j, parity) result(label)
@@ -329,7 +331,7 @@ contains
         character(kind=c_char,len=1024) :: reader_message
         integer :: batch_capacity, batch_row_count, row_offset, last_row, read_status, allocation_status
         reader_message = c_null_char
-        if (.not. require_descriptor(source%is_open .and. source%header_loaded, "descriptor source is not open", status)) return
+        if (.not. require_descriptor(source%is_open() .and. source%header_loaded, "descriptor source is not open", status)) return
         if (.not. require_descriptor(block_index >= 1 .and. block_index <= source%block_count, &
             "block index out of range", status)) return
         if (.not. require_descriptor(size(occupations,1) == max_orbitals .and. &

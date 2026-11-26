@@ -9,11 +9,11 @@ contains
     subroutine sparse_dot_scatter(element_count, source_vector, updated_vector, target_indices, matrix_values, update_scale, &
         & dot_product)
         ! Module dependencies
-        use, intrinsic :: iso_fortran_env, only: real64
+        use, intrinsic :: iso_fortran_env, only: real64, int64
         implicit none (type, external)
 
         ! Arguments
-        integer,      intent(in)    :: element_count
+        integer(int64), intent(in) :: element_count
         real(real64), intent(in)    :: update_scale
         real(real64), intent(out)   :: dot_product
         integer, intent(in) :: target_indices(element_count)
@@ -22,7 +22,7 @@ contains
         real(real64), intent(in) :: matrix_values(element_count)
 
         ! Local declarations
-        integer :: entry_index
+        integer(int64) :: entry_index
         real(real64) :: dot_product_sum
 
         dot_product_sum = 0.0

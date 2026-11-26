@@ -10,7 +10,7 @@ contains
         & start_vectors_and_eigenvalues, &
         & sparse_matrix_values, column_end_offsets, row_indices)
         ! Module dependencies
-        use, intrinsic :: iso_fortran_env, only: real64
+        use, intrinsic :: iso_fortran_env, only: real64, int64
         use real_vector_initialization, only: initialize_real_vector
         use array_memory_management, only: alloc, dalloc
         use blas_lapack_interfaces, only: dcopy, dspevx
@@ -20,13 +20,14 @@ contains
         integer, intent(in) :: maximum_submatrix_order
         integer, intent(in) :: csf_count
         integer, intent(in) :: requested_eigenvector_count
-        integer, intent(in) :: column_end_offsets(0:*)
+        integer(int64), intent(in) :: column_end_offsets(0:)
         integer, intent(in) :: row_indices(*)
         real(real64) :: start_vectors_and_eigenvalues(*)
         real(real64), intent(in) :: sparse_matrix_values(*)
 
         ! Local declarations
-        integer :: submatrix_order, previous_sparse_column_end, column_index, packed_column_offset, sparse_entry_index, &
+        integer(int64) :: previous_sparse_column_end, sparse_entry_index
+        integer :: submatrix_order, column_index, packed_column_offset, &
             & found_eigenvector_count, lapack_status, negative_lapack_status
 
         integer, pointer :: integer_workspace(:),failed_eigenvector_indices(:)

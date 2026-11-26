@@ -5,7 +5,7 @@ program descriptor_collectives
    use mpi_state, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_finalize
    use mpi_csf_collectives, only: allocate_descriptor_arrays, broadcast_descriptor_arrays, require_collective_success
    implicit none (type, external)
-   integer(int8), pointer :: occupations(:,:),quantum(:,:,:),couplings(:,:)
+   integer(int8), allocatable :: occupations(:,:),quantum(:,:,:),couplings(:,:)
    integer :: rank, status, i, j
    integer(int8) :: strided(2*max_orbitals,3), empty(max_orbitals,0)
    character(len=16) :: scenario

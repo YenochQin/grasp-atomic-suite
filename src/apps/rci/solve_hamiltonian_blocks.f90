@@ -18,7 +18,7 @@ contains
     subroutine solve_hamiltonian_blocks (unused_core_subshell_count, max_orbital_two_j)
         ! Module dependencies
         use calculation_file_units, only: mixing_output_unit, summary_output_unit
-        use mixing_file_format, only: write_mixing_block
+        use mixing_file_format, only: write_mixing_block, close_mixing_stream
         use, intrinsic :: iso_fortran_env, only: real64, int64
         use grasp_parameters,   only: max_orbitals
         use array_memory_management, only: alloc, dalloc
@@ -131,11 +131,9 @@ contains
             ! ...These 3 were allocated in lodcsh2 and deallocated at the end
             ! ... of this routine and in the setham. In this block version,
             ! ... both allocation and deallocation are placed here.
-            call alloc (csf_subshell_occupations, max_orbitals, csf_count, "csf_subshell_occupations", "solve_hamiltonian_blocks")
-            call alloc (csf_subshell_quantum_codes, max_orbitals, 3, csf_count, "csf_subshell_quantum_codes", &
-                "solve_hamiltonian_blocks")
-            call alloc (csf_angular_codes, csf_angular_code_count, csf_count, "csf_angular_codes", &
-                "solve_hamiltonian_blocks")
+            allocate(csf_subshell_occupations(max_orbitals, csf_count))
+            allocate(csf_subshell_quantum_codes(max_orbitals, 3, csf_count))
+            allocate(csf_angular_codes(csf_angular_code_count, csf_count))
 
             ! ...Load CSF list of the current block
             block
@@ -184,10 +182,9 @@ contains
                 call assemble_ci_matrix_from_restart (restart_header_status, nelmnt_a, closed_shell_breit_shift)
                 ! Allocate and deallocate memory for the mixing coefficients
                 ! from the prerun
-                if (prerun_stage==1) call alloc (previous_csf_mixing_coefficients,csf_count*active_level_count, &
-                    "previous_csf_mixing_coefficients", "solve_hamiltonian_blocks")
-                if (prerun_stage==2) call dalloc (previous_csf_mixing_coefficients, "previous_csf_mixing_coefficients", &
-                    "solve_hamiltonian_blocks")
+                if (prerun_stage == 1) &
+                    allocate(previous_csf_mixing_coefficients(int(csf_count,int64)*active_level_count))
+                if (prerun_stage == 2) deallocate(previous_csf_mixing_coefficients)
 
                 call diagonalize_hamiltonian_block (block_two_j_plus_one, block_parity_sign)
                 !   Write out eigenvalues (ENGOUT), dominant components of the
@@ -277,20 +274,21 @@ contains
                 ! ...Locals
                 call dalloc (active_level_indices, "active_level_indices", "solve_hamiltonian_blocks")
                 ! ...Allocated in maneig
-                call dalloc (shifted_eigenvalues, "shifted_eigenvalues", "solve_hamiltonian_blocks")
-                call dalloc (csf_mixing_coefficients, "csf_mixing_coefficients", "solve_hamiltonian_blocks")
+                deallocate(shifted_eigenvalues)
+                deallocate(csf_mixing_coefficients)
 
             end if
 
             ! ...Locals
-            call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "solve_hamiltonian_blocks")
-            call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "solve_hamiltonian_blocks")
-            call dalloc (csf_angular_codes, "csf_angular_codes", "solve_hamiltonian_blocks")
+            deallocate(csf_subshell_occupations)
+            deallocate(csf_subshell_quantum_codes)
+            deallocate(csf_angular_codes)
             call dalloc (csf_self_energies, "csf_self_energies", "solve_hamiltonian_blocks")
             call dalloc (orbital_occupation_weights, "orbital_occupation_weights", "solve_hamiltonian_blocks")
 
         end do
         ! Close the restart files; nothing will be added to them now
+        call close_mixing_stream(mixing_output_unit)
         close (restart_matrix_unit)
         ! ...Clean up
         call dalloc (csf_counts_by_block, "csf_counts_by_block", "solve_hamiltonian_blocks")

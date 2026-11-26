@@ -19,7 +19,6 @@ program descriptor_rmcdhf
    character(len=8) :: labels(max_symmetry_blocks)
    character(len=3) :: rank_text
    character(len=64) :: mcp_prefix, output_path
-   nullify(csf_subshell_quantum_codes,csf_angular_codes)
    stderr_unit=output_unit
 #ifdef DESCRIPTOR_MPI
    call mpi_init(status)
@@ -43,7 +42,7 @@ program descriptor_rmcdhf
    if (symmetry_block_count /= 3 .or. lbound(csf_counts_by_block,1) /= 0) error stop "block bounds"
    if (any(csf_counts_by_block /= [0,5,2,3])) error stop "MCP block lengths overwritten"
    if (any(packed_block_symmetries(:3) /= [1,5,-3])) error stop "block symmetry"
-   if (associated(csf_subshell_quantum_codes) .or. associated(csf_angular_codes)) &
+   if (allocated(csf_subshell_quantum_codes) .or. allocated(csf_angular_codes)) &
       error stop "full coupling allocation in RMCDHF"
    output_path="occupations."//rank_text//".bin"
    open(newunit=occupations_unit,file=trim(output_path),access="stream",form="unformatted",status="replace")

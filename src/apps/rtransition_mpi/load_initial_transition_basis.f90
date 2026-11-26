@@ -14,7 +14,6 @@ contains
         use csf_descriptor_reader, only: loaded_csf_basis_id
         use transition_basis_blocks, only: transition_csf_basis_ids
         use grasp_parameters,   only: max_orbitals
-        use array_memory_management, only: dalloc
         use atomic_calculation_state, only: electron_count, initial_electron_count, left_electron_count
         use biorthogonal_orbital_sets, only: max_orbitals, initial_orbital_symmetry_labels, initial_csf_count, &
             initial_orbital_count, initial_orbital_principal_n, initial_orbital_kappa, initial_orbital_l, initial_orbital_two_j
@@ -78,9 +77,9 @@ contains
             left_orbital_labels(i) = orbital_symmetry_labels(i)
         end do
         ! Deallocate storage so that LODCSL can restart correctly
-        call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "load_initial_transition_basis")
-        call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "load_initial_transition_basis")
-        call dalloc (csf_angular_codes, "csf_angular_codes", "load_initial_transition_basis")
+        deallocate(csf_subshell_occupations)
+        deallocate(csf_subshell_quantum_codes)
+        deallocate(csf_angular_codes)
 
         transition_csf_basis_ids(1) = loaded_csf_basis_id
         return

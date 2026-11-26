@@ -50,7 +50,6 @@ program ci_damping
     csf_counts_by_block=2; eigenvector_counts_by_block=2; highest_selected_level_by_block=2; csf_offsets_by_block=0; &
         eigenvalue_offsets_by_block=0; mixing_offsets_by_block=2
     requested_level_indices=[1,2]; mixing_damping_factors=[0.0_real64,0.5_real64]; csf_mixing_coefficients=99.0_real64
-    nullify(hamiltonian_values,matrix_partner_indices,stored_segment_end_offsets)
     local_size = count([(mod(i-1,mpi_process_count)==mpi_rank, i=1,2)])
 #ifdef CI_MEM
     allocate(imin1_30(1),imax1_30(1),imin2_30(1),imax2_30(1))
@@ -75,6 +74,9 @@ program ci_damping
             write(mcp_input_units(channel_suffix)) "MCP",1,2
             write(mcp_input_units(channel_suffix)) local_size
             write(mcp_input_units(channel_suffix)) [(i,i=1,local_size)], [(mpi_rank+1+(i-1)*mpi_process_count,i=1,local_size)]
+        else
+            write(mcp_input_units(channel_suffix)) "MCP",1,2,0
+            write(mcp_input_units(channel_suffix)) 0,0
         end if
     end do
 #endif
@@ -103,6 +105,12 @@ program ci_damping
     if (maxval(abs(csf_mixing_coefficients(3:6)-[0.6_real64,0.8_real64,-0.8_real64,0.6_real64]))>tol) &
         error stop "zero damping control"
     if(solves/=3) error stop "fixture did not execute three production calls"
+    eigenvector_counts_by_block = 0
+    call matrix_step(.true.)
+    if (solves /= 3) error stop "unselected block reached the eigensolver"
+    eigenvector_counts_by_block = 2
+    call matrix_step(.true.)
+    if (solves /= 4) error stop "selected block could not reuse the matrix storage"
     if(mpi_rank==0) then
         close(mixing_output_unit,status="delete")
         print *, "PASS: production FIRST / nonzero multi-root DDOT / zero damping"
@@ -125,5 +133,7 @@ contains
 #else
         call solve_hamiltonian_blocks(first)
 #endif
-end subroutine matrix_step
+        if (allocated(hamiltonian_values) .or. allocated(matrix_partner_indices) .or. &
+            allocated(stored_segment_end_offsets)) error stop "solve left live matrix storage"
+    end subroutine matrix_step
 end program ci_damping

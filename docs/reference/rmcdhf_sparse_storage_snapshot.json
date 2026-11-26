@@ -1,0 +1,71 @@
+{
+  "description": "Give Hamiltonian arrays explicit ownership and keep cumulative column positions in int64 across RMCDHF kernels.",
+  "files": {
+    "src/appl/rmcdhf/hmout.f90": {
+      "after_suite_sha256": "bff2b101c17066473df4f45af895b5d90a1f46417cb08bd8d45fe5e8a20ec01b",
+      "before_suite_sha256": "7573a10e4404e0985e0bf6f5b9ac847e7a3d80f613169864115f953aaaba99b1"
+    },
+    "src/appl/rmcdhf/matrix.f90": {
+      "after_suite_sha256": "66c1a5f579ff7e6fece7d31a4e7482f119388507938f7246ef1a5abfde1bdc90",
+      "before_suite_sha256": "2dc897a3f5c8f4c83a85fc9c616bcd92effa32fe13700710255d8b02740fe10f"
+    },
+    "src/appl/rmcdhf/setcof.f90": {
+      "after_suite_sha256": "99af9983c00262dfd692c3e551ec6a7294e8d0c653cba8efef3b9adb33fcc1a5",
+      "before_suite_sha256": "9b6886760cf1612bc2948e58c7679d86eff3a1ca98ef21bc2cc1bcf78f0e2046"
+    },
+    "src/appl/rmcdhf/setham.f90": {
+      "after_suite_sha256": "edcc520975069506bfc297a451b717be355eb94cc504beeae9095d4a251743c4",
+      "before_suite_sha256": "ec063d7820e197a263f85a73a3a4502894bc9233bba9ed46be5e68c1dcb18911"
+    },
+    "src/appl/rmcdhf_mem/hmout.f90": {
+      "after_suite_sha256": "bff2b101c17066473df4f45af895b5d90a1f46417cb08bd8d45fe5e8a20ec01b",
+      "before_suite_sha256": "7573a10e4404e0985e0bf6f5b9ac847e7a3d80f613169864115f953aaaba99b1"
+    },
+    "src/appl/rmcdhf_mem/matrix.f90": {
+      "after_suite_sha256": "02c85a89f0f2545f0e2ea5c218e0a47dab2e2756cb7c6c59fbc851fc7d9668a1",
+      "before_suite_sha256": "f0a591ec0010886e4c9c35737b189b92074965125801635407f59a45bf591268"
+    },
+    "src/appl/rmcdhf_mem/setcof.f90": {
+      "after_suite_sha256": "b2a30bf3a4db4de79b13f9b9b9a909b385eec3ad20cbfc783fb56251a2b1ec00",
+      "before_suite_sha256": "08d08228273a7cf83ced69595b51a6fef7fd9c9787103b0e727bb94fff4a9d1d"
+    },
+    "src/appl/rmcdhf_mem/setham.f90": {
+      "after_suite_sha256": "2c18d27c6a0c10f53d57d0c7b61de05a544b3db5ed0fa5f7a8bf6d7199429bc2",
+      "before_suite_sha256": "f1156be5204c4048bb23320a0ef01e46331023303dd8b8b9767103bea1fa49e5"
+    },
+    "src/appl/rmcdhf_mem_mpi/hmoutmpi.f90": {
+      "after_suite_sha256": "0faa591419e58700d6adeb9f9ccec67a2bc56b8b7f549bae8797b095ed21bbbd",
+      "before_suite_sha256": "44167137b1004b84985505e8b7468fcbd5c4b3d6f99a1b2b33e4b2714767e23c"
+    },
+    "src/appl/rmcdhf_mem_mpi/matrixmpi.f90": {
+      "after_suite_sha256": "6519d675c66b49da1b64f501e2e30e2b375fb70fd07ffd5676ff176699e9fd09",
+      "before_suite_sha256": "11b76117f8a90842783ce5ce752d07d5d13e973ca0b1a4b52226999ff966d276"
+    },
+    "src/appl/rmcdhf_mem_mpi/setcof.f90": {
+      "after_suite_sha256": "47989c2e34d59d825c9d19645cb233f22f1d289f8da03aa850018a7d877b4393",
+      "before_suite_sha256": "dbe0d6a30d2d27cc944fce48f57d836ff69bfc0e6490f27997d3eb9bf89044fc"
+    },
+    "src/appl/rmcdhf_mem_mpi/setham.f90": {
+      "after_suite_sha256": "da730d384d8387fafddddf981f6b5bc604a332f83a7092e281d6fd0699752974",
+      "before_suite_sha256": "c3ba3b2a1fa3c24e3d835cd85316d7549570d2685abf1d01fbcb7de967d2635b"
+    },
+    "src/appl/rmcdhf_mpi/hmoutmpi.f90": {
+      "after_suite_sha256": "0faa591419e58700d6adeb9f9ccec67a2bc56b8b7f549bae8797b095ed21bbbd",
+      "before_suite_sha256": "44167137b1004b84985505e8b7468fcbd5c4b3d6f99a1b2b33e4b2714767e23c"
+    },
+    "src/appl/rmcdhf_mpi/matrixmpi.f90": {
+      "after_suite_sha256": "17af13c44ea51dd89e8ac2e85a10f73f3b3c60b06c509294c2cb78c779b82464",
+      "before_suite_sha256": "1aebf8c2ecd30ab49faf0086bd0a5190ff198ecb990707f55c76692d43dcf25a"
+    },
+    "src/appl/rmcdhf_mpi/setham.f90": {
+      "after_suite_sha256": "ef27aec414e5efaf363180fdc34b8306003d537dfd97c563f4ebbfa07f1fecd2",
+      "before_suite_sha256": "fd9e115e87ebfa8551904c82d13d1eb098dbc2d5cadfb18ac360c279c695fd58"
+    },
+    "src/apps/rmcdhf_mpi/mcp_density_contractions.f90": {
+      "after_suite_sha256": "1fb5446e372deaa210e621fbc438a515df858bde2b30de53f13417805d75db14",
+      "before_suite_sha256": "e5c50a7bf79d2ed8ae315599e8901db5a02bbb3157c7196e574ff6183b378067"
+    }
+  },
+  "previous_manifest_sha256": "0ec2f457ce01df71808269449c54491471a8b27137b76bbb2a0477d5656481ed",
+  "schema_version": 1
+}

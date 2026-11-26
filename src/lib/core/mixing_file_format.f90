@@ -1,12 +1,12 @@
 ! Indexed little-endian ASF mixing streams.
 module mixing_file_format
-    use, intrinsic :: iso_fortran_env, only: int8, int32, int64, real64, file_storage_size, iostat_end
+    use, intrinsic :: iso_fortran_env, only: int8, int32, int64, real64, file_storage_size, iostat_end, error_unit
     use, intrinsic :: ieee_arithmetic, only: ieee_support_datatype, ieee_is_finite
-    use input_error_handling, only: fail_input_io
+    use input_error_handling, only: fail_input_io, abort_input
     implicit none (type, external)
     private
     public :: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, read_mixing_vectors
-    public :: open_mixing_stream, open_transformed_mixing_stream, write_mixing_block
+    public :: open_mixing_stream, open_transformed_mixing_stream, write_mixing_block, close_mixing_stream
 
     character(8), parameter :: stream_signature = "CSF--MIX"
     character(8), parameter :: incomplete_signature = "GRMIXTMP"
@@ -24,6 +24,7 @@ module mixing_file_format
 
     ! Each program writes one mixing stream at a time. MPI writers use this on rank zero.
     type(mixing_file), save :: output
+    character(:), allocatable, save :: output_path
 contains
     logical function supports_stream_encoding()
         supports_stream_encoding = file_storage_size == 8 .and. ieee_support_datatype(0.0_real64) .and. &
@@ -39,11 +40,15 @@ contains
         character(*), intent(in) :: path
         integer, intent(out) :: unit, status
         integer :: block, symmetry
-        integer(int64) :: level_start, offset, csfs, levels, values
+        integer(int64) :: level_start, offset, csfs, levels, values, total_csfs, total_levels
 
         unit = -1
         status = 1
+        if (output%unit /= -1 .or. symmetry_block_count < 1) return
         if (.not. supports_stream_encoding() .or. len_trim(loaded_csf_basis_id) /= 64) return
+        total_csfs = sum(int(csf_counts_by_block(1:symmetry_block_count),int64))
+        total_levels = sum(int(eigenvector_counts_by_block(:symmetry_block_count),int64))
+        if (min(total_csfs,total_levels) < 1 .or. max(total_csfs,total_levels) > huge(0)) return
         if (allocated(output%directory)) deallocate(output%directory)
         allocate(output%directory(6,symmetry_block_count), stat=status)
         if (status /= 0) return
@@ -51,8 +56,8 @@ contains
         output%orbital_count = orbital_count
         output%basis_id = loaded_csf_basis_id
         output%block_count = symmetry_block_count
-        output%csf_count = sum(csf_counts_by_block(1:symmetry_block_count))
-        output%level_count = sum(eigenvector_counts_by_block(:symmetry_block_count))
+        output%csf_count = int(total_csfs)
+        output%level_count = int(total_levels)
         offset = header_bytes + block_bytes*symmetry_block_count + level_bytes*output%level_count
         level_start = 0
         output%coefficient_count = 0
@@ -73,6 +78,7 @@ contains
             output%coefficient_count = output%coefficient_count + values
         end do
         call open_mixing_output(path, unit, status)
+        if (status == 0) output_path = path
     end subroutine
 
     subroutine open_transformed_mixing_stream(input_file, path, unit, status)
@@ -80,14 +86,21 @@ contains
         character(*), intent(in) :: path
         integer, intent(out) :: unit, status
 
+        unit = -1
+        status = 1
+        if (output%unit /= -1) return
         ! The transformation changes coefficients, not the source block layout or basis digest.
         output = input_file
+        output%unit = -1
+        output%block = 0
         call open_mixing_output(path, unit, status)
+        if (status == 0) output_path = path
     end subroutine
 
     subroutine open_mixing_output(path, unit, status)
         character(*), intent(in) :: path
         integer, intent(out) :: unit, status
+        integer :: close_status
 
         unit = -1
         open(newunit=unit, file=path, status="replace", action="write", access="stream", form="unformatted", iostat=status)
@@ -95,44 +108,107 @@ contains
         write(unit,iostat=status) incomplete_signature, transfer([int(output%electron_count,int64), &
             int(output%orbital_count,int64), int(output%block_count,int64), int(output%csf_count,int64), &
             int(output%level_count,int64)], [0_int8]), output%basis_id, transfer(output%directory,[0_int8])
-        if (status /= 0) close(unit)
+        if (status == 0) flush(unit,iostat=status)
+        if (status /= 0) then
+            close(unit,iostat=close_status)
+            unit = -1
+            return
+        end if
+        output%unit = unit
     end subroutine
 
-    subroutine write_mixing_block(unit, block, roots, energies, coefficients)
-        integer, intent(in) :: unit, block, roots(:)
+    subroutine write_mixing_block(unit, block, roots, energies, coefficients, abort_handler)
+        integer, intent(inout) :: unit
+        integer, intent(in) :: block, roots(:)
         real(real64), intent(in) :: energies(:), coefficients(:)
-        integer(int64) :: position, first, last
+        procedure(abort_input), optional :: abort_handler
+        integer(int64) :: position, first, last, actual_size
         integer :: root, status
         integer(int8) :: table(16,size(roots))
 
+        if (unit == -1 .or. unit /= output%unit .or. block < 1 .or. block > output%block_count) &
+            call fail_mixing_output(0, "Invalid mixing output unit or block", abort_handler)
+        if (block == 1 .and. output%block == output%block_count) then
+            ! Start the new pass with an empty payload. A short rewrite must not
+            ! inherit bytes from the preceding pass and satisfy the size check.
+            close(unit,iostat=status)
+            if (status /= 0) call fail_mixing_output(status, "Cannot close preceding mixing pass", abort_handler)
+            call open_mixing_output(output_path,unit,status)
+            if (status /= 0) call fail_mixing_output(status, "Cannot start new mixing pass", abort_handler)
+            output%block = 0
+        end if
+        if (block /= output%block+1) call fail_mixing_output(0, "Out-of-order mixing block", abort_handler)
         if (size(roots) /= output%directory(4,block) .or. size(energies) /= size(roots) .or. &
             size(coefficients,kind=int64) /= output%directory(3,block)*output%directory(4,block)) &
-            error stop "Mixing block dimensions differ from the directory"
+            call fail_mixing_output(0, "Mixing block dimensions differ from the directory", abort_handler)
         do root = 1, size(roots)
             table(:8,root) = transfer(int(roots(root),int64), [0_int8])
             table(9:,root) = transfer(energies(root), [0_int8])
         end do
         if (block == 1) then
             write(unit,pos=1,iostat=status) incomplete_signature
-            if (status /= 0) error stop "Cannot begin mixing coefficient update"
-            flush(unit)
+            if (status /= 0) call fail_mixing_output(status, "Cannot begin mixing coefficient update", abort_handler)
+            flush(unit,iostat=status)
+            if (status /= 0) call fail_mixing_output(status, "Cannot flush incomplete mixing signature", abort_handler)
         end if
         position = header_bytes + block_bytes*output%block_count + level_bytes*output%directory(5,block) + 1
         write(unit,pos=position,iostat=status) table
-        if (status /= 0) error stop "Cannot write ASF energies"
+        if (status /= 0) call fail_mixing_output(status, "Cannot write ASF energies", abort_handler)
         position = output%directory(6,block) + 1
         do first = 1_int64, size(coefficients,kind=int64), buffer_values
             last = min(first+buffer_values-1, size(coefficients,kind=int64))
             write(unit,pos=position,iostat=status) transfer(coefficients(first:last), [0_int8])
-            if (status /= 0) error stop "Cannot write ASF mixing coefficients"
+            if (status /= 0) call fail_mixing_output(status, "Cannot write ASF mixing coefficients", abort_handler)
             position = position + 8*(last-first+1)
         end do
         if (block == output%block_count) then
+            flush(unit,iostat=status)
+            if (status /= 0) call fail_mixing_output(status, "Cannot flush mixing payload", abort_handler)
+            ! Check the disconnected file's size. A runtime may report the logical
+            ! position on a connected unit even if the underlying write was short.
+            close(unit,iostat=status)
+            if (status /= 0) call fail_mixing_output(status, "Cannot close the mixing payload", abort_handler)
+            actual_size = -1_int64
+            inquire(file=output_path,size=actual_size,iostat=status)
+            if (status /= 0 .or. actual_size /= position-1) &
+                call fail_mixing_output(status, "Incomplete mixing payload after flush", abort_handler)
+            open(newunit=unit,file=output_path,status="old",action="write",access="stream",form="unformatted",iostat=status)
+            if (status /= 0) call fail_mixing_output(status, "Cannot reopen mixing payload", abort_handler)
+            output%unit = unit
             write(unit,pos=1,iostat=status) stream_signature
-            if (status /= 0) error stop "Cannot finalize mixing stream"
-            flush(unit)
+            if (status /= 0) call fail_mixing_output(status, "Cannot finalize mixing stream", abort_handler)
+            flush(unit,iostat=status)
+            if (status /= 0) call fail_mixing_output(status, "Cannot flush complete mixing signature", abort_handler)
         end if
+        output%block = block
     end subroutine
+
+    subroutine close_mixing_stream(unit, abort_handler)
+        integer, intent(in) :: unit
+        procedure(abort_input), optional :: abort_handler
+        integer :: status
+
+        if (unit == -1 .or. unit /= output%unit) &
+            call fail_mixing_output(0, "Invalid mixing output unit on close", abort_handler)
+        if (output%block /= output%block_count) &
+            call fail_mixing_output(0, "Cannot close an incomplete mixing stream", abort_handler)
+        close(unit,iostat=status)
+        if (status /= 0) call fail_mixing_output(status, "Cannot close mixing stream", abort_handler)
+        output = mixing_file()
+        deallocate(output_path)
+    end subroutine close_mixing_stream
+
+    subroutine fail_mixing_output(status, context, abort_handler)
+        integer, intent(in) :: status
+        character(*), intent(in) :: context
+        procedure(abort_input), optional :: abort_handler
+
+        write(error_unit,"(a,a,a,i0,a)") "Mixing output failure: ", context, " (iostat ", status, ")"
+        if (allocated(output_path)) write(error_unit,"(a,a)") "Mixing output file: ", output_path
+        flush(error_unit)
+        if (present(abort_handler)) call abort_handler()
+        error stop 1
+    end subroutine fail_mixing_output
 
     subroutine open_mixing_input(file, path, basis_id)
         type(mixing_file), intent(out) :: file

@@ -357,9 +357,9 @@ contains
         if (reuse_requested) call end_reuse_block(symmetry_block_index)
         stage_start_count = stage_clock()
         ! Deallocate storage that is no longer required
-        call dalloc (csf_subshell_occupations, "csf_subshell_occupations", "compute_mcp_angular_coefficients")
-        call dalloc (csf_subshell_quantum_codes, "csf_subshell_quantum_codes", "compute_mcp_angular_coefficients")
-        call dalloc (csf_angular_codes, "csf_angular_codes", "compute_mcp_angular_coefficients")
+        deallocate(csf_subshell_occupations)
+        deallocate(csf_subshell_quantum_codes)
+        deallocate(csf_angular_codes)
         call manage_angular_coefficient_buffer (3)
         call record_stage("csf_and_pair_buffer_release", symmetry_block_index, stage_start_count)
         ! Write out a report for this run

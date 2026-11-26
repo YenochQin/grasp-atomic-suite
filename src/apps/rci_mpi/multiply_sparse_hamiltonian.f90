@@ -18,7 +18,7 @@ contains
     ! Block version by Xinghong He. Last revision: 18 Jun 1998
     subroutine multiply_sparse_hamiltonian(n, m, b, c)
         ! Module dependencies
-        use, intrinsic :: iso_fortran_env, only: real64
+        use, intrinsic :: iso_fortran_env, only: real64, int64
         use sparse_hamiltonian_storage,          only: hamiltonian_values
         use mpi_state, only: mpi_process_count, mpi_rank
         use real_vector_initialization, only: initialize_real_vector
@@ -40,7 +40,8 @@ contains
 
         ! Local declarations
         integer :: value_count
-        integer      :: ibeg, iend, icol, nelc, iv
+        integer :: icol, iv
+        integer(int64) :: ibeg, iend
         real(real64) :: diag, dl
 
         ! Initialise the result matrix; note that this is specific to the
@@ -53,10 +54,9 @@ contains
         iend = 0
         do icol = mpi_rank + 1, n, mpi_process_count
             iend = iend + icol
-            nelc = iend - ibeg + 1
             do iv = 1, m
                 diag = c(icol,iv) + hamiltonian_values(iend)*b(icol,iv)
-                call reduce_sparse_matrix_product (nelc - 1, b(1:n,iv), c(1:n,iv), &
+                call reduce_sparse_matrix_product (icol - 1, b(1:n,iv), c(1:n,iv), &
                     hamiltonian_values(ibeg:iend), b(icol,iv), dl)
                 c(icol,iv) = diag + dl
             end do

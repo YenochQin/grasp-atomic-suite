@@ -33,7 +33,7 @@
       use standard_io_units, only: stderr_unit, stdin_unit, stdout_unit
       use transition_basis_blocks,            only: transition_block_count, cumulative_csf_counts
       use array_memory_management, only: alloc, dalloc, ralloc
-      use, intrinsic :: iso_fortran_env, only: iostat_end
+      use, intrinsic :: iso_fortran_env, only: iostat_end, int8
       use mpi_io_errors, only: fail_input_io_mpi
 !-----------------------------------------------
 !   I n t e r f a c e   B l o c k s
@@ -127,20 +127,20 @@
 !
       if(igg == 1) then
          ncfd = 1000
-         call alloc (csf_subshell_occupations,  max_orbitals,  ncfd, "csf_subshell_occupations",   "lodcslbio")
+         allocate(csf_subshell_occupations(max_orbitals,ncfd))
          call alloc (csf_subshell_quantum_codes, max_orbitals,3,ncfd, "csf_subshell_quantum_codes",  "lodcslbio")
          call alloc (csf_coupling_quantum_codes,max_orbitals,  ncfd, "csf_coupling_quantum_codes", "lodcslbio")
       else if(igg == 2) then
          ncfd = 1000 + csf_count
-         call ralloc (csf_subshell_occupations,  max_orbitals,  ncfd, "csf_subshell_occupations",   "lodcslbio")
+         call resize_occupations(ncfd)
          call ralloc (csf_subshell_quantum_codes, max_orbitals,3,ncfd, "csf_subshell_quantum_codes",  "lodcslbio")
          call ralloc (csf_coupling_quantum_codes,max_orbitals,  ncfd, "csf_coupling_quantum_codes", "lodcslbio")
       else if(igg == 3) then
-         call dalloc (csf_subshell_occupations,   "csf_subshell_occupations",   "lodcslbio")
+         deallocate(csf_subshell_occupations)
          call dalloc (csf_subshell_quantum_codes,  "csf_subshell_quantum_codes",  "lodcslbio")
          call dalloc (csf_coupling_quantum_codes, "csf_coupling_quantum_codes", "lodcslbio")
          ncfd = 1000
-         call alloc (csf_subshell_occupations,  max_orbitals,  ncfd, "csf_subshell_occupations",   "lodcslbio")
+         allocate(csf_subshell_occupations(max_orbitals,ncfd))
          call alloc (csf_subshell_quantum_codes, max_orbitals,3,ncfd, "csf_subshell_quantum_codes",  "lodcslbio")
          call alloc (csf_coupling_quantum_codes,max_orbitals,  ncfd, "csf_coupling_quantum_codes", "lodcslbio")
       end if
@@ -243,7 +243,7 @@
 !        where NCF is incremented
          if (csf_count > ncfd) then
             newsiz = ncfd + ncfd/2
-            call ralloc (csf_subshell_occupations,  max_orbitals,  newsiz, "csf_subshell_occupations",   "lodcslbio")
+            call resize_occupations(newsiz)
             call ralloc (csf_subshell_quantum_codes, max_orbitals,3,newsiz, "csf_subshell_quantum_codes",  "lodcslbio")
             call ralloc (csf_coupling_quantum_codes,max_orbitals,  newsiz, "csf_coupling_quantum_codes", "lodcslbio")
             ncfd = newsiz
@@ -596,4 +596,12 @@
    29 close(csf_input_unit)
       stop
 !
+      contains
+         subroutine resize_occupations(capacity)
+            integer, intent(in) :: capacity
+            integer(int8), allocatable :: resized(:,:)
+            allocate(resized(max_orbitals,capacity))
+            resized(:,:size(csf_subshell_occupations,2)) = csf_subshell_occupations
+            call move_alloc(resized, csf_subshell_occupations)
+         end subroutine resize_occupations
       end subroutine lodcslbio

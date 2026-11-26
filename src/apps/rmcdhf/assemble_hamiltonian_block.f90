@@ -40,7 +40,8 @@ contains
         character(len=*), parameter :: routine_name = "assemble_hamiltonian_block"
 
         ! Local declarations
-        integer :: block_csf_offset, orbital_index, csf_index, itmp, diagonal_element_index, km, k, k0, ib, &
+        integer(int64) :: diagonal_element_index
+        integer :: block_csf_offset, orbital_index, csf_index, itmp, km, k, k0, ib, &
             & first_orbital_two_j, second_orbital_two_j, kmin&
             , kmax, ndim, file_block_index, file_csf_count, file_coefficient_count, io_status, packed_orbital_label, &
                 & contribution_count, &

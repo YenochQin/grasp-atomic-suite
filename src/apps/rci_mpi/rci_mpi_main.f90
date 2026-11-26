@@ -22,6 +22,8 @@ program rci_mpi_main
     use calculation_state_files, only: read_state_name, orbital_input_path, descriptor_input_path
     use yes_no_input, only: read_yes_no
     use mpi_csf_block_input, only: open_csf_blocks_mpi
+    use mpi_io_errors, only: abort_input_mpi
+    use breit_radial_integral_coefficients, only: set_breit_abort_handler
 
     ! Procedure interfaces
     use configure_ci_debug_output_interface, only: configure_ci_debug_output
@@ -64,6 +66,7 @@ program rci_mpi_main
     call initialize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length, &
         & start_clock_count,       &
         startup_directory, permanent_directory, scratch_directory, "RCI_MPI")
+    call set_breit_abort_handler(abort_input_mpi)
 
     ! Read the calculation options on rank 0 and broadcast them.
 

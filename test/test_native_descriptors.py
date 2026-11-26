@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from itertools import combinations, islice
 import os
 import shutil
 import subprocess
@@ -35,8 +36,11 @@ def main() -> None:
             result.stdout
         )
         lifecycle = binaries.parent / "test" / "test.descriptor_lifecycle"
+        alternate, _, _ = write_fixture(
+            root / "alternate", ["1s"], [], [[Record((), 0)]]
+        )
         result = subprocess.run(
-            [str(lifecycle), str(parquet)],
+            [str(lifecycle), str(parquet), "dual", str(alternate)],
             cwd=root,
             check=False,
             capture_output=True,
@@ -121,6 +125,22 @@ def main() -> None:
             cwd=root, check=False, capture_output=True, text=True, timeout=30,
         )
         assert result.returncode == 0 and "PASS descriptor lifecycle" in result.stdout, result.stdout + result.stderr
+        orbital_numbers = list(range(1, 17))
+        batch = [
+            Record(tuple(Shell(f"{n}s", 2) if n in paired else Shell(f"{n}s", 1, 1, 1)
+                         for n in sorted(paired + single)), 0)
+            for paired, single in islice(
+                ((paired, single) for paired in combinations(orbital_numbers, 2)
+                 for single in combinations([n for n in orbital_numbers if n not in paired], 2)),
+                8193,
+            )
+        ]
+        batch_parquet, _, _ = write_fixture(root / "batches", [], [f"{n}s" for n in orbital_numbers], [batch])
+        result = subprocess.run(
+            [str(lifecycle), str(batch_parquet), "batches"],
+            cwd=root, check=False, capture_output=True, text=True, timeout=30,
+        )
+        assert result.returncode == 0 and "PASS descriptor batch boundary" in result.stdout, result.stdout + result.stderr
     print("Native descriptor integration passed")
 
 

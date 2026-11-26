@@ -34,7 +34,8 @@ contains
         integer , intent(in) :: mpi_rank
         integer , intent(in) :: mpi_process_count
 
-        integer :: block_csf_offset, orbital_index, csf_index, itmp, diagonal_element_index, km, k, k0, ib, &
+        integer(int64) :: diagonal_element_index
+        integer :: block_csf_offset, orbital_index, csf_index, itmp, km, k, k0, ib, &
             first_orbital_two_j, second_orbital_two_j, kmin, kmax, i, loc, mcp_channel, length, orbitals(4)
         integer(int64) :: first
         real(real64) :: diaa, coef, f0aa, fkaa, f0ab, gkab, radial_integral_value

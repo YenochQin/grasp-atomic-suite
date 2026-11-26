@@ -1,0 +1,31 @@
+{
+  "description": "Make CSF basis and active eigenstate arrays owned allocations, and validate mixing output completion.",
+  "files": {
+    "src/appl/rmcdhf/scf.f90": {
+      "after_suite_sha256": "bc83a90fe097e73b773eb2365ac33e1c37b7c7195999eda2ca054458504fc1fd",
+      "before_suite_sha256": "4afe09903e42fddf1eb7fc4ea6c3e0c39d2017cdc62fc8eddd1acbf073a78cfb"
+    },
+    "src/appl/rmcdhf_mem/scf.f90": {
+      "after_suite_sha256": "bc83a90fe097e73b773eb2365ac33e1c37b7c7195999eda2ca054458504fc1fd",
+      "before_suite_sha256": "4afe09903e42fddf1eb7fc4ea6c3e0c39d2017cdc62fc8eddd1acbf073a78cfb"
+    },
+    "src/appl/rmcdhf_mem_mpi/matrixmpi.f90": {
+      "after_suite_sha256": "140b7a7354ee114ee85fbd528990d8ce3a2b500eec5383a1295bab3412cec8a5",
+      "before_suite_sha256": "6519d675c66b49da1b64f501e2e30e2b375fb70fd07ffd5676ff176699e9fd09"
+    },
+    "src/appl/rmcdhf_mem_mpi/scfmpi.f90": {
+      "after_suite_sha256": "941a265e7ee5044d725c653ad42270a6bdb8a651bb6d4db8a54c84370d97f60a",
+      "before_suite_sha256": "80319b90c0fd445f0f807bfa2d979ef7fb93ac76c500f869776814e831a7b1b8"
+    },
+    "src/appl/rmcdhf_mpi/matrixmpi.f90": {
+      "after_suite_sha256": "74663c9c11fc55d4b867fd44431aa88b8c01bf025333dddbbccbe30b8c462ed4",
+      "before_suite_sha256": "17af13c44ea51dd89e8ac2e85a10f73f3b3c60b06c509294c2cb78c779b82464"
+    },
+    "src/appl/rmcdhf_mpi/scfmpi.f90": {
+      "after_suite_sha256": "f52372c69d5c8bc56c3f9b58f967eca9159561ce93a8b61c6156e6dc5401964c",
+      "before_suite_sha256": "e88a70431b95a66a45d517175358a7ab01379c2bd8d84b523239ad864dc98b27"
+    }
+  },
+  "previous_manifest_sha256": "9dae6e23733f9b71b9c2f61fe9eca5def2b171b6c05a4d4def6e74afbdad3824",
+  "schema_version": 1
+}

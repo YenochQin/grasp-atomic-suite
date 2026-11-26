@@ -17,9 +17,9 @@ module orbital_csf_basis
         previous_orbital_energy_changes(max_orbitals)
     integer :: csf_count, orbital_count, left_csf_count, left_orbital_count
     ! Occupation storage is indexed by orbital, then by CSF.
-    integer(int8), pointer :: csf_subshell_occupations(:, :) => null()
+    integer(int8), allocatable :: csf_subshell_occupations(:, :)
     ! The paired left basis uses default-kind occupations in the same index order.
-    integer, pointer :: left_occupations(:, :) => null()
+    integer, allocatable :: left_occupations(:, :)
     integer :: orbital_principal_n(max_orbitals), orbital_kappa(max_orbitals), left_principal_n(max_orbitals), &
         left_kappa(max_orbitals)
     integer :: orbital_l(max_orbitals), orbital_two_j(max_orbitals)

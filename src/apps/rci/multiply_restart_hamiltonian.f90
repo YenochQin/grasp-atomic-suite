@@ -18,7 +18,7 @@ contains
     subroutine multiply_restart_hamiltonian(n, m, b, c)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
-        use, intrinsic :: iso_fortran_env, only: real64
+        use, intrinsic :: iso_fortran_env, only: real64, int64
         use eigenstate_expansions, only: hamiltonian_energy_shift
         use ci_restart_units, only: restart_matrix_unit
         use rci_matrix_file_position, only: nposition
@@ -66,7 +66,7 @@ contains
             do rhs_vector_index = 1, m
                 output_with_diagonal = c(stored_column_index,rhs_vector_index) + (stored_column_values(stored_entry_count)- &
                     & hamiltonian_energy_shift)*b(stored_column_index,rhs_vector_index)
-                call sparse_dot_scatter (stored_entry_count - 1, b(1,rhs_vector_index), c(1,rhs_vector_index), &
+                call sparse_dot_scatter (int(stored_entry_count,int64) - 1, b(1,rhs_vector_index), c(1,rhs_vector_index), &
                     & stored_row_indices(1), stored_column_values(1), b(stored_column_index,rhs_vector_index&
                     ), off_diagonal_dot_product)
                 c(stored_column_index,rhs_vector_index) = output_with_diagonal + off_diagonal_dot_product

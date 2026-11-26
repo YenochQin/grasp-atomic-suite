@@ -1,6 +1,6 @@
 # Suite F2018 现代化实施与验收计划
 
-**状态：首批 P0、P1 MPI 绑定迁移和 BLAS/LAPACK LP64 配置验收已实施。** 2026-11-26 按 Suite `3.4dev1` 的 `f211a0a35a957fab85c65a8a514d779183d0d59e` 复核。P0 提交 `88cb04a` 完成 RCI 续算边界、单 rank 失败传播及 V3 首轮对照。P1 的 MPI 绑定提交为 `5d77d93`，也是本次 LP64 配置检查的改造前基准。后续工作包括共享状态的所有权和多根计算链。
+**状态：P1 分批实施中。** 2026-11-26 按 Suite `3.4dev1` 的 `f211a0a35a957fab85c65a8a514d779183d0d59e` 复核。P0 提交 `88cb04a` 完成 RCI 续算边界、单 rank 失败传播及 V3 首轮对照。P1 的 MPI 绑定提交为 `5d77d93`，LP64 配置提交 `f493c99` 是稀疏矩阵批次的改造前基准。后续批次已实施基组与活动系数所有权、混合流写端、Davidson 残差判定和 Breit 故障传播，并取得四种 RMCDHF 的小型多根基准对照。
 
 范围覆盖 `src/apps` 内 25 个 Fortran 应用目标，以及 `src/lib` 内 7 个库目录，含 Rust 描述符静态库及其 Fortran 调用端。OpenMP 的现行应用入口是 `jj2lsj_omp`。普通 RMCDHF 保留四个变体，各自有版本基线。目标范围以 [CMake 入口](../../CMakeLists.txt#L158)、[jj2lsj 构建定义](../../src/apps/jj2lsj/CMakeLists.txt)和[退役范围](../implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md)为准。
 
@@ -84,6 +84,26 @@ CMake 固定以 `BLA_SIZEOF_INTEGER=4` 搜索，并在发现库后运行探针�
 
 交叉配置通过 `CMAKE_CROSSCOMPILING_EMULATOR` 执行探针。配置和部署应使用相同的库与加载环境。更换编译器、供应商库或部署环境后需重新配置并运行线性代数回归。
 
+### P1 · 稀疏矩阵存储与数组所有权
+
+RCI 的 `.res` 按列存储，每列元素数和 CSF 索引为默认整数。串行和 MPI 原先用默认整数累加内存列尾，即使读入数组按 `int64` 的总元素数分配。串行 RCI 还在进入小矩阵分支前计算了默认整数的三角长度。现在累计位置从 RCI 装载一直以 `int64` 传到矩阵乘和 Davidson 初始子空间提取。小矩阵的三角长度只在阶数检查之后计算。RMCDHF 在顺序 MCP 及 MPI 索引 MCP 读入后扩展列尾，内存版从各自的 MCP 缓存扩展。MCP 的 32 位位置字段、RCI 每列记录和 LP64 调用继续使用各自的整数约定。[共享存储](../../src/lib/grasp_shared/sparse_hamiltonian_storage.f90) · [串行 RCI 装载](../../src/apps/rci/diagonalize_hamiltonian_block.f90) · [MPI RCI 装载](../../src/apps/rci_mpi/diagonalize_hamiltonian_block.f90) · [MPI MCP 读入](../../src/apps/rmcdhf_mpi/solve_hamiltonian_blocks_mpi.f90)
+
+矩阵值、列尾和 CSF 索引由模块中的 `allocatable` 持有。RCI 装配期间按列容量分配，求解时按所选存储方式分配。RMCDHF 按块分配，轨道势例程在其独立阶段使用索引数组。调用链上没有这三个数组的原地扩容或指针别名。普通串行及两个内存版的跳块分支原先漏释放矩阵值，现将值数组分配放到跳过判定之后。串行 RCI 的内存估算及 MPI RMCDHF 的工作区预留已计入每个列尾 8 字节。通用 `ralloc` 的显式下界整数和字节重载按新旧下标区间的交集复制，覆盖空交集。GNU 16.2.1 在旧实现中复现了从 `-2:1` 扩到 `-3:3` 时读取旧数组下标 `-3` 的越界。[数组回归](../../test/f2018/array_memory.f90) · [跳块及重用回归](../../test/f2018/ci_damping.F90) · [RMCDHF 来源清单](../reference/rmcdhf_sparse_storage_snapshot.json)
+
+本地用 GNU Fortran 16.2.1、LP64 OpenBLAS 和 Open MPI 5.0.11 构建候选工作树，在 `f2018-check` 下验证。串行构建通过 83 项 CTest。MPI 构建首轮通过 126 项，更新来源清单后复跑两个来源检查通过，使用较短临时路径重跑双基组流程也通过，共 129 项。RCI 续算和生产块求解的分配、跳块及重用覆盖 MPI 1、2、4 ranks。另有稀疏矩阵乘与空分区用例。和 `f493c99` 的串行固定首轮对照中，两种求解器各七份二进制输出逐字节一致，科学文本一致。内存版的主机空闲内存日志随运行时变化。两个 MPI 变体用同一套双对称块输入分别在 1、2、4 ranks 运行，改造前后均由求解器在第 2 轮结束。各布局的能量输出、混合系数和径向波函数逐字节一致，普通 MPI 版的每 rank 矩阵及径向追踪也逐字节一致。构建目录和日志在工作区的 `temp/tests/suite-p1-sparse/`。本批未运行超过 32 位累计位置的完整大矩阵或全配置验收矩阵。
+
+### P1 · 基组与活动系数、混合流及多根回归
+
+本批在上一批稀疏矩阵工作树基础上验证。活动与左侧基组的占据和耦合数组使用 `allocatable`，完整加载和合并使用 `move_alloc` 转移所有权。活动本征值、混合系数和 RCI 预计算系数使用原生分配与释放。描述符的 Rust 句柄由 Fortran 类型内部管理，关闭后清除摘要、块目录及轨道表。用两套不同 V3 基组交替读取，核对一侧失败后另一侧的已知数据和摘要，覆盖重复关闭、重开、完整基组替换以及打开失败时保留原基组。[完整基组加载](../../src/lib/core/csf_full_basis_reader.f90) · [描述符回归](../../test/descriptor_lifecycle.f90) · [来源清单](../reference/rmcdhf_basis_ownership_snapshot.json)
+
+RCI 用两条合法的顺序记录验证累计位置跨过 `2^31-1`，MPI MCP 用小分片分别检查 `2^31-1` 与 `2^31` 的拒绝路径。混合流按块顺序写入，每一轮重新建立不完整流。刷出并关闭载荷后，核对磁盘长度，再写完成签名。固定写入上限复现了短写仍产生完成签名的问题，修复后的首轮与重复写入均保留不完整签名。MPI 根进程出错时调用现有的 MPI 终止回调。[RCI 计数夹具](../../test/f2018/sparse_offset_counts.f90) · [MPI MCP 边界](../../test/test_rmcdhf_mcp_paths.py) · [混合流写端](../../src/lib/core/mixing_file_format.f90) · [混合流回归](../../test/f2018/check_mixing_output.py)
+
+解析双根夹具的能隙为 `1e-7`，有限试探空间触发 Davidson 重启。改造前的两个残差范数约 `2.85e-8`，求解器已返回成功。能量和系数的变化现用于确定扩展优先级，根的接受由残差决定。修复后两个残差范数约 `6.6e-13`，通过正交性、近简并子空间和重用返回向量的检查。Breit 小夹具对照直接项、交换项及相位，非法轨道组合和零张量秩分支输出诊断并以非零状态退出，MPI 单个工作 rank 的失败触发全作业终止。[Davidson 回归](../../test/f2018/davidson_contracts.F90) · [Breit 回归](../../test/f2018/breit_radial_contracts.F90) · [RCI MPI 接线](../../src/apps/rci_mpi/rci_mpi_main.f90)
+
+四种 RMCDHF 均与各自的上一批构建对照，使用同一套 Ni 核参数、双对称块和初始轨道，每个布局共用一份 MCP 输入。偶块选根 1、2，奇块选根 1，等权并仅更新 `1s`。固定首轮均因迭代上限结束，独立运行中两种串行程序均在第 3 轮结束，两种 2-rank MPI 程序均在第 2 轮结束。各自对照的能量轨迹、混合流和径向波函数一致。固定轨道 RCI 的小稠密块由实际 `.res` 重建矩阵，核对冷启动、完整续算和部分续算的两个根。串行及 MPI 1、2、4 ranks 的最大归一化残差为 `9.548e-17`，最大正交误差为 `3.331e-16`。[RCI 残差回归](../../test/test_rci_restart.py)
+
+GNU Fortran 16.2.1、LP64 OpenBLAS 和 Open MPI 5.0.11 的 `f2018-check` 构建通过串行 87 项及 MPI 135 项 CTest。用 16 个轨道和 8,193 个 CSF 另行核对 Fortran 读取边界，检查第 8,192 和 8,193 行的占据与次序，以及末行耦合码，读取进程峰值 RSS 为 143,276 KiB。构建及日志位于工作区 `temp/tests/suite-p1-follow-up/`。代表性大基组的峰值内存、真实多根生产模型与全配置矩阵仍需验收。
+
 ## 后续批次与共享库
 
 先用第一批夹具保护读写和失败语义，再迁移通信接口。改动共用矩阵、轨道或角系数之前，先取得相应消费者的固定输入数值基线。单个子项目可按自身依赖推进。以下路径以实现库为单位；描述符的 Rust 端和 Fortran 调用端共同验收。
@@ -91,12 +111,12 @@ CMake 固定以 `BLA_SIZEOF_INTEGER=4` 搜索，并在发现库后运行探针�
 | 位置与优先级 | 实施范围和已有基础 | 验收证据 |
 | --- | --- | --- |
 | `mpi` · P1 | 本机迁移覆盖 communicator、datatype、status、常规元素计数和已有分块调用。部署库升级时重新验证可用绑定和重载。[本批验证](#p1-mpi-绑定计数及分块) | 按部署环境记录 1/2/4 ranks 正常与失败路径、空分区、分块结果和计数范围。 |
-| `grasp_shared` · P1 | LP64 配置探针和拒绝路径已验收。沿稀疏矩阵列尾偏移、SCF 系数与基组指针继续追踪分配者和有效期。`alloc` 约定传入无活跃目标的指针，先 `nullify` 再 `associated` 无法检测误传的活目标。先核对调用方，再选择拥有数据的 `allocatable` 或有明确生存期的借用视图。[LP64 配置验收](#p1-blaslapack-lp64-接口与配置验收) · [分配接口](../../src/lib/grasp_shared/array_memory_management.f90#L11) · [稀疏存储](../../src/lib/grasp_shared/sparse_hamiltonian_storage.f90) | 对改动的分配路径测试零长度、非 1 下界、重分配保留重叠区、释放后再用。维度扩大须在算术前转换，并在转入默认整数前检查上界。 |
-| `core` · P1，写入器多实例 P2 | 混合系数写入器约定每进程一次写一个流，MPI 由 root 写。当前优先追踪打开、写块、刷新、完成标记及关闭失败能否传回正确入口。双正交代码在文件末尾关闭输入和输出。有交错输出的真实需求时再引入显式写入器对象。径向网格与稀疏矩阵乘则按已确认的共享写入依赖收紧接口。[混合流](../../src/lib/core/mixing_file_format.f90#L25) · [双正交消费者](../../src/apps/rbiotransform/read_biorthogonal_mcp.f90#L188) · [网格](../../src/lib/core/radial_grid_setup.f90) | 正常文件可由独立解析器读回。核对块目录、基组摘要、根顺序和完成标记，验证中断或截断文件及 root 写入失败。保留各程序活动网格、填充点与精度初始化时序，并用同输入核对径向数组与矩阵乘结果。 |
-| `csf_descriptor` 与 Fortran reader · P1 | 现行 V3 跨语言接口已有版本、容量及分块检查。`descriptor_source` 拥有 Rust 句柄，调用方须显式关闭并避免复制活句柄。核查双基组装载时句柄、摘要和当前块是否始终对应正确的一侧。[Fortran 所有权](../../src/lib/core/csf_descriptor_reader.f90#L19) · [C 绑定](../../src/lib/core/csf_descriptor_c_bindings.f90) · [Rust FFI](../../src/lib/csf_descriptor/src/descriptor_ffi.rs) | 双基组交替读取、失败后重开、重复关闭及错误摘要均可诊断。每个所有者只释放一次。块顺序、占据与耦合码逐项一致，分块读取记录峰值内存。 |
-| `davidson_eigensolver` · P1 | 保留显式矩阵乘回调，核对内部 assumed-size 数组的实际形状、下界和调用方式，先处理影响索引校验的入口。检查工作区重用和每根的收敛标记。[回调](../../src/lib/davidson_eigensolver/davidson_eigensolver.f90) · [稀疏初值](../../src/lib/davidson_eigensolver/davidson_sparse_initial_estimates.f90) | 扩展已有解析矩阵和提前收敛用例，增加近简并多根、重启向量、空分区。分别比较每根本征残差、正交性和近简并子空间。 |
+| `grasp_shared` · P1 | LP64 配置、稀疏矩阵存储、活动 SCF 系数和基组数组所有权已进行本地验收。`alloc` 约定传入无活跃目标的指针，先 `nullify` 再 `associated` 无法检测误传的活目标。按调用方选择拥有数据的 `allocatable` 或有明确生存期的借用视图。[LP64 配置验收](#p1-blaslapack-lp64-接口与配置验收) · [稀疏矩阵验收](#p1--稀疏矩阵存储与数组所有权) · [分配接口](../../src/lib/grasp_shared/array_memory_management.f90#L11) | 对改动的分配路径测试零长度、非 1 下界、重分配保留重叠区、释放后再用。维度扩大须在算术前转换，并在转入默认整数前检查上界。 |
+| `core` · P1，写入器多实例 P2 | 混合系数写入器约定每进程一次写一个流，MPI 由 root 写。已核对打开、写块、刷新、完成标记及关闭路径，并覆盖短写和根进程失败。双正交代码在文件末尾关闭输入和输出。有交错输出的真实需求时再引入显式写入器对象。径向网格与稀疏矩阵乘则按已确认的共享写入依赖收紧接口。[混合流](../../src/lib/core/mixing_file_format.f90#L25) · [双正交消费者](../../src/apps/rbiotransform/read_biorthogonal_mcp.f90#L188) · [网格](../../src/lib/core/radial_grid_setup.f90) | 正常文件可由独立解析器读回。核对块目录、基组摘要、根顺序和完成标记，验证中断或截断文件及 root 写入失败。保留各程序活动网格、填充点与精度初始化时序，并用同输入核对径向数组与矩阵乘结果。 |
+| `csf_descriptor` 与 Fortran reader · P1 | 现行 V3 跨语言接口已有版本、容量及分块检查。`descriptor_source` 拥有 Rust 句柄，调用方须显式关闭并避免复制活句柄。已覆盖不同基组交替读取、句柄关闭及失败后的重开和替换。[Fortran 所有权](../../src/lib/core/csf_descriptor_reader.f90#L19) · [C 绑定](../../src/lib/core/csf_descriptor_c_bindings.f90) · [Rust FFI](../../src/lib/csf_descriptor/src/descriptor_ffi.rs) | 双基组交替读取、失败后重开、重复关闭及错误摘要均可诊断。每个所有者只释放一次。块顺序、占据与耦合码逐项一致，分块读取记录峰值内存。 |
+| `davidson_eigensolver` · P1 | 保留显式矩阵乘回调，核对内部 assumed-size 数组的实际形状、下界和调用方式，先处理影响索引校验的入口。已用近简并双根夹具验证重启、返回向量重用和按根的残差判定。[回调](../../src/lib/davidson_eigensolver/davidson_eigensolver.f90) · [稀疏初值](../../src/lib/davidson_eigensolver/davidson_sparse_initial_estimates.f90) | 扩展已有解析矩阵和提前收敛用例，增加近简并多根、重启向量、空分区。分别比较每根本征残差、正交性和近简并子空间。 |
 | `spin_angular` · P1 核查，P2 按需整理 | 跟踪一个 bra/ket 配对的可变工作区。Wigner 6j 的显式缓存已有线程私有语义，检查冷启动、复用和线程数变化。只读表与可变缓存分别处理。[配对数据](../../src/lib/grasp_shared/csf_pair_angular_state.f90) · [6j 缓存](../../src/lib/spin_angular/wigner_6j.f90#L33) | 保留 NMTEJJ 整数对照，覆盖高 J、交换相位和解析选择定则零值。将角系数逐对读回，在实际启用 OpenMP 的消费者上另做多线程对照。 |
-| `breit_angular_support` · P1 | 明确 Breit 系数累加与回调的输入输出。跟踪非法轨道组合触发的库内 `STOP`，由相应串行或 MPI 入口负责故障终止。[径向系数](../../src/lib/breit_angular_support/breit_radial_integral_coefficients.f90#L311) · [回调回归](../../test/f2018/breit_procedure_hooks.f90) | 对照直接项、交换项、开关前后矩阵元素和相位；非法组合产生可识别的失败。用固定轨道 RCI 确认库测试覆盖的分支可在生产路径触发。 |
+| `breit_angular_support` · P1 | 明确 Breit 系数累加与回调的输入输出。非法轨道组合和零张量秩已有可诊断的串行失败和 MPI 终止回归。[径向系数](../../src/lib/breit_angular_support/breit_radial_integral_coefficients.f90#L311) · [回调回归](../../test/f2018/breit_procedure_hooks.f90) | 对照直接项、交换项、开关前后矩阵元素和相位；非法组合产生可识别的失败。用固定轨道 RCI 确认库测试覆盖的分支可在生产路径触发。 |
 
 跨库审查应随涉及的调用链执行。以实际编译目标、宏和模块目录重新收集编译器及 Fortitude/fortls 诊断，优先逐条查明未初始化、越界、窄化、接口与跨调用局部状态。改动 `INTENT`、可见性、固定单元号或 `USE ONLY` 前检查关键字调用、重导出、回调和错误清理。早期提示数和 529 项命名映射属于各自快照。GNU 16.2.1/Linux 历史复采的 37 个新增诊断身份中，9 个是 `-Wmaybe-uninitialized`，复核时记录赋值路径和可达输入。[告警基线](../reference/f2018/evidence-0019-gnu16-warning-baseline.md) · [静态审查及工具限制](../reviews/evidence-0012-fortls-fortitude-audit.md) · [命名映射](../reference/non_csfg_variable_renames_2026-11-16.json)
 
@@ -135,7 +155,7 @@ CMake 固定以 `BLA_SIZEOF_INTEGER=4` 搜索，并在发现库后运行探针�
 
 ## 执行入口与验收记录
 
-以下示例从 Suite 仓库根目录运行。先在目标机加载匹配的 GNU Fortran 16.2、Open MPI 和 BLAS/LAPACK；示例使用工作区共享 Python 环境的 V3 `rcsfs`。每次建立独立目录，供后续批次保留构建树、临时文件和结果。第一组命令运行**已有**接口及工作流回归。新增的 RCI 坏记录、单分片失败和首轮实际二进制对照应在实现后加入对应测试组。
+以下示例从 Suite 仓库根目录运行。先在目标机加载匹配的 GNU Fortran 16.2、Open MPI 和 BLAS/LAPACK；示例使用工作区共享 Python 环境的 V3 `rcsfs`。每次建立独立构建目录，临时文件集中在工作区的 `temp/tests`，以满足双基组 MPI 流程的路径长度限制。第一组命令运行**已有**接口及工作流回归。新增的 RCI 坏记录、单分片失败和首轮实际二进制对照应在实现后加入对应测试组。
 
 ```fish
 set -gx FC (command -v gfortran)
@@ -147,11 +167,10 @@ set suite_python "$suite_venv/bin/python"
 set -gx RCSFS_TEST_CLI "$suite_venv/bin/rcsfs"
 mkdir -p ../temp/tests
 set suite_run (realpath (mktemp -d ../temp/tests/suite-f2018.XXXXXXXX))
-mkdir -p "$suite_run/tmp"
-set -gx TMPDIR "$suite_run/tmp"
+set -gx TMPDIR (realpath ../temp/tests)
 ./configure.sh --debug --profile f2018-check --build-dir "$suite_run/check" -DRCSFS_TEST_CLI="$RCSFS_TEST_CLI"
 cmake --build "$suite_run/check" --parallel 4
-ctest --test-dir "$suite_run/check" --no-tests=error --output-on-failure -R '^(f2018_linear_algebra_contracts|f2018_davidson_contracts|state_workflow_(serial|mpi))$'
+ctest --test-dir "$suite_run/check" --no-tests=error --output-on-failure -R '^(f2018_linear_algebra_contracts|f2018_array_memory|f2018_davidson_contracts|state_workflow_(serial|mpi))$'
 ```
 
 跨共享接口、绑定或发布候选的完整配置验收使用同一环境和以下命令。矩阵覆盖三种 profile，各有 serial、MPI 和 jj2lsj OpenMP 的八种组合。保留 `matrix-validate.json`、每个配置的 CTest 结果和严格配置的逐文件告警比对。某个组合单独通过时，按该组合报告。[矩阵执行器](../../test/f2018/matrix.py) · [警告预算与测试范围](../../test/f2018/README.md)
@@ -166,6 +185,6 @@ ctest --test-dir "$suite_run/check" --no-tests=error --output-on-failure -R '^(f
 | 交付批次 | 完成时应能查到的结果 | 编制时状态 |
 | --- | --- | --- |
 | 首批 · 基线与续算 | V3 实际首轮对照、串行/MPI 合法续算、坏记录和单 rank 失败报告 | GNU Fortran 16.2.1/OpenBLAS/Check 下，两套独立构建的 `rmcdhf`、`rmcdhf_mem` 首轮科学输出一致。串行和 Open MPI 5.0.11 的 1/2/4-rank 续算回归已完成。 |
-| MPI、ABI 与共享库 | 绑定和计数用例、链接库身份、错误传播、所有权及共享核差异报告 | 本机 MPI 绑定与计数、LP64 配置和拒绝路径已验收。其余共享接口与部署环境继续按批核验。 |
-| 各程序的科学数值回归 | 四种 RMCDHF 各自的固定轮次/收敛记录、固定轨道 RCI、双正交及性质与跃迁分项对照 | 有既有夹具和专项记录，完整多根对照待实施 |
+| MPI、ABI 与共享库 | 绑定和计数用例、链接库身份、错误传播、所有权及共享核差异报告 | 本机已增加 32 位边界、CSF 基组及活动系数所有权、混合流故障、Davidson 近简并和 Breit 回归。其余共享接口与部署环境继续按批核验。 |
+| 各程序的科学数值回归 | 四种 RMCDHF 各自的固定轮次/收敛记录、固定轨道 RCI、双正交及性质与跃迁分项对照 | 四个 RMCDHF 变体已有小型多根对照，固定轨道 RCI 已核对小稠密块残差。生产规模多根、RCI 存储分支及性质与跃迁完整对照仍待验收。 |
 | 整体验收 | 候选提交的 24 配置结果、正确性告警逐项处理结论及目标部署环境报告 | 历史矩阵供追溯，候选版本另行签收 |

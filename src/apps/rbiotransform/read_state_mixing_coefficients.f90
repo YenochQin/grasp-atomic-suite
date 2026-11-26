@@ -45,9 +45,8 @@ contains
         write (output_unit, *) "Loading MIXing Coefficients File ..."
         call next_mixing_block(input_file, nb, csf_count, active_level_count, iatjp, iaspa)
         if (nb /= iblk .or. active_level_count == 0) error stop "Cannot biorthogonally transform an empty or unordered block"
-        call alloc (shifted_eigenvalues, active_level_count, "shifted_eigenvalues", "read_state_mixing_coefficients")
-        call alloc (csf_mixing_coefficients, csf_count*active_level_count, "csf_mixing_coefficients", &
-            "read_state_mixing_coefficients")
+        allocate(shifted_eigenvalues(active_level_count))
+        allocate(csf_mixing_coefficients(csf_count*active_level_count))
         call alloc (active_level_indices, active_level_count, "active_level_indices", "read_state_mixing_coefficients")
         call alloc (level_two_j_plus_one, active_level_count, "level_two_j_plus_one", "read_state_mixing_coefficients")
         call alloc (level_parity_signs, active_level_count, "level_parity_signs", "read_state_mixing_coefficients")

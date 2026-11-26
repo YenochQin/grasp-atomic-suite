@@ -8,9 +8,8 @@ module sparse_symmetric_matvec
 contains
     subroutine multiply_sparse_symmetric_matrix(matrix_order, vector_count, input_vectors, product_vectors)
         ! Module dependencies
-        use, intrinsic :: iso_fortran_env, only: real64
+        use, intrinsic :: iso_fortran_env, only: real64, int64
         use sparse_hamiltonian_storage, only: hamiltonian_values, stored_segment_end_offsets, matrix_partner_indices
-        use real_vector_initialization, only: initialize_real_vector
         use sparse_dot_and_scatter, only: sparse_dot_scatter
         implicit none (type, external)
 
@@ -21,9 +20,10 @@ contains
         real(real64), intent(inout) :: product_vectors(matrix_order, vector_count)
 
         ! Local declarations
-        integer :: column_start, column_index, column_end, column_entry_count, vector_index
+        integer :: column_index, vector_index
+        integer(int64) :: column_start, column_end, column_entry_count
         real(real64) :: diagonal_plus_previous_terms, off_diagonal_dot_product
-        call initialize_real_vector (matrix_order*vector_count, 0.0_real64, product_vectors, 1)
+        product_vectors = 0.0_real64
 
         column_start = 1
         do column_index = 1, matrix_order
