@@ -117,6 +117,9 @@ contains
             read(unit, iostat=status) radial_large_components(:last_point, orbital), radial_small_components(:last_point, orbital)
             if (status /= 0) call fail_input_io(status, unit, "RCI restart radial components for orbital "//trim(orbital_label), &
                 abort_handler)
+            ! Radial differentiation uses the full active grid, including the unsaved tail.
+            radial_large_components(last_point+1:radial_point_count, orbital) = 0.0_real64
+            radial_small_components(last_point+1:radial_point_count, orbital) = 0.0_real64
         end do
     end subroutine read_rci_restart_header
 

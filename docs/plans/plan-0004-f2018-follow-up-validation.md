@@ -47,6 +47,12 @@
 - 串行以及 MPI 1、2、4 ranks 的四 CSF、两根夹具中，完整续算和文件尾补算与各自冷启动的最大能量差、相位对齐后的最大系数差均为 0。修复前写出的串行及双 rank 文件可由修复后程序续算。串行另外测了核模型参数为空的点核记录。
 - 串行及 MPI 双 rank 的坏记录在 Check 和 Release 均非零退出并报告位置。合法续算仍使用原有顺序无格式记录布局。显式设置续算 ACCY 时，网格脚本修改串行和 MPI 共用的赋值位置。[网格脚本说明](../../scripts/README.md)
 
+### P0 · 部分续算的径向轨道尾部
+
+2026-11-27，在 Suite `8298b1ec` 上，单 rank MPI 的四 CSF、两根部分续算在 12 次复跑中失败 10 次。续算文件只保存每条轨道至其最后有效点的 P/Q 分量。径向差分仍访问整个活动网格，读到未初始化的尾部后可能写出错误的 Hamiltonian 对角元，随后在输出 ASF 贡献时越界。串行和 MPI 共用的读取器现将最后有效点之后至活动网格末端的 P/Q 补零，与冷启动读入轨道时的约定一致。复现日志在 `temp/tests/fv.raqrp1/rci-repeat-2.log`。[公共读取器](../../src/lib/core/rci_restart_records.f90#L104) · [径向差分](../../src/lib/core/radial_wavefunction_derivatives.f90#L43)
+
+在 `8298b1ec` 加上本次修复的工作树中，用 macOS arm64、GNU Fortran 16.2.0、LP64 OpenBLAS 0.3.34 和 Open MPI 5.0.11 复验。`f2018-check` 和 `f2018-release` 各通过串行及 MPI 1、2、4 ranks 的 4 项续算回归。完整续算和从干净记录边界补算均复现各自冷启动的两个根，能量差和相位对齐后的系数差分别在 `1e-10 Ha` 和 `1e-8` 的容差内。两种构建的最大归一化本征残差为 `9.618e-17`，最大正交误差为 `2.220e-16`。串行及双 rank 负例均按预期拒绝缺失或损坏的记录。Check 的单 rank 用例另连续通过 12 次。构建日志和 `check-ctest.log`、`release-ctest.log`、`check-mpi1-repeat.log` 保存在工作区 `temp/tests/rci-tail-fix.gPdghA/`。[续算回归](../../test/test_rci_restart.py)
+
 ## P1 MPI 绑定、计数及分块
 
 Suite 的生产和测试 MPI 调用统一使用 `mpi_f08`。`mpi_state` 继续提供共享进程状态并转发实际 MPI 接口。CMake 在启用 MPI 时检查 `MPI_Fortran_HAVE_F08_MODULE`，通过 `MPI::MPI_Fortran` 向消费者传递编译和链接依赖。连续字节类型使用 `type(MPI_Datatype)`，点对点消息使用 `MPI_Status` 或明确的 `MPI_STATUS_IGNORE`。rank、tag 和错误码使用默认整数。[MPI 构建入口](../../CMakeLists.txt#L170) · [运行时接口](../../src/lib/mpi/mpi_runtime.f90) · [MPI Fortran 绑定](https://www.mpi-forum.org/docs/mpi-4.1/mpi41-report/node466.htm)
