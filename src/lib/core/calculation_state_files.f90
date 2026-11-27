@@ -46,7 +46,7 @@ contains
         files%temporary        = trim(name)//".tmp"
         files%angular_log      = trim(name)//".rangular.log"
         files%angular_debug    = trim(name)//".rangular.dbg"
-        files%estimate_summary = trim(name)//".rwfnestimate.summary.txt"
+        files%estimate_summary = trim(name)//".rwfnestimate.summary"
         files%estimate_debug   = trim(name)//".rwfnestimate.dbg"
         files%scf_log          = trim(name)//".rmcdhf.log"
         files%scf_summary      = trim(name)//".rmcdhf.summary"
@@ -89,7 +89,7 @@ contains
         character(:), allocatable :: path
 
         path = isotope_shift_report_path(name, from_ci)
-        call use_legacy_path_if_missing(path, trim(name)//trim(merge(".ci", ".i ", from_ci)))
+        call use_legacy_path_if_missing(path, trim(name)//trim(merge(".ci", ".i ", from_ci)), ".factors")
     end function isotope_shift_input_path
 
     function lsj_output_stem(name, from_ci) result(stem)
@@ -135,15 +135,24 @@ contains
         stem = trim(name)//trim(merge(".ci   ", ".mcdhf", from_ci))
     end function source_report_stem
 
-    subroutine use_legacy_path_if_missing(path, legacy_path)
+    subroutine use_legacy_path_if_missing(path, legacy_path, archive_suffix)
         character(:), allocatable, intent(inout) :: path
         character(*), intent(in) :: legacy_path
+        character(*), optional, intent(in) :: archive_suffix
         character(:), allocatable :: previous_path
         logical :: exists
 
         inquire(file=path, exist=exists)
         if (exists) return
 
+        if (present(archive_suffix)) then
+            previous_path = path//archive_suffix
+            inquire(file=previous_path, exist=exists)
+            if (exists) then
+                path = previous_path
+                return
+            end if
+        end if
         previous_path = path//".txt"
         inquire(file=previous_path, exist=exists)
         if (exists) then

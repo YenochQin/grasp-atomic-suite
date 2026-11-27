@@ -3,9 +3,9 @@ target_link_libraries_Fortran(fical PRIVATE core)
 install(TARGETS fical DESTINATION bin/)
 
 if(GRASP_BUILD_SERIAL_APPS)
-    add_executable(ris4
+    add_executable(isotope
         isotope_shift_options.f90
-        ris4_main.f90
+        isotope_main.f90
         open_isotope_shift_angular_cache.f90
         read_field_shift_factors.f90
         read_seltzer_field_shift_factors.f90
@@ -31,12 +31,12 @@ if(GRASP_BUILD_SERIAL_APPS)
         vinti_radial_integral.f90
         write_level_energies.f90
 )
-    target_link_libraries_Fortran(ris4 PUBLIC grasp_shared core spin_angular breit_angular_support grasp_shared core)
-    install(TARGETS ris4 DESTINATION bin/)
+    target_link_libraries_Fortran(isotope PUBLIC grasp_shared core spin_angular breit_angular_support grasp_shared core)
+    install(TARGETS isotope DESTINATION bin/)
 endif()
 
 if(TARGET grasp_mpi)
-    add_executable(ris4_mpi
+    add_executable(isotope_mpi
         isotope_shift_options.f90
         open_isotope_shift_angular_cache.f90
         read_field_shift_factors.f90
@@ -67,8 +67,8 @@ if(TARGET grasp_mpi)
         second_spin_angular_factor.f90
         vinti_radial_integral.f90
         write_level_energies.f90
-        ris4_mpi_main.f90
+        isotope_mpi_main.f90
 )
-    target_link_libraries_Fortran(ris4_mpi PUBLIC grasp_mpi grasp_shared core spin_angular breit_angular_support grasp_shared core)
-    install(TARGETS ris4_mpi DESTINATION bin/)
+    target_link_libraries_Fortran(isotope_mpi PUBLIC grasp_mpi grasp_shared core spin_angular breit_angular_support grasp_shared core)
+    install(TARGETS isotope_mpi DESTINATION bin/)
 endif()

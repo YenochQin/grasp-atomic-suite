@@ -5,7 +5,7 @@
 
 程序读取 `isodata`、`name_desc.parquet`、`name_header.toml`、`name.wfn` 和
 `name.mix` 或 `name.cimix`，将自然轨道写入 `name.mcdhf.natural-orbitals`（MCDHF）或 `name.ci.natural-orbitals`（CI），将径向密度写入
-`name.d`（MCDHF）或 `name.cd`（CI）。MPI 模式由 rank 0 写出这些文件。
+`name.density`（MCDHF）或 `name.cidensity`（CI）。MPI 模式由 rank 0 写出这些文件。
 
 [输入选项与自然轨道排序](../../../docs/implemented/design-0026-rdensity-mpi.md)
 

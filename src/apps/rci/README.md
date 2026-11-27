@@ -4,7 +4,7 @@
 可选修正包括横向 Breit 相互作用、质量位移、真空极化及自能估计。
 
 程序读取 `isodata`、`name_desc.parquet`、`name_header.toml` 和轨道优化得到的 `name.wfn`，
-写出 `name.cimix`、`name.csum`、`name.clog` 和续算文件 `name.rci.restart`。
+写出 `name.cimix`、`name.cisum`、`name.cilog` 和续算文件 `name.rci.restart`。
 `name.cimix` 可用于生成能级表，也可作为原子性质程序的 CI 输入。
 
 [能级表程序](../rlevels/README.md) · [MPI 版本](../rci_mpi/README.md)
@@ -102,7 +102,7 @@
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
 | [`open_mixing_output.f90`](open_mixing_output.f90) | 打开该状态的 CI 混合文件，进入目标根选择以及 `CSF--MIX` 头和维数记录的写出。 |
-| [`open_summary_file.f90`](open_summary_file.f90) | 打开状态的 `.csum` 文件并设置共享摘要单元，供选项、矩阵规模和能级结果写出。 |
+| [`open_summary_file.f90`](open_summary_file.f90) | 打开状态的 `.cisum` 文件并设置共享摘要单元，供选项、矩阵规模和能级结果写出。 |
 | [`read_ci_level_selection.f90`](read_ci_level_selection.f90) | 扫描已求出的每个态的 CSF 系数，用有序插入保留绝对值最大的至多五项，然后将带符号系数与块内 CSF 索引写入总结。 |
 | [`write_ci_eigenvectors.f90`](write_ci_eigenvectors.f90) | 把所选根和对应本征向量按每页八列展开输出，每行对应一个 CSF，供诊断完整混合系数。 |
 | [`write_hamiltonian_records.f90`](write_hamiltonian_records.f90) | 逐条读续算流里的矩阵行，解析非零值和行列索引，将 $H_{ij}$ 写到调试单元供核对矩阵。 |

@@ -15,12 +15,12 @@
 
 ## 1. 范围与结论
 
-本报告分析 `src/apps/rhfs` 中 `g_J` 的实现流程。结论是：`rhfs` 并不是直接套用 Landé 因子闭式公式，而是先在 CSF 基底上构造与 `g_J` 相关的单电子约化矩阵元，再用混合系数 `EVEC` 投影到原子态，最后乘上 `J` 相关归一化因子与物理常数，输出 `g_J`、`delta g_J` 和 `total g_J`。
+本报告分析 `src/apps/hyperfine` 中 `g_J` 的实现流程。结论是：`hyperfine` 并不是直接套用 Landé 因子闭式公式，而是先在 CSF 基底上构造与 `g_J` 相关的单电子约化矩阵元，再用混合系数 `EVEC` 投影到原子态，最后乘上 `J` 相关归一化因子与物理常数，输出 `g_J`、`delta g_J` 和 `total g_J`。
 
 主调用链为：
 
 ```text
-rhfs_main
+hyperfine_main
   -> load_angular_csf_basis
   -> read_hyperfine_options
   -> read_mixing_blocks
@@ -30,12 +30,12 @@ rhfs_main
 
 ## 2. 程序入口与数据准备
 
-入口程序是 `src/apps/rhfs/rhfs_main.f90`。它依次完成：
+入口程序是 `src/apps/hyperfine/hyperfine_main.f90`。它依次完成：
 
 1. 读取状态名 `NAME` 和是否采用 CI 混合系数。
 2. 调用 `SETSUM` 打开输出文件：
-   - 非 CI: `name.h`、`name.hoffd`
-   - CI: `name.ch`、`name.choffd`
+   - 非 CI: `name.hyperfine`、`name.hyperfine.off-diagonal`
+   - CI: `name.cihyperfine`、`name.cihyperfine.off-diagonal`
 3. 调用 `load_angular_csf_basis` 读取 V3 描述符文件对。
 4. 调用 `read_hyperfine_options` 读取 `isodata`、建立径向网格、装载径向波函数。
 5. 调用 `read_mixing_blocks` 装载本征值、本征矢和态标签。
@@ -112,7 +112,7 @@ Suite 流文件共用一列径向网格。每条轨道的大、小分量各有�
 
 然后调用 `INTRPQ(PA, QA, MY, RA, J, DNORM)`，把文件中的轨道函数装载到统一工作网格上。
 
-如果 `.wfn` 文件扫描结束后，找到的轨道数 `NWIN` 小于所需轨道总数 `NW`，程序报错退出。这说明：`rhfs` 要求 `CSL` 中涉及到的每个轨道都必须在 `.wfn` 文件中存在。
+如果 `.wfn` 文件扫描结束后，找到的轨道数 `NWIN` 小于所需轨道总数 `NW`，程序报错退出。这说明：`hyperfine` 要求 `CSL` 中涉及到的每个轨道都必须在 `.wfn` 文件中存在。
 
 #### 第五步：插值到统一径向网格
 
@@ -153,7 +153,7 @@ Suite 流文件共用一列径向网格。每条轨道的大、小分量各有�
 
 #### 第七步：哪些量真正进入 `g_J`
 
-在 `rhfs` 的 `g_J` 计算里，真正被 `RINTHF` 和 `RINT` 直接使用的是：
+在 `hyperfine` 的 `g_J` 计算里，真正被 `RINTHF` 和 `RINT` 直接使用的是：
 
 - `PF(L,I)`
 - `QF(L,I)`
@@ -170,7 +170,7 @@ Suite 流文件共用一列径向网格。每条轨道的大、小分量各有�
 
 ## 3. `HFSGG` 中的预计算
 
-`src/apps/rhfs/calculate_hyperfine_matrix_elements.f90` 是核心例程。开始阶段它为每对轨道 `(i,j)` 预计算径向积分和角向因子：
+`src/apps/hyperfine/calculate_hyperfine_matrix_elements.f90` 是核心例程。开始阶段它为每对轨道 `(i,j)` 预计算径向积分和角向因子：
 
 ### 3.1 径向积分
 
@@ -185,14 +185,14 @@ Suite 流文件共用一列径向网格。每条轨道的大、小分量各有�
 
 其中：
 
-- `RINTHF(i,j,k)` 在 `src/apps/rhfs/hyperfine_radial_integral.f90` 中定义，积分核为
+- `RINTHF(i,j,k)` 在 `src/apps/hyperfine/hyperfine_radial_integral.f90` 中定义，积分核为
   `r^k (P_i Q_j + Q_i P_j)`
 - `RINT(i,j,k)` 在 `src/lib/core/weighted_radial_overlap.f90` 中定义，积分核为
   `r^k (P_i P_j + Q_i Q_j)`
 
 ### 3.2 角向矩阵元
 
-`MATELT` 位于 `src/apps/rhfs/hyperfine_one_electron_element.f90`。对奇数阶 `K=1`，程序给出三组角向因子：
+`MATELT` 位于 `src/apps/hyperfine/hyperfine_one_electron_element.f90`。对奇数阶 `K=1`，程序给出三组角向因子：
 
 - `APART`
 - `GJPART`
@@ -211,7 +211,7 @@ DGJPART = -(κ1 + κ2 -1) * CLRX * OVLFAC
 ## 4. CSF 基底上的矩阵元构造
 
 当前串行入口在矩阵元计算前用 `load_angular_csf_basis` 安装组态和耦合数据。
-[RHFS 入口](../../src/apps/rhfs/rhfs_main.f90#L114) · [V3 数组契约](design-0001-native-csf-descriptors.md)
+[RHFS 入口](../../src/apps/hyperfine/hyperfine_main.f90#L114) · [V3 数组契约](design-0001-native-csf-descriptors.md)
 
 对应的上游内核记法包括：
 
@@ -235,7 +235,7 @@ DGJPART = -(κ1 + κ2 -1) * CLRX * OVLFAC
 - `ELEMNTGJ`：`g_J` 主项
 - `ELEMNTDGJ`：`delta g_J` 修正项
 
-只有当 `KT == 1` 且 `IDIFF == 0` 时，`g_J` 相关量才会累加。这表示 `rhfs` 中 `g_J` 只在同一 `J` 子空间内构造。
+只有当 `KT == 1` 且 `IDIFF == 0` 时，`g_J` 相关量才会累加。这表示 `hyperfine` 中 `g_J` 只在同一 `J` 子空间内构造。
 
 ## 5. 从 CSF 到原子态
 
@@ -254,7 +254,7 @@ DGJPART = -(κ1 + κ2 -1) * CLRX * OVLFAC
 - `GJC(...)`：`g_J` 主项矩阵元
 - `DGJC(...)`：`delta g_J` 修正矩阵元
 
-注意：`rhfs` 最后只输出 `GJC` 和 `DGJC` 的对角元。
+注意：`hyperfine` 最后只输出 `GJC` 和 `DGJC` 的对角元。
 
 ## 6. 最终 `g_J` 公式
 
@@ -273,7 +273,7 @@ delta g_J = 0.001160 * GJA1 * DGJC(NVEC*(I-1)+II)
 total g_J = g_J + delta g_J
 ```
 
-输出到 `name.h` 或 `name.ch`。
+输出到 `name.hyperfine` 或 `name.cihyperfine`。
 
 这里：
 
@@ -290,7 +290,7 @@ total g_J = g_J + delta g_J
 - A/B 需要核自旋、核磁矩、核四极矩等量
 - `g_J` 的输出公式只依赖 `CVAC`、`J` 和纯电子矩阵元 `GJC/DGJC`
 
-因此，虽然 `rhfs` 被命名为超精细程序，`g_J` 在这里本质上是顺带输出的电子结构性质。
+因此，虽然 `hyperfine` 被命名为超精细程序，`g_J` 在这里本质上是顺带输出的电子结构性质。
 
 ## 8. 两个实现细节
 
@@ -310,7 +310,7 @@ JJ == JJII .AND. JJII > 1
 
 ## 9. 总结
 
-`rhfs` 中 `g_J` 的实现可以概括为：
+`hyperfine` 中 `g_J` 的实现可以概括为：
 
 1. 读取波函数和混合系数。
 2. 预计算 `g_J` 主项与修正项的径向积分、角向因子。
@@ -319,4 +319,4 @@ JJ == JJII .AND. JJII > 1
 5. 对角态上按 `1/sqrt(J(J+1))` 做归一化。
 6. 输出 `g_J`、`delta g_J` 和 `total g_J`。
 
-换句话说，`rhfs` 的 `g_J` 是“多组态波函数期望值”意义下的结果，而不是单组态近似公式直接代入得到的数。
+换句话说，`hyperfine` 的 `g_J` 是“多组态波函数期望值”意义下的结果，而不是单组态近似公式直接代入得到的数。

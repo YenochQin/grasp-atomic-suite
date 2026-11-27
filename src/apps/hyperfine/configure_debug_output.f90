@@ -35,10 +35,10 @@ contains
         prompt_answer = read_yes_no()
         if (prompt_answer) then
             ! The  .dbg  file is formatted; open it on unit 99
-            default_file_path = "hfs92.dbg"
+            default_file_path = "hyperfine.dbg"
             form = "FORMATTED"
             status = "NEW"
-            write (output_unit, *) "File  hfs92.dbg  will be created as the"
+            write (output_unit, *) "File  hyperfine.dbg  will be created as the"
             write (output_unit, *) " HFS92 DeBuG Printout File; enter another"
             write (output_unit, *) " file name if this is not acceptable;"
             write (output_unit, *) " null otherwise:"

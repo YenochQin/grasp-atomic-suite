@@ -94,7 +94,7 @@ program rci_mpi_main
     descriptor_file_path = ""
     call read_mpi_state_name(state_name)
     if (mpi_rank == 0) then
-        open(newunit=calculation_log_unit,file=trim(state_name)//".clog",status="unknown")
+        open(newunit=calculation_log_unit,file=trim(state_name)//".cilog",status="unknown")
         write(calculation_log_unit,"(a)") "y            ! Default settings"
         write(calculation_log_unit,"(a)") trim(state_name)
         isotope_file_path = trim(permanent_directory)//"/isodata"

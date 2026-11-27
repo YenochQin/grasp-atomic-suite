@@ -9,15 +9,14 @@ module open_isotope_shift_angular_cache_interface
     ! Module interface
     private
     public :: open_isotope_shift_angular_cache, finish_angular_cache, isotope_shift_cache_path
+    character(*), parameter :: cache_suffixes(2) = [".one-body.angular.cache", ".two-body.angular.cache"]
     character(8), parameter :: cache_version = "RISANG01"
 contains
     function isotope_shift_cache_path(name, operator) result(path)
         character(*), intent(in) :: name
         integer, intent(in) :: operator
         character(:), allocatable :: path
-        character(*), parameter :: suffixes(2) = [".ris4.one-body.angular.cache", ".ris4.two-body.angular.cache"]
-
-        path = trim(name)//suffixes(operator)
+        path = trim(name)//".isotope"//cache_suffixes(operator)
     end function isotope_shift_cache_path
 
     subroutine finish_angular_cache(unit, operator)
@@ -66,6 +65,11 @@ contains
         filename = isotope_shift_cache_path(name, whichone)
         inquire(file=filename, exist=found, iostat=status)
         if (status /= 0) return
+        if (.not. found) then
+            filename = trim(name)//".ris4"//cache_suffixes(whichone)
+            inquire(file=filename, exist=found, iostat=status)
+            if (status /= 0) return
+        end if
         if (.not.found) then
             if (whichone==1) print *, " One-body angular file not available"
             if (whichone==2) print *, " Two-body angular file not available"

@@ -142,6 +142,15 @@ class HeaderInput(unittest.TestCase):
         )
         self.assert_success(result)
 
+    def test_nondefault_summary_uses_summary_suffix(self) -> None:
+        result, directory = self.run_case(
+            toml=encode_header(self.lines), stdin="n\nn\n\nn\n3\n*\nn\n",
+        )
+        self.assert_success(result)
+        summary = directory / "case.rwfnestimate.summary"
+        self.assertIn("ERWF run at", summary.read_text())
+        self.assertFalse(summary.with_suffix(".summary.txt").exists())
+
     def test_missing_and_invalid_electron_counts(self) -> None:
         valid = encode_header(self.lines)
         self.assert_rejected(valid.replace("electron_count = 28\n", ""), "regenerate old headers with rCSFs")
@@ -196,7 +205,8 @@ class HeaderInput(unittest.TestCase):
                                       (["--csf-text", "a", "--header", "b"], "unknown option"),
                                       (["--header", "a", "--header", "b"], "duplicate --header"),
                                       (["--header", "missing.toml"], "cannot parse TOML header"),
-                                      (["--header", "case.initial.wfn"], "reserved output name")]:
+                                      (["--header", "case.initial.wfn"], "reserved output name"),
+                                      (["--header", "case.rwfnestimate.summary"], "reserved output name")]:
             with self.subTest(arguments=arguments):
                 result, _ = self.run_case(arguments=arguments)
                 self.assertNotEqual(result.returncode, 0)

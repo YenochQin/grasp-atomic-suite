@@ -82,17 +82,20 @@ def run_fical(binary: Path, directory: Path, unit: str, *, ci: bool = False, rel
             for level in levels:
                 labels.append(f"{level.number:3d} {'0':>4}     +        {level.energy:16.9f}     100.000%")
                 labels.append(" " * 36 + f"{source}_{name}_{level.number}")
-            (directory / f"{name}.{source}.lsj.labels{source_report_suffix}").write_text("\n".join(labels) + "\n")
-            if not source_report_suffix:
-                report.with_name(report.name + ".txt").write_text("stale electronic factors\n")
+            label_suffix = ".txt" if source_report_suffix == ".txt" else ""
+            (directory / f"{name}.{source}.lsj.labels{label_suffix}").write_text("\n".join(labels) + "\n")
+            if not label_suffix:
+                (directory / f"{name}.{source}.isotope-shift.txt").write_text("stale electronic factors\n")
                 (directory / f"{name}.{source}.lsj.labels.txt").write_text("stale labels\n")
+            if not source_report_suffix:
+                (directory / f"{name}.{source}.isotope-shift.factors").write_text("stale electronic factors\n")
     (directory / "isodata").write_text(f"Z\n10.0\nMass number\n{nuclear_mass_number}\nFermi a\n0.52\nFermi c\n3.00\n")
     answers = ["n", "upper", "lower", "y" if ci else "n", "y" if fitted else "n", "para", unit,
                "y" if relativistic else "n"]
     result = subprocess.run(
         [str(binary)], cwd=directory, input="\n".join(answers) + "\n", capture_output=True, text=True, timeout=10,
     )
-    return result, directory / f"upper.lower.{'cfi' if ci else 'fi'}"
+    return result, directory / f"upper.lower.{'cifi' if ci else 'fi'}"
 
 
 def check_mixed_units(binary: Path) -> None:
@@ -143,7 +146,7 @@ def check_invalid_units(binary: Path) -> None:
 
 
 def check_source_reports(binary: Path) -> None:
-    for suffix in ("", ".txt"):
+    for suffix in ("", ".factors", ".txt"):
         with tempfile.TemporaryDirectory(prefix="fical-sources-") as work:
             for ci, source in ((False, "mcdhf"), (True, "ci")):
                 result, report = run_fical(binary, Path(work), "GHz", ci=ci, source_report_suffix=suffix)

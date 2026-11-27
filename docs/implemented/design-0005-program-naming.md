@@ -13,7 +13,7 @@ CSF 列、稀疏矩阵位置及角系数。三个跃迁实现使用各积分及�
 | `jj2lsj/ls_jj_coefficients_table_2.f90` | [jj2lsj/ls_jj_coefficients_f6.f90](../../src/apps/jj2lsj/ls_jj_coefficients_f6.f90) |
 | `jj2lsj/ls_jj_coefficients_table_3.f90` | [jj2lsj/ls_jj_coefficients_f7.f90](../../src/apps/jj2lsj/ls_jj_coefficients_f7.f90) |
 | `rangular_mpi/open_temporary_mcp_channel.f90` | [rangular_mpi/open_temporary_mcp_channels.f90](../../src/apps/rangular_mpi/open_temporary_mcp_channels.f90) |
-| `ris4/fical.f90` | [ris4/isotope_shift_transition_main.f90](../../src/apps/ris4/isotope_shift_transition_main.f90) |
+| `ris4/fical.f90` | [ris4/isotope_shift_transition_main.f90](../../src/apps/isotope/isotope_shift_transition_main.f90) |
 | `rmcdhf_mem/rmcdhf_main.f90` | [rmcdhf_mem/rmcdhf_mem_main.f90](../../src/apps/rmcdhf_mem/rmcdhf_mem_main.f90) |
 | `rmcdhf_mem_mpi/rmcdhf_mpi_main.f90` | [rmcdhf_mem_mpi/rmcdhf_mem_mpi_main.f90](../../src/apps/rmcdhf_mem_mpi/rmcdhf_mem_mpi_main.f90) |
 | `rtransition_phase/rtransition_main.f90` | [rtransition_phase/rtransition_phase_main.f90](../../src/apps/rtransition_phase/rtransition_phase_main.f90) |
@@ -117,7 +117,8 @@ GNU Fortran 15.3.0 的干净 Release 和 Check 构建均启用串行、MPI 和 j
 | 原 `src/appl` 目录 | 当前 `src/apps` 目录 | 当前可执行文件 |
 | --- | --- | --- |
 | `gj90` | `gj` | **`gj`、`gj_mpi`**，原名 `gj90`、`gj90_mpi` |
-| `rhfs90` | `rhfs` | `rhfs`、`rhfs_mpi` |
+| `rhfs90` | `hyperfine` | `hyperfine`、`hyperfine_mpi`，此前为 `rhfs`、`rhfs_mpi` |
+| `ris4` | `isotope` | `isotope`、`isotope_mpi`，此前为 `ris4`、`ris4_mpi` |
 | `jj2lsj90` | `jj2lsj` | `jj2lsj_omp` |
 | `rangular90` | `rangular` | `rangular` |
 | `rangular90_mpi` | `rangular_mpi` | `rangular_mpi` |
@@ -131,7 +132,6 @@ GNU Fortran 15.3.0 的干净 Release 和 Check 构建均启用串行、MPI 和 j
 | `rtransition90_phase` | `rtransition_phase` | `rtransition_phase` |
 
 重命名阶段曾包含 strict/diag 两个独立求解器，后已按用户确认的否决决定[移除](adr-0002-retire-strict-and-diagnostic-rmcdhf.md)。
-上表为移除后仍保留的 13 个普通程序目录。
 双正交变换入口经 `rbiotransform`、`rbiotransform_mpi` 迁移至表中的现名。
 
 同时将入口文件 `gj90.f90`、`gj90_mpi.f90`、普通 `rci90mpi.f90` 改为

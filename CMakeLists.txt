@@ -186,9 +186,9 @@ message("* GRASP_BUILD_SERIAL_APPS:        ${GRASP_BUILD_SERIAL_APPS}")
 
 # GRASP application programs
 add_subdirectory("src/apps/gj")
-add_subdirectory("src/apps/rhfs")
+add_subdirectory("src/apps/hyperfine")
 add_subdirectory("src/apps/rdensity")
-add_subdirectory("src/apps/ris4")
+add_subdirectory("src/apps/isotope")
 add_subdirectory("src/apps/jj2lsj")
 add_subdirectory("src/apps/rlevels")
 # add_subdirectory("src/apps/rhfszeeman95")

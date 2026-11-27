@@ -114,20 +114,27 @@ def pipeline(
         native=native,
     )
     outputs["rci.mixing"] = mixing_blocks(rci_work / ("case.cimix" if native else "case.cm"))
+    if native:
+        assert (rci_work / "case.cisum").stat().st_size > 0
+        log_dir = rci_work / "000" if launcher else rci_work
+        assert (log_dir / "case.cilog").stat().st_size > 0
     for program, extensions in [
         ("gj", ["gj"]),
         ("rhfs", ["h", "hoffd"]),
         ("ris4", ["i"]),
     ]:
         answers = "y\ncase\nn\n" + ("n\nn\n" if program == "ris4" else "")
-        execute(binaries / (program + suffix), rci_work, answers, launcher, native=native)
+        executable = {"rhfs": "hyperfine", "ris4": "isotope"}.get(program, program) if native else program
+        execute(binaries / (executable + suffix), rci_work, answers, launcher, native=native)
         for extension in extensions:
-            suffix_name = "mcdhf.isotope-shift" if native and extension == "i" else extension
+            suffix_name = {
+                "h": "hyperfine", "hoffd": "hyperfine.off-diagonal", "i": "mcdhf.isotope-shift"
+            }.get(extension, extension) if native else extension
             path = rci_work / f"case.{suffix_name}"
             assert path.stat().st_size > 0
             outputs[program + "." + extension] = path.read_bytes()
     execute(binaries / ("gj" + suffix), rci_work, "y\ncase\ny\n", launcher, native=native)
-    outputs["gj.cgj"] = (rci_work / "case.cgj").read_bytes()
+    outputs["gj.cgj"] = (rci_work / ("case.cigj" if native else "case.cgj")).read_bytes()
     for program in (
         ("rtransition_mpi",) if launcher else ("rtransition", "rtransition_phase")
     ):

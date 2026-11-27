@@ -212,9 +212,9 @@ contains
         one_body_cache_mode = 0
         two_body_cache_mode = 0
         call open_isotope_shift_angular_cache(name,avail_ob,1,cache_status,one_body_cache_unit)
-        if (cache_status /= 0) call fail_input_io(cache_status,one_body_cache_unit,"ris4: one-body angular cache "//trim(name))
+        if (cache_status /= 0) call fail_input_io(cache_status,one_body_cache_unit,"isotope: one-body angular cache "//trim(name))
         call open_isotope_shift_angular_cache(name,avail_tb,2,cache_status,two_body_cache_unit)
-        if (cache_status /= 0) call fail_input_io(cache_status,two_body_cache_unit,"ris4: two-body angular cache "//trim(name))
+        if (cache_status /= 0) call fail_input_io(cache_status,two_body_cache_unit,"isotope: two-body angular cache "//trim(name))
         if ((.not. avail_ob) .and. (.not. avail_tb)) then
             print *," Save ang. coefficients of one- and two-body op.?"
             yes = read_yes_no ()

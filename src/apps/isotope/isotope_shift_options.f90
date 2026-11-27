@@ -1,4 +1,4 @@
-! Store the electronic isotope-shift options selected for a RIS4 run.
+! Store the electronic isotope-shift options selected for a ISOTOPE run.
 module isotope_shift_options
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: real64

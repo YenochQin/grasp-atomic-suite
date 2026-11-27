@@ -6,7 +6,7 @@ module open_summary_file_interface
     public :: open_summary_file
 contains
 
-    ! Open the  .csum  file on stream 24.
+    ! Open the  .cisum  file on stream 24.
     ! Xinghong He                                          10 Jun 1998
     subroutine open_summary_file(name)
         ! Module dependencies
@@ -22,7 +22,7 @@ contains
 
         k = index(name," ")
 
-        call open_calculation_file (summary_output_unit, name(1:k-1)//".csum", "FORMATTED", "UNKNOWN", open_status)
+        call open_calculation_file (summary_output_unit, name(1:k-1)//".cisum", "FORMATTED", "UNKNOWN", open_status)
 
         return
     end subroutine open_summary_file

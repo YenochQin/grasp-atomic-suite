@@ -14,7 +14,7 @@
 
 只把单电子混合流目录中的 `3/2−` 改为 `5/2−`，保持描述符摘要、能量和混合系数。基准 RIS4 和 FICAL 生成了标成 `5/2−` 的结果，GJ 拒绝同一输入。本批由 RIS4 和 RDENSITY 共用基组检查，读取系数前逐项核对头记录的维度、块边界、J 和宇称。串行及 MPI 负例在生成计算报告前退出。[混合目录校验](../../src/lib/core/mixing_file_format.f90) · [RIS4 负例](../../test/test_isotope_shifts.py)
 
-FICAL 现在按 `isodata` 的质量数选择参考核。保留正的 Fermi 占位参数、将质量数置为零时，旧报告写出 Fermi 核及 `2.085824 fm` 的参考均方根半径。新回归要求报告点核并把参考半高半径、均方根半径和皮厚写为零。[FICAL 读取](../../src/apps/ris4/isotope_shift_transition_main.f90) · [点核回归](../../test/ris4/fical_units.py)
+FICAL 现在按 `isodata` 的质量数选择参考核。保留正的 Fermi 占位参数、将质量数置为零时，旧报告写出 Fermi 核及 `2.085824 fm` 的参考均方根半径。新回归要求报告点核并把参考半高半径、均方根半径和皮厚写为零。[FICAL 读取](../../src/apps/isotope/isotope_shift_transition_main.f90) · [点核回归](../../test/ris4/fical_units.py)
 
 首轮比较器仅规范化两种主机空闲内存行中的实时数值。把原 Linux 日志中的 `6.53` 和 `6.51 Gb` 两份输出重新送入规范化函数后，比较一致，原始日志和七份二进制摘要可继续追溯。[首轮比较器](../../test/f2018/compare_first_sweep.py)
 

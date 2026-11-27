@@ -43,7 +43,7 @@ program gj_mpi
     call start_mpi_application(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count, &
         "GJ_MPI", "This is the MPI Lande-factor program", &
         "isodata, descriptor Parquet/header, name.mix/name.cimix, name.wfn", &
-        "name.gj or name.cgj", .true.)
+        "name.gj or name.cigj", .true.)
     state_name = " "
     mixing_file_kind = 1
     nondefault_options_flag = 0

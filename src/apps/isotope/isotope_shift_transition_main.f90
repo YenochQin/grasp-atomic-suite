@@ -1,4 +1,4 @@
-! Combine two RIS4 state reports and nuclear data into a line isotope shift.
+! Combine two ISOTOPE state reports and nuclear data into a line isotope shift.
 program isotope_shift_transition_main
     ! Module dependencies
     use calculation_state_files, only: read_state_pair, isotope_shift_input_path, lsj_label_input_path
@@ -117,10 +117,10 @@ program isotope_shift_transition_main
     format2lsj = "(a,a10,a,a10,f12.2,1P,3d18.7)"
 
     write(*,*) "Computes line frequency isotope shift parameters and/or energies using"
-    write(*,*) "output files from ris4"
+    write(*,*) "output files from isotope"
     write(*,*)
     write(*,*) "Input files: both states' .mcdhf.isotope-shift or .ci.isotope-shift reports, isodata"
-    write(*,*) "Output file: <state1>.<state2>.(c)fi"
+    write(*,*) "Output file: <state1>.<state2>.(ci)fi"
 
     ! Read the requested units and options.
     write(*,*)
@@ -215,7 +215,7 @@ program isotope_shift_transition_main
     file1 = isotope_shift_input_path(state1, ci == "y")
     file2 = isotope_shift_input_path(state2, ci == "y")
     if(ci=="y") then
-        file3 = trim(state1)//"."//trim(state2)//".cfi"
+        file3 = trim(state1)//"."//trim(state2)//".cifi"
     else
         file3 = trim(state1)//"."//trim(state2)//".fi"
     end if
@@ -994,7 +994,7 @@ contains
 
         ! Formats 315 and 316 have the same three D20.10 fields, followed by
         ! a unit label. Read the label on every row, since even levels in one
-        ! RIS4 file can use different units.
+        ! ISOTOPE file can use different units.
         read(input,"(a)",iostat=status,iomsg=message) record
         if (status /= 0) error stop "FICAL: reading "//parameter_name//" in "//trim(name)//": "//trim(message)
         if (record(21:40) == "" .or. record(41:60) == "" .or. record(61:80) == "") &

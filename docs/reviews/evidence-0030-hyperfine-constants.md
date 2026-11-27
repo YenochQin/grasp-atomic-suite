@@ -25,13 +25,13 @@
 
 ## 零自旋与工作区
 
-对合法的 I=0、μ=Q=0 输入，原程序在 A 的 MHz 换算及磁偶极约化核矩中均除以 I。Check 的串行及 MPI 1/2/4 ranks 异常退出，Release 返回成功但写出 NaN。共用的换算过程现将零自旋核的超精细作用置零。两种构建的四种布局均给出有限的零 A、B 和空的 F 矩阵元表，电子 Landé 因子仍可读。负自旋输入单独给出诊断。串行例程现在也在返回前释放两块按能级对分配的 Landé 工作数组。[核矩换算](../../src/apps/rhfs/hyperfine_nuclear_factors.f90) · [串行工作区](../../src/apps/rhfs/calculate_hyperfine_matrix_elements.f90)
+对合法的 I=0、μ=Q=0 输入，原程序在 A 的 MHz 换算及磁偶极约化核矩中均除以 I。Check 的串行及 MPI 1/2/4 ranks 异常退出，Release 返回成功但写出 NaN。共用的换算过程现将零自旋核的超精细作用置零。两种构建的四种布局均给出有限的零 A、B 和空的 F 矩阵元表，电子 Landé 因子仍可读。负自旋输入单独给出诊断。串行例程现在也在返回前释放两块按能级对分配的 Landé 工作数组。[核矩换算](../../src/apps/hyperfine/hyperfine_nuclear_factors.f90) · [串行工作区](../../src/apps/hyperfine/calculate_hyperfine_matrix_elements.f90)
 
 ## MPI 归约与复验
 
 对单电子、Ni I MCDHF 和两种固定轨道 CI，在 Check、Release 上各运行串行及 MPI 1/2/4 ranks，共 32 组非零自旋计算。每组的对角和态对报告均与修复前同构建、同布局的报告逐字节相同。跨布局的 A、B 和 F 分量在报告精度内一致。
 
-在另外 24 次观测中，串行及 MPI 2/4 ranks 的临时二进制额外记录了归约前后的五路电子约化矩阵元。用 `math.fsum` 重加局部贡献，与 rank 0 归约结果的最大绝对差如下。与串行最远的一项为 Ni I MCDHF 的 J=4 第 2 根对角电四极元，绝对差 1.24e−14。单电子算例分配到四个 rank 时，最后一个 rank 的所有局部贡献为零。插桩前后的全部报告逐字节相同。[MPI 累加与归约](../../src/apps/rhfs/calculate_hyperfine_matrix_elements_mpi.f90)
+在另外 24 次观测中，串行及 MPI 2/4 ranks 的临时二进制额外记录了归约前后的五路电子约化矩阵元。用 `math.fsum` 重加局部贡献，与 rank 0 归约结果的最大绝对差如下。与串行最远的一项为 Ni I MCDHF 的 J=4 第 2 根对角电四极元，绝对差 1.24e−14。单电子算例分配到四个 rank 时，最后一个 rank 的所有局部贡献为零。插桩前后的全部报告逐字节相同。[MPI 累加与归约](../../src/apps/hyperfine/calculate_hyperfine_matrix_elements_mpi.f90)
 
 | 归约分量 | 最大绝对差（归一化前） |
 | --- | ---: |

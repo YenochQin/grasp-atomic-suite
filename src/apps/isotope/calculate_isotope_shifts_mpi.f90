@@ -212,17 +212,19 @@ contains
         if (mpi_rank == 0) then
             call open_isotope_shift_angular_cache(name,avail_ob,1,cache_status,one_body_cache_unit)
             if (cache_status /= 0) call fail_input_io_mpi(cache_status,one_body_cache_unit, &
-                & "ris4: one-body angular cache "//trim(name))
+                & "isotope: one-body angular cache "//trim(name))
             if (avail_ob) then
                 close(one_body_cache_unit,iostat=cache_status)
-                if (cache_status /= 0) call fail_input_io_mpi(cache_status,one_body_cache_unit,"ris4: close one-body angular cache")
+                if (cache_status /= 0) call fail_input_io_mpi(cache_status, one_body_cache_unit, &
+                    "isotope: close one-body angular cache")
             end if
             call open_isotope_shift_angular_cache(name,avail_tb,2,cache_status,two_body_cache_unit)
             if (cache_status /= 0) call fail_input_io_mpi(cache_status,two_body_cache_unit, &
-                & "ris4: two-body angular cache "//trim(name))
+                & "isotope: two-body angular cache "//trim(name))
             if (avail_tb) then
                 close(two_body_cache_unit,iostat=cache_status)
-                if (cache_status /= 0) call fail_input_io_mpi(cache_status,two_body_cache_unit,"ris4: close two-body angular cache")
+                if (cache_status /= 0) call fail_input_io_mpi(cache_status, two_body_cache_unit, &
+                    "isotope: close two-body angular cache")
             end if
             avail_ob_mpi = merge(1, 0, avail_ob)
             avail_tb_mpi = merge(1, 0, avail_tb)

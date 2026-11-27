@@ -133,9 +133,9 @@
 | 三个 `rtransition` 的缓存与临时文件 | `A.B.+1T`、`A.B.-1T` 等，`fort.93`，同态的 `S_CP.bm` / `S_CP.cbm` | `±nT` 按多极算符保存顺序无格式角系数，按两侧对称块和径向积分标签分组。尾记录 `RADKT001` 绑定有序的两侧基组、算符、`J` 筛选和 rank 布局。`fort.93` 是排序前临时记录，`_CP` 是混合流副本。 [缓存实现](../../src/lib/core/transition_angular_cache.f90) · [缓存负载](../../src/apps/rtransition/sort_transition_angular_coefficients.f90) |
 | `rdensity`、`rdensity_mpi` | `S.d` / `S.cd`、`S.nw`、可选 `rdensity.dbg` | 密度文本按能级分组，记录 `r`、`r²ρ(r)`、`ρ(r)`。`.nw` 是按 `2J+1` 加权平均的自然轨道，使用 `RAD--WFN`。占据数和旋转矩阵写 stdout。同名 CI 与 MCDHF 会共用 `.nw` 路径。 [密度和自然轨道写出](../../src/apps/rdensity/density_calculation.f90) |
 | `gj`、`gj_mpi` | `S.gj` / `S.cgj` | 定宽文本，含核自旋、核矩，及每根的 `J`、宇称、`g_J`、`Δg_J` 和总 `g_J`。 [写入器](../../src/apps/gj/write_lande_g_factors.f90) |
-| `rhfs`、`rhfs_mpi` | `S.h` / `S.ch`、`S.hoffd` / `S.choffd`、可选 `hfs92.dbg` | 对角报告含 `A`、`B` 和 Landé 因子。耦合报告含能级对的相互作用常数和按 `F` 重耦合的带符号矩阵元。 [报告命名](../../src/apps/rhfs/open_summary_file.f90) · [矩阵元写出](../../src/apps/rhfs/calculate_hyperfine_matrix_elements.f90) |
-| `ris4`、`ris4_mpi` | `S.i` / `S.ci`、可选 `S.IOB`、`S.ITB` 及默认名为 `rdensity.dbg` 的调试文件 | 属性文本含 NMS、SMS 及所选场位移模型的电子因子，由 `fical` 读取。`.IOB` 和 `.ITB` 分别存一体和二体角系数的顺序无格式记录。尾标 `RISANG01` 检查基组摘要、算符、轨道标签基数和截断值。 [RIS4 流程](../../src/apps/ris4/README.md) · [缓存校验](../../src/apps/ris4/open_isotope_shift_angular_cache.f90) · [调试路径](../../src/apps/ris4/configure_debug_output.f90) |
-| `fical` | `A.B.fi` / `A.B.cfi` | 用上下态 `.i` 或 `.ci` 及可用的 `.lsj.lbl` 写线位移文本，分列质量位移、场位移及合计。报告单位可选 GHz、MHz、meV。读取器核对输入节名、单位和能级身份。 [读写入口](../../src/apps/ris4/isotope_shift_transition_main.f90) |
+| `rhfs`、`rhfs_mpi` | `S.h` / `S.ch`、`S.hoffd` / `S.choffd`、可选 `hfs92.dbg` | 对角报告含 `A`、`B` 和 Landé 因子。耦合报告含能级对的相互作用常数和按 `F` 重耦合的带符号矩阵元。 [报告命名](../../src/apps/hyperfine/open_summary_file.f90) · [矩阵元写出](../../src/apps/hyperfine/calculate_hyperfine_matrix_elements.f90) |
+| `ris4`、`ris4_mpi` | `S.i` / `S.ci`、可选 `S.IOB`、`S.ITB` 及默认名为 `rdensity.dbg` 的调试文件 | 属性文本含 NMS、SMS 及所选场位移模型的电子因子，由 `fical` 读取。`.IOB` 和 `.ITB` 分别存一体和二体角系数的顺序无格式记录。尾标 `RISANG01` 检查基组摘要、算符、轨道标签基数和截断值。 [RIS4 流程](../../src/apps/isotope/README.md) · [缓存校验](../../src/apps/isotope/open_isotope_shift_angular_cache.f90) · [调试路径](../../src/apps/isotope/configure_debug_output.f90) |
+| `fical` | `A.B.fi` / `A.B.cfi` | 用上下态 `.i` 或 `.ci` 及可用的 `.lsj.lbl` 写线位移文本，分列质量位移、场位移及合计。报告单位可选 GHz、MHz、meV。读取器核对输入节名、单位和能级身份。 [读写入口](../../src/apps/isotope/isotope_shift_transition_main.f90) |
 | `jj2lsj_omp` | `S.lsj.lbl`，可选 `S.lsj.c`、`S.lsj.j`、`S.uni.lsj.lbl`、`S.uni.lsj.sum`、`S.lsj.T` 和 `jj2lsj_omp.profile.csv` | `.lbl` 存能级和主要 LSJ 组分，`.c` 存 LS-CSF 列表，`.j` 存分块的能级与 LS 展开向量，`.uni.*` 存唯一标签和分配摘要。`.lsj.T` 用 `jj2lsj` 标识的顺序无格式记录保存块信息及 `(jj 行, LS 行, 变换系数)`。标签由 RLEVELS、跃迁程序和 FICAL 消费。 [LSJ 写入与回读](../../src/apps/jj2lsj/jj2lsj_conversion.f90) · [计时输出](../../src/apps/jj2lsj/jj2lsj_profile.f90) |
 | `rlevels` | stdout，Tools 外层可保存为 `S.level` 或 `S.clevel` | 按能量排序，报告块内根位置、`J`、宇称、绝对能量、相对最低能级的激发能、相邻能级间隔和可选 LSJ 标签。 [能级表写出](../../src/apps/rlevels/rlevels.f90) |
 
@@ -200,22 +200,31 @@ GraspKit 的跃迁和径向流读取用例与 Tools 的结果收集用例也通�
 
 ## 自然轨道与文本交接的现行路径
 
+`rwfnestimate` 在非默认设置下使用 `S.rwfnestimate.summary` 作为默认摘要文件名。
+
 右两列分别对应从 `.mix` 和 `.cimix` 得到的结果。
 
 | 产物 | MCDHF | CI |
 | --- | --- | --- |
 | RDENSITY 自然轨道 | `S.mcdhf.natural-orbitals` | `S.ci.natural-orbitals` |
-| RIS4 电子因子 | `S.mcdhf.isotope-shift` | `S.ci.isotope-shift` |
+| `rdensity` 径向密度 | `S.density` | `S.cidensity` |
+| GJ Landé 因子 | `S.gj` | `S.cigj` |
+| `hyperfine` 对角与耦合报告 | `S.hyperfine`、`S.hyperfine.off-diagonal` | `S.cihyperfine`、`S.cihyperfine.off-diagonal` |
+| `isotope` 电子因子 | `S.mcdhf.isotope-shift` | `S.ci.isotope-shift` |
+| FICAL 谱线同位素位移 | `A.B.fi` | `A.B.cifi` |
 | JJ2LSJ 标签 | `S.mcdhf.lsj.labels` | `S.ci.lsj.labels` |
 | JJ2LSJ 可选 LS 耦合 CSF 列表 | `S.mcdhf.lsj.csf-list` | `S.ci.lsj.csf-list` |
 | JJ2LSJ 可选 LS 展开系数 | `S.mcdhf.lsj.expansion` | `S.ci.lsj.expansion` |
 | JJ2LSJ 可选唯一标签 | `S.mcdhf.lsj.unique-labels` | `S.ci.lsj.unique-labels` |
 | JJ2LSJ 可选唯一标签分配摘要 | `S.mcdhf.lsj.unique-labels.summary` | `S.ci.lsj.unique-labels.summary` |
+| RLEVELS 输出由 Tools 保存 | `S.level` | `S.cilevel` |
+
+RCI 和 RCI_MPI 写出 `S.cimix`、`S.cisum` 和 `S.cilog`。
 
 新写出的自然轨道沿用 `RAD--WFN`。占据数和旋转矩阵仍随 stdout 输出。
-RIS4、JJ2LSJ 和跃迁文本沿用既有字段、单位和固定列。FICAL、RLEVELS 和三个跃迁入口
-按使用的混合系数来源选取文本。优先读取上表中的文件名，再尝试旧版带 `.txt` 的同名文件。
-两者均缺失时，RIS4 电子因子可读旧 `.i` 或 `.ci`，LSJ 标签可读旧 `.lsj.lbl`。
+`isotope`、JJ2LSJ 和跃迁文本沿用既有字段、单位和固定列。FICAL 优先读取 `.isotope-shift`，
+再依次尝试同来源的 `.isotope-shift.factors`、`.isotope-shift.txt` 以及旧 `.i` 或 `.ci`。
+LSJ 标签优先按上表读取，其次是带 `.txt` 的旧版文件和 `.lsj.lbl`。
 [Suite 路径函数](../../src/lib/core/calculation_state_files.f90)
 
 GraspKit 的普通跃迁目录扫描支持上文列出的新文件名、带 `.txt` 的旧版文件名及旧 `.t`、`.ct`、`.t.lsj`、`.ct.lsj`。

@@ -195,7 +195,7 @@ def nickel(work: Path, gj: Path, rci: Path, launcher: list[str]) -> None:
     ci = read_stream(path, descriptor)
     identities = match_levels(read_stream(work / "test.mix", descriptor), ci)
     run(work, gj, launcher, "y\ntest\ny\n", "ci")
-    reference = report(work / "test.cgj")
+    reference = report(work / "test.cigj")
     compare(reference, {identities[k]: v for k, v in BREIT.items()})
 
     # Reverse the storage order, drop the middle J=2 root and flip the ASF phases.
@@ -218,7 +218,7 @@ def nickel(work: Path, gj: Path, rci: Path, launcher: list[str]) -> None:
                 selected[key] = reference[key]
     write_stream(path, 28, 16, ci, descriptor)
     run(work, gj, launcher, "y\ntest\ny\n", "reordered")
-    compare(report(work / "test.cgj"), selected)
+    compare(report(work / "test.cigj"), selected)
 
 
 def wrong_inputs(work: Path, gj: Path, launcher: list[str]) -> None:
@@ -263,7 +263,7 @@ def wrong_inputs(work: Path, gj: Path, launcher: list[str]) -> None:
             descriptor,
         )
         run(work, gj, launcher, "y\ntest\ny\n", case, error=error)
-        assert not (work / "test.cgj").exists(), case
+        assert not (work / "test.cigj").exists(), case
 
 
 def main() -> None:

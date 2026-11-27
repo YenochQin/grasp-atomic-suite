@@ -63,7 +63,7 @@ program rci_main
 
     write(*,*) "This is the configuration interaction program "
     write(*,*) "Input file:  isodata, name_desc.parquet, name_header.toml, name.wfn"
-    write(*,*) "Outputfiles: name.cimix, name.csum, name.clog "
+    write(*,*) "Outputfiles: name.cimix, name.cisum, name.cilog "
     write(*,*) "             name.rci.restart (can be used for restart)"
     write(*,*)
 
@@ -80,7 +80,7 @@ program rci_main
 
     ! Now the name of the state is known, open the log file
 
-    open(newunit=calculation_log_unit, file=trim(name)//".clog",status="unknown")
+    open(newunit=calculation_log_unit, file=trim(name)//".cilog",status="unknown")
     write(calculation_log_unit,"(a)") "y            ! Default settings"
     write(calculation_log_unit,"(a)") trim(name)
 

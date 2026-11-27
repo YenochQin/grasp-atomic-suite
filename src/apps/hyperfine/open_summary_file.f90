@@ -28,11 +28,11 @@ contains
         ! File  hfs92.sum  is FORMATTED
         state_name_end = index(state_name," ")
         if (mixing_file_kind == 0) then
-            file_path = state_name(1:state_name_end-1)//".ch"
-            hyperfine_file_path = state_name(1:state_name_end-1)//".choffd"
+            file_path = state_name(1:state_name_end-1)//".cihyperfine"
+            hyperfine_file_path = state_name(1:state_name_end-1)//".cihyperfine.off-diagonal"
         else
-            file_path = state_name(1:state_name_end-1)//".h"
-            hyperfine_file_path = state_name(1:state_name_end-1)//".hoffd"
+            file_path = state_name(1:state_name_end-1)//".hyperfine"
+            hyperfine_file_path = state_name(1:state_name_end-1)//".hyperfine.off-diagonal"
         end if
         form = "FORMATTED"
         status = "NEW"

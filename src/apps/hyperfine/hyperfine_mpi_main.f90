@@ -1,5 +1,5 @@
 ! Calculate hyperfine and magnetic matrix elements across MPI ranks.
-program rhfs_mpi_main
+program hyperfine_mpi_main
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: output_unit
     use, intrinsic :: iso_fortran_env, only: int64, real64
@@ -48,9 +48,9 @@ program rhfs_mpi_main
     character :: name*24
 
     call start_mpi_application(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count, &
-        "RHFS_MPI", "This is the MPI hyperfine structure program", &
+        "HYPERFINE_MPI", "This is the MPI hyperfine structure program", &
         "isodata, descriptor Parquet/header, name.mix/name.cimix, name.wfn", &
-        "name.(c)h, name.(c)hoffd", .true.)
+        "name.(ci)hyperfine, name.(ci)hyperfine.off-diagonal", .true.)
     name = " "
     mixing_file_kind = 1
     nondefault_options_flag = 0
@@ -58,7 +58,7 @@ program rhfs_mpi_main
     if (mpi_rank == 0) then
         use_command_line_arguments = command_argument_count() > 0
         if (use_command_line_arguments) then
-            call property_state_arguments("rhfs_mpi", name, mixing_file_kind, input_status)
+            call property_state_arguments("hyperfine_mpi", name, mixing_file_kind, input_status)
             if (input_status /= 0) nondefault_options_flag = -input_status
         end if
         if (.not.use_command_line_arguments .and. nondefault_options_flag == 0) then
@@ -70,7 +70,7 @@ program rhfs_mpi_main
                 nondefault_options_flag = 0
             else
                 nondefault_options_flag = 1
-                write (stderr_unit, *) "RHFS_MPI currently supports default settings only."
+                write (stderr_unit, *) "HYPERFINE_MPI currently supports default settings only."
             end if
         end if
         if (nondefault_options_flag == 0 .and. .not.use_command_line_arguments) then
@@ -132,15 +132,15 @@ program rhfs_mpi_main
     call reduce_mpi_real_max_to_root(elapsed_time_reduction_buffer, 1)
     if (mpi_rank == 0) hyperfine_matrix_element_seconds = elapsed_time_reduction_buffer(1)
     if (mpi_rank == 0) then
-        write (output_unit, "(A, F10.3, A)") "RHFS_MPI setcsla wall time  (max rank): ", &
+        write (output_unit, "(A, F10.3, A)") "HYPERFINE_MPI setcsla wall time  (max rank): ", &
             basis_loading_seconds, " s"
-        write (output_unit, "(A, F10.3, A)") "RHFS_MPI gethfd wall time   (max rank): ", &
+        write (output_unit, "(A, F10.3, A)") "HYPERFINE_MPI gethfd wall time   (max rank): ", &
             hyperfine_option_input_seconds, " s"
-        write (output_unit, "(A, F10.3, A)") "RHFS_MPI getmix wall time   (max rank): ", &
+        write (output_unit, "(A, F10.3, A)") "HYPERFINE_MPI getmix wall time   (max rank): ", &
             mixing_input_seconds, " s"
-        write (output_unit, "(A, F10.3, A)") "RHFS_MPI hfsgg wall time    (max rank): ", &
+        write (output_unit, "(A, F10.3, A)") "HYPERFINE_MPI hfsgg wall time    (max rank): ", &
             hyperfine_matrix_element_seconds, " s"
     end if
-    call finish_mpi_application(mpi_rank, start_clock_count, "RHFS_MPI")
+    call finish_mpi_application(mpi_rank, start_clock_count, "HYPERFINE_MPI")
     stop
-end program rhfs_mpi_main
+end program hyperfine_mpi_main

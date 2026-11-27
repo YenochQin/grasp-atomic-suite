@@ -72,9 +72,9 @@
       ],
       "targets": [
         "gj",
-        "rhfs",
+        "hyperfine",
         "rdensity",
-        "ris4",
+        "isotope",
         "rwfnestimate",
         "rangular",
         "csf_descriptor_verify",
@@ -113,9 +113,9 @@
       "targets": [
         "grasp_mpi",
         "gj_mpi",
-        "rhfs_mpi",
+        "hyperfine_mpi",
         "rdensity_mpi",
-        "ris4_mpi",
+        "isotope_mpi",
         "rangular_mpi",
         "rci_mpi",
         "biorthtransform_mpi",

@@ -188,7 +188,7 @@ def one_electron(work: Path, ris: Path, fical: Path, mpi: list[str]) -> None:
         d = work / name
         two_s_input(d, order)
         if name == "upper":
-            for ext in ("ris4.one-body.angular.cache", "ris4.two-body.angular.cache"):
+            for ext in ("isotope.one-body.angular.cache", "isotope.two-body.angular.cache"):
                 shutil.copyfile(work / "lower" / f"test.{ext}", d / f"test.{ext}")
         run(d, ris, mpi, "y\ntest\nn\nn\ny\n", "save")
         if name == "upper":
@@ -292,7 +292,7 @@ def nickel(work: Path, ris: Path, rci: Path, fical: Path, mpi: list[str]) -> Non
                 + "1 2\n1\n1 2 3\n1\n1 2\n"
             )
             run(work, rci, mpi, answers, "breit")
-            for ext in ("ris4.one-body.angular.cache", "ris4.two-body.angular.cache"):
+            for ext in ("isotope.one-body.angular.cache", "isotope.two-body.angular.cache"):
                 (work / f"test.{ext}").unlink()
         mode = "y" if ci else "n"
         run(work, ris, mpi, f"y\ntest\n{mode}\ny\nn\n", "ris-" + mode)
@@ -361,7 +361,7 @@ def nickel(work: Path, ris: Path, rci: Path, fical: Path, mpi: list[str]) -> Non
                 + f"\n{isotope}\n",
                 "fical-" + mode + str((reverse, soph)),
             )
-            output = work / ("test.test.cfi" if ci else "test.test.fi")
+            output = work / ("test.test.cifi" if ci else "test.test.fi")
             moments = tuple(
                 numbers(line.split()[-1:])[0]
                 for line in output.read_text().splitlines()

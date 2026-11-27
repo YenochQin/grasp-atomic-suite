@@ -40,10 +40,12 @@ def pair(a: Level, b: Level) -> tuple[Level, Level]:
     return (b, a) if a.two_j == b.two_j and a > b else (a, b)
 
 
-def read_report(work: Path, ci: bool = False) -> Report:
+def read_report(work: Path, ci: bool = False, *, archived: bool = False) -> Report:
     result = Report({}, {}, {})
     for offdiag in (False, True):
-        ext = ("c" if ci else "") + ("hoffd" if offdiag else "h")
+        ext = ("cihyperfine" if ci else "hyperfine") + (".off-diagonal" if offdiag else "")
+        if archived:
+            ext = "hoffd" if offdiag else "h"
         text = (work / f"test.{ext}").read_text()
         assert "A (MHz)" in text and "B (MHz)" in text
         constants, _, matrices = text.split("Interaction constants:")[1].partition(
@@ -244,7 +246,7 @@ def nickel(work: Path, rhfs: Path, rci: Path, launcher: list[str]) -> None:
         "test.wfn",
     ):
         shutil.copyfile(DATA / name, work / name)
-    golden = read_report(DATA)
+    golden = read_report(DATA, archived=True)
     run(work, rhfs, launcher, "y\ntest\nn\n", "mcdhf")
     mcdhf = read_report(work)
     compare(mcdhf, golden)

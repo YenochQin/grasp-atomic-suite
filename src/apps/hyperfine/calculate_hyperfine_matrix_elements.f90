@@ -338,7 +338,7 @@ contains
                 & reduced_hyperfine_elements(1,&
                             active_level_count*(first_output_level-1)+second_output_level), quadrupole_same_j_scale* &
                 & reduced_hyperfine_elements(3,active_level_count*(first_output_level-1)+second_output_level)
-                        ! Output diagonal hfs and g_j factors to file <name>.h or <name>.ch
+                        ! Output diagonal hfs and g_j factors to file <name>.hyperfine or <name>.cihyperfine
                         if (first_output_level == second_output_level) then
                             lande_g = vacuum_speed_of_light_au*inverse_j_norm*reduced_lande_g_elements(active_level_count* &
                 & (first_output_level-1)+second_output_level)

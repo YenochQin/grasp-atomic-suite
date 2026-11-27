@@ -5,8 +5,8 @@
 
 新算例读取 `isodata`、`name_desc.parquet`、`name_header.toml` 和 `name.wfn`。
 启用零阶优先分区时从头文件读取 `[block_info].zero_order_counts`。
-程序写出混合系数 `name.cimix`、摘要 `name.csum` 和日志 `name.clog`，
-各 rank 使用自己的 `name.rci.rankNNN.restart` 续算文件。
+程序在永久 I/O 目录写出混合系数 `name.cimix` 和摘要 `name.cisum`。rank 0 在自己的工作目录写出日志
+`name.cilog`，各 rank 在各自工作目录写出 `name.rci.rankNNN.restart` 续算文件。
 
 [串行版本与可选修正](../rci/README.md) · [原生 CSF 输入及零阶优先分区](../../../docs/implemented/design-0001-native-csf-descriptors.md)
 
@@ -104,7 +104,7 @@
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
 | [`open_mixing_output_mpi.f90`](open_mixing_output_mpi.f90) | 由 rank 0 打开 CI 混合文件。各 rank 共同进入能级选择广播，文件头仅由输出 rank 写入。 |
-| [`open_summary_file.f90`](open_summary_file.f90) | 打开状态的 `.csum` 文件并设置共享摘要单元，供选项、矩阵规模和能级结果写出。 |
+| [`open_summary_file.f90`](open_summary_file.f90) | 打开状态的 `.cisum` 文件并设置共享摘要单元，供选项、矩阵规模和能级结果写出。 |
 | [`read_ci_level_selection.f90`](read_ci_level_selection.f90) | 扫描已求出的每个态的 CSF 系数，用有序插入保留绝对值最大的至多五项，然后将带符号系数与块内 CSF 索引写入总结。 |
 | [`write_ci_eigenvectors.f90`](write_ci_eigenvectors.f90) | 把所选根和对应本征向量按每页八列展开输出，每行对应一个 CSF，供诊断完整混合系数。 |
 | [`write_hamiltonian_records.f90`](write_hamiltonian_records.f90) | 逐条读续算流里的矩阵行，解析非零值和行列索引，将 $H_{ij}$ 写到调试单元供核对矩阵。 |

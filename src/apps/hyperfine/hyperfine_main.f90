@@ -44,7 +44,7 @@
 ! Written by Farid A. Parpia. Last revision: 24 Dec 1992
 ! Modified by Gediminas Gaigalas for new spin-angular integration.
 ! Last revision: Nov 2017
-program rhfs_main
+program hyperfine_main
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: int64
     use calculation_input_defaults, only: nondefault_options_flag
@@ -82,10 +82,10 @@ program rhfs_main
     character :: name*24
     integer(int64) :: start_clock_count
 
-    call begin_run_timer (start_clock_count, "RHFS", log_unit=stderr_unit)
+    call begin_run_timer (start_clock_count, "HYPERFINE", log_unit=stderr_unit)
     write (stderr_unit, *) "This is the hyperfine structure program"
     write (stderr_unit, *) "Input files:  isodata, name_desc.parquet, name_header.toml, name.mix/name.cimix, name.wfn"
-    write (stderr_unit, *) "Output files: name.(c)h, name.(c)hoffd"
+    write (stderr_unit, *) "Output files: name.(ci)hyperfine, name.(ci)hyperfine.off-diagonal"
 
     write (stderr_unit, *)
     write (stderr_unit, *) "Default settings?"
@@ -126,6 +126,6 @@ program rhfs_main
     ! Proceed with the HFS calculation
     call calculate_hyperfine_matrix_elements
 
-    call finish_run_timer (start_clock_count, "RHFS", log_unit=stderr_unit)
+    call finish_run_timer (start_clock_count, "HYPERFINE", log_unit=stderr_unit)
     stop
-end program rhfs_main
+end program hyperfine_main

@@ -40,7 +40,7 @@ program gj
     call begin_run_timer (start_clock_count, "GJ", log_unit=stderr_unit)
     write (stderr_unit, *) "This is the serial Lande-factor program"
     write (stderr_unit, *) "Input files:  isodata, name_desc.parquet, name_header.toml, name.mix/name.cimix, name.wfn"
-    write (stderr_unit, *) "Output files: name.gj or name.cgj"
+    write (stderr_unit, *) "Output files: name.gj or name.cigj"
     write (stderr_unit, *)
     write (stderr_unit, *) "Default settings?"
     prompt_answer = read_yes_no()

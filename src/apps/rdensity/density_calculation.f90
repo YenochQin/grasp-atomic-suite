@@ -120,8 +120,8 @@ contains
         integer :: unit, io_status, state, orbital_index, b, radial_index
         character(256) :: filename
 
-        filename = trim(name)//".d"
-        if (mixing_file_kind == 0) filename = trim(name)//".cd"
+        filename = trim(name)//".density"
+        if (mixing_file_kind == 0) filename = trim(name)//".cidensity"
         open(newunit=unit, file=filename, status="new", action="write", iostat=io_status)
         if (io_status /= 0) call density_fail("Cannot create "//trim(filename)//" (remove an existing output first)")
         allocate(radial(radial_point_count))

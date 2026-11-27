@@ -4,7 +4,7 @@
 ! Modified by J. Ekman. 25 Nov 2013
 !
 ! Translated by Gediminas Gaigalas 11/18/19
-program ris4_main
+program isotope_main
     !  Module dependencies
     use, intrinsic :: iso_fortran_env, only: int64, real64
     use calculation_input_defaults, only: nondefault_options_flag
@@ -43,7 +43,7 @@ program ris4_main
     integer :: mixing_file_kind, unused_core_subshell_count
     integer(int64) :: start_clock_count
 
-    call begin_run_timer (start_clock_count, "ris4_main", log_unit=stderr_unit)
+    call begin_run_timer (start_clock_count, "isotope_main", log_unit=stderr_unit)
     ! Matrix elements smaller than CUTOFF are not accumulated
     matrix_element_screening_cutoff = 1.0e-10_real64
     write (stderr_unit, *)
@@ -88,6 +88,6 @@ program ris4_main
     ! Proceed with the RIS calculation
     call calculate_isotope_shifts(name)
 
-    call finish_run_timer (start_clock_count, "ris4_main", log_unit=stderr_unit)
+    call finish_run_timer (start_clock_count, "isotope_main", log_unit=stderr_unit)
     stop
-end  program ris4_main
+end  program isotope_main

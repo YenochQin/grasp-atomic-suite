@@ -182,7 +182,7 @@ class MpiDescriptorTests(unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.assertTrue((directory / "case.cimix").is_file())
-                summary = (directory / "case.csum").read_text()
+                summary = (directory / "case.cisum").read_text()
                 self.assertEqual("CSFs 1--1 constitute the zero-order space" in summary, answer == "y")
                 block, = read_stream(directory / "case.cimix", directory / "case_desc.parquet")
                 energy, = block.energies

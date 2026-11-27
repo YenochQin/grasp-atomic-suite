@@ -7,7 +7,7 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 
 中文 | [English](README.md)
 
-`grasp-atomic-suite` 是一个面向相对论原子结构与原子性质计算的 Fortran 研究开发仓库。它保留原版 RMCDHF，并与 `rhfs`、`ris4`、`gj` 共享 GRASP 数值库，用于轨道优化、超精细结构、同位素位移和 Landé `g_J` 因子的计算、验证与性能优化。
+`grasp-atomic-suite` 是一个面向相对论原子结构与原子性质计算的 Fortran 研究开发仓库。它保留原版 RMCDHF，并与 `hyperfine`、`isotope`、`gj` 共享 GRASP 数值库，用于轨道优化、超精细结构、同位素位移和 Landé `g_J` 因子的计算、验证与性能优化。
 
 本仓库不是上游 GRASP 的最小镜像。它保留了传统 GRASP 数值库和应用组织方式，同时加入了 CMake 构建、MPI 目标、`gj` 独立程序、回归数据和面向 `g_J`/MPI 优化的开发文档。
 
@@ -23,9 +23,9 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 │   ├── apps/
 │   │   ├── gj/               # Landé g_J 独立计算程序
 │   │   ├── rdensity/         # 串行/MPI 径向电子密度与自然轨道
-│   │   ├── rhfs/             # 相对论超精细结构程序
+│   │   ├── hyperfine/             # 相对论超精细结构程序
 │   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # 原版 GRASP 串行及 MPI 求解器
-│   │   └── ris4/             # 相对论同位素位移程序
+│   │   └── isotope/             # 相对论同位素位移程序
 │   └── lib/
 │       ├── grasp_shared/     # 共享状态、容量和基础接口
 │       ├── core/             # CSF 输入、径向数值计算与通用例程（libcore.a）
@@ -53,10 +53,10 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 | 普通 GRASP 计算链 | `src/apps/rangular*`、`rwfnestimate`、`rci*`、`biorthtransform*`、`rtransition*` | `rangular{,_mpi}`、`rwfnestimate`、`rci{,_mpi}`、`biorthtransform{,_mpi}`、`rtransition{,_phase,_mpi}` | 十个目标复用 Suite 共享库与集中容量参数。[导入记录](docs/archive/2026-11-08-plan-0002-standard-grasp-integration.md) |
 | `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | 普通 CSF 的 OpenMP jj–LS 转换，按 LS 行并行并保留原截断顺序；见[构建、运行和验证说明](docs/implemented/design-0028-jj2lsj-openmp.md)。 |
 | `rlevels` | `src/apps/rlevels` | 从 RMCDHF `.mix` 和 RCI `.cimix` 生成能级表，可附加 `jj2lsj` 标签。见[用法和输出格式](docs/implemented/design-0025-rlevels.md)。 |
-| `gj` | `src/apps/gj` | `gj`, `gj_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、该状态的 CSF 描述符文件对、`name.mix/name.cimix`、`name.wfn`，输出 `name.gj/name.cgj`。 |
-| `rhfs` | `src/apps/rhfs` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
+| `gj` | `src/apps/gj` | `gj`, `gj_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、该状态的 CSF 描述符文件对、`name.mix/name.cimix`、`name.wfn`，输出 `name.gj/name.cigj`。 |
+| `hyperfine` | `src/apps/hyperfine` | `hyperfine`, `hyperfine_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.hyperfine/name.cihyperfine` 与 `name.hyperfine.off-diagonal/name.cihyperfine.off-diagonal`。 |
 | `rdensity` | `src/apps/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/design-0026-rdensity-mpi.md)。 |
-| `ris4` | `src/apps/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，按混合系数来源输出电子因子报告及中间角向数据。 |
+| `isotope` | `src/apps/isotope` | `isotope`, `isotope_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，按混合系数来源输出电子因子报告及中间角向数据。 |
 | 原版 RMCDHF | `src/apps/rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | 基于 GRASP 的串行和 MPI 求解器，提供普通与内存 MCP 路径。见[求解流程及来源](docs/implemented/design-0019-rmcdhf-flow-and-state.md)。 |
 
 已否决的 strict/diag 独立求解器及专用测试、运行入口均已[移除](docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md)。
@@ -93,7 +93,7 @@ Cargo 始终使用 `--locked`，默认允许下载缺失的依赖。设置
 默认安装前缀为 `<build>/install`；可用 `--prefix PATH` 或 `-DCMAKE_INSTALL_PREFIX=PATH` 指定独立位置。
 普通构建不安装，也不覆盖源码 `bin/`。
 
-`configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后会得到 `bin/gj_mpi`、`bin/rhfs_mpi`、`bin/ris4_mpi`、新复制的 `rmcdhf_mpi`、`rmcdhf_mem_mpi`以及对应库文件。
+`configure.sh` 默认传入 `-DGRASP_ENABLE_MPI=ON`。如果检测到 MPI Fortran，安装后会得到 `bin/gj_mpi`、`bin/hyperfine_mpi`、`bin/isotope_mpi`、新复制的 `rmcdhf_mpi`、`rmcdhf_mem_mpi`以及对应库文件。
 
 同时构建四个原版 RMCDHF 和性质计算程序：
 
@@ -169,7 +169,7 @@ CMake 会自动查找 BLAS/LAPACK，并要求 GNU Fortran 15 或更新版本。
 | `rwfnestimate` | `name_header.toml` | 初猜轨道 `name.initial.wfn` |
 | `rangular` | `name_desc.parquet` 和配套头文件 | 角系数 `name.mcp.NN`、`name.rangular.log` |
 | `rmcdhf`、`rmcdhf_mem` | 同一描述符文件对、初猜轨道和 MCP | 优化轨道 `name.wfn`、OL/EOL 混合系数 `name.mix`、`name.rmcdhf.summary`、`name.rmcdhf.log` |
-| `rci` | 同一描述符文件对和 `name.wfn` | CI 混合系数 `name.cimix`、`name.csum`、`name.clog`、`name.rci.restart` |
+| `rci` | 同一描述符文件对和 `name.wfn` | CI 混合系数 `name.cimix`、`name.cisum`、`name.cilog`、`name.rci.restart` |
 
 MPI 版本由 rank 0 询问状态名。`rangular_mpi` 在每个 rank 的临时目录写入 `name.mpi.mcpidx`，随后用相同基组和 rank 布局运行 `rmcdhf_mpi` 或 `rmcdhf_mem_mpi`。旧文件的复用和恢复方式见[命名迁移](docs/implemented/design-0034-cache-restart-mcp-names.md)。描述符和轨道位于永久 I/O 目录，角系数程序和 SCF 的日志位于启动目录。`isodata` 提供计算目录共用的核与同位素数据。`rci` 沿用先询问默认设置、再询问状态名的顺序。供 `gj` 等性质程序使用的状态名应控制在 23 个字符以内。[MPI MCP 格式和验收](docs/implemented/design-0020-rmcdhf-mcp-io.md)
 
@@ -192,11 +192,11 @@ RMCDHF 和 RCI 的串行与 MPI 版本都要求为 CSF 基组中的每个 `J/Par
 
 常用输出文件：
 
-- `gj`：`name.gj` 或 `name.cgj`。
-- `rhfs`：`name.h/name.ch` 和 `name.hoffd/name.choffd`。
-- `rdensity` 写 `name.mcdhf.natural-orbitals`（MCDHF）或 `name.ci.natural-orbitals`（CI），另写 `name.d` 或 `name.cd`。
+- `gj`：`name.gj` 或 `name.cigj`。
+- `hyperfine`：`name.hyperfine/name.cihyperfine` 和 `name.hyperfine.off-diagonal/name.cihyperfine.off-diagonal`。
+- `rdensity` 写 `name.mcdhf.natural-orbitals`（MCDHF）或 `name.ci.natural-orbitals`（CI），另写 `name.density` 或 `name.cidensity`。
 - `jj2lsj_omp`：`name.mcdhf.lsj.labels` 或 `name.ci.lsj.labels`。
-- `ris4`：`name.mcdhf.isotope-shift` 或 `name.ci.isotope-shift`，并可能生成 `name.ris4.one-body.angular.cache` 和 `name.ris4.two-body.angular.cache`。
+- `isotope`：`name.mcdhf.isotope-shift` 或 `name.ci.isotope-shift`，并可能生成 `name.isotope.one-body.angular.cache` 和 `name.isotope.two-body.angular.cache`。
 - `rtransition` 写 `初态.末态.mcdhf.transition` 或 `初态.末态.ci.transition`，有标签时另写 `.transition.lsj`，相位版在 `.transition` 后加 `.phase`。
 
 `gj_mpi` 接受状态名和 `--nonci` 或 `--ci`。从计算目录运行，并将

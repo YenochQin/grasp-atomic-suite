@@ -7,7 +7,7 @@
 | --- | --- | --- | --- |
 | 双正交一体角系数 | `S.TB` | `S.biorth.angular.cache` | 校验该侧的描述符摘要、基组尺寸、κ 分组、J 筛选和 rank 布局。 |
 | 辐射跃迁角系数 | `A.B.±nT` | `L.A.B.rtransition.eN.angular.cache` 或 `L.A.B.rtransition.mN.angular.cache` | 保留原路径中的初态名字节数 `L`，例如 `4.left.right.rtransition.e1.angular.cache`。校验有序的基组摘要、电或磁多极算符、J 筛选、现有块头及 rank 布局。 |
-| 同位素位移角系数 | `S.IOB`、`S.ITB` | `S.ris4.one-body.angular.cache`、`S.ris4.two-body.angular.cache` | 校验基组摘要、一体或二体算符、轨道标签基数和筛选阈值。串行和 MPI 共用完整缓存。 |
+| 同位素位移角系数 | `S.IOB`、`S.ITB` | `S.isotope.one-body.angular.cache`、`S.isotope.two-body.angular.cache` | 校验基组摘要、一体或二体算符、轨道标签基数和筛选阈值。串行和 MPI 共用完整缓存。 |
 | jj–LSJ 变换 | `S.lsj.T` | `S.lsj.transform.cache` | 顺序回读，校验 V3 描述符 SHA-256、d 壳层约定、块元数据、每块实际保留的 jj-CSF 行和完成记录。重新生成旧缓存。 |
 | 串行 RCI 重启 | `rci.res` | `S.rci.restart` | 核对 `R92RS2` 的基组计数和 V3 描述符 SHA-256 后，恢复核模型、Hamiltonian 选项、网格和轨道、稀疏矩阵及 Breit 位移。 |
 | MPI RCI 重启 | `rciRRR.res` | `S.rci.rankRRR.restart` | 每份 `R92RS2` 分片均核对基组身份，并要求相同的 rank 数和分片布局。rank 编号至少三位。 |

@@ -65,7 +65,7 @@ if(Python3_Interpreter_FOUND)
         endif()
         set(target test.ris4_cache_${variant})
         add_executable(${target} ris4/cache_io.F90
-            "${PROJECT_SOURCE_DIR}/src/apps/ris4/open_isotope_shift_angular_cache.f90"
+            "${PROJECT_SOURCE_DIR}/src/apps/isotope/open_isotope_shift_angular_cache.f90"
 )
         setup_fortran_modules(${target})
         target_link_libraries_Fortran(${target} PRIVATE core grasp_shared)
@@ -84,10 +84,10 @@ if(Python3_Interpreter_FOUND)
             set_tests_properties(ris4_cache_${variant} PROPERTIES PROCESSORS 2)
         endif()
     endforeach()
-    if(TARGET ris4)
+    if(TARGET isotope)
         add_test(NAME ris4_cache_reuse_serial
             COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/ris4/cache_reuse.py"
-                $<TARGET_FILE:ris4> "${PROJECT_SOURCE_DIR}/data")
+                $<TARGET_FILE:isotope> "${PROJECT_SOURCE_DIR}/data")
         set_tests_properties(ris4_cache_reuse_serial PROPERTIES TIMEOUT 60)
     endif()
     add_test(NAME fical_mixed_mass_shift_units
@@ -291,26 +291,26 @@ if(Python3_Interpreter_FOUND)
             --mpiexec "${MPIEXEC_EXECUTABLE}")
         set_tests_properties(lande_factors_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
     endif()
-    if(TARGET ris4 AND TARGET rci AND TARGET fical)
+    if(TARGET isotope AND TARGET rci AND TARGET fical)
         add_test(NAME isotope_shifts_serial COMMAND ${Python3_EXECUTABLE}
-            ${CMAKE_CURRENT_SOURCE_DIR}/test_isotope_shifts.py --ris $<TARGET_FILE:ris4> --rci $<TARGET_FILE:rci>
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_isotope_shifts.py --ris $<TARGET_FILE:isotope> --rci $<TARGET_FILE:rci>
             --fical $<TARGET_FILE:fical>)
         set_tests_properties(isotope_shifts_serial PROPERTIES TIMEOUT 180)
     endif()
-    if(TARGET ris4_mpi AND TARGET rci_mpi AND TARGET fical AND MPIEXEC_EXECUTABLE)
+    if(TARGET isotope_mpi AND TARGET rci_mpi AND TARGET fical AND MPIEXEC_EXECUTABLE)
         add_test(NAME isotope_shifts_mpi COMMAND ${Python3_EXECUTABLE}
-            ${CMAKE_CURRENT_SOURCE_DIR}/test_isotope_shifts.py --ris $<TARGET_FILE:ris4_mpi> --rci $<TARGET_FILE:rci_mpi>
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_isotope_shifts.py --ris $<TARGET_FILE:isotope_mpi> --rci $<TARGET_FILE:rci_mpi>
             --fical $<TARGET_FILE:fical> --mpiexec "${MPIEXEC_EXECUTABLE}")
         set_tests_properties(isotope_shifts_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
     endif()
-    if(TARGET rhfs AND TARGET rci)
+    if(TARGET hyperfine AND TARGET rci)
         add_test(NAME hyperfine_constants_serial COMMAND ${Python3_EXECUTABLE}
-            ${CMAKE_CURRENT_SOURCE_DIR}/test_hyperfine_constants.py --rhfs $<TARGET_FILE:rhfs> --rci $<TARGET_FILE:rci>)
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_hyperfine_constants.py --rhfs $<TARGET_FILE:hyperfine> --rci $<TARGET_FILE:rci>)
         set_tests_properties(hyperfine_constants_serial PROPERTIES TIMEOUT 180)
     endif()
-    if(TARGET rhfs_mpi AND TARGET rci_mpi AND MPIEXEC_EXECUTABLE)
+    if(TARGET hyperfine_mpi AND TARGET rci_mpi AND MPIEXEC_EXECUTABLE)
         add_test(NAME hyperfine_constants_mpi COMMAND ${Python3_EXECUTABLE}
-            ${CMAKE_CURRENT_SOURCE_DIR}/test_hyperfine_constants.py --rhfs $<TARGET_FILE:rhfs_mpi> --rci $<TARGET_FILE:rci_mpi>
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_hyperfine_constants.py --rhfs $<TARGET_FILE:hyperfine_mpi> --rci $<TARGET_FILE:rci_mpi>
             --mpiexec "${MPIEXEC_EXECUTABLE}")
         set_tests_properties(hyperfine_constants_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
     endif()

@@ -37,11 +37,11 @@ contains
         yes = read_yes_no()
         if (yes) then
             ! The  .dbg  file is formatted; open it on unit 99
-            default_file_path = "rdensity.dbg"
+            default_file_path = "isotope.dbg"
             form = "FORMATTED"
             status = "NEW"
-            write (output_unit, *) "File  rdensity.dbg  will be created as the"
-            write (output_unit, *) " rdensity DeBuG Printout File; enter another"
+            write (output_unit, *) "File  isotope.dbg  will be created as the"
+            write (output_unit, *) " isotope DeBuG Printout File; enter another"
             write (output_unit, *) " file name if this is not acceptable;"
             write (output_unit, *) " null otherwise:"
             read (*, "(A)") file_path
@@ -50,7 +50,7 @@ contains
                 call open_calculation_file (angular_debug_unit, file_path, form, status, open_status)
                 if (open_status == 0) exit
                 do
-                    write (output_unit, *) "Enter a name for the rdensity DeBuG Printout"
+                    write (output_unit, *) "Enter a name for the isotope DeBuG Printout"
                     write (output_unit, *) " file that is to be created:"
                     read (*, "(A)") file_path
                     if (len_trim(file_path) /= 0) exit

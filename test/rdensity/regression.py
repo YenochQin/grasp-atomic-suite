@@ -296,7 +296,7 @@ def check_analytic(output: str, folder: Path, multiblock: bool, ci: bool = False
         for index, (p, q) in enumerate(zip(orbital.p, orbital.q, strict=True)):
             reconstructed[index] += occupation * (p * p + q * q)
     densities: list[dict[float, float]] = []
-    for line in (folder / ("case.cd" if ci else "case.d")).read_text().splitlines()[2:]:
+    for line in (folder / ("case.cidensity" if ci else "case.density")).read_text().splitlines()[2:]:
         parts = line.split()
         if len(parts) == 3 and parts[0].isdigit():
             densities.append({})
@@ -338,8 +338,8 @@ def compare_outputs(reference: Path, actual: Path, name: str, actual_ci: bool = 
                 rows[len(headers), r] = (density, rho)
         return headers, rows
 
-    ah, a = density_rows(reference / (name + ".d"))
-    bh, b = density_rows(actual / (name + (".cd" if actual_ci else ".d")))
+    ah, a = density_rows(reference / (name + ".density"))
+    bh, b = density_rows(actual / (name + (".cidensity" if actual_ci else ".density")))
     assert ah == bh
     # Positive-only output can omit a different subnormal tail row after
     # changing summation order. Missing rows represent zero, within tolerance.
@@ -439,7 +439,7 @@ def main() -> None:
             fixture(target, False, False)
             output = run_interactive_failure(parallel, target, "y\ncase\nn\n" + answer)
             assert "Cannot read orbital ordering:" in output, output
-            assert not (target / "case.d").exists()
+            assert not (target / "case.density").exists()
             assert not (target / "case.mcdhf.natural-orbitals").exists()
         target = root / "unsupported-wavefunction"
         fixture(target, False, False)
@@ -464,7 +464,7 @@ def main() -> None:
         write_stream(mixing, 1, 3, blocks, descriptor)
         output = run(parallel + ["case", "--nonci"], target, success=False)
         assert "Mixing block J or parity does not match the CSF basis" in output, output
-        assert not (target / "case.d").exists() and not (target / "case.mcdhf.natural-orbitals").exists()
+        assert not (target / "case.density").exists() and not (target / "case.mcdhf.natural-orbitals").exists()
     print(f"rdensity regression passed ({args.ranks if args.mpi else 0} MPI ranks)")
 
 

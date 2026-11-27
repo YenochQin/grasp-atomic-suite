@@ -21,7 +21,7 @@
 
 ### FICAL 编译示例
 
-旧的单文件编译命令在干净目录报找不到 `calculation_state_files.mod`。RIS4 README 已改用配置后的 CMake `fical` 目标。该目标链接 `core`，提供 FICAL 读取上态和下态名称所需的模块及实现。[RIS4 README](../../src/apps/ris4/README.md#L26) · [FICAL 入口](../../src/apps/ris4/isotope_shift_transition_main.f90#L4) · [CMake 目标](../../src/apps/ris4/CMakeLists.txt#L1)
+旧的单文件编译命令在干净目录报找不到 `calculation_state_files.mod`。RIS4 README 已改用配置后的 CMake `fical` 目标。该目标链接 `core`，提供 FICAL 读取上态和下态名称所需的模块及实现。[RIS4 README](../../src/apps/isotope/README.md#L26) · [FICAL 入口](../../src/apps/isotope/isotope_shift_transition_main.f90#L4) · [CMake 目标](../../src/apps/isotope/CMakeLists.txt#L1)
 
 ### gj 示例输入
 

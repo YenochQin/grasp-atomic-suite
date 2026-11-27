@@ -69,9 +69,9 @@ program rdensity
     call require_file(orbital_input_path(name))
     call require_file(mixing_input_path(name, mixing_file_kind == 0))
     if (mixing_file_kind == 0) then
-        command_argument = trim(name)//".cd"
+        command_argument = trim(name)//".cidensity"
     else
-        command_argument = trim(name)//".d"
+        command_argument = trim(name)//".density"
     end if
     if (mpi_rank == 0) then
         inquire(file=trim(command_argument), exist=exists)

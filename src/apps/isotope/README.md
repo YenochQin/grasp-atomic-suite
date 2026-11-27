@@ -1,4 +1,4 @@
-## RIS4: A program for relativistic isotope shift calculations - official development version
+## ISOTOPE: A program for relativistic isotope shift calculations - official development version
 Note: In modern Fortran and compatible with GRASP2018. First version provided by Jörgen Ekman (Malmö University) on June 7th, 2020.
 
 ### Abstract
@@ -6,23 +6,25 @@ Spectral lines from different isotopes display a small separation in energy, com
 
 Original publication: [Ekman et al. Comput. Phys. Comm. 235 (2019) 433](https://doi.org/10.1016/j.cpc.2018.08.017)
 
-### RIS4 executables
+### ISOTOPE executables
 
-`ris4` is the serial program and `ris4_mpi` distributes the matrix-element
+`isotope` is the serial program and `isotope_mpi` distributes the matrix-element
 calculation across MPI ranks. Both read `isodata`, `name_desc.parquet`,
 `name_header.toml`, `name.wfn`, and either `name.mix` or `name.cimix`. They
-write `name.mcdhf.isotope-shift` for MCDHF or `name.ci.isotope-shift` for CI. These per-state reports are the
-inputs to [FICAL](#fical). An optional one-body or two-body angular cache can
-be reused across mixing vectors and field models on the same ordered CSF basis.
-RIS4 recomputes coefficients for legacy caches and for incompatible basis or operator settings.
+write `name.mcdhf.isotope-shift` for MCDHF or `name.ci.isotope-shift` for CI.
+These per-state reports are the inputs to [FICAL](#fical). The optional
+`name.isotope.one-body.angular.cache` and `name.isotope.two-body.angular.cache`
+can be reused across mixing vectors and field models on the same ordered CSF basis.
+The reader checks previous `.ris4.*.angular.cache` files when the corresponding new files are absent.
 
 ### FICAL
 
-`fical` reads the two states' RIS4 reports and an `isodata` file in the working
+`fical` reads the two states' ISOTOPE reports and an `isodata` file in the working
 directory. Optional LSJ labels use `name.mcdhf.lsj.labels` or `name.ci.lsj.labels`.
-FICAL tries the previous `.txt` names before falling back to `.i` or `.ci`
-for the RIS4 reports and `.lsj.lbl` for the labels. It writes
-`<state1>.<state2>.fi` or `<state1>.<state2>.cfi`. It uses the unit on each
+FICAL reads electronic factors from `.isotope-shift`, then falls back to
+`.isotope-shift.factors`, `.isotope-shift.txt`, and finally `.i` or `.ci`. For LSJ labels
+it also accepts archived `.txt` and `.lsj.lbl` files. It writes
+`<state1>.<state2>.fi` or `<state1>.<state2>.cifi`. It uses the unit on each
 converted NMS and SMS row and reports differences in the requested GHz, MHz,
 or meV units. A missing or unsupported mass-shift unit is an input error.
 FICAL orders levels by energy and reports the line shift of the heavier
@@ -47,7 +49,7 @@ cmake --build build-gf16 --target fical
 
 ### 计算流程
 
-1. `ris4` 和 `ris4_mpi` 在给定基组、混合向量及径向轨道上预计算轨道对的接触密度、径向矩、NMS 和反冲径向积分。以一体、二体角系数与径向表相乘，再与态的混合系数收缩，得到各级电子因子。MPI 版本对 CSF 对分工并归约各级结果。[串行位移计算](calculate_isotope_shifts.f90) · [MPI 位移计算](calculate_isotope_shifts_mpi.f90)
+1. `isotope` 和 `isotope_mpi` 在给定基组、混合向量及径向轨道上预计算轨道对的接触密度、径向矩、NMS 和反冲径向积分。以一体、二体角系数与径向表相乘，再与态的混合系数收缩，得到各级电子因子。MPI 版本对 CSF 对分工并归约各级结果。[串行位移计算](calculate_isotope_shifts.f90) · [MPI 位移计算](calculate_isotope_shifts_mpi.f90)
 2. Seltzer 路径额外累计近核密度随 $r$ 的剖面，用 $\rho(r)=p_0+p_2r^2+p_4r^4+p_6r^6$ 拟合，并把各项换算成与核径向矩差对应的电子因子。报告同时记录质量位移及场位移所需的数据。[Seltzer 密度收缩](calculate_seltzer_field_shift_factors.f90) · [电子密度拟合](fit_electron_density.f90)
 3. `fical` 读两态报告，统一每行的质量位移单位，按能级配对取得上下态因子差。质量项结合核质量倒数差，场位移项按选用的径向矩或半径模型计算，最终报告分项及线位移。[谱线同位素位移](isotope_shift_transition_main.f90)
 
@@ -62,8 +64,8 @@ cmake --build build-gf16 --target fical
 | [`configure_debug_output.f90`](configure_debug_output.f90) | 初始化诊断位，读取允许的非默认诊断选择，按需连接 `.dbg` 单元，供输入、积分与结果检查使用。 |
 | [`prepare_isotope_calculation.f90`](prepare_isotope_calculation.f90) | 解析核电荷、核质量、核分布及非默认轨道设置，生成网格、差分表和核势，再读取径向波函数供所有位移算符使用。 |
 | [`read_mixing_blocks.f90`](read_mixing_blocks.f90) | 读取状态对应的 `CSF--MIX`，逐块提取根编号、$J$、宇称、绝对能量和本征向量，将其按 CSF 偏移铺到共享数组，供各算符按态收缩。 |
-| [`ris4_main.f90`](ris4_main.f90) | 选择 MCDHF／CI，装入状态基组、核和径向数据，再读各级混合向量，调用 RIS4 的电子因子计算并输出每态报告。 |
-| [`ris4_mpi_main.f90`](ris4_mpi_main.f90) | 由 rank 0 解析设置并打开报告，集体读入描述符基组。载入径向、核和混合数据后调用 MPI 位移计算。 |
+| [`isotope_main.f90`](isotope_main.f90) | 选择 MCDHF／CI，装入状态基组、核和径向数据，再读各级混合向量，调用 ISOTOPE 的电子因子计算并输出每态报告。 |
+| [`isotope_mpi_main.f90`](isotope_mpi_main.f90) | 由 rank 0 解析设置并打开报告，集体读入描述符基组。载入径向、核和混合数据后调用 MPI 位移计算。 |
 
 #### 矩阵与角向系数
 
@@ -103,7 +105,7 @@ cmake --build build-gf16 --target fical
 
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
-| [`open_isotope_shift_angular_cache.f90`](open_isotope_shift_angular_cache.f90) | 按算符类别找 `.ris4.one-body.angular.cache` 或 `.ris4.two-body.angular.cache`，先探测底层流可读性，再检查 `-1` 结束记录及其后的版本、基组摘要、算符、轨道标签基数和筛选阈值。通过后回卷供读取，缺失、不完整或不匹配时重算。 |
+| [`open_isotope_shift_angular_cache.f90`](open_isotope_shift_angular_cache.f90) | 按算符类别找 `.isotope.one-body.angular.cache` 或 `.isotope.two-body.angular.cache`，先探测底层流可读性，再检查 `-1` 结束记录及其后的版本、基组摘要、算符、轨道标签基数和筛选阈值。通过后回卷供读取，缺失、不完整或不匹配时重算。 |
 | [`open_summary_file.f90`](open_summary_file.f90) | 按状态和混合文件类型建立电子因子报告的输出单元，交给电子因子例程写入。 |
 | [`read_field_shift_factors.f90`](read_field_shift_factors.f90) | 读取缓存的 CSF 对和单电子角系数。重建接触密度、NMS 和径向矩的矩阵元，再用当前混合系数得到能级值。 |
 | [`read_field_shift_factors_mpi.f90`](read_field_shift_factors_mpi.f90) | 按记录所属 rank 取缓存的一体角系数，以对应轨道积分组装局部的 $\rho(0)$、NMS 和径向矩贡献。 |
@@ -111,7 +113,7 @@ cmake --build build-gf16 --target fical
 | [`read_seltzer_field_shift_factors_mpi.f90`](read_seltzer_field_shift_factors_mpi.f90) | 用 rank 记录筛选缓存条目，重建本地一体矩阵元和近核密度剖面，按态累加等待归约。 |
 | [`read_specific_mass_shift.f90`](read_specific_mass_shift.f90) | 解包缓存的二体角标签得到轨道四元组，代入 Vinti 表与修正表，再按各态向量重算首项和总 SMS。 |
 | [`read_specific_mass_shift_mpi.f90`](read_specific_mass_shift_mpi.f90) | 按 rank 所有权筛选二体角缓存，解包轨道标签，用共同径向表重算各能级的局部 SMS 贡献。 |
-| [`write_input_summary.f90`](write_input_summary.f90) | 向 RIS4 报告写电子、轨道和 CSF 规模等输入摘要。 |
+| [`write_input_summary.f90`](write_input_summary.f90) | 向 ISOTOPE 报告写电子、轨道和 CSF 规模等输入摘要。 |
 | [`write_level_energies.f90`](write_level_energies.f90) | 按所选能级写能量和可选相邻能差或相对最低态的能差，分别用 Hartree、cm⁻¹ 与 eV 表示。 |
 
 #### 支持例程

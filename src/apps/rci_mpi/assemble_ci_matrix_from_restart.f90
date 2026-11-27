@@ -7,7 +7,7 @@ module assemble_ci_matrix_from_restart_interface
     public :: assemble_ci_matrix_from_restart
 contains
 
-    !   Get eav and do writings to the summary file .csum
+    !   Get eav and do writings to the summary file .cisum
     !   The mpi version (genmat2mpi) also gets nelmnt_a and elsto
     !
     ! Xinghong He 98-06-15

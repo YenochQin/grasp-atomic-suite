@@ -1,5 +1,5 @@
 ! Calculate the electronic isotope-shift factors across MPI ranks.
-program ris4_mpi_main
+program isotope_mpi_main
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: int64, real64
     use calculation_input_defaults, only: nondefault_options_flag
@@ -44,7 +44,7 @@ program ris4_mpi_main
     character :: name*24
 
     call start_mpi_application(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count, &
-        "RIS4_MPI", "This is the MPI RIS program", &
+        "ISOTOPE_MPI", "This is the MPI RIS program", &
         "isodata, descriptor Parquet/header, name.mix/name.cimix, name.wfn", &
         "name.mcdhf.isotope-shift or name.ci.isotope-shift", .true.)
 
@@ -57,7 +57,7 @@ program ris4_mpi_main
     if (mpi_rank == 0) then
         use_args = command_argument_count() > 0
         if (use_args) then
-            call property_state_arguments("ris4_mpi", name, mixing_file_kind, input_status)
+            call property_state_arguments("isotope_mpi", name, mixing_file_kind, input_status)
             if (input_status /= 0) nondefault_options_flag = -input_status
         end if
         if (.not.use_args .and. nondefault_options_flag == 0) then
@@ -69,7 +69,7 @@ program ris4_mpi_main
                 nondefault_options_flag = 0
             else
                 nondefault_options_flag = 1
-                write (stderr_unit, *) "RIS4_MPI currently supports default settings only."
+                write (stderr_unit, *) "ISOTOPE_MPI currently supports default settings only."
             end if
         end if
 
@@ -110,6 +110,6 @@ program ris4_mpi_main
     call initialize_log_factorial_table
     call calculate_isotope_shifts_mpi(name)
 
-    call finish_mpi_application(mpi_rank, start_clock_count, "RIS4_MPI")
+    call finish_mpi_application(mpi_rank, start_clock_count, "ISOTOPE_MPI")
     stop
-end program ris4_mpi_main
+end program isotope_mpi_main

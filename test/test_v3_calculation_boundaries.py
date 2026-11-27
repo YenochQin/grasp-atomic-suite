@@ -145,7 +145,7 @@ def verify(binaries: Path, root: Path, mpiexec: str | None) -> None:
         assert math.isfinite(block.energies[0])
         run("gj", work, "y\ncase\ny\n")
         level = rf"(?m)^\s*1\s+{re.escape(j_text)}\s+{re.escape(sign)}\s+[-+0-9]"
-        for suffix in (".csum", ".cgj"):
+        for suffix in (".cisum", ".cigj"):
             summary = (work / ("case" + suffix)).read_text()
             assert re.search(level, summary), summary
         if not mpiexec and name in ("10m", "11n", "n-pair"):

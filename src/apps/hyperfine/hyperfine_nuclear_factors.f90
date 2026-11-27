@@ -19,7 +19,7 @@ contains
         reduced_quadrupole = 0.0_real64
         ! A spin-zero nucleus has no magnetic dipole or electric quadrupole tensor.
         if (nuclear_spin <= 0.0_real64) then
-            if (nuclear_spin < 0.0_real64) error stop "RHFS requires a nonnegative nuclear spin"
+            if (nuclear_spin < 0.0_real64) error stop "HYPERFINE requires a nonnegative nuclear spin"
             return
         end if
 

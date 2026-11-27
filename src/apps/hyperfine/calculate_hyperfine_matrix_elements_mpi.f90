@@ -85,8 +85,8 @@ contains
             second_level_column_amplitude, second_level_row_amplitude
         ! Matrix elements smaller than CUTOFF are not accumulated
         !
-        level_pair_count = checked_mpi_count(int(active_level_count,mpi_count_kind)*active_level_count, "RHFS level pairs")
-        hyperfine_value_count = checked_mpi_count(5_mpi_count_kind*level_pair_count, "RHFS matrix reduction")
+        level_pair_count = checked_mpi_count(int(active_level_count,mpi_count_kind)*active_level_count, "HYPERFINE level pairs")
+        hyperfine_value_count = checked_mpi_count(5_mpi_count_kind*level_pair_count, "HYPERFINE matrix reduction")
         ! Allocate storage for local arrays
         call alloc (reduced_hyperfine_elements, 5, level_pair_count, "reduced_hyperfine_elements", &
             "calculate_hyperfine_matrix_elements_mpi")
@@ -391,7 +391,7 @@ contains
                 & reduced_hyperfine_elements(1,&
                                 active_level_count*(first_output_level-1)+second_output_level), quadrupole_same_j_scale* &
                 & reduced_hyperfine_elements(3,active_level_count*(first_output_level-1)+second_output_level)
-                            ! Output diagonal hfs and g_j factors to file <name>.h or <name>.ch
+                            ! Output diagonal hfs and g_j factors to file <name>.hyperfine or <name>.cihyperfine
                             if (first_output_level == second_output_level) then
                                 lande_g = vacuum_speed_of_light_au*inverse_j_norm*reduced_lande_g_elements(active_level_count* &
                 & (first_output_level-1)+second_output_level)

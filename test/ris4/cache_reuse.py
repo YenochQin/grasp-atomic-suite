@@ -20,7 +20,7 @@ def main() -> None:
 
             answers = f"y\ntest\nn\n{higher_order}\n"
             run(command, work, answers + "y\n")
-            caches = {path: path.read_bytes() for path in (work / "test.ris4.one-body.angular.cache", work / "test.ris4.two-body.angular.cache")}
+            caches = {path: path.read_bytes() for path in (work / "test.isotope.one-body.angular.cache", work / "test.isotope.two-body.angular.cache")}
             report = work / "test.mcdhf.isotope-shift"
             expected = report.read_bytes()
             report.unlink()
@@ -31,6 +31,17 @@ def main() -> None:
             assert report.read_bytes() == expected, "Cache reuse changed the RIS4 report"
             for path, contents in caches.items():
                 assert path.read_bytes() == contents, f"Cache reuse changed {path.name}"
+
+            legacy_caches = {
+                path.rename(path.with_name(path.name.replace(".isotope.", ".ris4."))): contents
+                for path, contents in caches.items()
+            }
+            report.unlink()
+            output = run(command, work, answers)
+            assert "One-body angular file available" in output, output
+            assert "Two-body angular file available" in output, output
+            assert report.read_bytes() == expected
+            assert all(path.read_bytes() == contents for path, contents in legacy_caches.items())
 
 
 if __name__ == "__main__":

@@ -4,11 +4,11 @@
 `gj` 为串行程序，`gj_mpi` 将矩阵元计算分配给多个 MPI 进程。
 
 程序读取 `isodata`、`name_desc.parquet`、`name_header.toml`、`name.wfn` 和混合系数文件。
-MCDHF 模式读取 `name.mix` 并写出 `name.gj`，CI 模式读取 `name.cimix` 并写出 `name.cgj`。
+MCDHF 模式读取 `name.mix` 并写出 `name.gj`，CI 模式读取 `name.cimix` 并写出 `name.cigj`。
 读取混合系数时，程序按已加载的 CSF 基组检查电子数、轨道数、CSF 数、块边界、J 和宇称。每块可选择部分根并改变存储顺序，根编号须在块内唯一。
 `gj_mpi` 支持交互输入，也可从命令行接收状态名及 `--nonci` 或 `--ci`。
 
-[RHFS 程序](../rhfs/README.md) · [Landé 因子计算流程](../../../docs/implemented/design-0027-rhfs-lande-g.md) · [LS 极限、Ni I 与 MPI 实测](../../../docs/reviews/evidence-0029-lande-g-factors.md)
+[RHFS 程序](../hyperfine/README.md) · [Landé 因子计算流程](../../../docs/implemented/design-0027-rhfs-lande-g.md) · [LS 极限、Ni I 与 MPI 实测](../../../docs/reviews/evidence-0029-lande-g-factors.md)
 
 ## 计算流程
 
@@ -16,7 +16,7 @@ MCDHF 模式读取 `name.mix` 并写出 `name.gj`，CI 模式读取 `name.cimix`
 2. 对每对同 $J$ 的 CSF 计算一电子张量角系数，将它们与轨道表相乘，得到两套 CSF 矩阵元。对角项用 $c_i^2$，下三角非对角项合并 $c_ic_j+c_jc_i$ 后累加到各态。MPI 版本按列分工并分别归约两张结果数组。[串行累加](compute_gj_only.f90) · [MPI 累加](compute_gj_only_mpi.f90)
 3. 对 $J>0$ 的能级，分别将普通和修正约化矩阵元乘 $c_0/\sqrt{J(J+1)}$ 和 $0.001160/\sqrt{J(J+1)}$，写出两项及其和。这里的 $c_0$ 为原子单位下的真空光速。[归一化与报告](write_lande_g_factors.f90)
 
-所需的径向超精细积分、单电子角因子和部分输入逻辑与 RHFS 共用，目标的具体源文件由构建清单指定。[CMake 构建清单](CMakeLists.txt) · [RHFS 各文件流程](../rhfs/README.md)
+所需的径向超精细积分、单电子角因子和部分输入逻辑与 RHFS 共用，目标的具体源文件由构建清单指定。[CMake 构建清单](CMakeLists.txt) · [RHFS 各文件流程](../hyperfine/README.md)
 
 ## 逐文件计算与数据流程
 

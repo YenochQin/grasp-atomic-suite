@@ -9,7 +9,7 @@ contains
 
     ! MPI version of DENSNEW. Each rank handles a strided subset of the
     ! outer IC loop and can optionally write a per-rank angular-data
-    ! fragment that the root process later merges into name.ris4.one-body.angular.cache.
+    ! fragment that the root process later merges into name.isotope.one-body.angular.cache.
     subroutine calculate_field_shift_factors_mpi(angular_cache_write_mode,contact_density_integrals,total_nms_integrals, &
         & radius_integrals, &
         & radius_squared_integrals,inverse_radius_integrals,inverse_radius_squared_integrals,leading_nms_integrals)

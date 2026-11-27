@@ -122,7 +122,7 @@ end
 
 RCI 两版均已移除重名的积分表导入。Davidson 直接使用可分配工作数组。RMCDHF 在全部描述符块读入成功后切换占据数组的指针关联。[径向求积工作区](../../src/lib/grasp_shared/radial_quadrature_workspace.f90) · [RCI 积分表准备](../../src/apps/rci/prepare_correction_integral_tables.f90) · [Davidson 初始估计](../../src/lib/davidson_eigensolver/davidson_sparse_initial_estimates.f90) · [RMCDHF 描述符读取](../../src/lib/core/rmcdhf_csf_input.f90)
 
-应用命名按公式和数据流核对。例如，RIS4 的旧 `dint2` 在生产过程中接收含相对论修正的总正常质量位移积分，旧 `dint7` 接收首项，现名分别为 `total_nms_integrals` 和 `leading_nms_integrals`。两者的区别可以从径向例程的赋值以及输出报告中“总量减首项”的修正量复核。RMCDHF 中原先分时存放权重和、占据数和、加权能量的累加变量拆成了三个变量。原子角动量记号、标准线性代数例程、输入字段及外部链接钩子按各自约定命名。[RIS4 径向公式](../../src/apps/ris4/normal_mass_shift_radial_integral.f90) · [RIS4 积分表与输出](../../src/apps/ris4/calculate_isotope_shifts.f90) · [RMCDHF 混合系数更新](../../src/apps/rmcdhf/update_scf_mixing.f90)
+应用命名按公式和数据流核对。例如，RIS4 的旧 `dint2` 在生产过程中接收含相对论修正的总正常质量位移积分，旧 `dint7` 接收首项，现名分别为 `total_nms_integrals` 和 `leading_nms_integrals`。两者的区别可以从径向例程的赋值以及输出报告中“总量减首项”的修正量复核。RMCDHF 中原先分时存放权重和、占据数和、加权能量的累加变量拆成了三个变量。原子角动量记号、标准线性代数例程、输入字段及外部链接钩子按各自约定命名。[RIS4 径向公式](../../src/apps/isotope/normal_mass_shift_radial_integral.f90) · [RIS4 积分表与输出](../../src/apps/isotope/calculate_isotope_shifts.f90) · [RMCDHF 混合系数更新](../../src/apps/rmcdhf/update_scf_mixing.f90)
 
 | 第一批验证 | 结果 |
 | --- | --- |

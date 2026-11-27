@@ -7,7 +7,7 @@ no external rCSFs checkout or reader library is needed. Python is only used for 
 
 [中文](README_ZH.md) | English
 
-`grasp-atomic-suite` is a Fortran research and development repository for relativistic atomic-structure and atomic-property calculations. It combines original RMCDHF programs with `rhfs`, `ris4`, `rdensity`, `gj`, and their MPI support for hyperfine-structure, isotope-shift, and Landé `g_J` calculations.
+`grasp-atomic-suite` is a Fortran research and development repository for relativistic atomic-structure and atomic-property calculations. It combines original RMCDHF programs with `hyperfine`, `isotope`, `rdensity`, `gj`, and their MPI support for hyperfine-structure, isotope-shift, and Landé `g_J` calculations.
 
 This repository is not a minimal upstream GRASP mirror. It keeps the traditional GRASP numerical libraries and application layout, while adding CMake builds, MPI targets, an extracted `gj` program, regression data, and development notes for `g_J` and MPI optimization work.
 
@@ -23,9 +23,9 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 │   ├── apps/
 │   │   ├── gj/               # standalone Landé g_J calculator
 │   │   ├── rdensity/         # serial/MPI radial density and natural orbitals
-│   │   ├── rhfs/             # relativistic hyperfine-structure program
+│   │   ├── hyperfine/             # relativistic hyperfine-structure program
 │   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # serial and MPI GRASP solvers
-│   │   └── ris4/             # relativistic isotope-shift program
+│   │   └── isotope/             # relativistic isotope-shift program
 │   └── lib/
 │       ├── grasp_shared/     # shared state, capacities, and interfaces
 │       ├── core/             # Shared CSF input, radial numerics, and utilities (libcore.a)
@@ -53,11 +53,11 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 | Ordinary GRASP calculation chain | `src/apps/rangular*`, `rwfnestimate`, `rci*`, `biorthtransform*`, `rtransition*` | `rangular{,_mpi}`, `rwfnestimate`, `rci{,_mpi}`, `biorthtransform{,_mpi}`, `rtransition{,_phase,_mpi}` | Ten targets reuse the suite libraries and central capacities. See the [import record](docs/archive/2026-11-08-plan-0002-standard-grasp-integration.md). |
 | `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/design-0028-jj2lsj-openmp.md). |
 | `rlevels` | `src/apps/rlevels` | Energy tables from RMCDHF `.mix` and RCI `.cimix` files with optional `jj2lsj` labels. [Usage and output format](docs/implemented/design-0025-rlevels.md). |
-| `gj` | `src/apps/gj` | `gj`, `gj_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, the state's CSF descriptor pair, `name.mix/name.cimix`, and `name.wfn`, then writes `name.gj/name.cgj`. |
-| `rhfs` | `src/apps/rhfs` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
+| `gj` | `src/apps/gj` | `gj`, `gj_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, the state's CSF descriptor pair, `name.mix/name.cimix`, and `name.wfn`, then writes `name.gj/name.cigj`. |
+| `hyperfine` | `src/apps/hyperfine` | `hyperfine`, `hyperfine_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.hyperfine/name.cihyperfine` and `name.hyperfine.off-diagonal/name.cihyperfine.off-diagonal`. |
 | `rdensity` | `src/apps/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/design-0026-rdensity-mpi.md). |
-| `ris4` | `src/apps/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing source-specific isotope-shift reports and angular intermediate data. |
-| `fical` | `src/apps/ris4` | `fical` | Standalone [line isotope-shift postprocessor](src/apps/ris4/README.md#fical) for pairs of RIS4 reports. |
+| `isotope` | `src/apps/isotope` | `isotope`, `isotope_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing source-specific isotope-shift reports and angular intermediate data. |
+| `fical` | `src/apps/isotope` | `fical` | Standalone [line isotope-shift postprocessor](src/apps/isotope/README.md#fical) for pairs of RIS4 reports. |
 | GRASP RMCDHF | `src/apps/rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | `rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | Serial and MPI solvers based on GRASP, with standard and in-memory MCP paths. See the [solver flow and source references](docs/implemented/design-0019-rmcdhf-flow-and-state.md). |
 
 The rejected strict/diagnostic RMCDHF variants have been [removed](docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md), together with their dedicated tests and runtime entry points.
@@ -176,7 +176,7 @@ enter the same name at each `Name of state:` prompt. For example, the state
 | `rwfnestimate` | `name_header.toml` | `name.initial.wfn` (initial radial orbitals) |
 | `rangular` | `name_desc.parquet` and its header | `name.mcp.NN`, `name.rangular.log` |
 | `rmcdhf` and `rmcdhf_mem` | Same descriptor pair, `name.initial.wfn`, `name.mcp.NN` | `name.wfn` (optimized orbitals), `name.mix` (OL/EOL mixing), `name.rmcdhf.summary`, `name.rmcdhf.log` |
-| `rci` | Same descriptor pair and `name.wfn` | `name.cimix` (CI mixing), `name.csum`, `name.clog`, `name.rci.restart` |
+| `rci` | Same descriptor pair and `name.wfn` | `name.cimix` (CI mixing), `name.cisum`, `name.cilog`, `name.rci.restart` |
 
 MPI uses the same state name. Each `rangular_mpi` rank writes `name.mpi.mcpidx` in
 its scratch directory. Run `rmcdhf_mpi` or `rmcdhf_mem_mpi` with the same basis
@@ -221,10 +221,10 @@ Common input files:
 
 Common output files:
 
-- `gj`: `name.gj` or `name.cgj`.
-- `rhfs`: `name.h/name.ch` and `name.hoffd/name.choffd`.
-- `rdensity`: `name.mcdhf.natural-orbitals` (MCDHF) or `name.ci.natural-orbitals` (CI), with `name.d` or `name.cd`.
-- `ris4`: `name.mcdhf.isotope-shift` or `name.ci.isotope-shift`, with optional `name.ris4.one-body.angular.cache` and `name.ris4.two-body.angular.cache`.
+- `gj`: `name.gj` or `name.cigj`.
+- `hyperfine`: `name.hyperfine/name.cihyperfine` and `name.hyperfine.off-diagonal/name.cihyperfine.off-diagonal`.
+- `rdensity`: `name.mcdhf.natural-orbitals` (MCDHF) or `name.ci.natural-orbitals` (CI), with `name.density` or `name.cidensity`.
+- `isotope`: `name.mcdhf.isotope-shift` or `name.ci.isotope-shift`, with optional `name.isotope.one-body.angular.cache` and `name.isotope.two-body.angular.cache`.
 - `jj2lsj_omp`: `name.mcdhf.lsj.labels` or `name.ci.lsj.labels`.
 - `rtransition` writes `initial.final.mcdhf.transition` or `initial.final.ci.transition`,
   with optional `.transition.lsj` reports. The phase executable adds `.phase` after `.transition`.

@@ -70,7 +70,7 @@ Fortran 源码共有 33 个声明实体。`TALK` 的 9 个形参和 `CXK` 的 7 
 参数顺序和形参属性沿用原 RCI 过程。原外部符号 `cxk_` 已移除。使用该符号的外部 Fortran 代码需改用模块过程并重新编译和链接。
 九个自旋角过程和两个 RCI 闭芯过程共 41 处模块过程调用，均使用位置实参。
 
-`spin_angular` 依赖 `breit_angular_support`。`rangular`、`rci`、`gj`、`rhfs`、`ris4`、`rtransition` 及其 MPI 版本，
+`spin_angular` 依赖 `breit_angular_support`。`rangular`、`rci`、`gj`、`hyperfine`、`isotope`、`rtransition` 及其 MPI 版本，
 还有 `rtransition_phase` 直接链接这两个库。`biorthtransform`、`rdensity` 及其 MPI 版本、`rwfnestimate`、
 `jj2lsj` 的内核与转换目标和 `test.f2018_nmtejj` 通过 `spin_angular` 引用这些库。
 

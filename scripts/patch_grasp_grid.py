@@ -41,8 +41,8 @@ SUITE_GRID_FILES = (
     "src/apps/rmcdhf_mpi/read_scf_options_mpi.f90",
     "src/apps/rmcdhf_mem/read_scf_options.f90",
     "src/apps/rmcdhf_mem_mpi/read_scf_options_mpi.f90",
-    "src/apps/rhfs/read_hyperfine_options.f90",  # also compiled into gj and gj_mpi
-    "src/apps/ris4/prepare_isotope_calculation.f90",
+    "src/apps/hyperfine/read_hyperfine_options.f90",  # also compiled into gj and gj_mpi
+    "src/apps/isotope/prepare_isotope_calculation.f90",
     "src/apps/rdensity/read_radial_density_input.f90",
 )
 SUITE_RESTART_FILES = ("src/lib/core/rci_restart_records.f90",)  # shared by rci and rci_mpi

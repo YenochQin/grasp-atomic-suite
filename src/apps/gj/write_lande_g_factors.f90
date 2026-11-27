@@ -7,7 +7,7 @@ module write_lande_g_factors_interface
     public :: write_lande_g_factors
 contains
 
-    ! Writes diagonal Landé-factor data to <name>.gj or <name>.cgj.
+    ! Writes diagonal Landé-factor data to <name>.gj or <name>.cigj.
     subroutine write_lande_g_factors(state_name, mixing_file_kind, diagonal_lande_g_elements, diagonal_lande_correction_elements)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
@@ -32,7 +32,7 @@ contains
 
         state_name_end = index(state_name," ")
         if (mixing_file_kind == 0) then
-            file_path = state_name(1:state_name_end-1)//".cgj"
+            file_path = state_name(1:state_name_end-1)//".cigj"
         else
             file_path = state_name(1:state_name_end-1)//".gj"
         end if
