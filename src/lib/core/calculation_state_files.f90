@@ -12,7 +12,7 @@ module calculation_state_files
     public :: named_angular_output
     public :: orbital_input_path, mixing_input_path, ci_mixing_suffix
     public :: natural_orbital_path, isotope_shift_report_path, isotope_shift_input_path
-    public :: lsj_label_path, lsj_label_input_path, transition_report_path
+    public :: lsj_output_stem, lsj_label_path, lsj_label_input_path, transition_report_path
     public :: descriptor_input_path
     public :: rci_restart_path
     public :: check_orbital_output
@@ -92,12 +92,20 @@ contains
         call use_legacy_path_if_missing(path, trim(name)//trim(merge(".ci", ".i ", from_ci)))
     end function isotope_shift_input_path
 
+    function lsj_output_stem(name, from_ci) result(stem)
+        character(*), intent(in) :: name
+        logical, intent(in) :: from_ci
+        character(:), allocatable :: stem
+
+        stem = source_report_stem(name, from_ci)//".lsj"
+    end function lsj_output_stem
+
     function lsj_label_path(name, from_ci) result(path)
         character(*), intent(in) :: name
         logical, intent(in) :: from_ci
         character(:), allocatable :: path
 
-        path = source_report_stem(name, from_ci)//".lsj.labels"
+        path = lsj_output_stem(name, from_ci)//".labels"
     end function lsj_label_path
 
     function lsj_label_input_path(name, from_ci) result(path)

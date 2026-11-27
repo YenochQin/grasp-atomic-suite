@@ -31,8 +31,9 @@ program jj2lsj_main
     print *, "        Input files: name_desc.parquet, name_header.toml, name.mix/name.cimix"
     print *, "         (optional)  name.lsj.transform.cache"
     print *, "        Output files: name.mcdhf.lsj.labels or name.ci.lsj.labels,"
-    print *, "         (optional)  name.lsj.c, name.lsj.j,"
-    print *, "                     name.uni.lsj.lbl, name.uni.lsj.sum,"
+    print *, "         (optional)  With the same name.mcdhf.lsj or name.ci.lsj stem:"
+    print *, "                     .csf-list, .expansion, .unique-labels, .unique-labels.summary"
+    print *, "         (optional)  Transformation cache:"
     print *, "                     name.lsj.transform.cache"
     print *, " "
     ! Initialize the log-factorial table for angular algebra.

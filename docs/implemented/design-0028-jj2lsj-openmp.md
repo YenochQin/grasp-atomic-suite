@@ -10,7 +10,8 @@ suite 修改前基线：`a4661441492e38beb99293182cb9257326d2dcef`。
 锁定导入前的内容。保留原作者与 MIT 许可；此清单不是集成后源码的哈希。
 
 新程序是 `jj2lsj_omp`，读取 `isodata`、配套的 CSF 描述符和头文件、`name.mix` 或 `name.cimix`。
-交互问题、阈值默认值、`.lsj.lbl/.lsj.c/.lsj.j`、唯一标签和 `.lsj.T` 格式延续来源程序。
+交互选项、阈值默认值和文本记录格式延续来源程序。标签及其他文本报告按 MCDHF 或 CI 命名，
+详见[程序输出](../../src/apps/jj2lsj/README.md#可选输出)。
 
 ## 构建与运行
 
@@ -53,7 +54,7 @@ OMP_NUM_THREADS=8 /path/to/grasp-atomic-suite/bin/jj2lsj_omp < jj2lsj.inp > jj2l
   原有零尾部不写入。不同批次之间不提前提交或跨序执行截断判定。
 - 每批最多 256 行，通常为最大线程数的四倍，并将系数缓冲限制在约 8 MiB。
   所选能级、累计权重、标志数组和线程缓存另有小额内存开销。
-- `.lsj.T` 写入/回读（`ioutT=1/2`）始终回退串行，保持记录及索引顺序。
+- `.lsj.transform.cache` 写入/回读（`ioutT=1/2`）始终回退串行，保持记录及索引顺序。
   因而这些模式目前不会获得 LS 行计算的 OpenMP 加速。
 - 输入、`setLS` 基生成、排序、标签输出和 `uniquelsj` 都仍为串行。
   同一 block 的全部所选能级共同决定 `ithresh`，不按能级拆成独立转换。

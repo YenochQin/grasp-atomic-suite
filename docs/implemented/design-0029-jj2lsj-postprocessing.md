@@ -45,11 +45,11 @@ CSV 列为 `phase,block,level,items,seconds`；`block`、`level` 为 0 表示不
 | `ls_rank_gather` | 把排序索引整理为已有输出流程需要的数组 |
 | `candidate_select` | 打印候选选择，包含范数警告检查；items 为打印成分数 |
 | `jj_stdout`、`ls_stdout` | 控制台格式化与输出，含主要成分描述准备 |
-| `label_format`、`label_write` | `.lsj.lbl` 的标签字符串准备，以及其余记录格式化/写入 |
-| `csf_write`、`vector_write` | 可选 `.lsj.c` 和 `.lsj.j` 输出 |
+| `label_format`、`label_write` | `.lsj.labels` 的标签字符串准备及记录写入 |
+| `csf_write`、`vector_write` | 可选 `.lsj.csf-list` 和 `.lsj.expansion` 输出 |
 | `unique_read` | 唯一标签各组的文件读回；items 为组内 ASF 数 |
-| `unique_assign_summary` | 唯一标签协调及 `.uni.lsj.sum` 写入；未将每条汇总写入单独计时 |
-| `unique_write` | `.uni.lsj.lbl` 的最终输出 |
+| `unique_assign_summary` | 唯一标签协调及 `.lsj.unique-labels.summary` 写入 |
+| `unique_write` | `.lsj.unique-labels` 的最终输出 |
 | `unique_total` | 整个唯一标签过程，包含上述三个子阶段及分配等开销 |
 | `output_flush` | 计时模式中测量输出大小前的缓冲刷新 |
 | `*_bytes` | 已生成的对应输出文件大小，items 为字节数、seconds 为 0 |
@@ -73,7 +73,7 @@ CSV 列为 `phase,block,level,items,seconds`；`block`、`level` 为 0 表示不
 
 原先的 `ithresh`、LS 枚举、转换核、共同提前停止点和打印阈值保持原算法。
 转换结束后才开始 ASF 排序；排序完成后按原能级顺序执行格式化和输出，
-最后仍由原 `uniquelsj` 从 `.lsj.lbl` 读回已舍入的数值来协调唯一标签。
+最后由唯一标签分配例程从 `.lsj.labels` 读回已舍入的数值来协调唯一标签。
 没有绕过原文件精度，也没有让各 ASF 独立抢占唯一标签。
 
 并行排序和转换不重叠，也不建立嵌套线程组。多 ASF 排序沿用转换的最大线程组大小，

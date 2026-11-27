@@ -1312,7 +1312,7 @@ contains
         use transition_basis_blocks,           only: transition_level_counts_by_block, transition_csf_counts_by_block, &
             transition_block_count, transition_two_j_by_block
         use csf_pair_angular_state,             only: core_orbital_count
-        use calculation_state_files, only: read_state_name, lsj_label_path
+        use calculation_state_files, only: read_state_name, lsj_label_path, lsj_output_stem
         use atomic_calculation_state,           only: nuclear_charge, electron_count
 
         ! Procedure interfaces
@@ -1331,16 +1331,16 @@ contains
         integer, intent(out) :: number_of_levels(max_symmetry_blocks)
         integer, intent(out) :: levels(max_symmetry_blocks, max_selected_levels)
         real(real64) :: phase_start
-        integer            :: i, ii, isum, k, nci, io_status
+        integer            :: i, ii, isum, nci, io_status
         integer            :: iblock, number_of_levels_tmp
         logical            :: yes, fail
         character(len=24)  :: name
-        character(len=256) :: record, util_csl_file
+        character(len=256) :: record
+        character(:), allocatable :: report_stem, csf_list_file, expansion_file, label_file, unique_file, unique_summary_file
         integer    :: posi(max_symmetry_blocks)
         integer :: levels_tmp(1:max_selected_levels)
         transition_block_count = 0
         call read_state_name(name)
-        k = len_trim(name) + 1
         ! Load the configuration state functions from the descriptor pair.
         phase_start=profile_time()
         call load_csf_basis(name,core_orbital_count,io_status)
@@ -1358,6 +1358,12 @@ contains
         else
             nci = 1
         end if
+        report_stem = lsj_output_stem(name, nci == 0)
+        label_file = lsj_label_path(name, nci == 0)
+        csf_list_file = report_stem//".csf-list"
+        expansion_file = report_stem//".expansion"
+        unique_file = report_stem//".unique-labels"
+        unique_summary_file = unique_file//".summary"
         ! 2017
         write (stderr_unit,*) "Do you need a unique labeling? (y/n)"
         yes = read_yes_no ()
@@ -1476,14 +1482,14 @@ contains
             ! 2024 end
             read *, thresh
             if( max_omitted_percent > zero) then
-                write (stderr_unit,*) "Do you need the output file *.lsj.c?  (y/n)"
+                write (stderr_unit,"(A)") "Do you need the output file "//csf_list_file//"?  (y/n)"
                 yes = read_yes_no ()
                 if (yes) then
                     write_csf_list = 1
                 else
                     write_csf_list = 0
                 end if
-                write (stderr_unit,*) "Do you need the output file *.lsj.j?  (y/n)"
+                write (stderr_unit,"(A)") "Do you need the output file "//expansion_file//"?  (y/n)"
                 yes = read_yes_no ()
                 if (yes) then
                     write_j_vectors = 1
@@ -1528,68 +1534,53 @@ contains
         ! 2024
         write (stderr_unit,*)
         if (ls_convention == 0) then
-            write (*,"(A)")                                                &
-                " Seniority notaton is used for d shell identification in"
-            write (*,"(5A)")"   ",lsj_label_path(name, nci == 0), ", ",       &
-                name(1:k-1)//".uni.lsj"//".lbl",","
-            write (*,"(5A)")"   ",name(1:k-1)//".uni.lsj"//".sum",", and ",&
-                name(1:k-1)//".lsj"//".j","  files"
+            write (*,"(A)") " Seniority notation is used for d shell identification"
         else
-            write (*,"(A)")                                                &
-                " Nielson-Koster indexes is used for d shell identification in"
-            write (*,"(5A)")"   ",lsj_label_path(name, nci == 0), ", ",       &
-                name(1:k-1)//".uni.lsj"//".lbl",","
-            write (*,"(5A)")"   ",name(1:k-1)//".uni.lsj"//".sum",", and ",&
-                name(1:k-1)//".lsj"//".j","  files"
+            write (*,"(A)") " Nielson-Koster indexes are used for d shell identification in"
+            write (*,"(A)") "   "//label_file
+            if (unique == 1) write (*,"(A)") "   "//unique_file, "   "//unique_summary_file
+            if (write_j_vectors == 1) write (*,"(A)") "   "//expansion_file
+            write (*,"(A)") " Seniority notation is used in other files"
         end if
-        write (*,"(A)")                                                  &
-            " while seniority notation for this shell is used in other files"
         ! 2024 end
         print *, " "
         if (transformation_output_mode /= 0) call open_transformation_cache(name, transformation_output_mode)
-        ! Opening the files  *.lsj.c
         if(write_csf_list == 1) then
-            util_csl_file = name(1:k-1)//".lsj"//".c"
-            call open_calculation_file(ls_csf_output_unit,util_csl_file,"formatted","UNKNOWN",io_status)
+            call open_calculation_file(ls_csf_output_unit,csf_list_file,"formatted","UNKNOWN",io_status)
             if (io_status == 1) then
-                print *, "Error when opening",util_csl_file
+                print *, "Error when opening ",csf_list_file
                 stop
             end if
         end if
         ! Open the source-specific LSJ label report.
-        util_csl_file = lsj_label_path(name, nci == 0)
-        call open_calculation_file(lsj_label_unit,util_csl_file,"formatted","UNKNOWN",io_status)
+        call open_calculation_file(lsj_label_unit,label_file,"formatted","UNKNOWN",io_status)
         if (io_status == 1) then
-            print *, "Error when opening",util_csl_file
+            print *, "Error when opening ",label_file
             stop
         end if
         ! 2017
         if (unique == 1) then
-            util_csl_file = name(1:k-1)//".uni.lsj"//".lbl"
-            call open_calculation_file(unique_label_unit,util_csl_file,"formatted","UNKNOWN",io_status)
+            call open_calculation_file(unique_label_unit,unique_file,"formatted","UNKNOWN",io_status)
             if (io_status == 1) then
-                print *, "Error when opening",util_csl_file
+                print *, "Error when opening ",unique_file
                 stop
             end if
-            util_csl_file = name(1:k-1)//".uni.lsj"//".sum"
-            call open_calculation_file(unique_summary_unit,util_csl_file,"formatted","UNKNOWN",io_status)
+            call open_calculation_file(unique_summary_unit,unique_summary_file,"formatted","UNKNOWN",io_status)
             if (io_status == 1) then
-                print *, "Error when opening",util_csl_file
+                print *, "Error when opening ",unique_summary_file
                 stop
             end if
         end if
         ! 2017 end
         write(lsj_label_unit,"(A53)") " Pos   J   Parity      Energy Total      Comp. of ASF"
-        ! Opening the files   *.lsj.j and
         if(write_j_vectors == 1) then
-            util_csl_file = name(1:k-1)//".lsj"//".j"
-            call open_calculation_file(j_vector_output_unit,util_csl_file,"formatted","UNKNOWN",io_status)
+            call open_calculation_file(j_vector_output_unit,expansion_file,"formatted","UNKNOWN",io_status)
             if (io_status == 1) then
-                print *, "Error when opening",util_csl_file
+                print *, "Error when opening ",expansion_file
                 stop
             end if
             write (j_vector_output_unit,"(2X,A6,A,F5.1,A,I3,A,I7)" )    &
-                name(1:k-1),"  Z = ",nuclear_charge ,"  NEL = ",electron_count,"   NCFG ="! ,asf_set_LS%csf_set_LS%nocsf
+                trim(name),"  Z = ",nuclear_charge ,"  NEL = ",electron_count,"   NCFG ="! ,asf_set_LS%csf_set_LS%nocsf
         end if
     end subroutine read_ls_conversion_options
 
@@ -1810,7 +1801,7 @@ contains
             call build_ls_basis(retained_csf_mask,first_csf_index,last_csf_index)
             call profile_emit("ls_basis",phase_start,symmetry_block_index,items=asf_set_ls%csf_set_ls%ls_csf_count)
             phase_start=profile_time()
-            ! output to *.lsj.c
+            ! Write the LS-coupled basis for this block.
             if(write_csf_list == 1) call write_ls_csf_list (ls_csf_output_unit,asf_set_ls%csf_set_ls,before_j)
             call profile_emit("csf_write",phase_start,symmetry_block_index)
             phase_start=profile_time()
@@ -2027,11 +2018,11 @@ contains
                     string_length = len_trim(string_csf_one)
                     write(lsj_label_unit,"(7X,F12.8,3X,F11.8,3X,A)") weights(j),weights2(j),string_csf_one(1:string_length)
                 end do
-                ! output  *.lsj.j and
                 call profile_emit("label_format",phase_start,symmetry_block_index,level,nocsf_min,elapsed=format_seconds)
                 call profile_emit("label_write",phase_start,symmetry_block_index,level, &
                     elapsed=profile_time()-phase_start-format_seconds)
                 phase_start=profile_time()
+                ! Write the optional LS expansion.
                 if(write_j_vectors == 1) then
                     if(lev == 1) then
                         write (j_vector_output_unit, "(//A8,I4,2X,A8,I4)" ) "  2*J = ",       &
@@ -2320,7 +2311,6 @@ contains
             write(stream,'(18(1x,a3))')(string_nl(j),j=1,csf_set_ls%closed_shell_count)
             deallocate(string_nl)
         end if
-        ! output to *.lsj.c
         do i = 1,csf_set_ls%ls_csf_count
             call write_ls_csf(stream,csf_set_ls,i)
         end do

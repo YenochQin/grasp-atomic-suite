@@ -4,7 +4,22 @@
 用主要的 LSJ 组分标记能级。
 
 程序读取 `isodata`、`name_desc.parquet`、`name_header.toml` 和 `name.mix` 或 `name.cimix`，
-写出可供 `rlevels`、FICAL 和跃迁程序读取的 `name.mcdhf.lsj.labels` 或 `name.ci.lsj.labels`。其他组分和变换数据按运行选项输出。
+写出可供 `rlevels`、FICAL 和跃迁程序读取的 `name.mcdhf.lsj.labels` 或 `name.ci.lsj.labels`。
+
+## 可选输出
+
+下表的 `source` 对应 `.mix` 的 `mcdhf` 或 `.cimix` 的 `ci`。
+
+| 文件 | 内容 |
+| --- | --- |
+| `name.source.lsj.csf-list` | 按转换时的对称性块列出的 LS 耦合 CSF，包括轨道占据数、子壳层项和中间耦合项。 |
+| `name.source.lsj.expansion` | 所选能级的能量及带符号的 LS 展开系数。每个向量的系数顺序对应同块的 CSF 列表。 |
+| `name.source.lsj.unique-labels` | 为能级分配的唯一 LSJ 标签。 |
+| `name.source.lsj.unique-labels.summary` | 唯一标签分配过程的摘要。 |
+
+CSF 列表供检查变换时构造的 LS 基。Suite 求解器输入使用 jj 耦合的描述符文件对。
+选用非默认设置且允许省略的组分比例为零时，程序写出 CSF 列表和展开。比例大于零时，可分别选择是否写出这两份文件。
+选择唯一标签时，程序写出标签及其摘要。
 
 启用 OpenMP 后，程序并行计算 LS 系数行，线程数由 `OMP_NUM_THREADS` 控制。
 写入或回读变换文件时使用串行路径。

@@ -207,6 +207,10 @@ GraspKit 的跃迁和径向流读取用例与 Tools 的结果收集用例也通�
 | RDENSITY 自然轨道 | `S.mcdhf.natural-orbitals` | `S.ci.natural-orbitals` |
 | RIS4 电子因子 | `S.mcdhf.isotope-shift` | `S.ci.isotope-shift` |
 | JJ2LSJ 标签 | `S.mcdhf.lsj.labels` | `S.ci.lsj.labels` |
+| JJ2LSJ 可选 LS 耦合 CSF 列表 | `S.mcdhf.lsj.csf-list` | `S.ci.lsj.csf-list` |
+| JJ2LSJ 可选 LS 展开系数 | `S.mcdhf.lsj.expansion` | `S.ci.lsj.expansion` |
+| JJ2LSJ 可选唯一标签 | `S.mcdhf.lsj.unique-labels` | `S.ci.lsj.unique-labels` |
+| JJ2LSJ 可选唯一标签分配摘要 | `S.mcdhf.lsj.unique-labels.summary` | `S.ci.lsj.unique-labels.summary` |
 
 新写出的自然轨道沿用 `RAD--WFN`。占据数和旋转矩阵仍随 stdout 输出。
 RIS4、JJ2LSJ 和跃迁文本沿用既有字段、单位和固定列。FICAL、RLEVELS 和三个跃迁入口
