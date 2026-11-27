@@ -65,7 +65,7 @@ Coulomb 和 Babushkin 规范的值。
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
 | [`check_transition_mixing_coefficients.f90`](check_transition_mixing_coefficients.f90) | 将已读进的两态维数、恢复偏移后的本征值、级和 CSF 系数完整打印供诊断。 |
-| [`open_transition_angular_cache.f90`](open_transition_angular_cache.f90) | 按初末态和多极代码构造角系数文件名，读块、轨道数及多极数等缓存头信息，确定是否复用记录。 |
+| [`open_transition_angular_cache.f90`](open_transition_angular_cache.f90) | 核对块头和末尾完成记录中的初末态描述符摘要、多极代码、J 筛选及进程布局。旧格式、截断或身份不符的角缓存会重算。[共享格式](../../lib/core/transition_angular_cache.f90) |
 | [`read_transition_angular_coefficients.f90`](read_transition_angular_coefficients.f90) | 读取指定块／多极的积分数、打包轨道对、每组的贡献边界及系数，检查并扩充工作数组后交给振幅计算。 |
 | [`write_input_summary.f90`](write_input_summary.f90) | 由初、末态名及混合来源构造 `.t`／`.ct` 报告路径，写两态输入摘要。启用标签时建立相应的 `.lsj` 输出。 |
 | [`write_lsj_transition_probability.f90`](write_lsj_transition_probability.f90) | 把级编号映射为初末 LSJ 标签，配合频率或波长及两规范的强度，写出可选的带标签谱线记录。 |

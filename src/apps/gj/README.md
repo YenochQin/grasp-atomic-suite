@@ -5,9 +5,10 @@
 
 程序读取 `isodata`、`name_desc.parquet`、`name_header.toml`、`name.wfn` 和混合系数文件。
 MCDHF 模式读取 `name.mix` 并写出 `name.gj`，CI 模式读取 `name.cimix` 并写出 `name.cgj`。
+读取混合系数时，程序按已加载的 CSF 基组检查电子数、轨道数、CSF 数、块边界、J 和宇称。每块可选择部分根并改变存储顺序，根编号须在块内唯一。
 `gj_mpi` 支持交互输入，也可从命令行接收状态名及 `--nonci` 或 `--ci`。
 
-[RHFS 程序](../rhfs/README.md) · [Landé 因子计算流程](../../../docs/implemented/design-0027-rhfs-lande-g.md)
+[RHFS 程序](../rhfs/README.md) · [Landé 因子计算流程](../../../docs/implemented/design-0027-rhfs-lande-g.md) · [LS 极限、Ni I 与 MPI 实测](../../../docs/reviews/evidence-0029-lande-g-factors.md)
 
 ## 计算流程
 

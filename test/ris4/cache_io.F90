@@ -1,5 +1,10 @@
 program cache_io
     use open_isotope_shift_angular_cache_interface, only: open_isotope_shift_angular_cache
+#ifndef CACHE_BASELINE
+    use csf_descriptor_reader, only: loaded_csf_basis_id
+    use debug_output_settings, only: matrix_element_screening_cutoff
+    use open_isotope_shift_angular_cache_interface, only: finish_angular_cache
+#endif
     use input_error_handling, only: fail_input_io
     use iso_fortran_env, only: real64
 #ifdef CACHE_MPI
@@ -15,12 +20,25 @@ program cache_io
 #ifdef CACHE_MPI
     integer :: error
 #endif
+    character(16) :: scenario
     rank = 0
     call get_command_argument(1, argument)
     read(argument,*) whichone
 #ifdef CACHE_MPI
     call mpi_init(error)
     call mpi_comm_rank(mpi_comm_world, rank, error)
+#endif
+#ifndef CACHE_BASELINE
+    call get_command_argument(2, scenario)
+    loaded_csf_basis_id = repeat("a",64)
+    matrix_element_screening_cutoff = 1e-10_real64
+    if (rank == 0 .and. (scenario == "stamp" .or. scenario == "cutoff")) then
+        open(newunit=cache_unit,file=merge("cache.IOB","cache.ITB",whichone==1), &
+            status="old",form="unformatted",position="append")
+        call finish_angular_cache(cache_unit, whichone)
+        close(cache_unit)
+    end if
+    if (scenario == "cutoff") matrix_element_screening_cutoff = 1e-8_real64
 #endif
     do i = 1, 2
         if (rank == 0) then

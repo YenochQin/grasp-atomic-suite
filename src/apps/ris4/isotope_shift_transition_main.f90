@@ -3,6 +3,7 @@ program isotope_shift_transition_main
     ! Module dependencies
     use calculation_state_files, only: read_state_name
     use, intrinsic :: iso_fortran_env, only: int64, real64
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use run_timer, only: begin_run_timer, finish_run_timer
     implicit none (type, external)
     integer :: isotope_shift_output_unit
@@ -23,7 +24,8 @@ program isotope_shift_transition_main
     real(real64) :: fieldshiftres, fieldshift22res, linfac2
 
     real(real64), parameter :: hartree_to_wavenumber_cm = 219474.63136320_real64   ! CODATA 2018
-    real(real64) :: drms
+    real(real64), parameter :: mev2ghz = 241.798926_real64
+    real(real64) :: inverse_mass_difference, radius_difference
     real(real64) :: z
 
     character(len=101) :: state1, state2
@@ -200,7 +202,11 @@ program isotope_shift_transition_main
             read(*,*) m2
             write(*,*) "d<r^2> (isotope 1 - isotope 2) (in fm^2)?: "
             read(*,*) dr2
+            radius_difference = dr2
+            if (m1 < m2) radius_difference = -dr2
         end if
+        if (.not. (m1 > 0.0_real64 .and. m2 > 0.0_real64)) error stop "FICAL: isotope masses must be positive"
+        inverse_mass_difference = -abs(m2-m1)/(m1*m2)
     end if
 
     ! Resolve the two state reports and the transition output path.
@@ -286,20 +292,19 @@ program isotope_shift_transition_main
             fs1(1,:first_state_level_count) = fs1(1,:first_state_level_count)*z*4.9210908105_real64
             fs2(1,:second_state_level_count) = fs2(1,:second_state_level_count)*z*4.9210908105_real64
         else if(unit=="meV") then
-            fs1(1,:first_state_level_count) = fs1(1,:first_state_level_count)*z*4.9210908105e-3_real64/241.7989348_real64
-            fs2(1,:second_state_level_count) = fs2(1,:second_state_level_count)*z*4.9210908105e-3_real64/241.7989348_real64
+            fs1(1,:first_state_level_count) = fs1(1,:first_state_level_count)*z*4.9210908105e-3_real64/mev2ghz
+            fs2(1,:second_state_level_count) = fs2(1,:second_state_level_count)*z*4.9210908105e-3_real64/mev2ghz
         end if
         fshift1(:first_state_level_count) = fs1(1,:first_state_level_count)
         fshift2(:second_state_level_count) = fs2(1,:second_state_level_count)
-        fshift11(:first_state_level_count) = fs1(1,:first_state_level_count)
-        fshift22(:second_state_level_count) = fs2(1,:second_state_level_count)
+        fshift11(:first_state_level_count) = 0.0_real64
+        fshift22(:second_state_level_count) = 0.0_real64
     end if
 
     if(soph=="y") then
         call fermi_nuclear_distribution(trms_1,t_1,w_1,b20_1,b40_1,0, radmom1)
         call fermi_nuclear_distribution(trms_2,t_2,w_2,b20_2,b40_2,0, radmom2)
 
-        drms =abs(radmom1(1)-radmom2(1))
 
         fieldshift1(:) = 0.0_real64
         do i=1,first_state_level_count
@@ -680,24 +685,22 @@ program isotope_shift_transition_main
                         csflabel2scal = csflabel2(jj)
                     end if
                 end do
+                ! The line uses upper minus lower; isotope shifts use heavy minus light.
+                masshift = (ms1(i)-ms2(j))*inverse_mass_difference
+                if (soph == "y") then
+                    fieldshift = fieldshift1(i)-fieldshift2(j)
+                    if (m1 < m2) fieldshift = -fieldshift
+                else
+                    fieldshift = (fshift1(i)-fshift2(j))*radius_difference + &
+                        (fshift11(i)-fshift22(j))*radius_difference**2
+                end if
+                if (energy1(i) <= energy2(j)) then
+                    masshift = -masshift
+                    fieldshift = -fieldshift
+                end if
+                isotopeshift = masshift + fieldshift
                 if(energy1(i)>energy2(j)) then
                     tenergy = (energy1(i)-energy2(j))*hartree_to_wavenumber_cm
-                    if(m1>m2) then
-                        masshift = (ms1(i)-ms2(j))*(m2-m1)/(m1*m2)
-                        if(soph=="y") then
-                            fieldshift = fieldshift1(i)-fieldshift2(j)
-                        else if(soph=="n") then
-                            fieldshift = (fshift1(i)-fshift2(j))*dr2 + (fshift11(i)-fshift22(j))*dr2**2.0_real64
-                        end if
-                    else
-                        masshift = (ms1(i)-ms2(j))*(m1-m2)/(m1*m2)
-                        if(soph=="y") then
-                            fieldshift = -1.0_real64*(fieldshift1(i)-fieldshift2(j))
-                        else if(soph=="n") then
-                            fieldshift = -1.0_real64*(fshift2(j)-fshift1(i))*dr2 + (fshift22(j)-fshift11(i))*dr2**2.0_real64
-                        end if
-                    end if
-                    isotopeshift = masshift + fieldshift
                     if(state1==state2.and.j>i) then
                         if(lsjpresent==0) then
                             write(isotope_shift_output_unit,format2) level1(i),adjustl(trim(spinpar1(i))),level2(j), &
@@ -721,23 +724,6 @@ program isotope_shift_transition_main
                     end if
                 else
                     tenergy = (energy2(j)-energy1(i))*hartree_to_wavenumber_cm
-                    if(m1>m2) then
-                        masshift = (ms2(j)-ms1(i))*(m2-m1)/(m1*m2)
-                        if(soph=="y") then
-                            fieldshift = fieldshift2(j)-fieldshift1(i)
-                        else if(soph=="n") then
-                            fieldshift = (fshift2(j)-fshift1(i))*dr2 + (fshift22(j)-fshift11(i))*dr2**2.0_real64
-                        end if
-                    else
-                        masshift = (ms2(j)-ms1(i))*(m1-m2)/(m1*m2)
-                        if(soph=="y") then
-                            fieldshift = -1.0_real64*(fieldshift2(j)-fieldshift1(i))
-                        else if(soph=="n") then
-
-                            fieldshift = -1.0_real64*(fshift2(j)-fshift1(i))*dr2 + (fshift22(j)-fshift11(i))*dr2**2.0_real64
-                        end if
-                    end if
-                    isotopeshift = masshift + fieldshift
                     if(state1==state2.and.j>i) then
                         if(lsjpresent==0) then
                             write(isotope_shift_output_unit,format2) level2(j),adjustl(trim(spinpar2(j))),level1(i), &
@@ -800,25 +786,29 @@ contains
         real(real64), intent(out) :: z
         real(real64) :: a,c,radmom3(4)
 
-        open (newunit=isotope_shift_output_unit,file=nameout,status="unknown",form="formatted")
         open (newunit=isotope_shift_input_unit,file=name,status="old",action="read",form="formatted")
-
-        read(isotope_shift_input_unit,"(a)") string
-        read(isotope_shift_input_unit,"(d18.5)") z
-        read(isotope_shift_input_unit,"(a)") string
-        read(isotope_shift_input_unit,"(a)") string
-        read(isotope_shift_input_unit,"(a)") string
-        read(isotope_shift_input_unit,"(d18.5)") a
-        read(isotope_shift_input_unit,"(a)") string
-        read(isotope_shift_input_unit,"(d18.5)") c
-
+        call read_isotope_value(isotope_shift_input_unit,name,"atomic number",z)
+        call next_report_line(isotope_shift_input_unit,name,"mass number label",string)
+        call next_report_line(isotope_shift_input_unit,name,"mass number",string)
+        call read_isotope_value(isotope_shift_input_unit,name,"Fermi diffuseness",a)
+        call read_isotope_value(isotope_shift_input_unit,name,"Fermi radius",c)
         a = a*4.0_real64*log(3.0_real64)
-        call fermi_nuclear_distribution(c,a,0.0_real64,0.0_real64,0.0_real64,1, radmom3)
-
+        if (a > 0.0_real64 .and. c > 0.0_real64) then
+            call fermi_nuclear_distribution(c,a,0.0_real64,0.0_real64,0.0_real64,1,radmom3)
+        else if (max(abs(a),abs(c)) <= 0.0_real64) then
+            radmom3 = 0.0_real64
+        else
+            error stop "FICAL: invalid Fermi parameters in "//trim(name)
+        end if
+        open (newunit=isotope_shift_output_unit,file=nameout,status="replace",form="formatted")
         write(isotope_shift_output_unit,*)
         write(isotope_shift_output_unit,"(a)") " REFERENCE ISOTOPE DATA FROM ISODATA"
         write(isotope_shift_output_unit,"(a,f10.6)") " Atomic number: ", z
-        write(isotope_shift_output_unit,"(a)") " Fermi nucleus: "
+        if (a > 0.0_real64) then
+            write(isotope_shift_output_unit,"(a)") " Fermi nucleus: "
+        else
+            write(isotope_shift_output_unit,"(a)") " Point nucleus: "
+        end if
         write(isotope_shift_output_unit,"(a16,f10.6,a)") "c: ", c, " fm"
         write(isotope_shift_output_unit,"(a16,f10.6,a)") "r_rms: ", sqrt(radmom3(1)), " fm"
         write(isotope_shift_output_unit,"(a16,f10.6,a)") "t: ", a, " fm"
@@ -827,6 +817,84 @@ contains
         close(isotope_shift_input_unit)
 
     end subroutine read_isotope_data
+
+    subroutine read_isotope_value(input,name,section,value)
+        integer, intent(in) :: input
+        character(*), intent(in) :: name, section
+        real(real64), intent(out) :: value
+        character(200) :: record
+        integer :: status
+
+        call next_report_line(input,name,section,record)
+        call next_report_line(input,name,section,record)
+        read(record,*,iostat=status) value
+        if (status /= 0) error stop "FICAL: invalid "//section//" in "//trim(name)
+        if (.not.ieee_is_finite(value)) error stop "FICAL: nonfinite "//section//" in "//trim(name)
+    end subroutine read_isotope_value
+
+    subroutine next_report_line(input,name,section,record)
+        integer, intent(in) :: input
+        character(*), intent(in) :: name, section
+        character(*), intent(out) :: record
+        integer :: status
+
+        do
+            read(input,"(a)",iostat=status) record
+            if (status /= 0) error stop "FICAL: reading "//section//" in "//trim(name)
+            if (len_trim(record) /= 0) return
+        end do
+    end subroutine next_report_line
+
+    subroutine expect_heading(input,name,heading)
+        integer, intent(in) :: input
+        character(*), intent(in) :: name, heading
+        character(200) :: record
+
+        call next_report_line(input,name,heading,record)
+        if (index(record,heading) == 0) error stop "FICAL: expected "//heading//" in "//trim(name)
+    end subroutine expect_heading
+
+    subroutine expect_field_units(input,name,labels)
+        integer, intent(in) :: input
+        character(*), intent(in) :: name, labels(:)
+        character(200) :: record
+        integer :: column, position
+
+        call next_report_line(input,name,"field factor units",record)
+        record = adjustl(record)
+        ! Older abbreviated headings specify the first column only.
+        if (record == labels(1)) return
+        do column=1,size(labels)
+            position = index(record,trim(labels(column)))
+            if (position /= 1) error stop "FICAL: expected "//trim(labels(column))//" in "//trim(name)
+            record = adjustl(record(len_trim(labels(column))+1:))
+        end do
+    end subroutine expect_field_units
+
+    subroutine read_state_row(input,name,section,values,root,symmetry,atomic_units)
+        integer, intent(in) :: input
+        character(*), intent(in) :: name, section
+        real(real64), intent(out) :: values(:)
+        integer, intent(out) :: root
+        character(11), intent(out) :: symmetry
+        logical, intent(in) :: atomic_units
+        character(200) :: record
+        integer :: field, start, status
+
+        call next_report_line(input,name,section,record)
+        read(record,"(i4,a11)",iostat=status) root,symmetry
+        if (status /= 0 .or. len_trim(record(:4)) == 0) error stop "FICAL: invalid level in "//section//" in "//trim(name)
+        if (len_trim(record) < 20+20*size(values)) error stop "FICAL: incomplete "//section//" in "//trim(name)
+        do field=1,size(values)
+            start = 21+20*(field-1)
+            if (record(start:start+19) == "") error stop "FICAL: missing "//section//" value in "//trim(name)
+            read(record(start:start+19),"(d20.10)",iostat=status) values(field)
+            if (status /= 0) error stop "FICAL: invalid "//section//" in "//trim(name)
+            if (.not.ieee_is_finite(values(field))) error stop "FICAL: nonfinite "//section//" in "//trim(name)
+        end do
+        if (atomic_units .and. adjustl(record(21+20*size(values):)) /= "(a.u.)") &
+            error stop "FICAL: expected atomic units for "//section//" in "//trim(name)
+    end subroutine read_state_row
 
     subroutine read_isotope_shift_report(name,unit,eflag,rflag,nvec,level,spinpar,energy,nms,sms,ms,fs)
         implicit none (type, external)
@@ -839,12 +907,10 @@ contains
         real(real64), intent(out) :: energy(:), nms(:), sms(:), ms(:), fs(:,:)
 
         ! Local declarations
-        integer :: input, i, component
+        integer :: input, i, component, operator, root, status
+        character(11) :: symmetry
+        character(3), parameter :: mass_names(2) = ["NMS","SMS"]
 
-        ! Local constants
-        real(real64), parameter :: mev2ghz = 241.798926_real64
-
-        ! Local declarations
         real(real64) :: ghz_to_output, terms(3)
         character(len=200) :: string
 
@@ -862,71 +928,56 @@ contains
         if (rflag == 1) component = 3
 
         open(newunit=input, file=name, status="old", action="read", form="formatted")
-        read(input,"(24x,i3)") nvec
+        call next_report_line(input,name,"eigenvalue count",string)
+        if (index(string,"Number of eigenvalues:") == 0) error stop "FICAL: missing eigenvalue count in "//trim(name)
+        read(string,"(24x,i3)",iostat=status) nvec
+        if (status /= 0) error stop "FICAL: invalid eigenvalue count in "//trim(name)
         if (nvec < 1 .or. nvec > size(level)) error stop "FICAL: invalid eigenvalue count in "//trim(name)
-
-        do i=1,3
-            read(input,"(a)") string
-        end do
+        call expect_heading(input,name,"Energy")
         do i=1,nvec
-            ! RIS4 format 323 places the energy in columns 21 through 40.
-            read(input,"(i4,a11,5x,d20.10)") level(i),spinpar(i),energy(i)
+            call read_state_row(input,name,"energy",energy(i:i),level(i),spinpar(i),.true.)
         end do
-
-        do i=1,6
-            read(input,"(a)") string
-        end do
-        do i=1,nvec
-            call read_mass_shift(input,name,"NMS",terms)
-            nms(i) = terms(component)*ghz_to_output
-            if(i<nvec) then
-                read(input,"(a)") string
-                read(input,"(a)") string
-                read(input,"(a)") string
+        do operator=1,2
+            if (operator == 1) then
+                call expect_heading(input,name,"Normal mass shift parameter")
+            else
+                call expect_heading(input,name,"Specific mass shift parameter")
             end if
+            do i=1,nvec
+                call expect_heading(input,name,"<K^1>")
+                call read_state_row(input,name,mass_names(operator),terms,root,symmetry,.true.)
+                if (root /= level(i) .or. symmetry /= spinpar(i)) error stop "FICAL: mismatched "//mass_names(operator)// &
+                    " level in "//trim(name)
+                call read_mass_shift(input,name,mass_names(operator),terms)
+                if (operator == 1) then
+                    nms(i) = terms(component)*ghz_to_output
+                else
+                    sms(i) = terms(component)*ghz_to_output
+                end if
+            end do
         end do
-
-        do i=1,6
-            read(input,"(a)") string
-        end do
+        ms(:nvec) = nms(:nvec)+sms(:nvec)
+        call expect_heading(input,name,"Electron density in atomic units")
+        call expect_heading(input,name,"(a.u.)")
         do i=1,nvec
-            call read_mass_shift(input,name,"SMS",terms)
-            sms(i) = terms(component)*ghz_to_output
-            ms(i) = nms(i) + sms(i)
-            if(i<nvec) then
-                read(input,"(a)") string
-                read(input,"(a)") string
-                read(input,"(a)") string
-            end if
+            call read_state_row(input,name,"contact density",fs(1:1,i),root,symmetry,.false.)
+            if (root /= level(i) .or. symmetry /= spinpar(i)) error stop "FICAL: mismatched density level in "//trim(name)
+            fs(2:6,i) = 0.0_real64
         end do
-
-        if(eflag==1) then
-            ! The field-shift section headings specify GHz for all fitted coefficients.
-            do i=1,10+nvec
-                read(input,"(a)") string
-            end do
+        if (eflag == 1) then
+            call expect_heading(input,name,"electronic factors")
+            call expect_field_units(input,name,["F0 (GHz/fm^2)","F2 (GHz/fm^4)","F4 (GHz/fm^6)","F6 (GHz/fm^8)"])
             do i=1,nvec
-                read(input,"(20x,4d20.10)") fs(1:4,i)
-                fs(1:4,i) = fs(1:4,i)*ghz_to_output
+                call read_state_row(input,name,"field factors",fs(1:4,i),root,symmetry,.false.)
+                if (root /= level(i) .or. symmetry /= spinpar(i)) error stop "FICAL: mismatched field level in "//trim(name)
             end do
-
-            do i=1,5
-                read(input,"(a)") string
-            end do
+            call expect_heading(input,name,"electronic factors")
+            call expect_field_units(input,name,["F0VED0 (GHz/fm^2)","F0VED1 (GHz/fm^4)"])
             do i=1,nvec
-                read(input,"(20x,2d20.10)") fs(5:6,i)
-                fs(5:6,i) = fs(5:6,i)*ghz_to_output
+                call read_state_row(input,name,"corrected field factors",fs(5:6,i),root,symmetry,.false.)
+                if (root /= level(i) .or. symmetry /= spinpar(i)) error stop "FICAL: mismatched corrected level in "//trim(name)
             end do
-        else
-            ! Electron density is reported in atomic units and converted later.
-            do i=1,6
-                read(input,"(a)") string
-            end do
-            do i=1,nvec
-                read(input,"(20x,d20.10)") fs(1,i)
-                write(*,*) fs(1,i)
-                fs(2:6,i) = 0.0_real64
-            end do
+            fs(:,:nvec) = fs(:,:nvec)*ghz_to_output
         end if
 
         close(input)
@@ -955,6 +1006,7 @@ contains
         read(record,"(20x,3d20.10)",iostat=status,iomsg=message) terms
         if (status /= 0) error stop "FICAL: invalid "//parameter_name//" record in "//trim(name)//": "//trim(message)
 
+        if (.not.all(ieee_is_finite(terms))) error stop "FICAL: nonfinite "//parameter_name//" in "//trim(name)
         select case (adjustl(record(81:)))
         case ("(MHz u)")
             terms = terms/1000.0_real64

@@ -282,7 +282,7 @@ contains
                     close(one_body_cache_unit)
                 else
                     if (one_body_cache_mode == 1) then
-                        open(newunit=one_body_cache_unit,file = name(1:first_name_blank-1)//".IOB",status="UNKNOWN",form= &
+                        open(newunit=one_body_cache_unit,file = name(1:first_name_blank-1)//".IOB",status="REPLACE",form= &
                             & "UNFORMATTED")
                     end if
                     if (yes2) then
@@ -304,7 +304,7 @@ contains
                     close(two_body_cache_unit)
                 else
                     if (two_body_cache_mode == 1) then
-                        open(newunit=two_body_cache_unit,file = name(1:first_name_blank-1)//".ITB",status="UNKNOWN",form= &
+                        open(newunit=two_body_cache_unit,file = name(1:first_name_blank-1)//".ITB",status="REPLACE",form= &
                             & "UNFORMATTED")
                     end if
                     call calculate_specific_mass_shift(two_body_cache_mode,vinti_integrals,recoil_corrected_vinti_integrals)

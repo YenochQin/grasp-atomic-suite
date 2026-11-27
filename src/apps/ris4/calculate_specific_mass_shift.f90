@@ -20,6 +20,7 @@ contains
     ! Translated by Gediminas Gaigalas 11/18/19
     subroutine calculate_specific_mass_shift(angular_cache_write_mode,vinti_integrals,recoil_corrected_vinti_integrals)
         ! Module dependencies
+        use open_isotope_shift_angular_cache_interface, only: finish_angular_cache
         use calculation_file_units, only: two_body_cache_unit
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
@@ -138,7 +139,7 @@ contains
                 end if
             end do
         end do
-        if(angular_cache_write_mode==1) write(two_body_cache_unit) -1
+        if(angular_cache_write_mode==1) call finish_angular_cache(two_body_cache_unit, 2)
         ! Empty the buffer and close file
         if(angular_cache_write_mode==1) close(two_body_cache_unit)
         ! Deallocate storage for the arrays in BUFFER

@@ -28,6 +28,7 @@ contains
         & radius_integrals, &
         & radius_squared_integrals,inverse_radius_integrals,inverse_radius_squared_integrals,leading_nms_integrals)
         ! Module dependencies
+        use open_isotope_shift_angular_cache_interface, only: finish_angular_cache
         use calculation_file_units, only: one_body_cache_unit
         use, intrinsic :: iso_fortran_env, only: real64
         use grasp_parameters, only: orbital_index_radix, max_orbitals
@@ -200,7 +201,7 @@ contains
             end do
         end do
 
-        if (angular_cache_write_mode==1) write(one_body_cache_unit) -1
+        if (angular_cache_write_mode==1) call finish_angular_cache(one_body_cache_unit, 1)
         ! Empty the buffer and close file
         if (angular_cache_write_mode==1) close(one_body_cache_unit)
         ! Deallocate storage for the arrays in BUFFER

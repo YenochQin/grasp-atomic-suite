@@ -62,7 +62,7 @@
 | [RMCDHF 的 MCP 读取优化实施计划](plans/plan-0005-rmcdhf-mcp-production-io.md) | 阶段 0–2 已通过本地回归。阶段 3 已完成 Zn I 服务器矩阵分段和逐轮驻留诊断、Cd I 首组冷态 A/C 对照。Cd I 重复配对、生成期磁盘峰值、资源预算及 B 对照待验收。 |
 | [plan-0003-rmcdhf-mpi-stall-diagnostics.md](plans/plan-0003-rmcdhf-mpi-stall-diagnostics.md) | 诊断计划，D0 首版已实现；普通/memory MPI 在大规模 CSF 下全程反复 D 状态；记录单节点条件、SETLAG 冻结侧冗余和 Davidson 候选。普通 MPI 已有 MCP 阶段计时。服务器联合采样、扩展性与根因诊断待完成。 |
 | [plan-0001-radial-grid-validation.md](plans/plan-0001-radial-grid-validation.md) | 待执行；修改脚本已实现，文档配置已核查；D/L/O/ACCY 和生产模型物理验收仍待执行。 |
-| [F2018 现代化实施与验收计划](plans/plan-0004-f2018-follow-up-validation.md) | P0 续算与 V3 基线、P1 MPI 绑定及 BLAS/LAPACK LP64 配置验收已完成。四种 RMCDHF 已取得 Zn I AS1 的七根收敛轨迹及逐 rank 峰值内存，固定轨道 RCI 已核对 Ni I 双根的稀疏内存与磁盘结果。双正交已核对单电子轨道、态向量和角缓存；性质与跃迁及候选版本完整矩阵待验收。 |
+| [F2018 现代化实施与验收计划](plans/plan-0004-f2018-follow-up-validation.md) | P0 续算与 V3 基线、P1 MPI 绑定及 BLAS/LAPACK LP64 配置验收已完成。四种 RMCDHF 已取得 Zn I AS1 的七根收敛轨迹及逐 rank 峰值内存，固定轨道 RCI 已核对 Ni I 双根的稀疏内存与磁盘结果。双正交和三个跃迁入口已完成单电子及 Ni I 谱线对照。Landé 因子已完成解析 LS、Ni I 九根态匹配与 MPI 归约核对。RHFS 已核对 A、B、非对角矩阵元相位及 F 分辨能移。RIS4 与 FICAL 已核对正常质量位移、比质量位移、场位移及两态差。下一项是密度矩阵及自然轨道。 |
 
 ## 实施过程记录
 
@@ -72,6 +72,10 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
+| [辐射跃迁的选择定则、弱线与相位](reviews/evidence-0028-radiative-transition-lines.md) | 单电子 E1/M1、禁戒和相消弱线、能差与相位，以及 Ni I 九根的 M1/E2 谱线。 |
+| [Landé 因子与混合态身份](reviews/evidence-0029-lande-g-factors.md) | 三个单电子 LS 态、Ni I 九根的 MCDHF 与固定轨道 CI 匹配，以及两个算符在各 rank 的局部矩阵元和归约。 |
+| [同位素质量位移、场位移和两态差](reviews/evidence-0031-isotope-shifts.md) | 单电子解析对照，Ni I 九根 MCDHF 与 CI 的逐线核对，以及角缓存身份、交换同位素和截断报告回归。 |
+| [超精细常数与非对角元相位](reviews/evidence-0030-hyperfine-constants.md) | 单电子 A、B 与 F 分辨能移的解析对照，Ni I 九根 MCDHF 与 CI 的态匹配、符号翻转及五路张量归约。 |
 | [双正交轨道、态向量和角缓存](reviews/evidence-0027-biorthogonal-states-and-cache.md) | 串行与 2-rank MPI 的正逆序及不等维解析对照，错误基组缓存的波函数偏差和重算验证。 |
 | [Zn I 多根 RMCDHF 收敛与逐 rank 内存](reviews/evidence-0026-rmcdhf-zn-multiroot.md) | 四种程序的七根能量、混合系数、径向轨迹及串行／2-rank 峰值 RSS 对照。 |
 | [RMCDHF MCP 阶段 3 实测与续跑](reviews/evidence-0025-rmcdhf-mcp-phase3-benchmark.md) | Zn I AS2 在服务器 XFS 和本机同盘 Btrfs、XFS 的 A/C 实测，以及页驻留诊断与外部 Rust 静态库复用。 |

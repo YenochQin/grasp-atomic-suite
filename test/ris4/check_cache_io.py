@@ -18,7 +18,7 @@ def main() -> None:
         command = [sys.argv[2], "-n", "2", *command]
     end = record(struct.pack("=i", -1))
     ordinary = record(struct.pack("=id", 42, 0.125))
-    cases = {"missing": None, "end": end, "normal": ordinary + end,
+    cases = {"missing": None, "end": b"", "normal": ordinary, "legacy": end, "cutoff": ordinary,
              "incomplete": ordinary, "empty": b"", "truncated": b"\x04\x00",
              "short": record(b"\xff\xff"), "unreadable": None}
     with tempfile.TemporaryDirectory(prefix="ris4-cache-") as temporary:
@@ -32,7 +32,7 @@ def main() -> None:
             if name == "unreadable":
                 # A directory is deterministic even for privileged test users.
                 (work / filename).mkdir()
-            result = subprocess.run([*command, str(whichone)], cwd=work, capture_output=True, timeout=20)
+            result = subprocess.run([*command, str(whichone), "stamp" if name in ("end", "normal") else name], cwd=work, capture_output=True, timeout=20)
             if name == "unreadable":
                 assert result.returncode != 0, (name, result.stdout, result.stderr)
                 assert b"ris4: angular cache" in result.stderr
@@ -41,7 +41,7 @@ def main() -> None:
             expected = b"T" if name in ("end", "normal") else b"F"
             flags = [line.split()[-1] for line in result.stdout.splitlines() if b"AVAILABLE" in line]
             assert flags == [expected, expected], (name, result.stdout)
-    print("RIS4: 16 one/two-body cache cases, each successful probe called twice, passed")
+    print("RIS4: one/two-body cache cases, each successful probe called twice, passed")
 
 
 if __name__ == "__main__":

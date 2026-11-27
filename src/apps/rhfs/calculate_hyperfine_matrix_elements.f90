@@ -25,12 +25,12 @@ contains
         use grasp_parameters,   only: max_orbitals
         use array_memory_management, only: alloc, dalloc
         use hamiltonian_correction_flags, only: use_first_order_csf_perturbation
-        use atomic_calculation_state,           only: electron_mass_u, vacuum_speed_of_light_au, proton_mass_u, &
-            bohr_radius_cm, hartree_to_wavenumber_cm, speed_of_light_cm_per_s
+        use atomic_calculation_state, only: vacuum_speed_of_light_au
+        use hyperfine_nuclear_factors, only: calculate_nuclear_factors
         use eigenstate_expansions, only: csf_mixing_coefficients
         use first_order_csf_cutoffs, only: first_order_csf_cutoff
         use angular_symmetry_labels, only: format_j_label, parity_labels
-        use isotope_properties,        only: nuclear_spin, nuclear_magnetic_dipole_moment, nuclear_electric_quadrupole_moment
+        use isotope_properties, only: nuclear_spin
         use orbital_csf_basis, only: csf_count, max_orbitals, orbital_count
         use selected_level_indices, only: active_level_indices, active_level_count
         use level_symmetry_metadata, only: level_parity_signs, level_two_j_plus_one
@@ -74,8 +74,8 @@ contains
         real(real64) ::  hyperfine_angular_factor, lande_g_angular_factor, lande_g_correction_angular_factor, &
                 & hyperfine_csf_matrix_element,  &
             & lande_g_csf_matrix_element, lande_g_correction_csf_matrix_element,&
-            hyperfine_contribution, lande_g_contribution, lande_g_correction_contribution, hartree_to_mhz, barn_to_bohr_squared, &
-                & nuclear_magneton_au, magnetic_dipole_mhz_scale, electric_quadrupole_mhz_scale, electronic_j, &
+            hyperfine_contribution, lande_g_contribution, lande_g_correction_contribution, &
+                & magnetic_dipole_mhz_scale, electric_quadrupole_mhz_scale, electronic_j, &
             inverse_j_norm, dipole_same_j_scale, dipole_delta_j_one_scale, quadrupole_same_j_scale, &
                 & quadrupole_delta_j_one_scale, quadrupole_delta_j_two_scale, lande_g, lande_g_correction, reduced_nuclear_dipole, &
             reduced_nuclear_quadrupole, recoupling_phase, recoupling_prefactor, dipole_racah_coefficient, &
@@ -280,13 +280,8 @@ contains
                 end do
             end do
         end do
-        ! These are the conversion factors to obtain the hyperfine
-        ! constants in MHz
-        hartree_to_mhz = hartree_to_wavenumber_cm*speed_of_light_cm_per_s*1.0e-6_real64
-        barn_to_bohr_squared = 1.0e-24_real64/bohr_radius_cm**2
-        nuclear_magneton_au = electron_mass_u/(2.0_real64*vacuum_speed_of_light_au*proton_mass_u)
-        magnetic_dipole_mhz_scale = hartree_to_mhz*nuclear_magneton_au*nuclear_magnetic_dipole_moment/nuclear_spin
-        electric_quadrupole_mhz_scale = hartree_to_mhz*2.0_real64*nuclear_electric_quadrupole_moment*barn_to_bohr_squared
+        call calculate_nuclear_factors(magnetic_dipole_mhz_scale, electric_quadrupole_mhz_scale, &
+            reduced_nuclear_dipole, reduced_nuclear_quadrupole)
         ! Output the hyperfine interaction constants
         write (summary_output_unit, '(/,/," Interaction constants:"/,/," Level1  J Parity  Level2  J Parity",8x,"A (MHz)",13x,&
             &"B (MHz)"/)')
@@ -383,20 +378,6 @@ contains
                 end select
             end do
         end do
-        ! These are the factors needed to obtain the F-dependent hyperfine
-        ! matrix elements in Hartrees
-        reduced_nuclear_dipole = sqrt((nuclear_spin + &
-            1.0_real64)/nuclear_spin)*nuclear_magnetic_dipole_moment*0.5_real64*electron_mass_u/ &
-                (proton_mass_u*vacuum_speed_of_light_au)
-        if (nuclear_spin > 0.6_real64) then
-            reduced_nuclear_quadrupole = sqrt((nuclear_spin + 1.0_real64)*(2.0_real64*nuclear_spin + 3.0_real64)/((2.0_real64* &
-                & nuclear_spin - &
-                1.0_real64)*nuclear_spin))
-            reduced_nuclear_quadrupole = reduced_nuclear_quadrupole*nuclear_electric_quadrupole_moment*0.5_real64* &
-                & barn_to_bohr_squared
-        else
-            reduced_nuclear_quadrupole = 0.0_real64
-        end if
         ! II = 2*I
         two_nuclear_spin = nint(2.0_real64*nuclear_spin)
         ! Calculate the F-dependent matrix elemnts
@@ -491,7 +472,7 @@ contains
             end do
         end do
         call dalloc (reduced_hyperfine_elements, "reduced_hyperfine_elements", "calculate_hyperfine_matrix_elements")
-        return
-        return
+        call dalloc (reduced_lande_g_elements, "reduced_lande_g_elements", "calculate_hyperfine_matrix_elements")
+        call dalloc (reduced_lande_correction_elements, "reduced_lande_correction_elements", "calculate_hyperfine_matrix_elements")
     end subroutine calculate_hyperfine_matrix_elements
 end module calculate_hyperfine_matrix_elements_interface

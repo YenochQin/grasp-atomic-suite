@@ -5,6 +5,7 @@ if(GRASP_BUILD_SERIAL_APPS)
         read_mixing_blocks.f90
         hyperfine_one_electron_element.f90
         hyperfine_radial_integral.f90
+        hyperfine_nuclear_factors.f90
         configure_debug_output.f90
         open_summary_file.f90
         write_input_summary.f90
@@ -22,6 +23,7 @@ if(TARGET grasp_mpi)
         read_mixing_blocks.f90
         hyperfine_one_electron_element.f90
         hyperfine_radial_integral.f90
+        hyperfine_nuclear_factors.f90
         configure_debug_output.f90
         open_summary_file.f90
         write_input_summary.f90

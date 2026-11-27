@@ -267,7 +267,7 @@ contains
             ! Check if the user wants to save one-body ang. coeff.
             if(one_body_cache_mode ==1) then
                 first_name_blank = index(name," ")
-                open(newunit=one_body_cache_unit,file = name(1:first_name_blank-1)//".IOB",status="UNKNOWN"     &
+                open(newunit=one_body_cache_unit,file = name(1:first_name_blank-1)//".IOB",status="REPLACE"     &
                     ,form="UNFORMATTED")
             end if
             if(yes2) then
@@ -292,7 +292,7 @@ contains
             ! Check if the user wants to save two-body ang. coeff.
             if(two_body_cache_mode==1) then
                 first_name_blank = index(name," ")
-                open(newunit=two_body_cache_unit,file = name(1:first_name_blank-1)//".ITB",status="UNKNOWN"     &
+                open(newunit=two_body_cache_unit,file = name(1:first_name_blank-1)//".ITB",status="REPLACE"     &
                     ,form="UNFORMATTED")
             end if
             call calculate_specific_mass_shift(two_body_cache_mode,vinti_integrals,recoil_corrected_vinti_integrals)

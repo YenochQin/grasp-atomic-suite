@@ -23,4 +23,17 @@ module biorthogonal_subshell_layout
     integer :: kappa_group_count
     integer :: biorthogonal_angular_unit
     integer :: kappa_coefficient_units(max_biorthogonal_kappa_groups)
+contains
+    subroutine set_unpaired_rotations(order, orbital, ci)
+        use, intrinsic :: iso_fortran_env, only: real64
+        integer, intent(in) :: order
+        real(real64), intent(out) :: orbital(order, order), ci(order, order)
+        integer :: i
+
+        orbital = 0.0_real64
+        do i = 1, order
+            orbital(i,i) = 1.0_real64
+        end do
+        ci = orbital
+    end subroutine set_unpaired_rotations
 end module biorthogonal_subshell_layout

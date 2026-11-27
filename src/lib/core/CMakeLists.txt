@@ -1,4 +1,5 @@
 add_library(core STATIC
+    transition_angular_cache.f90
     biorthogonal_angular_cache.f90
     calculation_state_files.f90
     csf_descriptor_c_bindings.f90

@@ -68,7 +68,7 @@ if(Python3_Interpreter_FOUND)
             "${PROJECT_SOURCE_DIR}/src/apps/ris4/open_isotope_shift_angular_cache.f90"
 )
         setup_fortran_modules(${target})
-        target_link_libraries_Fortran(${target} PRIVATE grasp_shared)
+        target_link_libraries_Fortran(${target} PRIVATE core grasp_shared)
         set(cache_mpi_arguments)
         if(variant STREQUAL "mpi")
             target_compile_definitions(${target} PRIVATE CACHE_MPI)
@@ -285,6 +285,40 @@ add_test(NAME descriptor_merge_f2018 COMMAND "${CMAKE_Fortran_COMPILER}"
     "${PROJECT_SOURCE_DIR}/src/lib/core/csf_basis_merging.f90")
 
 if(Python3_Interpreter_FOUND)
+    if(TARGET gj AND TARGET rci)
+        add_test(NAME lande_factors_serial COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_lande_factors.py --gj $<TARGET_FILE:gj> --rci $<TARGET_FILE:rci>)
+        set_tests_properties(lande_factors_serial PROPERTIES TIMEOUT 180)
+    endif()
+    if(TARGET gj_mpi AND TARGET rci_mpi AND MPIEXEC_EXECUTABLE)
+        add_test(NAME lande_factors_mpi COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_lande_factors.py --gj $<TARGET_FILE:gj_mpi> --rci $<TARGET_FILE:rci_mpi>
+            --mpiexec "${MPIEXEC_EXECUTABLE}")
+        set_tests_properties(lande_factors_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
+    endif()
+    if(TARGET ris4 AND TARGET rci AND TARGET fical)
+        add_test(NAME isotope_shifts_serial COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_isotope_shifts.py --ris $<TARGET_FILE:ris4> --rci $<TARGET_FILE:rci>
+            --fical $<TARGET_FILE:fical>)
+        set_tests_properties(isotope_shifts_serial PROPERTIES TIMEOUT 180)
+    endif()
+    if(TARGET ris4_mpi AND TARGET rci_mpi AND TARGET fical AND MPIEXEC_EXECUTABLE)
+        add_test(NAME isotope_shifts_mpi COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_isotope_shifts.py --ris $<TARGET_FILE:ris4_mpi> --rci $<TARGET_FILE:rci_mpi>
+            --fical $<TARGET_FILE:fical> --mpiexec "${MPIEXEC_EXECUTABLE}")
+        set_tests_properties(isotope_shifts_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
+    endif()
+    if(TARGET rhfs AND TARGET rci)
+        add_test(NAME hyperfine_constants_serial COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_hyperfine_constants.py --rhfs $<TARGET_FILE:rhfs> --rci $<TARGET_FILE:rci>)
+        set_tests_properties(hyperfine_constants_serial PROPERTIES TIMEOUT 180)
+    endif()
+    if(TARGET rhfs_mpi AND TARGET rci_mpi AND MPIEXEC_EXECUTABLE)
+        add_test(NAME hyperfine_constants_mpi COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_hyperfine_constants.py --rhfs $<TARGET_FILE:rhfs_mpi> --rci $<TARGET_FILE:rci_mpi>
+            --mpiexec "${MPIEXEC_EXECUTABLE}")
+        set_tests_properties(hyperfine_constants_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
+    endif()
     if(TARGET rbiotransform)
         add_test(NAME biorthogonal_states_serial COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/test_biorthogonal_states.py $<TARGET_FILE:rbiotransform>)
@@ -295,6 +329,19 @@ if(Python3_Interpreter_FOUND)
             ${CMAKE_CURRENT_SOURCE_DIR}/test_biorthogonal_states.py $<TARGET_FILE:rbiotransform_mpi>
             --mpiexec "${MPIEXEC_EXECUTABLE}")
         set_tests_properties(biorthogonal_states_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
+    endif()
+    if(TARGET rbiotransform AND TARGET rtransition AND TARGET rtransition_phase)
+        add_test(NAME radiative_transitions_serial COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_radiative_transitions.py $<TARGET_FILE:rtransition>)
+        add_test(NAME radiative_transitions_phase COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_radiative_transitions.py $<TARGET_FILE:rtransition_phase>)
+        set_tests_properties(radiative_transitions_serial radiative_transitions_phase PROPERTIES TIMEOUT 180)
+    endif()
+    if(TARGET rbiotransform_mpi AND TARGET rtransition_mpi AND MPIEXEC_EXECUTABLE)
+        add_test(NAME radiative_transitions_mpi COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_radiative_transitions.py $<TARGET_FILE:rtransition_mpi>
+            --mpiexec "${MPIEXEC_EXECUTABLE}")
+        set_tests_properties(radiative_transitions_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
     endif()
 endif()
 

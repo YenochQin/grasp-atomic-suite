@@ -15,7 +15,6 @@ contains
         use mixing_file_format, only: mixing_file, open_mixing_input
         use transition_basis_blocks, only: transition_csf_basis_ids
         use calculation_file_units, only: lsj_transition_output_unit, summary_output_unit
-        use, intrinsic :: iso_fortran_env, only: real32
         use, intrinsic :: iso_fortran_env, only: real64
         use array_memory_management, only: alloc, dalloc
         use transition_basis_blocks, only: initial_transition_block_count, final_transition_block_count
@@ -32,6 +31,7 @@ contains
         use selected_level_indices, only: final_level_indices, initial_level_indices, final_level_count, initial_level_count
         use level_symmetry_metadata, only: final_level_parity_signs, initial_level_parity_signs, final_level_two_j_plus_one, &
             initial_level_two_j_plus_one
+        use transition_off_diagonal_flags, only: different_j_only
         use transition_lsj_labels, only: nvectoti, nvectotf, iopen_status1, iopen_status2
         use mpi_state, only: mpi_allreduce, mpi_barrier, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_rank, mpi_sum
 
@@ -90,7 +90,7 @@ contains
         real(real64) :: factor, transition_angular_frequency, bessel_argument, coulomb_or_magnetic_amplitude, &
             & babushkin_amplitude, asfatmp, asfbtmp
         real(real64), pointer :: et(:), et1(:), ipr(:), ipr1(:), next(:)
-        logical :: same_initial_and_final_state
+        logical :: unequal_j, same_initial_and_final_state
         character :: iunits*4
         ! NCFI(I): the end position of the Ith block for the initial states in the globle CSF list
         ! NCFF(I): the end position of the Ith block for the final states in the globle CSF list
@@ -155,6 +155,7 @@ contains
         kka = 1
         mixing_suffix = trim(merge(".cbm", ".bm ", input_mixing_file_kind == 0))
         do transition_type_index = 1, requested_multipole_count
+            unequal_j = different_j_only(requested_multipole_codes(transition_type_index))
             ! read the head of the file of mixing coef. for initial
             if (same_initial_and_final_state) fullname(1) = trim(fullname(2))//"_CP"
             call open_mixing_input(initial_mixing, trim(fullname(1))//mixing_suffix, &
@@ -288,6 +289,8 @@ contains
                             do final_level_index = 1, final_level_count
                                 ! lbl
                                 inum_ff = icount2 - final_level_count + final_level_index
+                                if (unequal_j .and. initial_level_two_j_plus_one(initial_level_index) == &
+                                    final_level_two_j_plus_one(final_level_index)) cycle
                                 ! Check for consistent parity and J
                                 itkpo = transition_multipole_rank + transition_multipole_rank + 1
                                 if (satisfies_angular_triangle(initial_level_two_j_plus_one(initial_level_index), &
@@ -304,7 +307,9 @@ contains
                                 ! M = LEVFF+NVECII*(LEVII-1)
                                 et(m) = final_shifted_eigenvalues(final_level_index) + final_hamiltonian_energy_shift - &
                                     initial_shifted_eigenvalues(initial_level_index) - initial_hamiltonian_energy_shift
-                                if (same_initial_and_final_state .and. et(m)<=0.0_real32) cycle
+                                ! A degenerate pair cannot emit a photon; the radial kernels divide by its frequency.
+                                if (abs(et(m)) <= 0.0_real64) cycle
+                                if (same_initial_and_final_state .and. et(m) < 0.0_real64) cycle
                                 transition_angular_frequency = -et(m)
                                 bessel_argument = transition_angular_frequency/speed_of_light_au
                                 call build_transition_bessel_functions (bessel_argument)

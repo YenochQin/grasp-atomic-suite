@@ -1,11 +1,24 @@
 ! Open or validate cached angular coefficients for the isotope-shift calculation.
 module open_isotope_shift_angular_cache_interface
+    use, intrinsic :: iso_fortran_env, only: int64
+    use csf_descriptor_reader, only: loaded_csf_basis_id
+    use debug_output_settings, only: matrix_element_screening_cutoff
+    use grasp_parameters, only: orbital_index_radix
     implicit none (type, external)
 
     ! Module interface
     private
-    public :: open_isotope_shift_angular_cache
+    public :: open_isotope_shift_angular_cache, finish_angular_cache
+    character(8), parameter :: cache_version = "RISANG01"
 contains
+    subroutine finish_angular_cache(unit, operator)
+        integer, intent(in) :: unit, operator
+
+        ! Keep the short end record consumed by the coefficient readers.
+        write(unit) -1
+        write(unit) cache_version, loaded_csf_basis_id, operator, orbital_index_radix, &
+            transfer(matrix_element_screening_cutoff, 0_int64)
+    end subroutine finish_angular_cache
 
     !    Checks if the angular files name.IOB (one-body) or
     !    name.ITB (Two-body) are available
@@ -29,6 +42,10 @@ contains
         logical :: found
         integer :: cache_probe_unit, istat, iword, close_status
         character(len=28) :: filename
+        character(8) :: version
+        character(64) :: basis
+        integer :: operator, radix
+        integer(int64) :: cutoff_bits
         character :: probe
 
         avail = .false.
@@ -67,8 +84,17 @@ contains
         if (status /= 0) return
         backspace(unit=cache_unit,iostat=istat)
         if (istat == 0) then
-            read(cache_unit,iostat=istat) iword
-            if (istat == 0) avail = iword == -1
+            read(cache_unit,iostat=istat) version, basis, operator, radix, cutoff_bits
+            if (istat == 0) avail = version == cache_version .and. basis == loaded_csf_basis_id .and. &
+                operator == whichone .and. radix == orbital_index_radix .and. &
+                cutoff_bits == transfer(matrix_element_screening_cutoff, 0_int64)
+            if (avail) then
+                backspace(cache_unit,iostat=istat)
+                if (istat == 0) backspace(cache_unit,iostat=istat)
+                if (istat == 0) read(cache_unit,iostat=istat) iword
+                avail = .false.
+                if (istat == 0) avail = iword == -1
+            end if
         end if
         if (avail) then
             rewind(unit=cache_unit,iostat=status)
@@ -83,7 +109,7 @@ contains
         if (close_status /= 0 .and. status == 0) status = close_status
         if (status /= 0) return
         cache_unit = -1
-        print *, " Angular file incomplete: ", trim(filename), "; iostat=", istat
+        print *, " Angular file incomplete or incompatible: ", trim(filename), "; iostat=", istat
         return
     end subroutine open_isotope_shift_angular_cache
 end module open_isotope_shift_angular_cache_interface

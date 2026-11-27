@@ -61,6 +61,7 @@ contains
         radial_point_count, symmetry_count, workspace, workspace_size, global_trace_level, initial_orbital_rotations, &
                 & initial_ci_rotations, final_orbital_rotations, final_ci_rotations)
         ! Module dependencies
+        use biorthogonal_subshell_layout, only: set_unpaired_rotations
         use, intrinsic :: iso_fortran_env, only: output_unit
         use, intrinsic :: iso_fortran_env, only: real64
 
@@ -229,7 +230,17 @@ contains
             ! ww Per change to support cases like 3s2p1d 3s2p. The belonging endif
             ! ww Is just at the end
 
-            if (paired_orbital_count <= 0) cycle
+            if (paired_orbital_count == 0) then
+                ! No cross-state constraint acts on a kappa present on only one side.
+                if (initial_orbital_count > 0) then
+                    call set_unpaired_rotations(initial_orbital_count, initial_orbital_rotations(initial_rotation_offset), &
+                        initial_ci_rotations(initial_rotation_offset))
+                else if (final_orbital_count > 0) then
+                    call set_unpaired_rotations(final_orbital_count, final_orbital_rotations(final_rotation_offset), &
+                        final_ci_rotations(final_rotation_offset))
+                end if
+                cycle
+            end if
 
             do initial_orbital = 1, paired_orbital_count
                 do final_orbital = 1, paired_orbital_count

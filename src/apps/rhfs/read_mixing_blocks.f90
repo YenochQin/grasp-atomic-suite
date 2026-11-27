@@ -19,6 +19,9 @@ contains
         ! Module dependencies
         use mixing_file_format, only: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, read_mixing_vectors
         use csf_descriptor_reader, only: loaded_csf_basis_id
+        use csf_quantum_queries, only: csf_parity_code, csf_total_j_code
+        use input_error_handling, only: fail_input_io
+        use transition_basis_blocks, only: transition_block_count, cumulative_csf_counts
         use, intrinsic :: iso_fortran_env, only: output_unit
         use, intrinsic :: iso_fortran_env, only: real64
         use calculation_state_files, only: mixing_input_path
@@ -40,11 +43,14 @@ contains
         real(real64) :: weighted_energy_shift_sum
         character :: file_path*256
         type(mixing_file) :: input_file
+        logical, allocatable :: seen_root(:)
+        integer :: level, root
 
         file_path = mixing_input_path(state_name, ci_input_mode == 0)
         call open_mixing_input(input_file, file_path, loaded_csf_basis_id)
-        electron_count = input_file%electron_count
-        orbital_count = input_file%orbital_count
+        if (input_file%electron_count /= electron_count .or. input_file%orbital_count /= orbital_count .or. &
+            input_file%csf_count /= csf_count .or. input_file%block_count /= transition_block_count) &
+            call fail_input_io(0, input_file%unit, "Mixing dimensions do not match the loaded CSF basis")
         total_csf_count = input_file%csf_count
         total_level_count = input_file%level_count
         block_count = input_file%block_count
@@ -86,14 +92,26 @@ contains
             call next_mixing_block(input_file, stored_block_index, block_csf_count, block_level_count, &
                 block_two_j_plus_one, block_parity_sign)
             write (*, "(5I8)") stored_block_index, block_csf_count, block_level_count, block_two_j_plus_one, block_parity_sign
-            if (block_index /= stored_block_index) stop "jb .NE. nb"
+            if (block_index /= stored_block_index .or. block_csf_count /= cumulative_csf_counts(block_index)-preceding_csf_count) &
+                call fail_input_io(0, input_file%unit, "Mixing block does not match the CSF partition")
+            if (block_two_j_plus_one /= csf_total_j_code(preceding_csf_count+1) .or. &
+                block_parity_sign /= csf_parity_code(preceding_csf_count+1)) &
+                call fail_input_io(0, input_file%unit, "Mixing block J or parity does not match the CSF basis")
 
             if (block_level_count > 0) then
 
                 call read_mixing_levels(input_file, &
                     active_level_indices(preceding_level_count+1:preceding_level_count+block_level_count), &
                     hamiltonian_energy_shift, shifted_eigenvalues(preceding_level_count+1:preceding_level_count+block_level_count))
-                ! ivec(i)   = ivec(i) + ncfpat ! serial # of the state
+                if (block_level_count > 1) then
+                    allocate(seen_root(block_csf_count), source=.false.)
+                    do level = preceding_level_count+1, preceding_level_count+block_level_count
+                        root = active_level_indices(level)
+                        if (seen_root(root)) call fail_input_io(0, input_file%unit, "Duplicate ASF root in mixing block")
+                        seen_root(root) = .true.
+                    end do
+                    deallocate(seen_root)
+                end if
                 level_two_j_plus_one(preceding_level_count+1:block_level_count+preceding_level_count) = block_two_j_plus_one
                 level_parity_signs(preceding_level_count+1:block_level_count+preceding_level_count) = block_parity_sign
 
@@ -129,7 +147,6 @@ contains
 
         close(input_file%unit)
 
-        csf_count = total_csf_count
         active_level_count = total_level_count
 
         return

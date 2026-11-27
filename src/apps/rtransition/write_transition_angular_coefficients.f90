@@ -22,10 +22,11 @@ contains
             initial_cumulative_csf_counts, final_cumulative_csf_counts
         use debug_output_settings,         only: ldbpa
         use orbital_csf_basis, only: max_orbitals, orbital_count
-        use transition_off_diagonal_flags, only: m1_different_j_only_flag, e2_different_j_only_flag
+        use transition_off_diagonal_flags, only: different_j_only
         use transition_matrix_workspace, only: transition_multipole_rank, requested_multipole_codes
 
         ! Procedure interfaces
+        use transition_angular_cache, only: transition_cache_key
         use open_transition_angular_cache_interface, only: open_transition_angular_cache
 
         ! Module dependencies
@@ -50,7 +51,8 @@ contains
         integer :: initial_block_index, final_block_index, nmct, nlabel, first_initial_csf_index, first_final_csf_index, &
             & bra_csf_index, ket_csf_index, ncr&
             , orbital_index, ket_orbital_index, newsiz, i
-        logical :: cache_exists
+        type(transition_cache_key) :: key
+        logical :: cache_exists, unequal_j
         integer, pointer :: label(:)
         real(real64), pointer:: coeff(:)
         real(real64) :: shell_coefficients(max_orbitals)
@@ -58,7 +60,7 @@ contains
         ! NCFF(I): the end position of the Ith block for the final states in the globle CSF list
         !
         !   Check if angular data is available on file
-        call open_transition_angular_cache (name, cache_exists, transition_type_index, transition_angular_unit)
+        call open_transition_angular_cache(name, cache_exists, transition_type_index, transition_angular_unit, key)
 
         ! If angular data is not available open the scratch file to store the
         ! coefficients; position file
@@ -66,6 +68,7 @@ contains
         transition_multipole_rank = abs(requested_multipole_codes(transition_type_index))
         operator_parity = isign(1,requested_multipole_codes(transition_type_index))
         if (cache_exists) return
+        unequal_j = different_j_only(requested_multipole_codes(transition_type_index))
         write (output_unit, *) "LK,IOPAR,from write_transition_angular_coefficients"
         write (output_unit, *) transition_multipole_rank, operator_parity
         ! Start of the block loops
@@ -103,10 +106,7 @@ contains
                         ! In many case one is interested only in M1 and E2 transitions between
                         ! levels with different J values. If this is the case then the do check
                         ! on the J quantum numbers of the CSFs before calling TNSRJJ.
-                        if (requested_multipole_codes(transition_type_index)==1 .and. m1_different_j_only_flag==1) then
-                            if (csf_total_j_code(bra_csf_index) == csf_total_j_code(ket_csf_index)) cycle
-                        end if
-                        if (requested_multipole_codes(transition_type_index)==2 .and. e2_different_j_only_flag==1) then
+                        if (unequal_j) then
                             if (csf_total_j_code(bra_csf_index) == csf_total_j_code(ket_csf_index)) cycle
                         end if
                         call calculate_one_electron_tensor_coefficients(transition_multipole_rank,operator_parity, &
@@ -155,13 +155,14 @@ contains
                 write (*, '(/,/,/,1x,i8," MCT coefficients generated for rank ",i2," and parity ",i2,/,/)') &
                     nmct, transition_multipole_rank, operator_parity
                 ! Sort the MCT coefficients by integral labels
-                call sort_transition_angular_coefficients (name, coefficient_scratch_unit, transition_angular_unit, ldbpa(2), &
-                    & transition_type_index, initial_block_index, final_block_index)
+                call sort_transition_angular_coefficients(coefficient_scratch_unit, transition_angular_unit, ldbpa(2), &
+                    initial_block_index, final_block_index)
                 close(coefficient_scratch_unit, status="delete")
                 ! end of the loops for blocks
             end do
         end do
         ! Read the data back as required by OSCL conventions
+        write (transition_angular_unit) key
         rewind (transition_angular_unit)
         return
         return

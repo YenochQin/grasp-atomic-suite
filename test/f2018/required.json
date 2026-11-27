@@ -96,6 +96,11 @@
       ],
       "tests": [
         "biorthogonal_states_serial",
+        "hyperfine_constants_serial",
+        "isotope_shifts_serial",
+        "lande_factors_serial",
+        "radiative_transitions_serial",
+        "radiative_transitions_phase",
         "rdensity_serial_regression",
         "ris4_cache_reuse_serial",
         "rwfnestimate_Ni_high_l",
@@ -128,6 +133,10 @@
       ],
       "tests": [
         "biorthogonal_states_mpi",
+        "hyperfine_constants_mpi",
+        "isotope_shifts_mpi",
+        "lande_factors_mpi",
+        "radiative_transitions_mpi",
         "rangular_mpi_descriptors",
         "grasp_mpi_local_sparse",
         "f2018_mixing_output_mpi",

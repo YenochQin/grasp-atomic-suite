@@ -15,8 +15,8 @@ contains
     ! Farid A. Parpia.
     !
     ! Last update: 28 Dec 1992
-    subroutine sort_transition_angular_coefficients(name, coefficient_scratch_unit, transition_angular_unit, print_details, &
-        & transition_type_index, initial_block_index, final_block_index)
+    subroutine sort_transition_angular_coefficients(coefficient_scratch_unit, transition_angular_unit, print_details, &
+        & initial_block_index, final_block_index)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: iostat_end, output_unit
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
@@ -24,7 +24,7 @@ contains
         use grasp_parameters,   only: orbital_index_radix
         use array_memory_management, only: alloc, dalloc, ralloc
         use orbital_csf_basis, only: orbital_count, orbital_principal_n, orbital_symmetry_labels
-        use transition_matrix_workspace, only: requested_multipole_count, requested_multipole_codes
+        use transition_matrix_workspace, only: requested_multipole_count
         use mpi_state, only: mpi_process_count, mpi_rank
 
         ! Procedure interfaces
@@ -34,12 +34,10 @@ contains
 
         ! Arguments
         integer, intent(in) :: coefficient_scratch_unit
-        integer, intent(inout) :: transition_angular_unit
-        integer  :: transition_type_index
+        integer, intent(in) :: transition_angular_unit
         integer, intent(in) :: initial_block_index
         integer, intent(in) :: final_block_index
         logical, intent(in) :: print_details
-        character, intent(in) :: name(2)*24
 
         ! Local constants
         integer, parameter :: nca = 65536
@@ -52,33 +50,11 @@ contains
         real(real64), pointer :: sorted_angular_coefficients(:), record_coefficients(:)
         integer :: total_coefficient_count, distinct_integral_count, record_capacity, label_capacity, coefficient_capacity, &
             & initial_csf_index, final_csf_index, record_coefficient_count, i, m, j, &
-            record_coefficient_index, packed_integral_label, k, l, original_coefficient_index, initial_name_end, &
-                & final_name_end, first_coefficient_index, last_coefficient_index, integral_coefficient_count, ia, ib
+            record_coefficient_index, packed_integral_label, k, l, original_coefficient_index, &
+                & first_coefficient_index, last_coefficient_index, integral_coefficient_count, ia, ib
         integer :: io_status
         character(len=256) :: io_message
         logical :: first
-        character(len=2) :: s(-9:9)
-        ! :        (PILEFT,ILEFT(1)),(PIPTCS,IPTCSF(1)),(PIRIGH,IRIGHT(1)),
-        ! :        (PLBLIN,LBLINT(1))
-        s((-9)) = "-9"
-        s((-8)) = "-8"
-        s((-7)) = "-7"
-        s((-6)) = "-6"
-        s((-5)) = "-5"
-        s((-4)) = "-4"
-        s((-3)) = "-3"
-        s((-2)) = "-2"
-        s((-1)) = "-1"
-        s(0) = "+0"
-        s(1) = "+1"
-        s(2) = "+2"
-        s(3) = "+3"
-        s(4) = "+4"
-        s(5) = "+5"
-        s(6) = "+6"
-        s(7) = "+7"
-        s(8) = "+8"
-        s(9) = "+9"
         ! Position file at beginning of list of integrals
         rewind (coefficient_scratch_unit)
         ! Initialize
@@ -244,15 +220,6 @@ contains
             end do
         end if
         rewind (coefficient_scratch_unit)
-        ! If first set of data open the file and print
-        ! some data to later be able to identify the file
-        if (initial_block_index==1 .and. final_block_index==1) then
-            initial_name_end = index(name(1)," ")
-            final_name_end = index(name(2)," ")
-            open(newunit=transition_angular_unit,file=name(1)(1:initial_name_end-1)//"."//name(2)(1:final_name_end-1)//"."//s(&
-                requested_multipole_codes(transition_type_index))//"T", status="UNKNOWN", form="UNFORMATTED", position=&
-                "asis")
-        end if
         write (transition_angular_unit) initial_block_index,final_block_index,orbital_count,requested_multipole_count, &
             mpi_process_count,mpi_rank
         write (transition_angular_unit) distinct_integral_count

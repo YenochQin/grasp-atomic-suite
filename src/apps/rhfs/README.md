@@ -5,9 +5,9 @@
 
 程序读取 `isodata`、`name_desc.parquet`、`name_header.toml`、`name.wfn` 和
 `name.mix` 或 `name.cimix`。MCDHF 模式写出 `name.h` 和 `name.hoffd`，
-CI 模式写出 `name.ch` 和 `name.choffd`。
+CI 模式写出 `name.ch` 和 `name.choffd`。前一份报告列出 J>0 各态的 A、B（MHz）及电子 Landé 因子。后一份报告列出态对的 A、B（MHz）和共同总角动量 F 下的超精细矩阵元（Hartree）。比较不同混合文件中的非对角元时，两端各自乘以对应态的相位符号。
 
-[独立 Landé 因子程序](../gj/README.md) · [超精细常数与 Landé 因子计算流程](../../../docs/implemented/design-0027-rhfs-lande-g.md)
+[单电子与 Ni I 数值验收](../../../docs/reviews/evidence-0030-hyperfine-constants.md) · [独立 Landé 因子程序](../gj/README.md) · [超精细常数与 Landé 因子计算流程](../../../docs/implemented/design-0027-rhfs-lande-g.md)
 
 ## 计算流程
 
@@ -25,7 +25,7 @@ CI 模式写出 `name.ch` 和 `name.choffd`。
 | --- | --- |
 | [`configure_debug_output.f90`](configure_debug_output.f90) | 初始化诊断位，读取允许的非默认诊断选择，按需连接 `.dbg` 单元，供输入、积分与结果检查使用。 |
 | [`read_hyperfine_options.f90`](read_hyperfine_options.f90) | 读核自旋和核矩等同位素数据，以及可选光速、网格和一阶 CSF 截止。初始化网格、差分和核势，再把径向轨道装入内存。 |
-| [`read_mixing_blocks.f90`](read_mixing_blocks.f90) | 读取状态对应的 `CSF--MIX`，逐块提取根编号、$J$、宇称、绝对能量和本征向量，将其按 CSF 偏移铺到共享数组，供各算符按态收缩。 |
+| [`read_mixing_blocks.f90`](read_mixing_blocks.f90) | RHFS 与 GJ 共用。对照已加载的 CSF 基组核对混合流维数、块边界、$J$ 和宇称，检查块内根编号唯一，再按 CSF 偏移装入各态的能量和本征向量。 |
 | [`rhfs_main.f90`](rhfs_main.f90) | 读取状态与混合来源，装入 CSF、isodata、径向网格及波函数，核对混合记录后调用超精细矩阵例程并关闭报告。 |
 | [`rhfs_mpi_main.f90`](rhfs_mpi_main.f90) | rank 0 选择状态与混合来源并广播。集体加载 CSF，准备径向数据和混合向量，运行分布式矩阵元计算并归约各阶段最长耗时。 |
 
@@ -45,6 +45,7 @@ CI 模式写出 `name.ch` 和 `name.choffd`。
 
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
+| [`hyperfine_nuclear_factors.f90`](hyperfine_nuclear_factors.f90) | 串行和 MPI 共用核矩及单位换算。零自旋核的两种超精细作用均取零，电子 Landé 因子照常计算。 |
 | [`calculate_hyperfine_matrix_elements.f90`](calculate_hyperfine_matrix_elements.f90) | 按轨道对预制核磁偶极、电四极和 Landé 所需径向、角向因子。枚举合乎 $J$、占据和张量选择的 CSF 对，乘入混合向量形成 ASF 矩阵，再由核矩和角动量因子得到常数及非对角元。 |
 | [`calculate_hyperfine_matrix_elements_mpi.f90`](calculate_hyperfine_matrix_elements_mpi.f90) | 以进程数为间隔分配 CSF 列，预筛占据差并按张量阶求矩阵元。将超精细、Landé 及修正数组归约到 rank 0 后进行物理归一化和输出。 |
 
@@ -52,6 +53,6 @@ CI 模式写出 `name.ch` 和 `name.choffd`。
 
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
-| [`open_summary_file.f90`](open_summary_file.f90) | 根据状态名和混合来源选择 `.h` 或 `.ch`，连接超精细报告单元并检查打开状态。 |
-| [`write_hyperfine_energies.f90`](write_hyperfine_energies.f90) | 遍历选定级对，利用能量及宇称标签写允许的非对角偶极／四极结果，并输出供对照的级能量与单位。 |
-| [`write_input_summary.f90`](write_input_summary.f90) | 在超精细报告头记录电子、相对论 CSF 和轨道数及相关核数据。 |
+| [`open_summary_file.f90`](open_summary_file.f90) | 根据混合来源分别打开对角报告及相应的 `.hoffd` 或 `.choffd` 态对报告。 |
+| [`write_hyperfine_energies.f90`](write_hyperfine_energies.f90) | 提供用 Hartree、波数和 eV 列出电子能级与能量间隔的例程。当前默认流程的超精细常数与 F 分辨矩阵元由矩阵例程输出。 |
+| [`write_input_summary.f90`](write_input_summary.f90) | 在两份报告的文件头记录核自旋、磁偶极矩（核磁子）和电四极矩（barn）。 |
