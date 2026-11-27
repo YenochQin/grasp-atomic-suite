@@ -49,7 +49,7 @@
 
 ## P1 MPI 绑定、计数及分块
 
-Suite 的生产和测试 MPI 调用统一使用 `mpi_f08`。`mpi_state` 继续提供共享进程状态并转发实际 MPI 接口。CMake 在启用 MPI 时检查 `MPI_Fortran_HAVE_F08_MODULE`，通过 `MPI::MPI_Fortran` 向消费者传递编译和链接依赖。核极化入口使用 `type(MPI_Comm)`，连续字节类型使用 `type(MPI_Datatype)`，点对点消息使用 `MPI_Status` 或明确的 `MPI_STATUS_IGNORE`。rank、tag 和错误码使用默认整数。[MPI 构建入口](../../CMakeLists.txt#L170) · [运行时接口](../../src/lib/mpi/mpi_runtime.f90) · [MPI Fortran 绑定](https://www.mpi-forum.org/docs/mpi-4.1/mpi41-report/node466.htm)
+Suite 的生产和测试 MPI 调用统一使用 `mpi_f08`。`mpi_state` 继续提供共享进程状态并转发实际 MPI 接口。CMake 在启用 MPI 时检查 `MPI_Fortran_HAVE_F08_MODULE`，通过 `MPI::MPI_Fortran` 向消费者传递编译和链接依赖。连续字节类型使用 `type(MPI_Datatype)`，点对点消息使用 `MPI_Status` 或明确的 `MPI_STATUS_IGNORE`。rank、tag 和错误码使用默认整数。[MPI 构建入口](../../CMakeLists.txt#L170) · [运行时接口](../../src/lib/mpi/mpi_runtime.f90) · [MPI Fortran 绑定](https://www.mpi-forum.org/docs/mpi-4.1/mpi41-report/node466.htm)
 
 | 调用链 | 计数与缓冲约束 |
 | --- | --- |
@@ -176,7 +176,7 @@ Zn I AS1 的 14,551 个 CSF 分成四个偶宇称块，按统计权重优化七�
 | --- | --- | --- |
 | `rwfnestimate` · P1 | 固定点核、有限核和自定义网格，分别核对导入轨道、Thomas–Fermi、氢样初猜及正交化路径。复用既有 Ni/Zn 高角动量夹具。[入口](../../src/apps/rwfnestimate/rwfnestimate_main.f90) | 比较轨道身份、节点数、同 κ 正交、归一化及相位对齐后的 P/Q，输出可供首轮 RMCDHF 读入。坏轨道元数据、点数与表长有明确诊断。 |
 | `rangular`、`rangular_mpi` · P1 | 核对配对工作区、计数、排序、续写和空分区。串行按 MCP 通道读取，MPI 按 rank 使用索引分片。[生成路径](../implemented/design-0017-rangular-flow-and-state.md) · [MPI MCP](../../src/lib/mpi/mpi_indexed_mcp.f90) | 逐对称块、CSF 对和积分标签核对稀疏位置、系数与相位。覆盖首阶限制、串行复用开关、错基组和分片不匹配，由相应 RMCDHF 消费端读回。 |
-| `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` · P0 首轮夹具，P1 多根 | 分别冻结 EOL 根、权重、初始轨道、变化轨道、阻尼和停止参数。跟踪每块矩阵装配、每轮混合更新、轨道更新次序以及缓存或收缩失效条件。普通 MPI 按当前核势入口验收，另三种目标覆盖支持的 NP 关闭、零势和非零势。[SCF 状态及顺序](../implemented/design-0019-rmcdhf-flow-and-state.md) · [变体差异](../reviews/evidence-0007-rmcdhf-memory-variant-comparison.md) · [核极化范围](../implemented/design-0022-rmcdhf-nuclear-polarization.md) | 每个变体保存同输入下的固定轮次轨迹与独立收敛轨迹。逐轮核对能量、根与权重、系数、残差、P/Q 和停止原因。MPI 分别生成与本次 rank 布局匹配的 MCP；记录各 rank 峰值内存，检查 memory 路径是否因所有权调整引入多余副本。 |
+| `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` · P0 首轮夹具，P1 多根 | 分别冻结 EOL 根、权重、初始轨道、变化轨道、阻尼和停止参数。跟踪每块矩阵装配、每轮混合更新、轨道更新次序以及缓存或收缩失效条件。[SCF 状态及顺序](../implemented/design-0019-rmcdhf-flow-and-state.md) · [变体差异](../reviews/evidence-0007-rmcdhf-memory-variant-comparison.md) | 每个变体保存同输入下的固定轮次轨迹与独立收敛轨迹。逐轮核对能量、根与权重、系数、残差、P/Q 和停止原因。MPI 分别生成与本次 rank 布局匹配的 MCP；记录各 rank 峰值内存，检查 memory 路径是否因所有权调整引入多余副本。 |
 | `rci`、`rci_mpi` · P0 续算，P1 固定轨道 | 首批完成读取及局部失败回归。随后以同轨道、同基组、同算符，分别覆盖小稠密块、稀疏矩阵乘与磁盘续算，逐一切换 Coulomb、Breit 和实际支持的质量位移、QED 选项。[块求解](../../src/apps/rci/solve_hamiltonian_blocks.f90) · [已有 Breit 回归](../../test/rci_breit.py) | 核对块维度、矩阵元素和对称性、每根残差、总能量及激发能；冷启动与续算对照态身份与系数。保存最大差异的块、根和元素位置。 |
 | `biorthtransform`、`biorthtransform_mpi` · P1 本机解析验收完成 | 正逆序、不等维、非法顺序、奇异重叠有生产入口回归。复用角缓存前校验来源基组、κ 分组、选定 J 和 rank 身份。[解析验收](../reviews/evidence-0027-biorthogonal-states-and-cache.md) | 已核对交叉重叠、补偿后波函数、单位算符矩阵元及混合流的来源摘要。单侧独有 κ 组已在单电子跃迁流水线补验。两套独立优化的多电子轨道仍需从双正交变换到跃迁矩阵元做端到端对照。 |
 | `rtransition`、`rtransition_mpi`、`rtransition_phase` · P1 本机验收，P2 按需去重 | 单电子固定输入已覆盖允许、禁戒、弱线和相位约定。角缓存识别两套基组、多极、J 筛选及进程布局。[谱线验收](../reviews/evidence-0028-radiative-transition-lines.md) | 已复核 E1 两规范、M1、频率因子，以及 Ni I 的 M1 和 E2。更高多极的非零矩阵元和生产模型的物理收敛另行验证。 |

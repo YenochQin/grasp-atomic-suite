@@ -138,7 +138,6 @@ GNU Fortran 15.3.0 的干净 Release 和 Check 构建均启用串行、MPI 和 j
 `gj.f90`、`gj_mpi.f90`、`rci_mpi.f90`，并同步程序标识、GJ 帮助信息和 CMake 目标。
 其它表中可执行文件原本就没有 `90`，命令不变。
 
-CSFG 继续处于独立可选边界，其目录/程序名称保留。
 自旋–角向库已更名为 [`spin_angular`](design-0012-spin-angular-library-naming.md)。原 `libmcp90` 已更名为
 [`breit_angular_support`](design-0015-breit-angular-support-migration.md)。
 Davidson 求解库已更名为 [`libdavidson_eigensolver`](design-0014-davidson-eigensolver-migration.md)。
@@ -162,7 +161,6 @@ cmake -S . -B build-f2018-programs \
     -DCMAKE_Fortran_COMPILER=/usr/bin/gfortran-15 \
     -DCMAKE_BUILD_TYPE=Release -DGRASP_FORTRAN_PROFILE=f2018-release \
     -DGRASP_BUILD_SERIAL_APPS=ON -DGRASP_ENABLE_MPI=ON \
-    -DGRASP_BUILD_CSFG=OFF \
     -DGRASP_JJ2LSJ_OPENMP=ON
 cmake --build build-f2018-programs -j4
 ```

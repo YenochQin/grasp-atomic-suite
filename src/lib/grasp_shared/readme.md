@@ -115,7 +115,3 @@ C_{\mathrm{LS},jj}=\texttt{factor}\sqrt{\frac{\texttt{nom}}{\texttt{denom}}}.
 $$
 
 例如记录 $(-1,2,3)$ 对应 $-\sqrt{2/3}$。$f^7$ 分支先分别对分子和分母开平方，再相除。
-
-## 核极化状态的符号约定
-
-[nuclear_polarization_state.f90](nuclear_polarization_state.f90) 的 `npol_capture` 保存 Coulomb 基线。按[初始化例程](../core/nuclear_polarization_initialization.f90)传入的约定，第 $i$ 个径向点保留 $\texttt{zz\_coul}(i)=-r_iV_{\mathrm{Coulomb}}(r_i)$。`npol_publish` 在网格长度与已捕获的基线一致时，复制调用方算好的 E1、E2 和总势。势的模型与计算公式见[核极化实现说明](../../../docs/implemented/design-0022-rmcdhf-nuclear-polarization.md)。

@@ -34,7 +34,6 @@ strict/diag 独立变体已按用户决定[移除](adr-0002-retire-strict-and-di
 | `name_desc.parquet` 与配套 TOML | `load_csf_basis_data` 安装 V3 占据和对称块信息，并与 MCP 元数据核对。 |
 | `name.initial.wfn` | 径向初猜或续算轨道。 |
 | `S.mcp.30`、`S.mcp.31`、`S.mcp.(32+k)` | 稀疏结构、一电子/二电子角系数及选项元数据；初始化后在矩阵和系数构造中复读。 |
-| 可选 `npol.inp` | `NPOL_INIT` 初始化局域核极化修正，并更新核势数组 `ZZ`；输入契约见[核极化说明](design-0022-rmcdhf-nuclear-polarization.md)。 |
 | 交互输入 | 优化目标与权重、冻结轨道、改善顺序、求解方法、阻尼、精度和迭代上限。 |
 | `name.wfn` | 写出当前径向轨道，收敛状态见计算摘要。 |
 | EOL 的 `name.mix` | 保存混合结果。 |
@@ -50,13 +49,12 @@ strict/diag 独立变体已按用户决定[移除](adr-0002-retire-strict-and-di
 
 ```text
 SETISO → 设置网格默认值及 ACCY → 可选交互修改
-       → SETQIC → RADGRD → NUCPOT → NPOL_INIT → SETRWFA
+       → SETQIC → RADGRD → NUCPOT → SETRWFA
        → GETOLD 或 GETALD → 设置 SCF/轨道改善控制参数
 ```
 
 `ACCY=H**6` 的赋值在交互修改网格之前；改变 H 时需要单独提供期望的 ACCY，
 不能推断它会自动按新 H 重算，详见[公共参数约束](design-0003-shared-grid-parameters.md)。
-核极化初始化失败会停止，尚未进入 SCF。
 
 `GETSCD` 根据 MCP 元数据选择分支：`DIAG=.TRUE.` 时进入 EAL/`GETALD`；
 `LFORDR=.TRUE.` 时进入 EOL/`GETOLD`；其余路径当前直接设置 `EOL=.TRUE.`，
@@ -138,7 +136,7 @@ IF (ABS((WTAEV - WTAEV0)/WTAEV) < 0.001*ACCY) CONVG = .TRUE.
 
 | 例程 | 输入 → 产物 | 隐含依赖 |
 | --- | --- | --- |
-| [RINTI](../../src/lib/core/one_electron_radial_integral.f90) | 两个轨道标签及当前径向轨道/核势 → 一电子积分。 | `DPBDT`、`QUAD`；使用共享径向临时数组，核势 `ZZ` 含已启用的 NP 修正。 |
+| [RINTI](../../src/lib/core/one_electron_radial_integral.f90) | 两个轨道标签及当前径向轨道/核势 → 一电子积分。 | `DPBDT`、`QUAD`；使用共享径向临时数组，`ZZ` 保存核库仑势。 |
 | [SLATER](../../src/lib/core/slater_radial_integral.f90) | 四个轨道标签和 k → 二电子径向积分。 | `YZK → QUAD`；读取 `PF/QF` 并写积分工作区。 |
 | [YZK](../../src/lib/core/hartree_yz_functions.f90) | 轨道对、k、径向网格 → 径向积分核。 | 使用 `TA/TB/MTP`；按需填充持久网格幂次缓存，内部含递推。 |
 | [QUAD](../../src/lib/core/radial_quadrature.f90) | `TA` 中被积函数、`MTP`、网格及求积系数 → 标量积分。 | 会将 `TA` 尾部补零，不是仅有一个输出形参的无状态纯函数。 |
@@ -183,7 +181,7 @@ IMPROV
 
 | 例程 | 计算职责与产物 | 主要状态或调用 |
 | --- | --- | --- |
-| [RSCFVU](../../src/apps/rmcdhf/rmcdhf_main.f90)、[GETSCD](../../src/apps/rmcdhf/read_scf_options.f90) | 输入检查、网格/核势/初猜、优化方式与控制参数。 | `SETMCP/SETCSL/SETISO/RADGRD/NUCPOT/NPOL_INIT/SETRWFA`。 |
+| [RSCFVU](../../src/apps/rmcdhf/rmcdhf_main.f90)、[GETSCD](../../src/apps/rmcdhf/read_scf_options.f90) | 输入检查、网格/核势/初猜、优化方式与控制参数。 | `SETMCP/SETCSL/SETISO/RADGRD/NUCPOT/SETRWFA`。 |
 | [SCF](../../src/apps/rmcdhf/run_scf_iterations.f90) | 外层轮次、轨道顺序和追加改善、停止判定及输出。 | `MATRIX/NEWCO/SETLAG/IMPROV/MAXARR/ORBOUT`。 |
 | [SETLAG](../../src/apps/rmcdhf/calculate_lagrange_multipliers.f90) | 首次建立受约束的轨道对，之后计算正交约束乘子。 | `IECC/ECV`；势、积分及当前轨道工作区。 |
 | [SETCOF](../../src/apps/rmcdhf/assemble_orbital_potential_coefficients.f90) | 当前混合系数、占据和角系数 → 当前轨道的 `DA/XA/YA` 及索引列表。 | `FCO/GCO/DSUBRS`、MCP 读取和动态缓冲。 |
@@ -200,7 +198,7 @@ IMPROV
 
 | 状态及定义 | 写入者与消费者 | 生命周期与风险 |
 | --- | --- | --- |
-| [radial_grid_state](../../src/lib/grasp_shared/radial_grid_state.f90)：`N/R/RP/RPOR/H` 等；[nuclear_potential_state](../../src/lib/grasp_shared/nuclear_potential_state.f90)：`ZZ` | `GETSCD/RADGRD/NUCPOT/NPOL_INIT` 初始化；积分、势及方程求解读取。 | 在一次固定网格 SCF 中可只读共享；改变网格还必须考虑依赖网格的缓存。 |
+| [radial_grid_state](../../src/lib/grasp_shared/radial_grid_state.f90)：`N/R/RP/RPOR/H` 等；[nuclear_potential_state](../../src/lib/grasp_shared/nuclear_potential_state.f90)：`ZZ` | `GETSCD/RADGRD/NUCPOT` 初始化；积分、势及方程求解读取。 | 在一次固定网格 SCF 中可只读共享；改变网格还必须考虑依赖网格的缓存。 |
 | [orbital_csf_basis](../../src/lib/grasp_shared/orbital_csf_basis.f90)：量子数、`IQA/NCF`、`E/PED` | CSF 输入设置量子数/占据；`MATRIX` 切换 block；轨道求解更新能量相关量。 | 同时含输入、当前 block 和当前轨道能量，不能将整个模块视为常量。 |
 | [radial_wavefunctions](../../src/lib/grasp_shared/radial_wavefunctions.f90)：`PF/QF/PZ/MF` | 初猜加载；`DAMPOR/ORTHY/ORTHSC` 改写；所有径向积分和势读取。 | 整个 SCF 生命周期；轮内有顺序依赖，轨道之间并非隔离的输出列。 |
 | [eigenstate_expansions](../../src/lib/grasp_shared/eigenstate_expansions.f90)：`EVAL/EVEC`；[block_mean_energies](../../src/lib/grasp_shared/block_mean_energies.f90)：`EAVBLK`；[atomic_calculation_state](../../src/lib/grasp_shared/atomic_calculation_state.f90)：`WT/WEIGHT` | `MATRIX/MANEIG/NEWCO` 等更新；系数、占据数和能量构造读取。 | 随 EOL 对角化更新；block 偏移决定各结果片段，阻尼还读取上一轮结果。 |
@@ -245,7 +243,7 @@ IMPROV
 再决定是否深入积分或矩阵乘内核。没有计时证据时，不能把某个深层调用多的例程直接认定为主要热点。
 
 后续验证至少应区分小 block 与 Davidson 路径、单/多根、多 block、冻结轨道、
-阻尼与正交化、失败重试、NP 开关及续算；比较矩阵、能量、轨道、自洽量和迭代轨迹。
+阻尼与正交化、失败重试及续算；比较矩阵、能量、轨道、自洽量和迭代轨迹。
 浮点累加顺序改变可能影响接近阈值时的停止轮次，因此只比较最终能量不足以确认迭代行为保持一致。
 完整 EAL 验证应在定义路径复核后单独安排。
 
@@ -253,7 +251,6 @@ IMPROV
 
 - [rangular 计算流程与共享状态](design-0017-rangular-flow-and-state.md)：角系数、稀疏结构的生成端。
 - [RMCDHF 内存版与普通版对比](../reviews/evidence-0007-rmcdhf-memory-variant-comparison.md)：对应主循环相同，但 MCP 存储、乘子筛选、MPI 乘子公式和径向边界处理存在差异。
-- [核极化接入](design-0022-rmcdhf-nuclear-polarization.md)：`npol.inp`、核势及当前输入输出约定。
 - [已否决变体的移除](adr-0002-retire-strict-and-diagnostic-rmcdhf.md)：普通求解器不继承被否决分支的停止策略或比较时序。
 - [单节点 MPI 诊断计划](../plans/plan-0003-rmcdhf-mpi-stall-diagnostics.md)：实际性能现象及待执行诊断，与本次静态流程梳理互补。
 - [F2018 迁移计划](../plans/plan-0004-f2018-follow-up-validation.md)：标准符合性、接口与状态审计背景；串行正确性和线程安全需分别验证。

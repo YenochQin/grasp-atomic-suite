@@ -94,8 +94,10 @@ if(Python3_Interpreter_FOUND)
         ${CMAKE_CURRENT_SOURCE_DIR}/check_numeric_literals.py ${CMAKE_Fortran_COMPILER})
     add_test(NAME f2018_bndinv_interfaces COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/check_bndinv_interface.py ${CMAKE_Fortran_COMPILER})
+    add_test(NAME f2018_rmcdhf_provenance COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/test/rmcdhf/check_upstream.py ${PROJECT_SOURCE_DIR})
     add_test(NAME f2018_numeric_provenance COMMAND ${Python3_EXECUTABLE}
-        ${PROJECT_SOURCE_DIR}/test/npol/check_upstream_tamper.py)
+        ${PROJECT_SOURCE_DIR}/test/rmcdhf/check_upstream_tamper.py)
     add_test(NAME f2018_qed_boundary COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/check_qed_boundary.py ${CMAKE_Fortran_COMPILER}
         "${Fortran_MODULE_DIRECTORY_root}/grasp_shared" $<TARGET_FILE:grasp_shared>)

@@ -29,8 +29,8 @@
 | [design-0018-rangular-angular-reuse.md](implemented/design-0018-rangular-angular-reuse.md) | 已实施，串行专项回归通过；默认关闭的有界 CSF 对缓存；保留顺序、占据/耦合及轨道共享关系，复用原始 T/V 系数，普通 MCP 写出不变；包含命中率、缓存容量与 RSS 测量，MPI 未接入；rangular OpenMP 已移除。 |
 | [design-0023-rwfnestimate-header-input.md](implemented/design-0023-rwfnestimate-header-input.md) | header 输入说明；保留 header 轨道表、电子数和初猜检查背景；当前仅 header 输入，无旧文本回退。 |
 | [adr-0002-retire-strict-and-diagnostic-rmcdhf.md](implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md) | 已移除被否决变体；删除 strict/diag 两个独立求解器、专用测试、构建/安装入口及当前二进制；普通四种 RMCDHF 和共享库保持原流程。 |
-| [design-0005-program-naming.md](implemented/design-0005-program-naming.md) | 普通程序命名；保留应用目录和可执行文件去掉 90 的命名契约；CSFG 已随后移除，共享库及上游来源命名保留。 |
-| [design-0002-fortran-build-profiles.md](implemented/design-0002-fortran-build-profiles.md) | 现行构建策略；CSFG 已移除；生产默认 -O2，OpenMP 仅保留 jj2lsj；标准/接口/运行时诊断放 Check/Audit；serial、MPI 和 jj2lsj OpenMP 组成 24 个有效配置，16 个诊断配置沿用历史关闭 angular OpenMP 的预算 ID；历史预算范围不代表当前告警验收。 |
+| [design-0005-program-naming.md](implemented/design-0005-program-naming.md) | 普通 GRASP 应用目录和可执行文件的命名及迁移对照。共享库及上游来源命名保留。 |
+| [design-0002-fortran-build-profiles.md](implemented/design-0002-fortran-build-profiles.md) | 生产默认 `-O2`，OpenMP 用于 jj2lsj。Check/Audit 用于标准、接口和运行时诊断。串行程序、MPI 和 jj2lsj OpenMP 组成 24 个配置，其中 16 个诊断配置沿用关闭 rangular OpenMP 时的告警预算 ID。当前告警验收须以候选版本实测为准。 |
 | [rangular 对照工具](../scripts/README.md) | 原生描述符默认和显式输入、历史文本 oracle、阶段计时与 MCP 对照。 |
 | [design-0024-mcp-compare.md](implemented/design-0024-mcp-compare.md) | 已实施，解析器回归通过；2026-11-10，普通 rangular 串行/MPI MCP 解析、结构校验、按 CSF 对比较和 JSON 导出；合成回归与现有文件读回通过，不代表候选 rangular 或物理计算验收。 |
 | [design-0017-rangular-flow-and-state.md](implemented/design-0017-rangular-flow-and-state.md) | 现行流程，静态核查完成；2026-11-10，基准 d181bf4；普通串行 rangular 的 block/CSF 对遍历、角系数缓冲与排序、共享工作区和文件状态。未实施 OpenMP，未运行性能或物理验证。 |
@@ -48,12 +48,11 @@
 | [design-0029-jj2lsj-postprocessing.md](implemented/design-0029-jj2lsj-postprocessing.md) | 已实施；2026-11-04 分阶段计时、稳定归并排序及 ASF 排序并行；唯一标签和输出按序执行，跨 block 流水线经计时评估暂缓。 |
 | [design-0028-jj2lsj-openmp.md](implemented/design-0028-jj2lsj-openmp.md) | 已实施；2026-11-02 `jj2lsj_omp` 普通 CSF 的 OpenMP LS 行转换，保留默认提前停止与串行 `.lsj.T`；数值/文件回归及 Debug、无 OpenMP 构建通过；Gd I 真实输入兼容性通过，已有单次性能观测。 |
 | [design-0026-rdensity-mpi.md](implemented/design-0026-rdensity-mpi.md) | 已实施；2026-10-09 新增串行/MPI 自然轨道程序；CSF 分工、矩阵归约、解析小模型及 Ni 对照测试。大规模性能与物理收敛仍待验证。 |
-| [design-0003-shared-grid-parameters.md](implemented/design-0003-shared-grid-parameters.md) | 已实施；2026-11-16 使用语义容量名称，由 cal_constants 经 grasp_parameters 转导；CSFG 移除后覆盖 15 个普通网格入口、2 个 RCI 续算入口，默认容量仍为 590/600。 |
+| [design-0003-shared-grid-parameters.md](implemented/design-0003-shared-grid-parameters.md) | `cal_constants` 经 `grasp_parameters` 转导语义容量名称。网格脚本覆盖 15 个普通网格入口和 2 个 RCI 续算入口，默认径向容量为 590/600。 |
 | [design-0014-davidson-eigensolver-migration.md](implemented/design-0014-davidson-eigensolver-migration.md) | Davidson 求解库的目录、静态库、Fortran 文件、模块和变量命名对照。 |
 | [design-0010-mpi-library-naming.md](implemented/design-0010-mpi-library-naming.md) | MPI 支持库的目录、静态库、Fortran 文件和模块命名对照。 |
 | [design-0011-mpi-variable-migration.md](implemented/design-0011-mpi-variable-migration.md) | MPI 支持库的作用域级变量与常量对应表，含通信、输入、目录管理和稀疏矩阵例程。 |
 | [design-0027-rhfs-lande-g.md](implemented/design-0027-rhfs-lande-g.md) | 已实施；串行 RHFS 的加载、矩阵元、ASF 投影及输出链仍存在。仅覆盖该路径，不是 gj/MPI 完整说明。 |
-| [design-0022-rmcdhf-nuclear-polarization.md](implemented/design-0022-rmcdhf-nuclear-polarization.md) | 已实施，普通 MPI 已移除 NP 入口；2026-11-15 普通 rmcdhf_mpi 恢复直接核势初始化；rmcdhf、rmcdhf_mem、rmcdhf_mem_mpi 保留可选 NP。保留 2026-10-24 历史代码验证，物理计算验证未执行。 |
 | [design-0020-rmcdhf-mcp-io.md](implemented/design-0020-rmcdhf-mcp-io.md) | MPI 计算链统一使用目录格式。普通版使用每轮 EOL 收缩，内存版读取相同分片。生产 A/C 的 SCF 数值和墙钟对照已完成。 |
 
 ## 未完成的计划与清单
@@ -107,7 +106,6 @@
 | [evidence-0019-gnu16-warning-baseline.md](reference/f2018/evidence-0019-gnu16-warning-baseline.md) | GNU Fortran 16.2.1 Linux x86-64 复采，覆盖 16 个普通 Check/Audit 配置及带目录 MCP 目标。逐条正确性复核仍在 F2018 后续验收范围内。 |
 | [evidence-0018-gnu15-warning-baseline.md](reference/f2018/evidence-0018-gnu15-warning-baseline.md) | GNU Fortran 15.3.0 的历史告警记录，包含当时 24 个配置的编译覆盖与诊断。 |
 | [design-0032-lande-g-theory.md](reference/design-0032-lande-g-theory.md) | 理论参考；概念、ASF 与 LS 近似的参考草稿，不能划为功能实施计划。算符规范与系数尚未完整独立核对。 |
-| [design-0033-nuclear-polarization-parameters.md](reference/design-0033-nuclear-polarization-parameters.md) | 参数参考；2026-10-24 核对 Flambaum 2021 的 E1/E2 强度、50 keV 修正极化率、截断参数与原子单位换算；记录拟合系数内部差异，未建立生产核素参数库或物理精度结论。 |
 
 ## 历史背景
 
@@ -121,9 +119,7 @@
 | [evidence-0021-v1-0-1-dev-1-optimization-summary.md](archive/evidence-0021-v1-0-1-dev-1-optimization-summary.md) | 历史分支总结；HFSGG 与 DIAGA3/4 保留。RECOP2 独立快速预检查未保留，已修正原文误记；旧计时未复测。 |
 | [evidence-0022-v1-1-1-dev-1-optimization-summary.md](archive/evidence-0022-v1-1-1-dev-1-optimization-summary.md) | 历史分支总结；RIS 主要优化仍存在；历史耗时、测试名称和测试覆盖不代表当前数值验收。 |
 
-补充历史资料包括 [orbopt 实验结果](archive/orbopt/evidence-0024-orbopt-as2-diagnostics.md)、
-[GRASPG 上游说明](reference/graspg/evidence-0020-graspg-upstream-readme.md)
-和 [GRASPG 源码清单](reference/graspg/source-manifest.json)。
+另见 [orbopt 实验结果](archive/orbopt/evidence-0024-orbopt-as2-diagnostics.md)。
 
 ## 验证边界与维护
 
@@ -133,10 +129,11 @@
 [test/CMakeLists.txt](../test/CMakeLists.txt)和[求解器测试说明](../test/rmcdhf/README.md)。
 
 已完成的 USE ONLY、格式整理、大小写/首批改名、模块化、输入/数值修复和 F2018 分批报告，
-以及完成的 CSF/NP 代码计划不再逐批保留；实现约束集中在
-[兼容性说明](implemented/design-0004-f2018-compatibility.md)、原生输入及 NP 说明，原始记录由 Git 历史追溯。
+以及已完成的 CSF 接入计划均可从 Git 历史追溯。现行契约见
+[兼容性说明](implemented/design-0004-f2018-compatibility.md)和[原生输入说明](implemented/design-0001-native-csf-descriptors.md)。
 测试引用的来源快照、告警基线和仍供后续工作使用的清单继续保留。
 
 后续计划完成时，将仍适用的接口、操作方式及验证限制并入现行说明，删除重复的过程记录并同步引用。
 仅当报告包含独立数值证据、未解决事项或必要历史背景时继续保留；写明日期和源码基准。
+保留已退役文档的编号 `evidence-0020`、`design-0022` 和 `design-0033`。
 本机日志、大型输入/输出和环境不纳入文档提交。

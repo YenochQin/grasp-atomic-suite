@@ -7,7 +7,6 @@ add_library(grasp_mpi STATIC
     mpi_element_counts.f90
     mpi_indexed_mcp.f90
     mpi_mcp_calculation_input.f90
-    mpi_nuclear_polarization.f90
     mpi_state.f90
     mpi_runtime.f90
     mpi_run_logging.f90
@@ -27,8 +26,3 @@ setup_fortran_modules(grasp_mpi)
 target_link_libraries_Fortran(grasp_mpi PRIVATE grasp_shared core)
 target_link_libraries(grasp_mpi PUBLIC MPI::MPI_Fortran)
 install(TARGETS grasp_mpi DESTINATION lib/)
-# Check NP production routines as well as their test callers in Debug builds.
-if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
-    set_source_files_properties(mpi_nuclear_polarization.f90 PROPERTIES
-        COMPILE_OPTIONS "$<$<CONFIG:Debug>:-fcheck=all;-fbacktrace>")
-endif()

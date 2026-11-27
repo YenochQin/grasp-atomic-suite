@@ -24,7 +24,7 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 │   │   ├── gj/               # standalone Landé g_J calculator
 │   │   ├── rdensity/         # serial/MPI radial density and natural orbitals
 │   │   ├── rhfs/             # relativistic hyperfine-structure program
-│   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # fresh GRASP copies with optional NP
+│   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # serial and MPI GRASP solvers
 │   │   └── ris4/             # relativistic isotope-shift program
 │   └── lib/
 │       ├── grasp_shared/     # shared state, capacities, and interfaces
@@ -51,18 +51,18 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 | Program | Source directory | CMake targets | Purpose |
 | --- | --- | --- | --- |
 | Ordinary GRASP calculation chain | `src/apps/rangular*`, `rwfnestimate`, `rci*`, `biorthtransform*`, `rtransition*` | `rangular{,_mpi}`, `rwfnestimate`, `rci{,_mpi}`, `biorthtransform{,_mpi}`, `rtransition{,_phase,_mpi}` | Ten targets reuse the suite libraries and central capacities. See the [import record](docs/archive/2026-11-08-plan-0002-standard-grasp-integration.md). |
-| `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/design-0028-jj2lsj-openmp.md). CSFG support has been removed. |
+| `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/design-0028-jj2lsj-openmp.md). |
 | `rlevels` | `src/apps/rlevels` | Energy tables from RMCDHF `.mix` and RCI `.cimix` files with optional `jj2lsj` labels. [Usage and output format](docs/implemented/design-0025-rlevels.md). |
 | `gj` | `src/apps/gj` | `gj`, `gj_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, the state's CSF descriptor pair, `name.mix/name.cimix`, and `name.wfn`, then writes `name.gj/name.cgj`. |
 | `rhfs` | `src/apps/rhfs` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
 | `rdensity` | `src/apps/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/design-0026-rdensity-mpi.md). |
 | `ris4` | `src/apps/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing source-specific isotope-shift reports and angular intermediate data. |
 | `fical` | `src/apps/ris4` | `fical` | Standalone [line isotope-shift postprocessor](src/apps/ris4/README.md#fical) for pairs of RIS4 reports. |
-| GRASP RMCDHF | `src/apps/rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | `rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | Copies from the workspace GRASP source, retaining its solver flow. Ordinary `rmcdhf_mpi` has no NP initialization; the other three optionally read `npol.inp`. See [NP interface and provenance](docs/implemented/design-0022-rmcdhf-nuclear-polarization.md). |
+| GRASP RMCDHF | `src/apps/rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | `rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | Serial and MPI solvers based on GRASP, with standard and in-memory MCP paths. See the [solver flow and source references](docs/implemented/design-0019-rmcdhf-flow-and-state.md). |
 
 The rejected strict/diagnostic RMCDHF variants have been [removed](docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md), together with their dedicated tests and runtime entry points.
 
-`./configure.sh` enables all retained non-CSFG applications by default: serial,
+`./configure.sh` enables all supported applications by default: serial,
 MPI and jj2lsj OpenMP, including `rwfnestimate`. MPI requires a compatible
 Fortran MPI environment. Direct CMake configuration still requires
 `-DGRASP_BUILD_SERIAL_APPS=ON` to include ordinary serial applications.
@@ -106,7 +106,7 @@ install or overwrite source `bin/`. Use `f2018-check` or `f2018-audit` to run
 
 The resulting executables are in `<build>/bin`, including `rwfnestimate`, the four
 ordinary RMCDHF programs, MPI property programs, `rangular`, `rangular_mpi` and `jj2lsj_omp`.
-CSFG stays off by default. Explicit `--no-serial`, `--no-mpi` or `--no-openmp`
+Explicit `--no-serial`, `--no-mpi` or `--no-openmp`
 options select a smaller build; `--serial` remains accepted for compatibility.
 
 To build the four original RMCDHF programs and all property programs together:
@@ -183,10 +183,13 @@ its scratch directory. Run `rmcdhf_mpi` or `rmcdhf_mem_mpi` with the same basis
 and rank layout. For existing caches, restart files and MCP data, see
 [file naming and migration](docs/implemented/design-0034-cache-restart-mcp-names.md).
 The descriptor and radial files live in the permanent I/O directory, and the
-angular and SCF logs live in the launch directory. `isodata` and applicable
-`npol.inp` are shared nuclear inputs. See [MPI MCP formats and validation](docs/implemented/design-0020-rmcdhf-mcp-io.md).
+angular and SCF logs live in the launch directory. `isodata` supplies the nuclear
+and isotope data for the calculation directory. See [MPI MCP formats and validation](docs/implemented/design-0020-rmcdhf-mcp-io.md).
 RCI keeps its settings-first prompt order. Property programs such as `gj` use
 up to 23 characters for the state name.
+
+Suite RMCDHF now initializes the nuclear Coulomb potential from `isodata`.
+The former `npol.inp` input has no effect on the calculation.
 
 RMCDHF and RCI, including their MPI variants, require at least one valid ASF
 root for every `J/parity` block in the CSF basis. Enter one line of root indices
@@ -424,22 +427,6 @@ its implementation evidence, superseded claims, and remaining validation work.
 
 This repository is distributed under the [MIT License](LICENSE).
 
-## GRASPG / CSFG extension
+## GRASP2018 citation
 
-The CSFG extension source, targets and dedicated tests were removed on 2026-11-16.
-`GRASP_BUILD_CSFG=ON` is rejected. `--no-csfg` and `GRASP_BUILD_CSFG=OFF` remain
-accepted for compatibility with existing ordinary-suite build commands.
-The ordinary shared libraries remain in use. See the
-[GRASPG source manifest](docs/reference/graspg/source-manifest.json) for provenance.
-
-### Attribution and citation
-
-The CSFG implementation is derived from [compas/graspg](https://github.com/compas/graspg).
-This repository previously integrated and adapted that upstream code; the GRASPG implementation
-and CSFG methods are credited to their original authors. Research using these
-programs should cite the GRASPG software paper, the CSFG method paper, and the
-underlying GRASP2018 package:
-
-1. Ran Si, Yanting Li, Kai Wang, Chongyang Chen, Gediminas Gaigalas, Michel Godefroid, and Per Jönsson. “Graspg – An extension to Grasp2018 based on configuration state function generators.” *Computer Physics Communications* **312**, 109604 (2025). [DOI: 10.1016/j.cpc.2025.109604](https://doi.org/10.1016/j.cpc.2025.109604).
-2. Yanting Li et al. “Reducing the computational load – atomic multiconfiguration calculations based on configuration state function generators.” *Computer Physics Communications* **283**, 108562 (2023). [DOI: 10.1016/j.cpc.2022.108562](https://doi.org/10.1016/j.cpc.2022.108562).
-3. C. Froese Fischer, G. Gaigalas, P. Jönsson, and J. Bieroń. “GRASP2018—A Fortran 95 version of the General Relativistic Atomic Structure Package.” *Computer Physics Communications* **237**, 184–187 (2019). [DOI: 10.1016/j.cpc.2018.10.032](https://doi.org/10.1016/j.cpc.2018.10.032).
+C. Froese Fischer, G. Gaigalas, P. Jönsson, and J. Bieroń. “GRASP2018—A Fortran 95 version of the General Relativistic Atomic Structure Package.” *Computer Physics Communications* **237**, 184–187 (2019). [DOI: 10.1016/j.cpc.2018.10.032](https://doi.org/10.1016/j.cpc.2018.10.032).

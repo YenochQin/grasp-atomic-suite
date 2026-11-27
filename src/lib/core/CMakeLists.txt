@@ -12,9 +12,6 @@ add_library(core STATIC
     csf_descriptor_reader.f90
     csf_quantum_queries.f90
     posix_services.f90
-    nuclear_polarization_input.f90
-    nuclear_polarization_potential.f90
-    nuclear_polarization_initialization.f90
     angular_coefficient_buffer.f90
     nonnegative_atan2.f90
     calendar_clock.f90
@@ -81,8 +78,3 @@ setup_fortran_modules(core)
 target_link_libraries(core PUBLIC csf_descriptor)
 target_link_libraries_Fortran(core PRIVATE grasp_shared)
 install(TARGETS core DESTINATION lib/)
-# Enable GNU Fortran runtime checks and backtraces for the nuclear-polarization routines in Debug builds.
-if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
-    set_source_files_properties(nuclear_polarization_input.f90 nuclear_polarization_potential.f90 nuclear_polarization_initialization.f90 PROPERTIES
-        COMPILE_OPTIONS "$<$<CONFIG:Debug>:-fcheck=all;-fbacktrace>")
-endif()

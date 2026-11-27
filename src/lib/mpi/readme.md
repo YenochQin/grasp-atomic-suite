@@ -1,6 +1,6 @@
 # GRASP MPI 支持库
 
-这里的 Fortran 模块为 GRASP 的 MPI 程序提供运行状态、输入广播、工作目录管理和稀疏本征求解所需的操作。CMake 目标为 `grasp_mpi`。以下公式对应当前源码，径向插值、正交化和核极化势调用的公共例程也附有源码链接。
+这里的 Fortran 模块为 GRASP 的 MPI 程序提供运行状态、输入广播、工作目录管理和稀疏本征求解所需的操作。CMake 目标为 `grasp_mpi`。以下公式对应当前源码，径向插值和正交化的公共例程也附有源码链接。
 
 | 功能 | 源码 |
 | --- | --- |
@@ -9,7 +9,7 @@
 | MPI 主机和目录汇总 | [mpi_run_logging.f90](mpi_run_logging.f90) |
 | 工作目录与输入错误 | [mpi_work_paths.f90](mpi_work_paths.f90)、[mpi_change_directory.f90](mpi_change_directory.f90)、[mpi_current_directory.f90](mpi_current_directory.f90)、[mpi_make_directory.f90](mpi_make_directory.f90)、[mpi_io_errors.f90](mpi_io_errors.f90) |
 | 组态状态函数（CSF）完整基组、RCI 分块读取和 RMCDHF 输入 | [mpi_csf_basis_input.f90](mpi_csf_basis_input.f90)、[mpi_csf_block_input.f90](mpi_csf_block_input.f90)、[mpi_rmcdhf_csf_input.f90](mpi_rmcdhf_csf_input.f90)、[mpi_csf_collectives.f90](mpi_csf_collectives.f90) |
-| 同位素、径向波函数和核极化输入 | [mpi_isotope_input.f90](mpi_isotope_input.f90)、[mpi_radial_wavefunction_file.f90](mpi_radial_wavefunction_file.f90)、[mpi_radial_wavefunction_reader.f90](mpi_radial_wavefunction_reader.f90)、[mpi_nuclear_polarization.f90](mpi_nuclear_polarization.f90) |
+| 同位素与径向波函数输入 | [mpi_isotope_input.f90](mpi_isotope_input.f90)、[mpi_radial_wavefunction_file.f90](mpi_radial_wavefunction_file.f90)、[mpi_radial_wavefunction_reader.f90](mpi_radial_wavefunction_reader.f90) |
 | 稀疏矩阵乘法和 Davidson 初始向量 | [mpi_sparse_matrix_product.f90](mpi_sparse_matrix_product.f90)、[mpi_initial_eigenvectors.f90](mpi_initial_eigenvectors.f90) |
 
 ## MPI 运行日志
@@ -152,28 +152,3 @@ $$
 $$
 
 对发生投影的轨道，例程按更新后的范数重新缩放两个分量和原点系数，再从径向尾部逐点检查 $|P_i(r)|<0.01\,\mathrm{accy}$。满足条件的尾点将两个分量都置零。[插值](../core/radial_orbital_interpolation.f90) · [径向重叠](../core/weighted_radial_overlap.f90) · [Schmidt 正交化](../core/radial_orbital_orthogonalization.f90)
-
-## 核极化势
-
-`npol_init_mpi` 在 rank 0 调用 `npol_build_grid`，再广播电偶极 $E1$、电四极 $E2$ 及总核极化势。$K_1,K_2$ 为通道系数，$b_1,b_2$ 为各通道截断半径。启用的通道采用下式，关闭的通道贡献为零。
-
-$$
-V_{E1}(r)=-\frac{K_1}{r^4+b_1^4},\qquad
-V_{E2}(r)=-\frac{K_2}{r^6+b_2^6},\qquad
-V_{\mathrm{NP}}(r)=V_{E1}(r)+V_{E2}(r).
-$$
-
-内核取 $s=\max(r,b)$ 并将分母拆成尺度和无量纲和式。对幂次 $p=4$ 或 $6$，下式中 $K/s^p$ 通过二进制尾数和指数计算。
-
-$$
-V(r)=
--\frac{K/s^p}{(r/s)^p+(b/s)^p}.
-$$
-
-GRASP 的核势数组保存 $-rV$。设原库仑数组值为 $W_{\mathrm{C}}(r)$，每个 rank 用自身径向网格上的 $r$ 和接收到的极化势值，调用 `npol_compose` 计算
-
-$$
-W_{\mathrm{total}}(r)=W_{\mathrm{C}}(r)-rV_{\mathrm{NP}}(r).
-$$
-
-$r=0$ 或 $V_{\mathrm{NP}}(r)=0$ 时沿用 $W_{\mathrm{C}}(r)$。各 rank 同步状态后，才将合成值写入核势数组。[核极化势内核](../core/nuclear_polarization_potential.f90)

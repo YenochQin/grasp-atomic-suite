@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "previous_manifest_sha256": "a841041b47cd9786c24a5cae0216a8a13eeba3037af45a4c7754515b3334a7a2",
+  "note": "Use the Coulomb-only nuclear potential initialization in the serial and memory variants.",
+  "files": {
+    "src/appl/rmcdhf/getscd.f90": {
+      "before_suite_sha256": "a83b9a56c2124a32abc66f1b7377e5d2ba9e7975e293ef75d3b7614ad3251dfb",
+      "after_suite_sha256": "817a7677545fcfc1378ae11c2616a48e60cd2d2e193b60b0e5988e4fb486c0b4"
+    },
+    "src/appl/rmcdhf/rscfvu.f90": {
+      "before_suite_sha256": "d7782e9f8c01af12ae7bae07a18adc8f0ca2b113f97a980a730fba488a0ec53b",
+      "after_suite_sha256": "c24dd68e2529f412e2bc04a6c1bc2374559393e569c11f59d75379b4cb9a19b3"
+    },
+    "src/appl/rmcdhf_mem/getscd.f90": {
+      "before_suite_sha256": "a83b9a56c2124a32abc66f1b7377e5d2ba9e7975e293ef75d3b7614ad3251dfb",
+      "after_suite_sha256": "817a7677545fcfc1378ae11c2616a48e60cd2d2e193b60b0e5988e4fb486c0b4"
+    },
+    "src/appl/rmcdhf_mem/rscfvu.f90": {
+      "before_suite_sha256": "4dee651796c6f1965be27ec60366ac6d41d1a020dc7705de7ca2205662f696e6",
+      "after_suite_sha256": "e465f67170f39eb949a4b38ca29c42080e12df5ff4d83dc0af73a25e5ae36ba0"
+    },
+    "src/appl/rmcdhf_mem_mpi/getscdmpi.f90": {
+      "before_suite_sha256": "b3de39bae1785440a3fc7a1fe34b2eabdf3dc7e411839cfa11dd5c7bf5989da5",
+      "after_suite_sha256": "12260fdfd9ae320e09389464ed84d9bbc518ed05b16d2dd3df41435f12aa0d66"
+    },
+    "src/appl/rmcdhf_mem_mpi/rscfmpivu.f90": {
+      "before_suite_sha256": "01c873118ce2bced9e4b61f3b3eb1edc1285d6539c191187abf292f8786d6d27",
+      "after_suite_sha256": "32e4e0169f4240ed858d91eb4c7412c116d567ad2e9219e361285f6155fd9bab"
+    }
+  }
+}

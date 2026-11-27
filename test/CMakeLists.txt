@@ -210,8 +210,6 @@ if(Python3_Interpreter_FOUND)
     endif()
 endif()
 
-# Independent synthetic NP tests; no GRASP preparation tools or atomic data.
-add_subdirectory(npol)
 add_subdirectory(jj2lsj)
 add_subdirectory(standard_grasp)
 add_subdirectory(rwfnestimate)

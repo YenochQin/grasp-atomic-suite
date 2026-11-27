@@ -16,7 +16,7 @@ program rmcdhf_mem_mpi_main
     use calculation_file_units, only: calculation_log_unit
     use calculation_input_defaults, only: nondefault_options_flag
     use closed_core_subshells, only: closed_core_subshell_count
-    use mpi_state, only: mpi_comm_world, mpi_process_count, mpi_rank, processor_name, processor_name_length
+    use mpi_state, only: mpi_process_count, mpi_rank, processor_name, processor_name_length
     use calculation_state_files, only: check_orbital_output
     use calculation_state_files, only: state_files, state_name_length, files_for_state
     use mpi_calculation_state, only: read_mpi_state_name, read_mpi_state_settings
@@ -43,7 +43,6 @@ program rmcdhf_mem_mpi_main
     use run_scf_iterations_mpi_interface, only: run_scf_iterations_mpi
 
     ! Module dependencies
-    use mpi_nuclear_polarization, only: npol_abort_mpi
     use mpi_utilities, only: initialize_mpi_runtime_with_status
     use mpi_utilities, only: finish_mpi_application
     implicit none (type, external)
@@ -54,7 +53,6 @@ program rmcdhf_mem_mpi_main
     character(state_name_length+1) :: state
     logical :: extended_optimal_level, yes
     character :: block_labels(maximum_input_symmetry_blocks)*8
-    character(:), allocatable :: nuclear_polarization_file_path
     character (len = 128) :: startup_directory,serial_io_directory,rank_scratch_root
     character(:), allocatable :: csf_descriptor_path, isotope_file_path, initial_radial_file_path
     character(:), allocatable :: mixing_output_path, radial_output_path
@@ -101,14 +99,7 @@ program rmcdhf_mem_mpi_main
 
     if(mpi_rank == 0) isotope_file_path = serial_io_directory(1:lenperm) // "/isodata"
     if(mpi_rank == 0) initial_radial_file_path = trim(serial_io_directory)//"/"//files%initial_orbitals
-    nuclear_polarization_file_path = ""
-    if (mpi_rank == 0) then
-        if (lenperm == len(serial_io_directory)) call npol_abort_mpi(mpi_comm_world, &
-            "npol: permanent input directory reaches the legacy path limit")
-        nuclear_polarization_file_path = trim(serial_io_directory) // "/npol.inp"
-    end if
-    call read_scf_options_mpi (extended_optimal_level, block_labels, isotope_file_path, &
-        initial_radial_file_path, nuclear_polarization_file_path)
+    call read_scf_options_mpi (extended_optimal_level, block_labels, isotope_file_path, initial_radial_file_path)
     mixing_output_path = "  "
     if(mpi_rank == 0) mixing_output_path = trim(serial_io_directory)//"/"//files%mixing
     if (mpi_rank == 0) then

@@ -12,8 +12,7 @@ contains
     ! Written by Farid A. Parpia. Last revision: 27 Dec 1992
     !
     ! Xinghong He 98-08-06
-    subroutine read_scf_options_mpi(extended_optimal_level, block_labels, isotope_file_path, radial_file_path, &
-        & nuclear_polarization_file_path)
+    subroutine read_scf_options_mpi(extended_optimal_level, block_labels, isotope_file_path, radial_file_path)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: input_unit
         use calculation_file_units, only: calculation_log_unit
@@ -27,15 +26,12 @@ contains
         use calculation_input_defaults, only: nondefault_options_flag
         use fixed_orbital_flags, only: is_orbital_fixed
         use standard_io_units, only: stderr_unit
-        use radial_grid_state, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale, radial_grid
+        use radial_grid_state, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale
         use orbital_inversion_flags, only: suppress_radial_inversion
         use rmcdhf_mcp_options, only: mcp_diagonal_only
         use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_double_precision, mpi_error_code, mpi_integer, mpi_logical, mpi_rank
         use expected_orbital_nodes, only: expected_radial_node_counts
         use nuclear_model_parameters_state, only: nuclear_model_parameter_count
-        use nuclear_potential_state, only: negative_radius_times_potential
-        use nuclear_polarization_state, only: npol_message_len
-        use mpi_nuclear_polarization, only: npol_init_mpi, npol_abort_mpi
         use orbital_csf_basis, only: orbital_kappa, orbital_symmetry_labels, orbital_principal_n, orbital_count
         use scf_orthogonality_control, only: enforce_orbital_orthogonality
         use scf_iteration_state, only: orbital_self_consistency_errors, radial_solution_methods
@@ -59,15 +55,12 @@ contains
         logical, intent(out) :: extended_optimal_level
         character  :: isotope_file_path*(*)
         character  :: radial_file_path*(*)
-        character(*), intent(in) :: nuclear_polarization_file_path
         character  :: block_labels(*)*8
 
         ! Local constants
         character(len=*), parameter :: routine_name = "read_scf_options_mpi"
 
         ! Local declarations
-        integer :: np_status
-        character(npol_message_len) :: np_message
         integer  :: indx(max_orbitals)
         integer :: i, j, iend, ibeg, text_length, nsubs, loc
         real(real64) :: odampu, cdampu
@@ -162,10 +155,6 @@ contains
         call initialize_radial_grid
         ! Generate $- r \times V_ (r)$
         call calculate_nuclear_coulomb_potential
-        call npol_init_mpi(nuclear_polarization_file_path, nuclear_charge, radial_point_count, radial_grid, &
-            & negative_radius_times_potential, &
-            & mpi_comm_world, np_status, np_message)
-        if (np_status /= 0) call npol_abort_mpi(mpi_comm_world, np_message)
         ! Load the subshell radial wavefunction estimates
         call read_mpi_radial_wavefunction_file (radial_file_path)
         ! Set some defaults

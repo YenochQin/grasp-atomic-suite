@@ -24,7 +24,7 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 │   │   ├── gj/               # Landé g_J 独立计算程序
 │   │   ├── rdensity/         # 串行/MPI 径向电子密度与自然轨道
 │   │   ├── rhfs/             # 相对论超精细结构程序
-│   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # 从 grasp 新复制，支持可选 NP
+│   │   ├── rmcdhf{,_mem,_mpi,_mem_mpi}/ # 原版 GRASP 串行及 MPI 求解器
 │   │   └── ris4/             # 相对论同位素位移程序
 │   └── lib/
 │       ├── grasp_shared/     # 共享状态、容量和基础接口
@@ -51,13 +51,13 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 | 程序 | 源码目录 | CMake 目标 | 说明 |
 | --- | --- | --- | --- |
 | 普通 GRASP 计算链 | `src/apps/rangular*`、`rwfnestimate`、`rci*`、`biorthtransform*`、`rtransition*` | `rangular{,_mpi}`、`rwfnestimate`、`rci{,_mpi}`、`biorthtransform{,_mpi}`、`rtransition{,_phase,_mpi}` | 十个目标复用 Suite 共享库与集中容量参数。[导入记录](docs/archive/2026-11-08-plan-0002-standard-grasp-integration.md) |
-| `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | 普通 CSF 的 OpenMP jj–LS 转换，按 LS 行并行并保留原截断顺序；见[构建、运行和验证说明](docs/implemented/design-0028-jj2lsj-openmp.md)。与 `jj2lsj_csfg` 分开。 |
+| `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | 普通 CSF 的 OpenMP jj–LS 转换，按 LS 行并行并保留原截断顺序；见[构建、运行和验证说明](docs/implemented/design-0028-jj2lsj-openmp.md)。 |
 | `rlevels` | `src/apps/rlevels` | 从 RMCDHF `.mix` 和 RCI `.cimix` 生成能级表，可附加 `jj2lsj` 标签。见[用法和输出格式](docs/implemented/design-0025-rlevels.md)。 |
 | `gj` | `src/apps/gj` | `gj`, `gj_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、该状态的 CSF 描述符文件对、`name.mix/name.cimix`、`name.wfn`，输出 `name.gj/name.cgj`。 |
 | `rhfs` | `src/apps/rhfs` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
 | `rdensity` | `src/apps/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/design-0026-rdensity-mpi.md)。 |
 | `ris4` | `src/apps/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，按混合系数来源输出电子因子报告及中间角向数据。 |
-| 原版 RMCDHF + 可选 NP | `src/apps/rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | 从工作区 grasp 新复制，保留原版求解流程；仅这四个读取 `npol.inp`。详见[NP 接口与来源](docs/implemented/design-0022-rmcdhf-nuclear-polarization.md)。 |
+| 原版 RMCDHF | `src/apps/rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | 基于 GRASP 的串行和 MPI 求解器，提供普通与内存 MCP 路径。见[求解流程及来源](docs/implemented/design-0019-rmcdhf-flow-and-state.md)。 |
 
 已否决的 strict/diag 独立求解器及专用测试、运行入口均已[移除](docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md)。
 
@@ -171,7 +171,9 @@ CMake 会自动查找 BLAS/LAPACK，并要求 GNU Fortran 15 或更新版本。
 | `rmcdhf`、`rmcdhf_mem` | 同一描述符文件对、初猜轨道和 MCP | 优化轨道 `name.wfn`、OL/EOL 混合系数 `name.mix`、`name.rmcdhf.summary`、`name.rmcdhf.log` |
 | `rci` | 同一描述符文件对和 `name.wfn` | CI 混合系数 `name.cimix`、`name.csum`、`name.clog`、`name.rci.restart` |
 
-MPI 版本由 rank 0 询问状态名。`rangular_mpi` 在每个 rank 的临时目录写入 `name.mpi.mcpidx`，随后用相同基组和 rank 布局运行 `rmcdhf_mpi` 或 `rmcdhf_mem_mpi`。旧文件的复用和恢复方式见[命名迁移](docs/implemented/design-0034-cache-restart-mcp-names.md)。描述符和轨道位于永久 I/O 目录，角系数程序和 SCF 的日志位于启动目录。`isodata` 和适用的 `npol.inp` 按目录共用。`rci` 沿用先询问默认设置、再询问状态名的顺序。供 `gj` 等性质程序使用的状态名应控制在 23 个字符以内。[MPI MCP 格式和验收](docs/implemented/design-0020-rmcdhf-mcp-io.md)
+MPI 版本由 rank 0 询问状态名。`rangular_mpi` 在每个 rank 的临时目录写入 `name.mpi.mcpidx`，随后用相同基组和 rank 布局运行 `rmcdhf_mpi` 或 `rmcdhf_mem_mpi`。旧文件的复用和恢复方式见[命名迁移](docs/implemented/design-0034-cache-restart-mcp-names.md)。描述符和轨道位于永久 I/O 目录，角系数程序和 SCF 的日志位于启动目录。`isodata` 提供计算目录共用的核与同位素数据。`rci` 沿用先询问默认设置、再询问状态名的顺序。供 `gj` 等性质程序使用的状态名应控制在 23 个字符以内。[MPI MCP 格式和验收](docs/implemented/design-0020-rmcdhf-mcp-io.md)
+
+Suite 的 RMCDHF 通过 `isodata` 初始化核库仑势。旧的 `npol.inp` 对计算已无影响。
 
 RMCDHF 和 RCI 的串行与 MPI 版本都要求为 CSF 基组中的每个 `J/Parity` 块选择至少一个有效 ASF 根。每块输入一行根编号。空行、`0` 或其他无效选择会终止运行并指出对应的块。RMCDHF 将选中的各根纳入共同的轨道优化。选择多个根时，还需输入 EOL 权重选项。旧的仅对角 (E)AL MCP 数据需要用 Suite 对应的 `rangular` 程序重新生成角系数。
 
@@ -306,18 +308,6 @@ ctest --test-dir build-all --output-on-failure
 
 本仓库采用 [MIT License](LICENSE)。
 
-## GRASPG / CSFG 扩展
+## GRASP2018 文献引用
 
-2026-11-16 已移除 CSFG 专用源码、目标和测试，普通程序使用的共享库保留。
-`GRASP_BUILD_CSFG=ON` 会报错；`--no-csfg` 和 `GRASP_BUILD_CSFG=OFF` 仅作为旧构建命令的兼容写法保留。
-来源见 [GRASPG 源码清单](docs/reference/graspg/source-manifest.json)。
-
-### 来源与文献引用
-
-CSFG 实现源自上游 [compas/graspg](https://github.com/compas/graspg)。本仓库曾对其进行迁移、
-集成和适配；GRASPG 实现与 CSFG 方法归功于原作者。使用这些程序开展研究时，
-请引用 GRASPG 软件论文、CSFG 方法论文以及其基础 GRASP2018 程序包：
-
-1. Ran Si, Yanting Li, Kai Wang, Chongyang Chen, Gediminas Gaigalas, Michel Godefroid, and Per Jönsson. “Graspg – An extension to Grasp2018 based on configuration state function generators.” *Computer Physics Communications* **312**, 109604 (2025). [DOI: 10.1016/j.cpc.2025.109604](https://doi.org/10.1016/j.cpc.2025.109604).
-2. Yanting Li et al. “Reducing the computational load – atomic multiconfiguration calculations based on configuration state function generators.” *Computer Physics Communications* **283**, 108562 (2023). [DOI: 10.1016/j.cpc.2022.108562](https://doi.org/10.1016/j.cpc.2022.108562).
-3. C. Froese Fischer, G. Gaigalas, P. Jönsson, and J. Bieroń. “GRASP2018—A Fortran 95 version of the General Relativistic Atomic Structure Package.” *Computer Physics Communications* **237**, 184–187 (2019). [DOI: 10.1016/j.cpc.2018.10.032](https://doi.org/10.1016/j.cpc.2018.10.032).
+C. Froese Fischer, G. Gaigalas, P. Jönsson, and J. Bieroń. “GRASP2018—A Fortran 95 version of the General Relativistic Atomic Structure Package.” *Computer Physics Communications* **237**, 184–187 (2019). [DOI: 10.1016/j.cpc.2018.10.032](https://doi.org/10.1016/j.cpc.2018.10.032).

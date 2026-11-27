@@ -23,7 +23,6 @@
 | `setisompi.f90` | `setisompi_i` | [`mpi_isotope_input`](../../src/lib/mpi/mpi_isotope_input.f90) | 加载并广播核质量、核模型与核矩参数。 |
 | `setrwfmpi.f90` | `setrwfmpi_i` | [`mpi_radial_wavefunction_file`](../../src/lib/mpi/mpi_radial_wavefunction_file.f90) | 打开径向波函数文件并校验文件头。 |
 | `lodrwfmpi.f90` | `lodrwfmpi_i` | [`mpi_radial_wavefunction_reader`](../../src/lib/mpi/mpi_radial_wavefunction_reader.f90) | 读入、广播和插值径向轨道。 |
-| `npol_init_mpi.f90` | `npol_mpi` | [`mpi_nuclear_polarization`](../../src/lib/mpi/mpi_nuclear_polarization.f90) | 同步核极化配置、势和初始化状态。 |
 | `iniestmpi.f90` | `iniestmpi_i` | [`mpi_initial_eigenvectors`](../../src/lib/mpi/mpi_initial_eigenvectors.f90) | 用稀疏子矩阵构造 Davidson 初始向量。 |
 | `spicmvmpi.f90` | `spicmvmpi_i` | [`mpi_sparse_matrix_product`](../../src/lib/mpi/mpi_sparse_matrix_product.f90) | 计算各 rank 的稀疏哈密顿量乘积并归约。 |
 

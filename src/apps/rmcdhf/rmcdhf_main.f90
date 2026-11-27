@@ -96,7 +96,7 @@ program rmcdhf_main
 
     ! Read the SCF controls and prepare the radial orbitals.
 
-    call read_scf_options (extended_optimal_level, block_labels, "isodata", files%initial_orbitals, "npol.inp")
+    call read_scf_options (extended_optimal_level, block_labels, "isodata", files%initial_orbitals)
 
     if (mpi_rank == 0) then
         call write_input_summary

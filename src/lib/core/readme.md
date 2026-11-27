@@ -221,7 +221,7 @@ $$
 
 变分模式在 $i\ge2$ 取 $r'_i r_i^{1-\gamma}(-Q_i^{\rm old},P_i^{\rm old})/c_0$，原点源为零。用 $r_6^\gamma\max_j(|\Delta p_j|,|\Delta q_j|)$ 与 `accy` 比较，最多迭代 36 次。超过上限时以初始原点系数填充第 2 到第 6 点，随后乘回 $r^\gamma$。输出的第 1 个物理采样点置零，小分量原点系数单独返回。
 
-## 点核、Fermi 核及核极化
+## 点核与 Fermi 核
 
 ### 电子所见核势
 
@@ -249,18 +249,6 @@ $$
 \end{aligned}
 $$
 
-### 核极化修正
-
-[`nuclear_polarization_potential.f90`](nuclear_polarization_potential.f90) 按开启的通道求和。
-
-$$
-V_{\rm E1}(r)=-\frac{K_1}{r^4+b_1^4},\qquad
-V_{\rm E2}(r)=-\frac{K_2}{r^6+b_2^6},\qquad
-\mathcal Z_{\rm total}(r)=\mathcal Z_{\rm Coul}(r)-r\,V_{\rm NP}(r).
-$$
-
-其中 $V_{\rm NP}$ 是开启通道之和。为避免直接计算大幂，令 $s=\max(r,b)$，把 $r^p+b^p$ 写为 $s^p[(r/s)^p+(b/s)^p]$。`channel` 用二进制尾数和指数分别表示 $K/s^p$，并检查结果是否可表示。原点合成项为零。
-
 ## 单电子与双电子径向积分
 
 ### 单电子 Dirac 径向积分
@@ -278,7 +266,7 @@ I_{ab}={}&
 \end{aligned}
 $$
 
-代码第一项用 `dpbdt` 给出的 $h\,dP/dt,h\,dQ/dt$ 写入求积数组并除以 $h$，后三项按 $r'_i$ 或 $r'_i/r_i$ 加权。势能项读取已装入的 $\mathcal Z$，可包含启用的核极化修正。
+代码第一项用 `dpbdt` 给出的 $h\,dP/dt,h\,dQ/dt$ 写入求积数组并除以 $h$，后三项按 $r'_i$ 或 $r'_i/r_i$ 加权。势能项读取已装入的核库仑势 $\mathcal Z$。
 
 ### Hartree 积分和 Slater 积分
 

@@ -4,8 +4,7 @@
 在组装哈密顿量和构造轨道方程时，程序按需从磁盘读取 MCP 数据。
 
 输入包括 `isodata`、`name_desc.parquet`、`name_header.toml`、`rwfnestimate` 生成的
-`name.initial.wfn`，以及 `rangular` 生成的 `name.mcp.NN` 通道。可通过 `npol.inp`
-为径向势加入核极化修正。
+`name.initial.wfn`，以及 `rangular` 生成的 `name.mcp.NN` 通道。
 
 程序写出 `name.wfn`、`name.rmcdhf.summary` 和 `name.rmcdhf.log`。OL/EOL 计算还写出
 `name.mix`。优化后的轨道可用于 RCI 和原子性质计算。
@@ -35,7 +34,7 @@
 | [`read_al_level_weights.f90`](read_al_level_weights.f90) | 按等权、$2J+1$ 或用户给出的正权重填入向量，对总和归一化供平均能量与占据计算。 |
 | [`read_eol_average_options.f90`](read_eol_average_options.f90) | 逐块读取需优化的能级并登记块偏移。设置固定和关联轨道、更新次序、能级权重及混合／轨道阻尼。 |
 | [`read_eol_level_weights.f90`](read_eol_level_weights.f90) | 等权与统计权用标记保留到根求出后确定。自定义输入要求正权重，立即除以权重总和。 |
-| [`read_scf_options.f90`](read_scf_options.f90) | 读取 `isodata`、网格及收敛设置，初始化核 Coulomb 势并应用可选核极化。载入初猜径向轨道，随后设置变分轨道、能级、权重、阻尼和迭代上限。 |
+| [`read_scf_options.f90`](read_scf_options.f90) | 读取 `isodata`、网格及收敛设置，初始化核库仑势。载入初猜径向轨道，随后设置变分轨道、能级、权重、阻尼和迭代上限。 |
 | [`rmcdhf_main.f90`](rmcdhf_main.f90) | 选择状态及默认设置，先打开磁盘 MCP 通道，再核对描述符身份和块数据。设置核势、初始轨道和 SCF 选项，打开 OL/EOL 的混合输出后运行串行 SCF。 |
 
 ### 矩阵与角向系数

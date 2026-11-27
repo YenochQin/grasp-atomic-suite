@@ -72,8 +72,8 @@ finite values, eigenvalues, explicit residuals and normalization at 1e-12.
 and empty partitions and checks its MCP records. Only this diagnostic test
 compilation poisons local integers (`-finit-integer=-999999`) to catch the former
 uninitialized empty-rank index deterministically. The BLAS contract also checks
-SLAMCH/DLAMCH return types. NP path cases live in `test/npol`, including the
-legacy static-storage configuration that originally returned an empty path.
+SLAMCH/DLAMCH return types. The RMCDHF source checks verify reviewed hashes and
+reject changes to the source or its provenance records.
 
 The rejected strict/diagnostic solvers and their exclusive tests have been removed;
 see [retirement scope](../../docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md).
@@ -118,10 +118,11 @@ Use `f2018-check`/Debug for standard/interface/runtime diagnostics and
 `f2018-audit`/Release for optimized standard/interface/warning diagnostics.
 For Audit, omit `--debug`, use `--profile f2018-audit`, and configure a separate build directory.
 All use automatic local storage; the legacy profile, implicit-SAVE switches and
-the former `check.py --audit` compatibility mode are retired. CSFG targets and
-their dedicated tests have been removed. See [current build policy](../../docs/implemented/design-0002-fortran-build-profiles.md).
-Before those solvers were retired, the strict normalization stage passed both all-target profiles with 74/74
-tests; its two restart cases converge in 11 cycles with unchanged inputs,
+the former `check.py --audit` compatibility mode are retired. See
+[current build policy](../../docs/implemented/design-0002-fortran-build-profiles.md).
+Before the strict and diagnostic solvers were retired, the strict normalization
+stage passed both all-target profiles with 74/74 tests. Its two restart cases
+converge in 11 cycles with unchanged inputs,
 assertions and thresholds. That record, the earlier Linux 71/73 and macOS 64/68
 results remain historical evidence. The matrix/warning stage added one Python
 infrastructure test; the repair batch adds 18 regression entries, giving 93 tests
@@ -141,10 +142,10 @@ The required list covers current programs/tests, not the still-missing F00–F10
 suite. Labels are `f2018_unit`, `f2018_serial`, `f2018_mpi`,
 `f2018_properties`, and `f2018_io`; no real-case test is registered yet.
 
-`configure.sh` defaults to all ordinary serial, MPI and OpenMP applications,
-with CSFG disabled. It updates compatible existing build caches; repeat opt-out
-options when reconfiguring a reduced build. It accepts `--no-serial`, `--no-mpi`, `--no-csfg`, `--no-openmp`,
-`--prefix PATH`, and quoted `-D...` arguments. Targets write modules separately;
+`configure.sh` defaults to all ordinary serial, MPI and OpenMP applications.
+It updates compatible existing build caches. Repeat any `--no-serial`, `--no-mpi`,
+or `--no-openmp` options when reconfiguring a reduced build. The script accepts
+`--prefix PATH` and quoted `-D...` arguments. Targets write modules separately;
 `gj` no longer copies into source `bin/` during a build. Default installation
 is `<build>/install`, or the explicit prefix. Validation does not install.
 
@@ -156,8 +157,8 @@ is `<build>/install`, or the explicit prefix. Validation does not install.
 implementation and its matrix axis were removed on 2026-11-16. Warning budgets
 retain their historical IDs with angular OpenMP disabled (`-a0` where needed).
 The active GNU 16 baseline covers all 16 Check/Audit configurations.
-`GRASP_BUILD_CSFG=OFF` in every active matrix case. Serial/MPI both disabled still
-builds the shared libraries, jj2lsj and their applicable tests. A partial
+With serial and MPI both disabled, CMake still builds the shared libraries,
+jj2lsj and their applicable tests. A partial
 `--case` selection never reports full-matrix acceptance.
 
 ```fish
@@ -169,8 +170,8 @@ set matrix_dir ../temp/tests/suite-gf16-matrix
   --parallel-configs 2 --jobs 3
 ```
 
-This configures, builds and tests every case, checks enabled/disabled target
-groups, checks actual OpenMP flags and CSFG exclusion, and enforces the warning baseline for Check/Audit. Each
+This configures, builds and tests every case, checks the target groups and
+OpenMP flags, and enforces the warning baseline for Check/Audit. Each
 case retains its CTest XML and acceptance summary; `matrix-validate.json`
 reports the full result. MPI execution requires local process communication.
 The run is a correctness regression, not a performance benchmark.

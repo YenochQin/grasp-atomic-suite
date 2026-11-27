@@ -33,6 +33,7 @@ BASIS_OWNERSHIP_SNAPSHOT = Path("docs/reference/rmcdhf_basis_ownership_snapshot.
 HOST_MEMORY_SNAPSHOT = Path("docs/reference/rmcdhf_optional_host_memory_snapshot.json")
 STATE_INPUT_SNAPSHOT = Path("docs/reference/rmcdhf_required_state_input_snapshot.json")
 NAMED_MCP_SNAPSHOT = Path("docs/reference/rmcdhf_named_mcp_snapshot.json")
+COULOMB_INITIALIZATION_SNAPSHOT = Path("docs/reference/rmcdhf_coulomb_initialization_snapshot.json")
 
 
 def suite_source_path(root: Path, upstream_path: str, renamed_paths: dict[str, str]) -> Path:
@@ -50,44 +51,6 @@ def reverse_reviewed_edits(text: str, path: Path, edits: list[dict[str, str | in
     return text
 
 
-def original_bytes(path: Path, edits: list[dict[str, str | int]] | None = None) -> bytes:
-    text = reverse_reviewed_edits(path.read_text(), path, edits or [])
-    if path.name in ("getscd.f90", "getscdmpi.f90", "getscd_I.f90", "getscdmpi_I.f90"):
-        text = text.replace("ISOFILE, RWFFILE, NPFILE)", "ISOFILE, RWFFILE)")
-        text = text.replace("      CHARACTER (LEN = *), INTENT(IN) :: NPFILE\n", "")
-        text = text.replace("      CHARACTER(*), INTENT(IN) :: NPFILE\n", "")
-        text = text.replace("h, hp, n, rnt, r", "h, hp, n, rnt")
-        imports = "      USE npot_C, ONLY: ZZ\n      USE npol_C, ONLY: NPOL_MESSAGE_LEN\n"
-        for module in ("      USE npol_initialization, ONLY: NPOL_INIT\n",
-                       "      USE npol_mpi, ONLY: NPOL_INIT_MPI, NPOL_ABORT_MPI\n"):
-            text = text.replace(imports + module, "      !USE npot_C\n")
-        text = text.replace("      INTEGER :: NP_STATUS\n      CHARACTER(NPOL_MESSAGE_LEN) :: NP_MESSAGE\n", "")
-        text = text.replace(
-            "      CALL NPOL_INIT(NPFILE, Z, N, R, ZZ, NP_STATUS, NP_MESSAGE)\n"
-            "      IF (NP_STATUS /= 0) THEN\n         WRITE(ISTDE,'(A)') TRIM(NP_MESSAGE)\n"
-            "         ERROR STOP 1\n      END IF\n", "")
-        text = text.replace(
-            "      CALL NPOL_INIT_MPI(NPFILE, Z, N, R, ZZ, MPI_COMM_WORLD, NP_STATUS, NP_MESSAGE)\n"
-            "      IF (NP_STATUS /= 0) CALL NPOL_ABORT_MPI(MPI_COMM_WORLD, NP_MESSAGE)\n", "")
-    elif path.name == "rscfvu.f90":
-        text = text.replace("'isodata', 'rwfn.inp', 'npol.inp')", "'isodata', 'rwfn.inp')")
-    elif path.name == "rscfmpivu.f90":
-        text = text.replace("      USE npol_mpi, ONLY: NPOL_ABORT_MPI\n", "")
-        text = text.replace("      CHARACTER(:), ALLOCATABLE :: npfile\n", "")
-        text = text.replace(
-            "      npfile = ''\n      IF (myid == 0) THEN\n"
-            "         IF (lenperm == LEN(permdir)) CALL NPOL_ABORT_MPI(MPI_COMM_WORLD, &\n"
-            "              'npol: permanent input directory reaches the legacy path limit')\n"
-            "         npfile = TRIM(permdir) // '/npol.inp'\n      END IF\n"
-            "      CALL GETSCDmpi (EOL, idblk, file1, file2, npfile)\n",
-            "      CALL GETSCDmpi (EOL, idblk, file1, file2 )\n")
-    elif path.name == "dacon.f90":
-        text = text.replace("      USE dpbdt_I\n", "")
-    else:
-        return text.encode() if edits else path.read_bytes()
-    return text.encode()
-
-
 def main(root: Path) -> None:
     upstream_path = root / "docs/reference/rmcdhf_upstream_snapshot.json"
     compatibility_path = root / "docs/reference/rmcdhf_f2018_compatibility.json"
@@ -95,9 +58,7 @@ def main(root: Path) -> None:
     expected = manifest["files"]
     compatibility = json.loads(compatibility_path.read_text())["files"]
     assert set(compatibility).issubset(expected), "F2018 edits must refer to imported files"
-    # Each before-suite identity was checked through original_bytes before the
-    # case-only conversion. Pin the exact resulting bytes, not a relaxed hash
-    # that would also ignore changes to string literals or comments.
+    # The lowercase snapshot pins the exact result for every imported Fortran file.
     lowercase_path = root / "docs/reference/rmcdhf_lowercase_snapshot.json"
     lowercase = json.loads(lowercase_path.read_text())
     assert lowercase["schema_version"] == 1, "Unknown lowercase snapshot schema"
@@ -504,7 +465,8 @@ def main(root: Path) -> None:
     for snapshot in (DIAGNOSTIC_LABELS_SNAPSHOT, V3_J_LABELS_SNAPSHOT, APP_COMMENTS_SNAPSHOT, MPI_RUN_LOGGING_SNAPSHOT,
                      MPI_MCP_IO_SNAPSHOT, RUN_TIMER_SNAPSHOT, REQUIRED_ASF_ROOTS_SNAPSHOT,
                      RADIAL_STREAM_SNAPSHOT, MIXING_STREAM_SNAPSHOT, MPI_F08_SNAPSHOT, SPARSE_STORAGE_SNAPSHOT,
-                     BASIS_OWNERSHIP_SNAPSHOT, HOST_MEMORY_SNAPSHOT, STATE_INPUT_SNAPSHOT, NAMED_MCP_SNAPSHOT):
+                     BASIS_OWNERSHIP_SNAPSHOT, HOST_MEMORY_SNAPSHOT, STATE_INPUT_SNAPSHOT, NAMED_MCP_SNAPSHOT,
+                     COULOMB_INITIALIZATION_SNAPSHOT):
         app_update = json.loads((root / snapshot).read_text())
         assert app_update["schema_version"] == 1, f"Unknown application snapshot schema: {snapshot}"
         assert app_update["previous_manifest_sha256"] == hashlib.sha256(
@@ -570,7 +532,8 @@ def main(root: Path) -> None:
                 f"Unreviewed deviation from reviewed GRASP snapshot: {relative}"
             continue
         edits = compatibility.get(relative, {}).get("edits", [])
-        digest = hashlib.sha256(original_bytes(path, edits)).hexdigest()
+        source = reverse_reviewed_edits(path.read_text(), path, edits).encode() if edits else path.read_bytes()
+        digest = hashlib.sha256(source).hexdigest()
         assert digest == record["sha256"], f"Unreviewed deviation from GRASP source: {relative}"
     print(f"PASS: {len(expected)} imported files match reviewed snapshots "
           f"({len(expected.keys() & reviewed_files.keys())} exact suite file hashes)")

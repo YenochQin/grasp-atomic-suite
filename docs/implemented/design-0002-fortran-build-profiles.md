@@ -2,12 +2,6 @@
 
 当前生产和诊断构建使用独立配置。旧 GNU 15 迁移时期的建议见[历史方案](../archive/plan-0002-f2018-migration-gnu15.md)。
 
-## 范围
-
-2026-11-16 已移除 CSFG 专用源码、构建入口和测试。`GRASP_BUILD_CSFG=ON` 会明确报错；
-OFF 和 `--no-csfg` 仅保留旧命令兼容性。普通构建检查继续拒绝 CSFG 源文件混入。
-旧验证元数据中的 `csfg=false` 维度保留用于历史告警预算标识，不代表存在可启用的扩展。
-
 ## 三种配置
 
 | 配置 | 构建类型 | 用途与主要选项 |
@@ -34,7 +28,7 @@ Suite 的 Rust reader，运行时直接读取 Parquet 和 TOML。[构建依赖](
 
 ## 使用
 
-`./configure.sh` 默认配置全部保留的非 CSFG 程序：普通串行目标（包括
+`./configure.sh` 默认配置普通串行目标（包括
 `rwfnestimate`）、MPI 目标及 jj2lsj OpenMP 目标。随后执行
 `cmake --build build --parallel 4`，可执行文件统一输出到 `build/bin`。
 同一源码与编译器的已有 `build` 会更新配置，因此旧缓存中的串行关闭状态也会被纠正。
@@ -47,7 +41,7 @@ Suite 的 Rust reader，运行时直接读取 Parquet 和 TOML。[构建依赖](
 ```fish
 set -gx FC (command -v gfortran)
 $FC -dumpfullversion
-./configure.sh --serial --no-mpi --no-csfg \
+./configure.sh --serial --no-mpi \
     --profile f2018-release --build-dir build-rangular-production \
     -DGRASP_JJ2LSJ_OPENMP=OFF
 cmake --build build-rangular-production \
@@ -59,7 +53,7 @@ cmake --build build-rangular-production \
 `GRASP_CAPTURE_WARNINGS=ON` 不属于当前生产配置。优先用独立目录。
 
 普通验证矩阵独立覆盖 serial、MPI 和 jj2lsj OpenMP，每种 profile 有 8 种组合，
-三种 profile 共 24 种配置；CSFG 始终关闭。rangular OpenMP 已于 2026-11-16 移除。
+三种 profile 共 24 种配置。rangular OpenMP 已于 2026-11-16 移除。
 当前 [GNU Fortran 16 告警基线](../reference/f2018/evidence-0019-gnu16-warning-baseline.md)覆盖 16 个
 Check/Audit 组合。预算 ID 沿用关闭 angular OpenMP 的历史命名（部分带 `-a0`）。
 生产结果明确标记未采集警告，不能以生产构建

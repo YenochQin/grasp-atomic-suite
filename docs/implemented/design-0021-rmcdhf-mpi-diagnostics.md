@@ -12,11 +12,10 @@
 ## 1. suite 与原版的计算流程是否一致
 
 **普通 `rmcdhf_mpi` 保留原版主要计算流程，但不是逐字节相同的求解器。**
-对应上游目录为 `src/appl/rmcdhf90_mpi/`，不要与 memory、CSFG 或已退役的 orbopt 混比。
+对应上游目录为 `src/appl/rmcdhf90_mpi/`，核查范围限于这个原版 MPI 求解器。
 
-移除 NP 入口后的逐文件比较：116 个映射文件中 99 个完全相同、17 个有差异；116 个上游文件的
-hash 均与导入快照一致。运行 `test/npol/check_upstream.py`，四个普通程序合计
-492 个文件在逆向撤销登记的兼容修改与 NP 入口后通过快照检查。
+移除 NP 入口后的逐文件比较：116 个映射文件中 99 个完全相同、17 个有差异。116 个上游文件的
+哈希均与导入快照一致。四个程序的现行来源校验见 [RMCDHF 校验脚本](../../test/rmcdhf/check_upstream.py)。
 该检查保护来源，不是端到端数值或性能证明，也不覆盖全部共享库。
 
 EOL 主路径仍为：
@@ -43,7 +42,7 @@ SETCOF 仍扫描 MCP 文件；Davidson 的 SPICMVmpi 仍按 rank 分配列并归
 
 | 差异 | 对对照的含义 |
 | --- | --- |
-| GETSCDmpi 核极化初始化已移除 | 2026-11-15 恢复 NUCPOT 后直接 SETRWFMPI；普通 MPI 不再读取 npol.inp，不执行 NP 检查、广播或数组复制。其他求解器的可选 NP 功能保留。 |
+| GETSCDmpi 核库仑势初始化 | 2026-11-15 恢复原版顺序，在 `NUCPOT` 后直接调用 `SETRWFMPI`。 |
 | MATRIXmpi 的 DDOT 改为正确双精度接口 | 原版错误声明为 INTEGER；影响触发 CI 阻尼正交化的分支，不能把修复视为纯排版。 |
 | IENDC 改为 `0:NCF` 分配 | 配合实际零下标访问修复越界；原版未定义行为不应要求复现。 |
 | GETALDWT 用 NCF 取代未初始化的 NCMIN | 修复 EAL 用户自定权重输入分支。 |
@@ -138,12 +137,12 @@ PSI 的 total 单位为微秒；磁盘字段和读写等待时间按内核定义
 回归使用临时模拟 `/proc`，覆盖 PID 重用、重新挂靠、读取中退出/替换、权限不足、
 rank 冲突、环境白名单、D/R 栈限频、cgroup 祖先限额、线程/fd/输出限额及退出路径。
 CTest 注册名为 `rmcdhf_mpi_sampler`。采样器首版通过 15 项 Python 回归。
-随后移除普通 MPI 的 NP 入口，在独立 GNU 15 严格检查构建中完成编译与链接；选定 19 项
-CTest 通过，包括本采样器。详见[NP 范围变更验证](design-0022-rmcdhf-nuclear-polarization.md)。未运行科学计算。
+随后恢复普通 MPI 的原版核势入口。在独立 GNU 15 严格检查构建中，选定的 19 项
+CTest 当时全部通过，其中包括本采样器。未运行科学计算。
 
 ```fish
 ../graspkit-tools/.venv/bin/python test/test_sample_rmcdhf_mpi.py
-../graspkit-tools/.venv/bin/python test/npol/check_upstream.py .
+../graspkit-tools/.venv/bin/python test/rmcdhf/check_upstream.py .
 ```
 
 字段定义：[proc_pid_stat](https://man7.org/linux/man-pages/man5/proc_pid_stat.5.html)、

@@ -5,7 +5,7 @@
 继续保留这两个变体；本次纠正该遗留状态。
 
 现行普通求解器为 `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi`。
-CSFG 仍处于原有的独立可选边界。F2018 的 Check/Audit 编译诊断配置继续保留；
+F2018 的 Check/Audit 编译诊断配置继续保留；
 它们与本次删除的 SCF 严格停止/P0 追踪程序不是同一功能。
 
 清理范围包括：

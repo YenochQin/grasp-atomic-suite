@@ -122,7 +122,7 @@
 | `rangular` | `mcp.30`、`mcp.31`、`mcp.(32+k)`、`S.tmp.NN`、`S.rangular.log`、可选 `S.rangular.dbg`、非默认路径的 `fort.24`、可选计时和复用统计 CSV | `mcp.30` 保存块信息和稀疏列结构，`mcp.31` 保存一电子 T 系数，`mcp.(32+k)` 保存秩 `k` 的二电子 V 系数。稀疏结构、积分组及其系数使用顺序无格式记录，排序前记录在临时通道。两个串行 RMCDHF 程序读取这套文件。 [通道头](../../src/apps/rangular/connect_mcp_files.f90) · [系数记录](../../src/apps/rangular/sort_mcp_coefficients.f90) |
 | `rangular_mpi` | 各 rank 的 `mcp.mcpidx`、发布暂存文件 `mcp.mcpidx.part-<批次>`、`S.tmp<RRR>.NN`、`S.rangular.log`、可选 `S.rangular.dbg`、`fort.24` 和 `<前缀>.rank<RRR>.csv` | `mcp.mcpidx` 已有 `GMCPIDX1` 头、基组摘要、rank 布局、64 位块及组目录、稀疏索引和分组系数，尾标为 `MCPDONE1`。两个 MPI RMCDHF 程序按相同基组、批次和布局读取分片。 [MPI MCP 格式](../implemented/design-0020-rmcdhf-mcp-io.md) · [分片实现](../../src/lib/mpi/mpi_indexed_mcp.f90) |
 | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | `S.wfn`、OL/EOL 的 `S.mix`、`S.rmcdhf.log`、`S.rmcdhf.summary`、可选 `S.rmcdhf.dbg` | 轨道和系数分别为 `RAD--WFN` 和 `CSF--MIX`。应答、计算设置、结果摘要及调试均为文本。 [通用命名](../../src/lib/core/calculation_state_files.f90) · [SCF 链](../implemented/design-0019-rmcdhf-flow-and-state.md) |
-| RMCDHF 附加输出 | `npol.summary`、`mcp.io.csv`、`mcp.bits`、`fort.96`～`fort.98` | `npol.summary` 是核极化设置与势构造摘要，由启用核极化的 `rmcdhf`、`rmcdhf_mem` 或 `rmcdhf_mem_mpi` 写出。普通 `rmcdhf_mpi` 提供各 rank 的 MCP I/O CSV 和浮点位模式文本对照。最后三项是串行稀疏矩阵调试文本。 [核极化适用范围](../implemented/design-0022-rmcdhf-nuclear-polarization.md) · [MCP 诊断](../../src/apps/rmcdhf_mpi/rmcdhf_mcp_io.f90) · [矩阵调试](../../src/apps/rmcdhf/write_hamiltonian_records.f90) |
+| RMCDHF 附加输出 | `mcp.io.csv`、`mcp.bits`、`fort.96`～`fort.98` | 普通 `rmcdhf_mpi` 提供各 rank 的 MCP I/O CSV 和浮点位模式文本对照。最后三项是串行稀疏矩阵调试文本。 [MCP 诊断](../../src/apps/rmcdhf_mpi/rmcdhf_mcp_io.f90) · [矩阵调试](../../src/apps/rmcdhf/write_hamiltonian_records.f90) |
 | `rci`、`rci_mpi` | `S.cimix`、`S.csum`、`S.clog`、`rci.res` 或各 rank 的 `rci<RRR>.res` | `.cimix` 为 `CSF--MIX`，`.csum`、`.clog` 为文本摘要和交互日志。`R92RES` 重启文件使用顺序无格式记录，保存基组计数、核模型、Hamiltonian 选项、网格及轨道，以及逐块的稀疏矩阵和闭壳层 Breit 位移。 [串行重启入口](../../src/apps/rci/connect_ci_restart_file.f90) · [MPI 重启入口](../../src/apps/rci_mpi/connect_ci_restart_file.f90) · [重启读取器](../../src/lib/core/rci_restart_records.f90) |
 
 ## 迁移前的跃迁、能级和属性文件
@@ -141,7 +141,7 @@
 
 `fort.24`、`fort.734` 和 `fort.99` 是摘要、计算日志和调试单元尚未打开时的共享回退名。
 源码另保留 `rangular` 旧重启分支中的 `fort.20`，当前串行和 MPI 主程序均关闭该分支。
-`S_desc.parquet`、`S_header.toml`、`isodata`、`npol.inp` 和 `disks`
+`S_desc.parquet`、`S_header.toml`、`isodata` 和 `disks`
 在这里作为计算输入统计。 [摘要与日志回退](../../src/lib/grasp_shared/calculation_file_units.f90) ·
 [调试回退](../../src/lib/grasp_shared/debug_output_settings.f90) ·
 [角积分入口](../../src/apps/rangular/rangular_main.f90)

@@ -1,7 +1,7 @@
 # GRASP 辅助脚本
 
 2026-11-16：网格工具同时识别原版及语义变量名，命令行/TOML 参数保持不变。
-`atomic-suite` 现覆盖十五个普通网格入口和两个 RCI 续算入口，CSFG 专用入口已移除。
+`atomic-suite` 覆盖十五个普通网格入口和两个 RCI 续算入口。
 集中配置及 `grasp_parameters` 转导的正式名称见[共同参数说明](../docs/implemented/design-0003-shared-grid-parameters.md)。
 
 大规模 RMCDHF MPI 停顿采样使用 [sample_rmcdhf_mpi.py](sample_rmcdhf_mpi.py)，

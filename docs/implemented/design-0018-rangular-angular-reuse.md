@@ -2,7 +2,7 @@
 
 日期：2026-11-14。基于 `3f82922d2caa4de061c7f62c1b604770d0092847` 的工作树实现。
 范围：普通串行 `rangular` 的 V3 描述符计算链，默认关闭。
-MPI 不启用此缓存；rangular OpenMP 与 CSFG 已移除。实现入口为
+MPI 不启用此缓存。rangular OpenMP 已移除。实现入口为
 [rangular_reuse.f90](../../src/apps/rangular/rangular_reuse.f90)，
 接入点为 [compute_mcp_angular_coefficients.f90](../../src/apps/rangular/compute_mcp_angular_coefficients.f90)。
 
@@ -39,7 +39,7 @@ MPI 不启用此缓存；rangular OpenMP 与 CSFG 已移除。实现入口为
 
 现有 MCP 截断、F0 排除、轨道标签规范化、稀疏结构、排序与写出流程保持原样。
 因此输出仍是普通展开的 `mcp.*`，大小不会因为缓存而变小；下游求解器无需修改。
-所有原有 CSF 对仍被访问，复杂度没有变成 CSFG 的生成元对遍历。
+遍历仍访问所有原有 CSF 对。
 
 ## 内存与统计
 

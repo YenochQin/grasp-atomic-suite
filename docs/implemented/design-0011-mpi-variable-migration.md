@@ -14,7 +14,7 @@ Fortran 标识符不区分大小写，表中采用小写。现行文件与模块
 - `*_index` 是数组索引，`*_count` 是元素数，`*_length` 是有效字符数，`*_capacity` 是缓冲区容量。
   `subshell_occupations`、`subshell_quantum_codes`、`coupling_quantum_codes` 对应三类 CSF 数据。
   `csf_batch_limit` 是每次广播的 CSF 列数上限。不同入口的 `basis_counts` 槽位顺序见对应表。
-- 径向波函数和核极化变量沿用 [libcore 命名](design-0009-core-variable-migration.md)，Davidson 的初始向量和
+- 径向波函数变量沿用 [libcore 命名](design-0009-core-variable-migration.md)，Davidson 的初始向量和
   工作区沿用 [Davidson 求解库命名](design-0014-davidson-eigensolver-migration.md)。`—` 表示移除无引用的局部声明。
 - Fortran 与 MPI 标准符号沿用公开名称，例如 `real64`、`int8`、`int64`、`error_unit`、
   `MPI_COMM_WORLD`、`MPI_INTEGER1`、`MPI_STATUS_SIZE`。`mpi_state` 继续重导出 MPI 接口。
@@ -391,59 +391,6 @@ Fortran 标识符不区分大小写，表中采用小写。现行文件与模块
 | `i` | — | 仅声明，无引用。 |
 | `iy` | `summed_values` | 接收全局整数求和结果的缓冲。 |
 
-## [mpi_nuclear_polarization.f90](../../src/lib/mpi/mpi_nuclear_polarization.f90)
-
-### `npol_init_mpi`
-
-| 原名 | 迁移后 | 用途 |
-| --- | --- | --- |
-| `path` | `config_path` | 核极化配置文件路径。 |
-| `z` | `nuclear_charge` | 用于核对配置的核电荷数。 |
-| `n` | `grid_point_count` | 当前启用的径向网格点数。 |
-| `r` | `radial_grid` | 径向网格坐标。 |
-| `zz` | `negative_radius_times_potential` | -rV 数组，初始化成功后包含核极化修正。 |
-| `comm` | `communicator` | 参加核极化初始化的 MPI 通信域。 |
-| `status` | `status` | 在各 rank 同步后的初始化状态。 |
-| `message` | `message` | 返回给调用者的错误信息。 |
-| `cfg` | `config` | 从 rank 0 读入并分发的核极化配置。 |
-| `a` | `dipole_potential` | E1 电偶极极化势。 |
-| `b` | `quadrupole_potential` | E2 电四极极化势。 |
-| `v` | `polarization_potential` | 总核极化势。 |
-| `candidate` | `composed_potential` | 核极化修正后的 -rV，检查通过后写回。 |
-| `rank` | `rank` | 当前进程在指定通信域中的编号。 |
-| `ierr` | `mpi_return_code` | MPI 查询及广播返回码。 |
-| `root_n` | `root_grid_point_count` | rank 0 提供的网格点数，用于检查各 rank 是否一致。 |
-| `detail` | `status_message` | 固定长度的通信错误信息缓冲。 |
-
-### `sync_status`
-
-| 原名 | 迁移后 | 用途 |
-| --- | --- | --- |
-| `comm` | `communicator` | 参加错误同步的 MPI 通信域。 |
-| `rank` | `rank` | 当前进程在指定通信域中的编号。 |
-| `status` | `status` | 进入时是局部状态，返回时是共同状态。 |
-| `message` | `message` | 出错时接收首个失败 rank 的错误信息。 |
-| `failed_rank` | `failed_rank` | 当前 rank 出错时取其编号，否则取哨兵值。 |
-| `first_rank` | `first_failed_rank` | 取最小值后得到的第一个失败 rank，或表示无错误的哨兵。 |
-| `ierr` | `mpi_return_code` | MPI 归约或广播返回码。 |
-
-### `broadcast_config`
-
-| 原名 | 迁移后 | 用途 |
-| --- | --- | --- |
-| `cfg` | `config` | 待广播的核极化配置。 |
-| `comm` | `communicator` | 广播所用的 MPI 通信域。 |
-| `ierr` | `mpi_return_code` | MPI 广播返回码。 |
-
-### `npol_abort_mpi`
-
-| 原名 | 迁移后 | 用途 |
-| --- | --- | --- |
-| `comm` | `communicator` | 要中止的 MPI 通信域。 |
-| `message` | `message` | rank 0 输出的错误信息。 |
-| `rank` | `rank` | 当前进程在指定通信域中的编号。 |
-| `ierr` | `mpi_return_code` | MPI 查询或中止调用的返回码。 |
-
 ## [mpi_rmcdhf_csf_input.f90](../../src/lib/mpi/mpi_rmcdhf_csf_input.f90)
 
 ### `load_rmcdhf_descriptors_mpi`
@@ -557,7 +504,6 @@ Fortran 标识符不区分大小写，表中采用小写。现行文件与模块
 | `load_rmcdhf_descriptors_mpi` | `syma_c` | `jpgg` | `packed_block_symmetries` | 打包的对称性块量子数编码。 |
 | `load_rmcdhf_descriptors_mpi` | `syma_c` | `nblk0` | `max_symmetry_blocks` | 对称性块数组容量。 |
 | `lodrwfmpi` | `debug_c` | `ldbpr` | `rmcdhf_debug_flags` | 第 3 项控制径向波函数加载诊断输出。 |
-| `npol_init_mpi` | `npol_c` | `zz_coul` | `coulomb_potential_baseline` | 加上极化修正前的库仑势，采用 -rV 表示。 |
 | `setisompi` | `def_c` | `emn` | `nuclear_mass_in_electron_masses` | 以电子质量为单位的核质量。 |
 | `setisompi` | `nsmdat_c` | `sqn` | `nuclear_spin` | 核自旋。 |
 | `setisompi` | `nsmdat_c` | `dmomnm` | `nuclear_magnetic_dipole_moment` | 核磁偶极矩。 |

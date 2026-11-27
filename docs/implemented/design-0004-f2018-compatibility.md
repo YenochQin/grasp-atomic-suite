@@ -18,7 +18,7 @@
   保留目录操作、访问检查及退出状态契约；这是已验证平台范围内的实现，不代表所有系统兼容。
 - [array_storage_size](../../src/lib/grasp_shared/array_storage_size.f90) 通过 assumed-rank、
   `STORAGE_SIZE` 和 `SIZE` 计算有效对象的 payload 字节数。
-- CSFG、orbopt、strict/diag 变体已退役；历史修复或验收记录不授权恢复这些目标。
+- orbopt 和 strict/diag 变体已退役；历史修复或验收记录不授权恢复这些目标。
   现行范围见[退役说明](adr-0002-retire-strict-and-diagnostic-rmcdhf.md)。
 
 ## 共享库过程与导入约束
@@ -100,7 +100,7 @@ Ni/Zn 初始轨道有浮点末位变化，不能据此宣称所有输出逐字�
 
 [原始 RMCDHF 清单](../reference/rmcdhf_upstream_snapshot.json)及
 [兼容性清单](../reference/rmcdhf_f2018_compatibility.json)和后续快照链继续由
-[check_upstream.py](../../test/npol/check_upstream.py)使用。
+[check_upstream.py](../../test/rmcdhf/check_upstream.py)使用。
 删除说明性报告不删除这些机器可读来源记录，也不放宽精确范围或哈希检查。
 190 份受此次 kind 清理影响的 RMCDHF 源文件登记在 [kind 清理快照](../reference/rmcdhf_kind_alias_cleanup_snapshot.json)。
 新增源码修改须按现行校验链登记，不能覆盖旧 manifest。

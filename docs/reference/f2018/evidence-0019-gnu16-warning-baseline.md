@@ -746,9 +746,6 @@
 | [src/lib/core/mcp_coefficient_output.f90](../../../src/lib/core/mcp_coefficient_output.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/core/nonnegative_atan2.f90](../../../src/lib/core/nonnegative_atan2.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/core/nuclear_coulomb_potential.f90](../../../src/lib/core/nuclear_coulomb_potential.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
-| [src/lib/core/nuclear_polarization_initialization.f90](../../../src/lib/core/nuclear_polarization_initialization.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
-| [src/lib/core/nuclear_polarization_input.f90](../../../src/lib/core/nuclear_polarization_input.f90) | 4 | 3 | 0 | 1 | 4 | 4 |
-| [src/lib/core/nuclear_polarization_potential.f90](../../../src/lib/core/nuclear_polarization_potential.f90) | 3 | 0 | 0 | 3 | 3 | 3 |
 | [src/lib/core/one_electron_csf_filter.f90](../../../src/lib/core/one_electron_csf_filter.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/core/one_electron_radial_integral.f90](../../../src/lib/core/one_electron_radial_integral.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/core/physical_constants.f90](../../../src/lib/core/physical_constants.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -862,7 +859,6 @@
 | [src/lib/grasp_shared/mcp_generation_options.f90](../../../src/lib/grasp_shared/mcp_generation_options.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/grasp_shared/nuclear_charge_distribution.f90](../../../src/lib/grasp_shared/nuclear_charge_distribution.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/grasp_shared/nuclear_model_parameters_state.f90](../../../src/lib/grasp_shared/nuclear_model_parameters_state.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
-| [src/lib/grasp_shared/nuclear_polarization_state.f90](../../../src/lib/grasp_shared/nuclear_polarization_state.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/grasp_shared/nuclear_potential_state.f90](../../../src/lib/grasp_shared/nuclear_potential_state.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/grasp_shared/numeric_constants.f90](../../../src/lib/grasp_shared/numeric_constants.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/grasp_shared/orbital_csf_basis.f90](../../../src/lib/grasp_shared/orbital_csf_basis.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -914,7 +910,6 @@
 | [src/lib/mpi/mpi_isotope_input.f90](../../../src/lib/mpi/mpi_isotope_input.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/mpi/mpi_make_directory.f90](../../../src/lib/mpi/mpi_make_directory.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/mpi/mpi_mcp_calculation_input.f90](../../../src/lib/mpi/mpi_mcp_calculation_input.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
-| [src/lib/mpi/mpi_nuclear_polarization.f90](../../../src/lib/mpi/mpi_nuclear_polarization.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/mpi/mpi_radial_wavefunction_file.f90](../../../src/lib/mpi/mpi_radial_wavefunction_file.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/mpi/mpi_radial_wavefunction_reader.f90](../../../src/lib/mpi/mpi_radial_wavefunction_reader.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [src/lib/mpi/mpi_rmcdhf_csf_input.f90](../../../src/lib/mpi/mpi_rmcdhf_csf_input.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -1061,11 +1056,6 @@
 | [test/jj2lsj/coefficients.f90](../../../test/jj2lsj/coefficients.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [test/jj2lsj/pointer_defaults.f90](../../../test/jj2lsj/pointer_defaults.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [test/jj2lsj/ranking.f90](../../../test/jj2lsj/ranking.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
-| [test/npol/consumers.F90](../../../test/npol/consumers.F90) | 23 | 0 | 0 | 23 | 23 | 23 |
-| [test/npol/consumers_doubles.f90](../../../test/npol/consumers_doubles.f90) | 3 | 0 | 0 | 3 | 3 | 3 |
-| [test/npol/mpi_driver.f90](../../../test/npol/mpi_driver.f90) | 11 | 0 | 0 | 11 | 11 | 11 |
-| [test/npol/support.f90](../../../test/npol/support.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
-| [test/npol/unit_driver.f90](../../../test/npol/unit_driver.f90) | 23 | 0 | 0 | 23 | 23 | 23 |
 | [test/rdensity/natural_orbitals_test.f90](../../../test/rdensity/natural_orbitals_test.f90) | 0 | 0 | 0 | 0 | 0 | 0 |
 | [test/ris4/cache_io.F90](../../../test/ris4/cache_io.F90) | 2 | 0 | 0 | 2 | 2 | 2 |
 | [test/shared_grid_capacity.f90](../../../test/shared_grid_capacity.f90) | 0 | 0 | 0 | 0 | 0 | 0 |

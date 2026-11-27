@@ -11,7 +11,6 @@ suite 修改前基线：`a4661441492e38beb99293182cb9257326d2dcef`。
 
 新程序是 `jj2lsj_omp`，读取 `isodata`、配套的 CSF 描述符和头文件、`name.mix` 或 `name.cimix`。
 交互问题、阈值默认值、`.lsj.lbl/.lsj.c/.lsj.j`、唯一标签和 `.lsj.T` 格式延续来源程序。
-已有 `jj2lsj_csfg` 仍是独立 CSFG 应用，本次没有修改它的转换算法。
 
 ## 构建与运行
 
@@ -24,7 +23,7 @@ ctest --test-dir build -R '^jj2lsj_' --output-on-failure
 cmake --install build --component jj2lsj_omp
 ```
 
-新目标默认构建，不依赖 MPI、CSFG 或 `GRASP_BUILD_SERIAL_APPS`。
+新目标默认构建，不依赖 MPI 或 `GRASP_BUILD_SERIAL_APPS`。
 `GRASP_JJ2LSJ_OPENMP` 默认为 `ON`；找不到 OpenMP Fortran 时明确警告并构建串行版本。
 显式 `-DGRASP_JJ2LSJ_OPENMP=OFF` 可关闭 OpenMP。
 已验证 Linux / GNU Fortran 16.2.1；其他编译器尚未验证。
@@ -90,8 +89,7 @@ OpenMP 专用对象中的惰性缓存由各线程独占，普通 suite 构建将
    跳过 block、非顺序选择能级、唯一标签、`.lsj.T` 写入和回读。
 4. 以原始 GRASP 可执行文件对照三个体系 × 四种选择/截断设置，
    `.lsj.lbl/.lsj.c/.lsj.j` 输出一致；默认标签参考保存在测试目录。
-5. suite 原有 `lib9290_quad`、`shared_grid_capacity`、`csfg_capacity`、
-   `csfg_file_formats`、`csfg_alternate_capacity` 五项回归通过。
+5. 当时的共享库回归包括通过的 `lib9290_quad` 和 `shared_grid_capacity`。
 
 另对仓库已有 `data/test.c`、`data/test.m` 做默认模式回放，原始 GRASP、新串行路径、
 4 线程结果的标签文件一致。此样例三条路径均报告相同的 `IEEE_DIVIDE_BY_ZERO`

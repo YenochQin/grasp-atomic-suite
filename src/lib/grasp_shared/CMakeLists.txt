@@ -1,6 +1,5 @@
 add_library(grasp_shared STATIC
     input_error_handling.f90
-    nuclear_polarization_state.f90
     cal_constants.f90
     grasp_parameters.f90
     blas_lapack_interfaces.f90
@@ -113,8 +112,3 @@ add_library(grasp_shared STATIC
 setup_fortran_modules(grasp_shared)
 target_link_libraries(grasp_shared PUBLIC LAPACK::LAPACK)
 install(TARGETS grasp_shared DESTINATION lib/)
-# Check NP production routines as well as their test callers in Debug builds.
-if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
-    set_source_files_properties(nuclear_polarization_state.f90 PROPERTIES
-        COMPILE_OPTIONS "$<$<CONFIG:Debug>:-fcheck=all;-fbacktrace>")
-endif()

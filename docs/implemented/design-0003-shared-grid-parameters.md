@@ -2,7 +2,7 @@
 
 > 文档状态：现行实现；2026-11-16 共享容量使用语义名称，原版默认值和网格初始化保持一致。
 > 参考源码：工作区 GRASP `488e875d1a7ec631baf4ad33682798bc795b7435`。
-> 移除 CSFG 后，网格脚本覆盖十五个普通网格入口与两个 RCI 续算 ACCY 入口。
+> 网格脚本覆盖十五个普通网格入口与两个 RCI 续算 ACCY 入口。
 > 容量由集中配置定义，经 grasp_parameters 转导；历史实验数值不代表当前默认值。
 
 ## 参数归属
@@ -51,8 +51,6 @@ RMCDHF 的 `THRESH=0.05D0`、`METHOD=3`、`ODAMP=0` 保持原版。
 
 输入 `.wfn` 经插值到本次运行网格，不会自动将 N/H/RNT 改成文件网格。
 已否决的 strict/diag 独立求解器已[移除](adr-0002-retire-strict-and-diagnostic-rmcdhf.md)；现行入口只覆盖保留程序。
-
-CSFG 的专用源码、构建和测试已于 `4c17db6` 移除，该提交保留历史参数记录。
 
 普通 `rwfnestimate`、串行/MPI `rci`、串行/MPI `biorthtransform` 和三个 `rtransition` 变体新增八个网格入口；普通 RCI 保留原有公共网格初始化，未启用注释中的点核分支。`rangular` 不初始化径向网格，但通过同一 `grasp_parameters` 使用轨道容量和打包参数。普通 `rwfnestimate` 的六个实现/接口文件已移除局部径向容量定义；修改中央容量无需逐个修改这些文件。
 

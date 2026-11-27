@@ -7,7 +7,6 @@
 `isodata`、状态的描述符文件对及 `name.initial.wfn`。程序将 `name.wfn`、SCF 摘要和
 OL/EOL 计算的 `name.mix` 写入永久 I/O 目录，SCF 日志写入启动目录。
 
-需要通过 `npol.inp` 启用核极化时，可选用 MPI 内存版。
 [角系数程序](../rangular_mpi/README.md) · [MPI 内存版](../rmcdhf_mem_mpi/README.md) · [MPI 诊断](../../../docs/implemented/design-0021-rmcdhf-mpi-diagnostics.md)
 
 势系数复用当前密度权重下的收缩结果。[格式与诊断选项](../../../docs/implemented/design-0020-rmcdhf-mcp-io.md)

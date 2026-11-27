@@ -38,7 +38,6 @@ pointing to the files at those revisions.
 ### Shared libraries and retained programs
 
 The supported ordinary RMCDHF programs are `rmcdhf{,_mem,_mpi,_mem_mpi}`.
-CSFG source and targets have been removed; retain the ordinary shared libraries.
 The rejected `rmcdhf_orbopt*`,
 `rmcdhf_mem_strict_mpi`, and `rmcdhf_mem_diag_mpi` programs are retired; historical
 documents are not authorization to restore them. See [retirement scope](docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md).

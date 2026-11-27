@@ -60,7 +60,7 @@
 
 上轮分析针对的是工作区 `grasp/` 的另一份快照，使用 GNU 16.2.1，获得 19 个程序构建成功及 51/1866 个严格检查失败单元。**这些数量不是本仓库、gfortran 15 的结果。** P0 必须重新盘点；计划不能以该统计宣称 suite 已完成任何阶段。
 
-当前依据包括[仓库规范](../../AGENTS.md)、[主构建文件](../../CMakeLists.txt)、[参数契约](../implemented/design-0003-shared-grid-parameters.md)和 [NP 集成](../implemented/design-0022-rmcdhf-nuclear-polarization.md)。
+当时的依据包括[仓库规范](../../AGENTS.md)、[主构建文件](../../CMakeLists.txt)、[参数契约](../implemented/design-0003-shared-grid-parameters.md)和 [NP 集成](https://github.com/YenochQin/grasp-atomic-suite/blob/8298b1ec3901e4a65143755a86e7748383440e02/docs/implemented/design-0022-rmcdhf-nuclear-polarization.md)。
 
 ## 2. 程序族与实现位置
 
@@ -211,7 +211,7 @@ set -gx OMPI_FC /usr/bin/gfortran-15
 | [lib9290_quad](https://github.com/YenochQin/grasp-atomic-suite/blob/d181bf4c14c6aecf55f5549cc1faebabd75cb095/test/lib9290_quad.f90) | 解析积分绝对误差 `<= 1e-12` |
 | [rdensity_natural_orbitals](../../test/rdensity/natural_orbitals_test.f90) | 解析占据数、旋转/对角化及正交性相关最大误差 `<= 1e-12` |
 | [rdensity regression](../../test/rdensity/regression.py) | 数值差 `<= 2e-10 * max(1,abs(a),abs(b))`，同时保留排序/格式/相位检查 |
-| [NP support](../../test/npol/support.f90) | `abs(actual-expected) <= 64*epsilon(actual)*max(1,abs(expected))`，人工软件常数不视为核素参数 |
+| [NP support](https://github.com/YenochQin/grasp-atomic-suite/blob/8298b1ec3901e4a65143755a86e7748383440e02/test/npol/support.f90) | `abs(actual-expected) <= 64*epsilon(actual)*max(1,abs(expected))`，人工软件常数不视为核素参数 |
 | [strict restart（已移除）](../implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md) | 现有单轨道样例能量差 `<1e-10 Hartree`，P/Q 最大逐点差 `<1e-9`，公共网格点精确一致 |
 | [jj2lsj regression](../../test/jj2lsj/check.py) | 系数原始数据、标签和相应科学输出按已有测试逐字节一致，含转换文件回放 |
 | [strict_scf_logic（已移除）](../implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md) | 状态转换、首轮、连续次数与停止原因精确一致 |
@@ -415,11 +415,10 @@ NP off/zero/on 在四个原版目标中分别验证，on 的软件测试保持�
 
 ## 6. 特别需要维护的既有保护机制
 
-1. [NP 来源校验](../../test/npol/check_upstream.py) 当前通过去除有限 NP hook 后对照原始源码 hash。语言迁移会合法改变被保护文件，不能简单关掉测试或覆盖历史 hash。保留原始 manifest，另增逐文件迁移记录/补丁及算法回归，重新定义“允许变化且不混入 orbopt”的验证；有意错误回退仍应触发失败。
-2. [CSFG 来源清单](../reference/graspg/source-manifest.json) 表示导入前源代码，不改写为当前文件 hash。另记录迁移后的提交/变更映射；原来未启用的源文件不自动进入计算路径。
-3. [jj2lsj 构建](../../src/apps/jj2lsj/CMakeLists.txt) 会重编译部分共享例程形成线程调用闭包；模块化后需核对符号解析和工作区所有权，不能引入第二份全局状态或让 legacy 静态对象替代线程安全对象。
-4. [网格补丁器](../../scripts/patch_grasp_grid.py) 和其源模式识别必须随入口/声明变化更新；保持 preview/apply/restore 和省略参数即保留原值的契约。所有容量实验在隔离副本进行。
-5. 文件比较覆盖 `.w/.m/.cm/MCP` 及 CSFG 专有记录。普通与 CSFG 输入格式不同，只有明确定义的映射可互转，不能按文件后缀认定兼容。
+1. 当时的来源校验先去掉有限的 NP 接入改动，再对照原始源码哈希。现行 [RMCDHF 来源校验](../../test/rmcdhf/check_upstream.py) 保留原始清单，通过后续逐文件快照登记迁移，拒绝未经登记的源码变更。
+2. [jj2lsj 构建](../../src/apps/jj2lsj/CMakeLists.txt) 会重编译部分共享例程形成线程调用闭包；模块化后需核对符号解析和工作区所有权，不能引入第二份全局状态或让 legacy 静态对象替代线程安全对象。
+3. [网格补丁器](../../scripts/patch_grasp_grid.py) 和其源模式识别必须随入口/声明变化更新；保持 preview/apply/restore 和省略参数即保留原值的契约。所有容量实验在隔离副本进行。
+4. 文件比较覆盖 `.w/.m/.cm/MCP` 及 CSFG 专有记录。普通与 CSFG 输入格式不同，只有明确定义的映射可互转，不能按文件后缀认定兼容。
 
 ## 7. 变更拆分、失败处理与完成定义
 

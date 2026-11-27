@@ -60,9 +60,6 @@ GNU Fortran 15 的干净 Release 构建启用 MPI 和 OpenMP，110 项 CTest 全
 | `lodrwf.f90` | `lodrwf_i` | `radial_wavefunction_records` · [radial_wavefunction_records.f90](../../src/lib/core/radial_wavefunction_records.f90) |
 | `lodstate.f90` | `lodstate_i` | `block_level_selection` · [block_level_selection.f90](../../src/lib/core/block_level_selection.f90) |
 | `ltab.f90` | `ltab_i` | `subshell_parent_table` · [subshell_parent_table.f90](../../src/lib/core/subshell_parent_table.f90) |
-| `npol_init.f90` | `npol_initialization` | `nuclear_polarization_initialization` · [nuclear_polarization_initialization.f90](../../src/lib/core/nuclear_polarization_initialization.f90) |
-| `npol_input.f90` | `npol_input` | `nuclear_polarization_input` · [nuclear_polarization_input.f90](../../src/lib/core/nuclear_polarization_input.f90) |
-| `npol_kernel.f90` | `npol_kernel` | `nuclear_polarization_potential` · [nuclear_polarization_potential.f90](../../src/lib/core/nuclear_polarization_potential.f90) |
 | `nucpot.f90` | `nucpot_i` | `nuclear_coulomb_potential` · [nuclear_coulomb_potential.f90](../../src/lib/core/nuclear_coulomb_potential.f90) |
 | `openfl.f90` | `openfl_i` | `file_open` · [file_open.f90](../../src/lib/core/file_open.f90) |
 | `orthsc.f90` | `orthsc_i` | `radial_orbital_orthogonalization` · [radial_orbital_orthogonalization.f90](../../src/lib/core/radial_orbital_orthogonalization.f90) |

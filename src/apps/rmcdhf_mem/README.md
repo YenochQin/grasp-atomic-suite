@@ -5,7 +5,7 @@
 缓存装载时，若主机提供 Linux 的 `/proc/meminfo`，日志还会打印系统总内存与空闲内存。缓存分配量由 MCP 记录量决定。
 
 程序读取 `isodata`、状态的描述符文件对、`name.initial.wfn` 和 `rangular` 生成的
-`name.mcp.NN` 通道，支持通过 `npol.inp` 启用核极化。输出包括 `name.wfn`、SCF 摘要和日志，
+`name.mcp.NN` 通道。输出包括 `name.wfn`、SCF 摘要和日志，
 以及 OL/EOL 计算的 `name.mix`。
 
 [串行版本与状态文件](../rmcdhf/README.md) · [MCP 存储及实现差异](../../../docs/reviews/evidence-0007-rmcdhf-memory-variant-comparison.md)
@@ -31,7 +31,7 @@
 | [`read_al_level_weights.f90`](read_al_level_weights.f90) | 按等权、$2J+1$ 或用户给出的正权重填入向量，对总和归一化供平均能量与占据计算。 |
 | [`read_eol_average_options.f90`](read_eol_average_options.f90) | 逐块读取需优化的能级并登记块偏移。设置固定和关联轨道、更新次序、能级权重及混合／轨道阻尼。 |
 | [`read_eol_level_weights.f90`](read_eol_level_weights.f90) | 等权与统计权用标记保留到根求出后确定。自定义输入要求正权重，立即除以权重总和。 |
-| [`read_scf_options.f90`](read_scf_options.f90) | 读取 `isodata`、网格及收敛设置，初始化核 Coulomb 势并应用可选核极化。载入初猜径向轨道，随后设置变分轨道、能级、权重、阻尼和迭代上限。 |
+| [`read_scf_options.f90`](read_scf_options.f90) | 读取 `isodata`、网格及收敛设置，初始化核库仑势。载入初猜径向轨道，随后设置变分轨道、能级、权重、阻尼和迭代上限。 |
 | [`rmcdhf_mem_main.f90`](rmcdhf_mem_main.f90) | 验证状态和 MCP 数据，并在连接各通道时将记录读入缓存。核对描述符、核数据和初猜，准备摘要及混合输出后开始串行轨道优化。 |
 
 ### 矩阵与角向系数

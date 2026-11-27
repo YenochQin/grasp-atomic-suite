@@ -1,20 +1,20 @@
 # rmcdhf_mem_mpi：并行内存版 MCDHF
 
 `rmcdhf_mem_mpi` 并行求解 MCDHF。各 rank 将自己的 MCP 角系数及索引缓存于内存，供
-自洽场迭代复用。程序支持通过 `npol.inp` 启用核极化。
+自洽场迭代复用。
 
 使用与 `rangular_mpi` 相同的基组、进程数和临时目录布局。永久 I/O 目录提供 `isodata`、
-状态的描述符文件对、`name.initial.wfn` 及可选的 `npol.inp`。
+状态的描述符文件对及 `name.initial.wfn`。
 程序将 `name.wfn`、SCF 摘要和 OL/EOL 计算的 `name.mix` 写入永久 I/O 目录，
 SCF 日志写入启动目录。
 
-[角系数程序](../rangular_mpi/README.md) · [核极化输入](../../../docs/implemented/design-0022-rmcdhf-nuclear-polarization.md) · [MCP 存储及实现差异](../../../docs/reviews/evidence-0007-rmcdhf-memory-variant-comparison.md)
+[角系数程序](../rangular_mpi/README.md) · [MCP 存储及实现差异](../../../docs/reviews/evidence-0007-rmcdhf-memory-variant-comparison.md)
 
 各 rank 从同一目录格式装入内存。 [MPI MCP 格式](../../../docs/implemented/design-0020-rmcdhf-mcp-io.md)
 
 ## 计算流程
 
-1. 每个 rank 校验 MCP 元数据及描述符基组，然后按目录装入结构和积分组。随后集体取得核与径向数据。在需要时从永久目录读入核极化设置并更新核势。[缓存](cache_mcp_files.f90) · [核势设置](read_scf_options_mpi.f90)
+1. 每个 rank 校验 MCP 元数据及描述符基组，然后按目录装入结构和积分组。随后集体读取核与径向数据并初始化核库仑势。[缓存](cache_mcp_files.f90) · [核势设置](read_scf_options_mpi.f90)
 2. 各 rank 从本地缓存提取角贡献，计算块哈密顿量及当前轨道的一体密度收缩。通过 MPI 累加对角、矩阵乘、占据及轨道方程贡献。[块求解](solve_hamiltonian_blocks_mpi.f90) · [势计算](build_orbital_potential_mpi.f90)
 3. 两个轨道均可变时，MPI 乘子根据占据相对差在势差与势和表达间切换。rank 0 每轮写径向波函数，OL/EOL 同步更新能量与混合系数。轨道自洽误差或加权平均能量的相对变化满足阈值时停止。达到最大迭代次数也会结束，并打印对应提示。[乘子分支](calculate_lagrange_multipliers_mpi.f90) · [迭代循环](run_scf_iterations_mpi.f90)
 
@@ -34,8 +34,8 @@ SCF 日志写入启动目录。
 | [`read_al_level_weights.f90`](read_al_level_weights.f90) | 按等权、$2J+1$ 或用户给出的正权重填入向量，对总和归一化供平均能量与占据计算。 |
 | [`read_eol_average_options_mpi.f90`](read_eol_average_options_mpi.f90) | rank 0 读取目标根和轨道优化控制，广播各块最高根、请求根列表、权重与更新顺序，为共享波函数更新分配状态。 |
 | [`read_eol_level_weights.f90`](read_eol_level_weights.f90) | 等权与统计权用标记保留到根求出后确定。自定义输入要求正权重，立即除以权重总和。 |
-| [`read_scf_options_mpi.f90`](read_scf_options_mpi.f90) | 广播核、径向数据和 SCF 设置，协同读取可选核极化数据并更新共享势。在一致的网格和初猜上设置轨道优化次序、目标能级与权重。 |
-| [`rmcdhf_mem_mpi_main.f90`](rmcdhf_mem_mpi_main.f90) | 初始化 MPI 和各 rank 的 MCP 缓存，核对共同基组并广播径向输入。由永久目录解析可选 `npol.inp`，再调用 SCF 循环。 |
+| [`read_scf_options_mpi.f90`](read_scf_options_mpi.f90) | 广播核、径向数据和 SCF 设置，并初始化核库仑势。在一致的网格和初猜上设置轨道优化次序、目标能级与权重。 |
+| [`rmcdhf_mem_mpi_main.f90`](rmcdhf_mem_mpi_main.f90) | 初始化 MPI 和各 rank 的 MCP 缓存，核对共同基组并广播径向输入，再调用 SCF 循环。 |
 
 ### 矩阵与角向系数
 

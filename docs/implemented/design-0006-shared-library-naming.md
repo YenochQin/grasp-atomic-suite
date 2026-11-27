@@ -101,7 +101,6 @@ GNU Fortran 15.3 构建通过。Release 启用串行、MPI 和 jj2lsj OpenMP，1
 | `node_C.f90` | `node_c` | [`expected_orbital_nodes`](../../src/lib/grasp_shared/expected_orbital_nodes.f90) | Expected radial node count per orbital |
 | `npar_C.f90` | `npar_c` | [`nuclear_model_parameters_state`](../../src/lib/grasp_shared/nuclear_model_parameters_state.f90) | Parameters of the nuclear charge model |
 | `npar_C.f90` | `nsmdat_c` | [`isotope_properties`](../../src/lib/grasp_shared/isotope_properties.f90) | Nuclear spin, moments, and isotope property factors |
-| `npol_C.f90` | `npol_c` | [`nuclear_polarization_state`](../../src/lib/grasp_shared/nuclear_polarization_state.f90) | Nuclear polarization configuration and published radial potentials |
 | `npot_C.f90` | `npot_c` | [`nuclear_potential_state`](../../src/lib/grasp_shared/nuclear_potential_state.f90) | Nuclear Coulomb potential array and Fermi radius index |
 | `offd_C.f90` | `offd_c` | [`transition_off_diagonal_flags`](../../src/lib/grasp_shared/transition_off_diagonal_flags.f90) | Off-diagonal transition calculation switches |
 | `orb_C.f90` | `orb_c` | [`orbital_csf_basis`](../../src/lib/grasp_shared/orbital_csf_basis.f90) | Orbital quantum numbers, energies, and CSF occupations |
