@@ -111,9 +111,9 @@ def check_invalid_files(binary: Path, data: Path, work: Path) -> None:
 
 
 def check_state_selection(binary: Path, work: Path) -> None:
-    state = work / "odd.AS1"
-    scf = work / "odd.AS1.mix"
-    ci = work / "odd.AS1.cimix"
+    state = work / "odd-AS_1"
+    scf = state.with_suffix(".mix")
+    ci = state.with_suffix(".cimix")
     write_stream(scf, 1, 4, [block(1, 1, [1], -2.0, [0.0])])
     scf_rows = rows(run(binary, scf))
     assert rows(run(binary, state)) == scf_rows
@@ -128,6 +128,12 @@ def check_state_selection(binary: Path, work: Path) -> None:
     assert ambiguous.returncode != 0 and str(scf) in ambiguous.stderr and str(ci) in ambiguous.stderr
     scf.unlink()
     assert rows(run(binary, stdin=str(state))) == ci_rows
+    dotted_state = work / "odd.AS1"
+    dotted_file = work / "odd.AS1.cimix"
+    dotted_file.write_bytes(ci_data)
+    result = run(binary, dotted_state)
+    assert result.returncode != 0 and "Invalid state name" in result.stderr, result
+    assert rows(run(binary, dotted_file)) == ci_rows
     for old_suffix in (".m", ".cm"):
         archived = work / f"archived{old_suffix}"
         archived.write_bytes(ci_data)

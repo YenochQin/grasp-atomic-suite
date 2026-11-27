@@ -72,8 +72,7 @@ contains
         logical, intent(in) :: from_ci
         character(:), allocatable :: path
 
-        path = trim(name)//".natural.wfn"
-        if (from_ci) path = trim(name)//".ci.natural.wfn"
+        path = source_report_stem(name, from_ci)//".natural-orbitals"
     end function natural_orbital_path
 
     function isotope_shift_report_path(name, from_ci) result(path)
@@ -182,7 +181,7 @@ contains
         if (has_ci) path = ci_path
     end function
 
-    ! A.initial.wfn can be the initial orbitals of A or the final orbitals of A.initial.
+    ! An archived state A.initial may still own the path A.initial.wfn.
     subroutine check_orbital_output(path, writing_initial)
         ! Arguments
         character(*), intent(in) :: path
@@ -297,8 +296,8 @@ contains
         ! Local declarations
         integer :: i, code
         status = 2
-        if (len(name) == 0 .or. len(name) > limit .or. name == "." .or. name == "..") return
-        if (scan(name, "/"//achar(92)) /= 0) return
+        if (len(name) == 0 .or. len(name) > limit) return
+        if (scan(name, "./"//achar(92)) /= 0) return
         do i = 1, len(name)
             code = iachar(name(i:i))
             if (code <= 32 .or. code == 127) return
@@ -322,7 +321,7 @@ contains
         else
             name = ""
             write(error_unit,"(A,I0,A)") "Invalid state name. Enter 1 to ", limit, &
-                " characters without whitespace, control characters, or a directory."
+                " characters without dots, whitespace, control characters, or directory separators."
         end if
     end subroutine
 

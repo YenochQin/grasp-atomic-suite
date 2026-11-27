@@ -34,7 +34,7 @@ contains
         key%different_j = merge(1, 0, different_j_only(multipole))
         key%ranks = ranks
         key%rank = rank
-        ! State names may contain dots. The first length preserves the pair boundary.
+        ! Keep the length-prefixed cache path for existing caches.
         write(initial_name_length, "(I0)") len_trim(names(1))
         write(multipole_rank, "(I0)") abs(multipole)
         multipole_kind = merge("e", "m", sign(1, multipole) == (-1)**abs(multipole))

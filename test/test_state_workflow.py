@@ -167,7 +167,10 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
         )
         path = permanent / "N.initial.wfn"
         original = path.read_bytes()
-        for program, state in (("rwfnestimate", "N"), ("rmcdhf", "N.initial")):
+        for program, state, error in (
+            ("rwfnestimate", "N", "Orbital path also belongs"),
+            ("rmcdhf", "N.initial", "Invalid state name"),
+        ):
             result = subprocess.run(
                 [binaries / program],
                 cwd=permanent,
@@ -178,7 +181,7 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
                 check=False,
             )
             assert (
-                result.returncode != 0 and "Orbital path also belongs" in result.stderr
+                result.returncode != 0 and error in result.stderr
             ), result.stderr
             assert path.read_bytes() == original
     # Reject bad prefixes before touching calculation output, even with old inputs present.
@@ -193,7 +196,7 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
     ):
         (invalid / target).write_bytes((permanent / source).read_bytes())
     expected_inputs = {item.name: item.read_bytes() for item in invalid.iterdir()}
-    for prefix in ("", "y ! Default settings", "two names", "../N", "a\\N", ".", "..", "a\x01b", "x" * 128):
+    for prefix in ("", "y ! Default settings", "two names", "../N", "a\\N", ".", "..", "N.3s", "a\x01b", "x" * 128):
         run("rangular" + suffix, f"{prefix}\ny\n", invalid, failure="Invalid state name")
     assert {item.name: item.read_bytes() for item in invalid.iterdir()} == expected_inputs
     run("rwfnestimate", "y\ny\n2\n*\n", invalid, failure="y_header.toml")

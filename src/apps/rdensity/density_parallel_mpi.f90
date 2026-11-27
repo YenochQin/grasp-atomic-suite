@@ -35,7 +35,7 @@ contains
         call start_mpi_application(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_count, &
             "RDENSITY_MPI", "MPI density and natural orbitals", &
             "isodata, descriptor Parquet/header, name.wfn, name.mix/name.cimix", &
-            "name.natural.wfn or name.ci.natural.wfn, name.(c)d", .true.)
+            "name.{mcdhf,ci}.natural-orbitals, name.(c)d", .true.)
     end subroutine parallel_start
 
     subroutine parallel_finish

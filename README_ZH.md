@@ -175,9 +175,9 @@ MPI 版本由 rank 0 询问状态名。`rangular_mpi` 在每个 rank 的临时�
 
 RMCDHF 和 RCI 的串行与 MPI 版本都要求为 CSF 基组中的每个 `J/Parity` 块选择至少一个有效 ASF 根。每块输入一行根编号。空行、`0` 或其他无效选择会终止运行并指出对应的块。RMCDHF 将选中的各根纳入共同的轨道优化。选择多个根时，还需输入 EOL 权重选项。旧的仅对角 (E)AL MCP 数据需要用 Suite 对应的 `rangular` 程序重新生成角系数。
 
-每个工作目录共用一套 MCP。应先完成本基组的 RMCDHF，再在同一目录为下一基组生成角系数。并行计算不同基组时，分别使用独立的工作目录和 MPI scratch 目录。`A` 和 `A.initial` 两个状态也应分目录保存，因为两者都会写 `A.initial.wfn`。下游程序读取 `.wfn` 轨道文件、`.mix` 的 RMCDHF 系数或 `.cimix` 的 RCI 系数。
+每个工作目录共用一套 MCP。应先完成本基组的 RMCDHF，再在同一目录为下一基组生成角系数。并行计算不同基组时，分别使用独立的工作目录和 MPI scratch 目录。下游程序读取 `.wfn` 轨道文件、`.mix` 的 RMCDHF 系数或 `.cimix` 的 RCI 系数。
 
-在每个 `Name of state:` 提示处输入计算目录中的非空文件名前缀。状态名中禁止路径、空白和控制字符。
+在每个 `Name of state:` 提示处输入计算目录中的非空文件名前缀。状态名允许 `-` 和 `_`，禁止点号、目录分隔符、空白和控制字符。
 `Y`、`N` 等单字母也是普通状态名。双态计算按提示顺序给出两个前缀，公共读取模块会在应用使用前校验两者。
 
 常用输入文件：
@@ -192,9 +192,10 @@ RMCDHF 和 RCI 的串行与 MPI 版本都要求为 CSF 基组中的每个 `J/Par
 
 - `gj`：`name.gj` 或 `name.cgj`。
 - `rhfs`：`name.h/name.ch` 和 `name.hoffd/name.choffd`。
-- `rdensity`：`name.natural.wfn`（MCDHF）或 `name.ci.natural.wfn`（CI），另写 `name.d` 或 `name.cd`。
+- `rdensity` 写 `name.mcdhf.natural-orbitals`（MCDHF）或 `name.ci.natural-orbitals`（CI），另写 `name.d` 或 `name.cd`。
 - `jj2lsj_omp`：`name.mcdhf.lsj.labels` 或 `name.ci.lsj.labels`。
 - `ris4`：`name.mcdhf.isotope-shift` 或 `name.ci.isotope-shift`，并可能生成 `name.ris4.one-body.angular.cache` 和 `name.ris4.two-body.angular.cache`。
+- `rtransition` 写 `初态.末态.mcdhf.transition` 或 `初态.末态.ci.transition`，有标签时另写 `.transition.lsj`，相位版在 `.transition` 后加 `.phase`。
 
 `gj_mpi` 接受状态名和 `--nonci` 或 `--ci`。从计算目录运行，并将
 `suite_bin` 设为构建目录下 `bin` 的绝对路径。CI 模式读取 `name.cimix`。

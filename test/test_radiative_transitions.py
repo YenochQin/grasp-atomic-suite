@@ -326,16 +326,14 @@ def regression(root: Path, binary: Path, launcher: list[str]) -> None:
         repeat("Rebuilding incompatible", 1)
     repeat("Rebuilding incompatible", ranks, restricted=True)
 
-    # Dots in state names must preserve the ordered pair boundary in cache paths.
-    for target, source in (("left.dot", "left"), ("dot.right", "right")):
-        for suffix in ("_desc.parquet", "_header.toml", ".mix", ".wfn"):
-            shutil.copyfile(work / f"{source}{suffix}", work / f"{target}{suffix}")
+    # Reject the former colliding state pairs before opening a report.
+    old_report = work / ("left.dot.right" + report_suffix)
+    old_report.write_bytes(b"archived report\n")
+    reports = {path: path.read_bytes() for path in work.glob("*.transition*")}
     for first, last in (("left.dot", "right"), ("left", "dot.right")):
-        execute(bio, work, f"y\nn\n{first}\n{last}\ny\n", launcher, native=True)
-        execute(binary, work, f"y\nn\n{first}\n{last}\nE1\nn\n", launcher, native=True)
-    for first_length in (4, 8):
-        path = f"{first_length}.left.dot.right.rtransition.e1.angular.cache"
-        assert len(list(work.rglob(path))) == ranks
+        execute(binary, work, f"y\nn\n{first}\n{last}\nE1\nn\n", launcher, native=True,
+                failure="Invalid state name")
+    assert {path: path.read_bytes() for path in work.glob("*.transition*")} == reports
 
     # E3 has the correct parity for s -> p but violates the J triangle.
     execute(binary, work, "y\nn\nleft\nright\nE3\n", launcher, native=True)
@@ -358,7 +356,7 @@ def regression(root: Path, binary: Path, launcher: list[str]) -> None:
 def nickel(work: Path, binary: Path, launcher: list[str]) -> None:
     work.mkdir()
     data = Path(__file__).resolve().parents[1] / "data"
-    state = "nickel_transition_state"
+    state = "nickel-transition_state"
     for source, target in (
         ("isodata", "isodata"),
         ("test.wfn", f"{state}.wfn"),
@@ -384,7 +382,7 @@ def nickel(work: Path, binary: Path, launcher: list[str]) -> None:
         )
         ordinary_report = work / f"{state}.{state}.mcdhf.transition"
         assert read_report(ordinary_report, False).keys() == lines.keys()
-        assert ordinary_report.with_name(report.name + ".lsj").is_file()
+        assert ordinary_report.with_name(ordinary_report.name + ".lsj").is_file()
         assert all(path.read_bytes() == content for path, content in phase_reports.items())
     assert {g: sum(k[-1] == g for k in lines) for g in ("M", "C", "B")} == {
         "M": 14,

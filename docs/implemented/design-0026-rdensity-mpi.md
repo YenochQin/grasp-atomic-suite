@@ -48,7 +48,7 @@ targets use the restored upstream `GETSMD` initialization and `grasp_parameters`
 finite nuclei default to `N=NNNP=590`, with `NNN1=600`. Use the
 [common-parameter contract](design-0003-shared-grid-parameters.md) to configure other grids.
 
-Only rank zero writes `name.natural.wfn` for MCDHF or `name.ci.natural.wfn` for CI,
+Only rank zero writes `name.mcdhf.natural-orbitals` for MCDHF or `name.ci.natural-orbitals` for CI,
 alongside `name.d` or `name.cd`. An existing density file causes an error before
 calculation. Natural orbitals replace the output for the selected source. Occupations
 and rotation coefficients are printed in output orbital order. The `RAD--WFN` stream

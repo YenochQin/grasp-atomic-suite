@@ -251,7 +251,7 @@ def check_degenerate(output: str, folder: Path) -> None:
             close(value, expected/2)
 
     source = read_radial_stream(folder / "case.wfn")
-    natural = read_radial_stream(folder / "case.natural.wfn")
+    natural = read_radial_stream(folder / "case.mcdhf.natural-orbitals")
     assert source.keys() == natural.keys()
     for orbital, vec in zip(natural.values(), vectors, strict=True):
         for index, (p, q) in enumerate(zip(orbital.p, orbital.q, strict=True)):
@@ -284,7 +284,8 @@ def check_analytic(output: str, folder: Path, multiblock: bool, ci: bool = False
     close(sum(row[0] for block in occupations.values() for row in block), 1.0)
     # Check the binary NOs reconstruct the weighted radial density. This also
     # exercises the cross term and the P/Q rotations independently of MPI.
-    orbitals = read_radial_stream(folder / ("case.ci.natural.wfn" if ci else "case.natural.wfn"))
+    source = "ci" if ci else "mcdhf"
+    orbitals = read_radial_stream(folder / f"case.{source}.natural-orbitals")
     by_kappa: dict[int, int] = {}
     grid = max((orbital.r for orbital in orbitals.values()), key=len)
     reconstructed = [0.0] * len(grid)
@@ -312,9 +313,9 @@ def check_analytic(output: str, folder: Path, multiblock: bool, ci: bool = False
 
 
 def compare_outputs(reference: Path, actual: Path, name: str, actual_ci: bool = False) -> None:
-    first = read_radial_stream(reference / f"{name}.natural.wfn")
-    suffix = ".ci.natural.wfn" if actual_ci else ".natural.wfn"
-    second = read_radial_stream(actual / (name + suffix))
+    first = read_radial_stream(reference / f"{name}.mcdhf.natural-orbitals")
+    source = "ci" if actual_ci else "mcdhf"
+    second = read_radial_stream(actual / f"{name}.{source}.natural-orbitals")
     assert list(first) == list(second)
     for key, orbital in first.items():
         other = second[key]
@@ -375,12 +376,21 @@ def main() -> None:
             check_analytic(output, target, multiblock, ci=True)
             compare_outputs(baseline, target, "case", actual_ci=True)
 
-            natural = baseline / "case.natural.wfn"
+            natural = baseline / "case.mcdhf.natural-orbitals"
             mcdhf_bytes = natural.read_bytes()
             run(parallel + ["case", "--ci"], baseline)
             assert natural.read_bytes() == mcdhf_bytes
             assert not (baseline / "case.nw").exists()
             compare_outputs(baseline, baseline, "case", actual_ci=True)
+
+        target = root / "archived-orbitals"
+        fixture(target, False, False)
+        for name in ("case.natural.wfn", "case.ci.natural.wfn"):
+            shutil.copyfile(target / "case.wfn", target / name)
+        inputs = {path: path.read_bytes() for path in target.glob("*.wfn")}
+        run(parallel + ["case", "--nonci"], target)
+        run(parallel + ["case", "--ci"], target)
+        assert all(path.read_bytes() == content for path, content in inputs.items())
 
         target = root / "degenerate"
         degenerate_fixture(target)
@@ -407,7 +417,7 @@ def main() -> None:
         check_analytic((target / "run.log").read_text(), target, False)
         run(parallel + ["--help"], root)
         run(parallel + ["--unknown"], root, success=False)
-        for invalid in ("x" * 24, "x" * 257, "two states"):
+        for invalid in ("x" * 24, "x" * 257, "two states", "case.natural"):
             output = run(parallel + [invalid], root, success=False)
             assert "1 to 23 characters" in output, output
         run(parallel + ["missing"], root, success=False)
@@ -430,7 +440,7 @@ def main() -> None:
             output = run_interactive_failure(parallel, target, "y\ncase\nn\n" + answer)
             assert "Cannot read orbital ordering:" in output, output
             assert not (target / "case.d").exists()
-            assert not (target / "case.natural.wfn").exists()
+            assert not (target / "case.mcdhf.natural-orbitals").exists()
         target = root / "unsupported-wavefunction"
         fixture(target, False, False)
         wavefunction = target / "case.wfn"
@@ -454,7 +464,7 @@ def main() -> None:
         write_stream(mixing, 1, 3, blocks, descriptor)
         output = run(parallel + ["case", "--nonci"], target, success=False)
         assert "Mixing block J or parity does not match the CSF basis" in output, output
-        assert not (target / "case.d").exists() and not (target / "case.natural.wfn").exists()
+        assert not (target / "case.d").exists() and not (target / "case.mcdhf.natural-orbitals").exists()
     print(f"rdensity regression passed ({args.ranks if args.mpi else 0} MPI ranks)")
 
 

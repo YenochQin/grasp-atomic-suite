@@ -3,6 +3,7 @@
 2026-11-27 首次盘点以 Suite `bd4dcaa` 及其上的状态名输入改造为基准。实施复核以 Suite
 `89d10d8` 及当时 Suite、GraspKit 和 Tools 工作树中的未提交改动为准。范围涵盖 CMake 声明的
 25 个应用目标，包括串行、MPI 和 OpenMP 变体。标为迁移前的各节记录历史文件名，供回查旧结果。
+下文的两处路径修复基于 Suite `8298b1ec` 上的工作树。
 [应用构建入口](../../CMakeLists.txt)
 
 ## 有序态对交接与跃迁报告
@@ -18,6 +19,8 @@
 | 普通和 MPI 跃迁报告 | `A.B.mcdhf.transition` 或 `A.B.ci.transition`，可选对应的 `.transition.lsj`。 |
 | 相位报告 | `A.B.mcdhf.transition.phase` 或 `A.B.ci.transition.phase`，可选对应的 `.transition.phase.lsj`。 |
 
+共享状态校验禁止初末态名中的点号，因此 `A.B` 的点号能唯一标出两态边界。
+
 双正交写入器在替换产物前移除旧清单，完成四个文件后才写回清单。跃迁程序校验两侧基组和
 输入、输出文件的摘要，因此需要保留原始轨道和混合流。读写两端通过结果目录内的 `.lock`
 协调并发。MPI 由 rank 0 发布、核验清单并持锁，其他 rank 读取同一批产物。缺失清单或文件
@@ -29,12 +32,14 @@
 
 ## 状态前缀与文件身份
 
-`calculation_state_files` 统一处理 `Name of state:`。它先验证完整输入，再赋给应用变量。
+`calculation_state_files` 统一处理 `Name of state:`。它先验证完整输入，再赋给应用变量。状态名允许
+`-` 和 `_`，禁止点号、目录分隔符、空白和控制字符。
 初末态和 FICAL 的上下态均在两个名称通过校验后交付。MPI 公共封装在 rank 0 验证后广播。
 旧答题文件首行 `y/n` 和空状态触发的固定文件名回退已移除，`Y`、`N` 是普通状态名。
 现有缓冲容量仍决定各入口的上限。角积分、初猜、RMCDHF 和 RCI 最长 127 字符，
 双正交、辐射跃迁和多数属性程序最长 23 字符，FICAL 最长 100 字符。
-带位置参数的属性入口复用同一校验器。RLEVELS 还可读取显式混合文件路径或接受多个前缀。
+带位置参数的属性入口复用同一校验器。RLEVELS 可接受多个前缀，也可用显式 `.mix` 或 `.cimix`
+路径读取归档文件，文件名和目录仍可含点号。
 [状态输入与路径函数](../../src/lib/core/calculation_state_files.f90) ·
 [MPI 状态输入](../../src/lib/mpi/mpi_calculation_state.f90) ·
 [RLEVELS 入口](../../src/apps/rlevels/rlevels.f90)
@@ -147,10 +152,10 @@
 
 1. **双正交交接和跃迁报告命名。** 两个 `biorthtransform` 和三个 `rtransition`
    已统一双态路径和产物身份。同态直接读取原始文件，相位报告另有路径。回归覆盖同一初态配不同末态、
-   交换两态、同态、MCDHF/CI 两种来源，以及部分写出后重跑。含点号的态对仍可能共用报告路径，见下节。
+   交换两态、同态、MCDHF/CI 两种来源，以及部分写出后重跑。共享状态校验拒绝含点号的态名，报告保留 `A.B` 命名。
    [双正交回归](../../test/test_biorthogonal_states.py) · [跃迁回归](../../test/test_radiative_transitions.py)
 2. **自然轨道和程序读取的文本。** RDENSITY、RIS4 和 JJ2LSJ 按混合系数来源写出下文所列文件。
-   Suite、GraspKit 和 Tools 的相关读取、作业检查和收集路径已同步。自然轨道仍有两种路径重合情形。
+   Suite、GraspKit 和 Tools 的相关读取、作业检查和收集路径已同步。后续修复为自然轨道采用了专用后缀。
    [密度回归](../../test/rdensity/regression.py) · [RIS4 与 FICAL](evidence-0031-isotope-shifts.md)
 3. **角缓存、RCI 重启和 MCP。** 已按用途、状态或态对命名，保留各自的复用和恢复条件。
    JJ2LSJ 变换缓存新增 V3 基组摘要、每块保留行和完成记录校验。`R92RES`、串行 MCP 和其余角缓存
@@ -161,17 +166,23 @@
 
 ### 已复现的路径冲突
 
-- **自然轨道可覆盖其他状态的输入或结果。** 在同一临时目录放入合法状态 `case` 和 `case.natural`
+以下案例记录路径修复前的行为。
+
+- **自然轨道可覆盖其他状态的输入或结果。** 在同一临时目录放入当时有效的状态 `case` 和 `case.natural`
   的描述符、混合流和轨道。对 `case` 运行 RDENSITY 的 MCDHF 模式后，读回 `case.natural.wfn`，
   确认该路径原有的输入轨道被自然轨道替换。对 `case` 运行 CI 模式，再对具有不同混合系数的
   `case.ci` 运行 MCDHF 模式，也确认后一次替换了前一次写出的 `case.ci.natural.wfn`。
-  串行和 MPI 入口共用自然轨道路经及写入逻辑。
+  串行和 MPI 入口共用自然轨道路径及写入逻辑。
   [路径函数](../../src/lib/core/calculation_state_files.f90) · [径向文件写入](../../src/apps/rdensity/density_calculation.f90)
 - **含点号的不同态对可覆盖同一份跃迁报告。** 在单电子夹具中依次计算
   `left.dot → right` 的 E1 和 `left → dot.right` 的 M1。两对各有双正交清单，
   角缓存路径也含有初态名长度。两次都写到 `left.dot.right.mcdhf.transition`，
   第二份报告替换了第一份。普通、MPI、相位及对应 LSJ 报告共用将两态名以点号直接相接的路径函数。
   [报告路径函数](../../src/lib/core/calculation_state_files.f90) · [角缓存路径函数](../../src/lib/core/transition_angular_cache.f90)
+
+修复回归通过串行和 MPI 密度入口逐字节核对原有 `.wfn`，并检查同目录的 CI 与 MCDHF 自然轨道。
+三个跃迁入口均检查含点号的初态或末态在写报告前被拒绝，并用带 `-` 和 `_` 的状态验证主报告和 LSJ 报告路径。
+[密度回归](../../test/rdensity/regression.py) · [跃迁回归](../../test/test_radiative_transitions.py)
 
 ### 本机验证范围
 
@@ -183,13 +194,17 @@ RLEVELS、角缓存、RCI 重启及串行和 MPI MCP。部分 MPI 用例触发�
 GraspKit 和 Tools 共通过 556 项 Python 用例，其中 30 项使用本次构建的 Suite 校验描述符作业流程。
 上述结果来自本机固定夹具和工作流回归。两处路径覆盖由单独的临时夹具复现。
 
+路径修复在 GNU Fortran 16.2.0 和 Open MPI 5.0.11 的 `f2018-check` 构建中通过 15 项定向用例，
+覆盖 RDENSITY 串行和 1、2、4 rank、三个跃迁入口、双正交、RLEVELS，以及状态和描述符工作流。
+GraspKit 的跃迁和径向流读取用例与 Tools 的结果收集用例也通过。
+
 ## 自然轨道与文本交接的现行路径
 
 右两列分别对应从 `.mix` 和 `.cimix` 得到的结果。
 
 | 产物 | MCDHF | CI |
 | --- | --- | --- |
-| RDENSITY 自然轨道 | `S.natural.wfn` | `S.ci.natural.wfn` |
+| RDENSITY 自然轨道 | `S.mcdhf.natural-orbitals` | `S.ci.natural-orbitals` |
 | RIS4 电子因子 | `S.mcdhf.isotope-shift` | `S.ci.isotope-shift` |
 | JJ2LSJ 标签 | `S.mcdhf.lsj.labels` | `S.ci.lsj.labels` |
 
@@ -200,6 +215,5 @@ RIS4、JJ2LSJ 和跃迁文本沿用既有字段、单位和固定列。FICAL、R
 [Suite 路径函数](../../src/lib/core/calculation_state_files.f90)
 
 GraspKit 的普通跃迁目录扫描支持上文列出的新文件名、带 `.txt` 的旧版文件名及旧 `.t`、`.ct`、`.t.lsj`、`.ct.lsj`。
-同一态对和报告类型同时存在新旧文件时，
-扫描选择新文件，也可按显式路径读取相位版。Tools 在 Suite 作业、ML 检查、能级 CSV 和
-结果收集中识别新名称。上游 GRASP 作业仍使用 `.lsj.lbl`。
+态对部分相同时，扫描优先选择新版报告。相位版可按显式路径读取。Tools 的结果收集支持新的自然轨道后缀。
+Tools 的 Suite 作业、ML 检查和能级 CSV 识别新的文本交接文件名。上游 GRASP 作业仍使用 `.lsj.lbl`。

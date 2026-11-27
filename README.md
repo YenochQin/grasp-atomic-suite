@@ -198,13 +198,13 @@ coefficients with the corresponding Suite `rangular` program.
 
 MCP data belongs to the working directory. Finish the SCF run for a basis
 before generating another basis there, or use separate work and MPI scratch
-directories. States named `A` and `A.initial` also share the path `A.initial.wfn`
-and need separate directories. State readers use `.wfn` for orbitals, `.mix` for
+directories. State readers use `.wfn` for orbitals, `.mix` for
 RMCDHF coefficients, and `.cimix` for RCI coefficients.
 
 At each `Name of state:` prompt, enter a nonempty filename prefix from the
-calculation directory. State names have no path components, whitespace, or
-control characters. A single letter such as `Y` or `N` is a state name.
+calculation directory. State names may contain `-` and `_`. Dots, directory
+separators, whitespace, and control characters are forbidden. A single letter
+such as `Y` or `N` is a state name.
 For a two-state calculation, supply both prefixes in the prompted order.
 The shared reader validates both before the application uses either name.
 
@@ -220,10 +220,10 @@ Common output files:
 
 - `gj`: `name.gj` or `name.cgj`.
 - `rhfs`: `name.h/name.ch` and `name.hoffd/name.choffd`.
-- `rdensity`: `name.natural.wfn` (MCDHF) or `name.ci.natural.wfn` (CI), with `name.d` or `name.cd`.
+- `rdensity`: `name.mcdhf.natural-orbitals` (MCDHF) or `name.ci.natural-orbitals` (CI), with `name.d` or `name.cd`.
 - `ris4`: `name.mcdhf.isotope-shift` or `name.ci.isotope-shift`, with optional `name.ris4.one-body.angular.cache` and `name.ris4.two-body.angular.cache`.
 - `jj2lsj_omp`: `name.mcdhf.lsj.labels` or `name.ci.lsj.labels`.
-- `rtransition`: `initial.final.mcdhf.transition` or `initial.final.ci.transition`,
+- `rtransition` writes `initial.final.mcdhf.transition` or `initial.final.ci.transition`,
   with optional `.transition.lsj` reports. The phase executable adds `.phase` after `.transition`.
 
 `gj_mpi` accepts a state name with `--nonci` or `--ci`. Run it from the
