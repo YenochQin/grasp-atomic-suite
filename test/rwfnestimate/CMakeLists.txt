@@ -5,6 +5,10 @@ if(TARGET rwfnestimate AND Python3_Interpreter_FOUND)
                 --bindir $<TARGET_FILE_DIR:rwfnestimate> --element ${element})
         set_tests_properties(rwfnestimate_${element}_high_l PROPERTIES TIMEOUT 90)
     endforeach()
+    add_test(NAME rwfnestimate_default_grid
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/default_grid.py
+            --binary $<TARGET_FILE:rwfnestimate>)
+    set_tests_properties(rwfnestimate_default_grid PROPERTIES TIMEOUT 120 LABELS f2018_io)
     add_test(NAME rwfnestimate_header_input
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/header_input.py
             --binary $<TARGET_FILE:rwfnestimate>)

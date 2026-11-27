@@ -152,6 +152,12 @@ Zn I AS1 的 14,551 个 CSF 分成四个偶宇称块，按统计权重优化七�
 
 以 `bd4dcaa` 为基准，串行及 MPI 1/2/4 ranks 核对了单电子统计权重、两重简并投影、Ni I 九根的电子数和占据数，以及自然轨道 `RAD--WFN` 读回。候选在三个固定模型上的 24 份密度和轨道文件与同布局基准逐字节一致。Ni I 跨布局的矩阵和占据数最大差为 `1.78e-15`。同时关闭了 RIS4 错 J 标签和 FICAL 点核误判两项复现问题。[密度及性质输入实测](../reviews/evidence-0032-density-natural-orbitals.md)
 
+### P1 · 默认径向网格上的轨道初猜与导入
+
+2026-11-27，在 Suite `90b4eb9a` 上的当前工作树中，用 GNU Fortran 16.2.0 和 macOS arm64 比较本批修复前后的 `rwfnestimate`。四轨道夹具用 Z=28、2 个电子，分别走点核的 220 点和有限核的 590 点默认网格。两种核模型均核对 Thomas–Fermi、屏蔽氢样初猜和保存轨道的导入。导入夹具反转文件记录顺序并翻转轨道相位，以检查按 `(n, κ)` 匹配以及 P/Q 的相位对齐。Check 与 Release 的最大归一化误差为 `9.64e-11`，最大同 κ 非对角重叠为 `5.82e-12`，相位对齐后 P/Q 最大绝对差为 `2.25e-12`。同一构建配置下，修复前后的 8 份合法输出逐字节一致。[默认网格回归](../../test/rwfnestimate/default_grid.py)
+
+修复前，单点轨道表和重复半径可触发运行时信号。导入现在检查轨道元数据、表长、半径顺序与覆盖范围，并在拒绝输入时报告文件名。共用插值例程按源表的点数限制插值模板，保留与源表末点重合的目标网格点。两点源表只要覆盖足够的目标网格点即可通过。Check 和 Release 均通过 4 项初猜回归，包括原有 Ni/Zn 高角动量夹具。Check 另通过串行和 MPI 的状态工作流、4 项 RCI 续算回归及两项源码检查。输入、旧版复现、`metrics.log`、`check-ctest.log` 和 `release-ctest.log` 保存在工作区的 `temp/tests/rwfn-p1.dRQXeT/`。[导入检查](../../src/apps/rwfnestimate/estimate_from_saved_orbitals.f90) · [共用径向插值](../../src/lib/core/radial_orbital_interpolation.f90)
+
 ## 后续批次与共享库
 
 先用第一批夹具保护读写和失败语义，再迁移通信接口。改动共用矩阵、轨道或角系数之前，先取得相应消费者的固定输入数值基线。单个子项目可按自身依赖推进。以下路径以实现库为单位；描述符的 Rust 端和 Fortran 调用端共同验收。
@@ -174,7 +180,7 @@ Zn I AS1 的 14,551 个 CSF 分成四个偶宇称块，按统计权重优化七�
 
 | 应用目标 | 工作项 | 退出条件 |
 | --- | --- | --- |
-| `rwfnestimate` · P1 | 固定点核、有限核和自定义网格，分别核对导入轨道、Thomas–Fermi、氢样初猜及正交化路径。复用既有 Ni/Zn 高角动量夹具。[入口](../../src/apps/rwfnestimate/rwfnestimate_main.f90) | 比较轨道身份、节点数、同 κ 正交、归一化及相位对齐后的 P/Q，输出可供首轮 RMCDHF 读入。坏轨道元数据、点数与表长有明确诊断。 |
+| `rwfnestimate` · P1 本机默认网格验收完成 | 点核和有限核的默认网格均覆盖轨道导入、Thomas–Fermi、氢样初猜及正交化。Ni/Zn 高角动量夹具已通过。网格参数变化按全流程径向网格计划验收，在各建网格阶段统一设置 `RNT/H/HP/N` 并记录实际 `ACCY`。[入口](../../src/apps/rwfnestimate/rwfnestimate_main.f90) · [全流程径向网格计划](plan-0001-radial-grid-validation.md) | 已核对轨道身份、节点数、同 κ 正交、归一化及相位对齐后的 P/Q，串行和 MPI 工作流已确认首轮 RMCDHF 可读入输出。坏轨道元数据、点数与表长有明确诊断。 |
 | `rangular`、`rangular_mpi` · P1 | 核对配对工作区、计数、排序、续写和空分区。串行按 MCP 通道读取，MPI 按 rank 使用索引分片。[生成路径](../implemented/design-0017-rangular-flow-and-state.md) · [MPI MCP](../../src/lib/mpi/mpi_indexed_mcp.f90) | 逐对称块、CSF 对和积分标签核对稀疏位置、系数与相位。覆盖首阶限制、串行复用开关、错基组和分片不匹配，由相应 RMCDHF 消费端读回。 |
 | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` · P0 首轮夹具，P1 多根 | 分别冻结 EOL 根、权重、初始轨道、变化轨道、阻尼和停止参数。跟踪每块矩阵装配、每轮混合更新、轨道更新次序以及缓存或收缩失效条件。[SCF 状态及顺序](../implemented/design-0019-rmcdhf-flow-and-state.md) · [变体差异](../reviews/evidence-0007-rmcdhf-memory-variant-comparison.md) | 每个变体保存同输入下的固定轮次轨迹与独立收敛轨迹。逐轮核对能量、根与权重、系数、残差、P/Q 和停止原因。MPI 分别生成与本次 rank 布局匹配的 MCP；记录各 rank 峰值内存，检查 memory 路径是否因所有权调整引入多余副本。 |
 | `rci`、`rci_mpi` · P0 续算，P1 固定轨道 | 首批完成读取及局部失败回归。随后以同轨道、同基组、同算符，分别覆盖小稠密块、稀疏矩阵乘与磁盘续算，逐一切换 Coulomb、Breit 和实际支持的质量位移、QED 选项。[块求解](../../src/apps/rci/solve_hamiltonian_blocks.f90) · [已有 Breit 回归](../../test/rci_breit.py) | 核对块维度、矩阵元素和对称性、每根残差、总能量及激发能；冷启动与续算对照态身份与系数。保存最大差异的块、根和元素位置。 |

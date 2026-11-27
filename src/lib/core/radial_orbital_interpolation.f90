@@ -11,7 +11,6 @@ contains
         ! Module dependencies
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
-        use grasp_parameters,   only: max_radial_points
         use debug_output_settings, only: rmcdhf_debug_flags
         use atomic_calculation_state,           only: working_tolerance
         use radial_grid_state, only: radial_point_count, radial_grid
@@ -27,7 +26,7 @@ contains
 
         ! Local declarations
         integer, parameter :: maximum_stencil_size = 13
-        integer :: radial_index, last_target_index, lower_bracket_index, unconverged_point_count, stencil_row, &
+        integer :: radial_index, last_target_index, lower_bracket_index, unconverged_point_count, stencil_row, stencil_size, &
             & search_or_table_index, upper_bracket_index, search_lower_bound, search_upper_bound, nearest_unused_index, &
             current_cell, diagonal_cell, previous_cell, first_tail_index
         real(real64) :: source_maximum_radius
@@ -39,7 +38,7 @@ contains
             inverse_node_separation, large_estimate, small_estimate, large_relative_change, small_relative_change, &
             & normalization_factor
         logical :: found_candidate
-        logical :: selected_nodes(max_radial_points)
+        logical :: selected_nodes(source_grid_size)
         source_maximum_radius = source_radial_grid(source_grid_size)
         target_maximum_radius = radial_grid(radial_point_count)
         radial_large_components(1,orbital_index) = 0.0_real64
@@ -52,15 +51,15 @@ contains
             print*, "N =",radial_point_count,"MA =",source_grid_size
             stop
         end if
-        radial_index = radial_point_count
-        do
-            radial_index = radial_index - 1
-            if (radial_grid(radial_index) <= source_maximum_radius) exit
+        last_target_index = radial_point_count
+        do while (last_target_index > 1)
+            if (radial_grid(last_target_index) <= source_maximum_radius) exit
+            last_target_index = last_target_index - 1
         end do
-        last_target_index = radial_index
         orbital_last_grid_index(orbital_index) = last_target_index
         lower_bracket_index = 0
         unconverged_point_count = 0
+        stencil_size = min(maximum_stencil_size, source_grid_size)
         do radial_index = 2, last_target_index
             target_radius = radial_grid(radial_index)
             stencil_row = 0
@@ -72,8 +71,8 @@ contains
                 lower_bracket_index = search_or_table_index
             end do
             upper_bracket_index = search_or_table_index
-            search_lower_bound = max(lower_bracket_index - maximum_stencil_size,1)
-            search_upper_bound = min(upper_bracket_index + maximum_stencil_size,source_grid_size)
+            search_lower_bound = max(lower_bracket_index - stencil_size,1)
+            search_upper_bound = min(upper_bracket_index + stencil_size,source_grid_size)
             selected_nodes(search_lower_bound:search_upper_bound) = .false.
             do
                 stencil_row = stencil_row + 1
@@ -124,14 +123,14 @@ contains
                 large_estimate = large_component_table(diagonal_cell)
                 small_estimate = small_component_table(diagonal_cell)
                 if (large_estimate==0.0_real64 .or. small_estimate==0.0_real64) then
-                    if (stencil_row < maximum_stencil_size) cycle
+                    if (stencil_row < stencil_size) cycle
                 else
                     large_relative_change = abs((large_estimate - previous_large_estimate)/large_estimate)
                     small_relative_change = abs((small_estimate - previous_small_estimate)/small_estimate)
                     if (.not.(small_relative_change < working_tolerance .and. large_relative_change < working_tolerance)) then
                         previous_large_estimate = large_estimate
                         previous_small_estimate = small_estimate
-                        if (stencil_row < maximum_stencil_size) cycle
+                        if (stencil_row < stencil_size) cycle
                         unconverged_point_count = unconverged_point_count + 1
                     end if
                 end if

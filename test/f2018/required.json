@@ -96,6 +96,7 @@
         "ris4_cache_reuse_serial",
         "rwfnestimate_Ni_high_l",
         "rwfnestimate_Zn_high_l",
+        "rwfnestimate_default_grid",
         "rwfnestimate_header_input",
         "f2018_rci_sparse_serial",
         "f2018_rci_disk_serial",

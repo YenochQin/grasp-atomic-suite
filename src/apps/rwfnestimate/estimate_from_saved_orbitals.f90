@@ -17,10 +17,13 @@ contains
             open_wavefunction_input, read_orbital_payload
         use debug_output_settings, only: angular_debug_unit, ensure_debug_output
         use, intrinsic :: iso_fortran_env, only: real64
+        use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
         use array_memory_management, only: alloc, dalloc
         use debug_output_settings, only: rmcdhf_debug_flags
+        use input_error_handling, only: fail_input_io
         use initial_orbital_selection, only: max_orbitals, orbital_initialized
         use orbital_csf_basis, only: orbital_energy_parameters, orbital_principal_n, orbital_kappa, orbital_symmetry_labels
+        use radial_grid_state, only: radial_grid, radial_point_count
         use radial_wavefunctions, only: orbital_origin_parameters
         use initial_orbital_source, only: orbital_source_description
         use radial_orbital_interpolation, only: interpolate_radial_orbital
@@ -41,7 +44,7 @@ contains
         if (open_status /= 0) error stop "Cannot open radial wavefunction: "//trim(file_path)
         ! Check the file; if not as expected, try again
         call read_wavefunction_header(wavefunction_input_unit, layout, io_status)
-        if (io_status /= 0) error stop "Invalid radial wavefunction header"
+        if (io_status /= 0) call fail_input_io(io_status, wavefunction_input_unit, "Invalid radial wavefunction header")
         ! Read orbital information from Read Orbitals File; write summary
         ! to  .dbg  file if option set
         if (rmcdhf_debug_flags(3)) then
@@ -52,19 +55,35 @@ contains
             call read_orbital_metadata(layout, saved_principal_n, saved_kappa, &
                 saved_orbital_energy, saved_grid_point_count, io_status)
             if (is_iostat_end(io_status)) exit
-            if (io_status /= 0) error stop "Invalid orbital metadata"
+            if (io_status /= 0) call fail_input_io(io_status, wavefunction_input_unit, "Invalid orbital metadata")
             do matched_subshell_index = 1, matched_subshell_count
                 orbital_index = matched_orbital_indices(matched_subshell_index)
                 if (.not.(.not.orbital_initialized(orbital_index) .and. &
                     orbital_principal_n(orbital_index)==saved_principal_n .and. &
                     & orbital_kappa(orbital_index)==saved_kappa)) &
                     cycle
-                orbital_energy_parameters(orbital_index) = saved_orbital_energy
+                if (saved_grid_point_count < 2) call fail_input_io(0, wavefunction_input_unit, "Too few radial points")
+                if (.not.ieee_is_finite(saved_orbital_energy)) &
+                    call fail_input_io(0, wavefunction_input_unit, "Invalid orbital metadata: nonfinite energy")
                 call alloc (saved_large_component, saved_grid_point_count, "saved_large_component", "estimate_from_saved_orbitals")
                 call alloc (saved_small_component, saved_grid_point_count, "saved_small_component", "estimate_from_saved_orbitals")
                 call alloc (saved_radial_grid, saved_grid_point_count, "saved_radial_grid", "estimate_from_saved_orbitals")
                 call read_orbital_payload(layout, orbital_origin_parameters(orbital_index), &
                     saved_large_component, saved_small_component, saved_radial_grid)
+                if (.not.all(ieee_is_finite(saved_radial_grid))) &
+                    call fail_input_io(0, wavefunction_input_unit, "Nonfinite saved radial grid")
+                if (saved_radial_grid(1) < 0.0_real64 .or. &
+                    any(saved_radial_grid(2:) <= saved_radial_grid(:saved_grid_point_count-1))) &
+                    call fail_input_io(0, wavefunction_input_unit, "Saved radial grid must be nonnegative and strictly increasing")
+                if (radial_point_count < 3 .or. saved_radial_grid(saved_grid_point_count) < radial_grid(3)) &
+                    call fail_input_io(0, wavefunction_input_unit, "Saved radial table covers too few active grid points")
+                if (saved_radial_grid(saved_grid_point_count) > radial_grid(radial_point_count)) &
+                    call fail_input_io(0, wavefunction_input_unit, "Saved radial table extends beyond the active grid")
+                if (.not. all(ieee_is_finite(saved_large_component)) .or. &
+                    .not. all(ieee_is_finite(saved_small_component)) .or. &
+                    .not. ieee_is_finite(orbital_origin_parameters(orbital_index))) &
+                    call fail_input_io(0, wavefunction_input_unit, "Nonfinite saved radial orbital")
+                orbital_energy_parameters(orbital_index) = saved_orbital_energy
                 call interpolate_radial_orbital (saved_large_component, saved_small_component, saved_grid_point_count, &
                     & saved_radial_grid, orbital_index, radial_norm)
                 if (rmcdhf_debug_flags(3)) then
