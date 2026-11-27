@@ -1,6 +1,10 @@
 # Suite 原生读取 CSF 计算描述符 V3 计划
 
-2026-11-21 · Suite 实施完成 · 源码基线 `a2ce6c6`。本页保留接入设计和验收用例。后续的 V3 块索引和文件双向校验已在 `9d0a85f` 接入。格式主规范由 rCSFs 仓库的 `docs/CSF_DESCRIPTOR_V3_PLAN.md` 维护。[当前生产输入](../implemented/design-0001-native-csf-descriptors.md)
+2026-11-28 归档。核心接入以 `a2ce6c6` 为源码基线，于 2026-11-21 提交为 `30e35024`。
+`612ce512` 补齐高 J 及计算边界，`9d0a85fd` 加入 V3 块索引和文件双向校验。
+以 Suite `5e5cfe6d` 复验，40/40 项专项 CTest 通过。本页保留原接入设计和验收用例。
+格式主规范由 rCSFs 仓库的 `docs/CSF_DESCRIPTOR_V3_PLAN.md` 维护。
+[当前生产输入](../implemented/design-0001-native-csf-descriptors.md) · [专项验收记录](../reviews/evidence-0014-native-csf-descriptor-validation.md#v3-专项验收2026-11-28)
 
 ## 输入和内存索引
 

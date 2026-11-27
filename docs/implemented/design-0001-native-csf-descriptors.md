@@ -128,7 +128,7 @@ CTest 优先使用 `rustc` 同目录的 `rustdoc`，也可通过 `GRASP_RUSTDOC`
 迁移现有缓存时移除这两项，或选择新构建目录。
 生产二进制静态包含 reader，运行时不需要 Python、
 Rust 工具链或 Arrow C++；仍使用原有 Fortran、MPI、BLAS 和系统运行库。
-当前构建/部署验证范围为本机 Linux，未声称跨平台分发验收。
+独立安装验证在 Linux 本机完成。macOS arm64 的构建与专项回归见下文。
 
 ```fish
 cmake --build build-native --target csf_descriptor_build --parallel 4
@@ -164,6 +164,10 @@ rcsfs convert original.c Zn_odd_AS1_desc.parquet
 
 ## 验证记录
 
+2026-11-28，以 Suite `5e5cfe6d` 在 macOS arm64 上复验，GNU Fortran 16.2.0 Check 构建的
+40/40 项 V3 专项 CTest 通过，覆盖串行和 MPI 1、2、4 ranks。
+[专项验收记录](../reviews/evidence-0014-native-csf-descriptor-validation.md#v3-专项验收2026-11-28) · [接入计划归档](../archive/plan-0006-csf-descriptor-v3-integration.md)
+
 维护测试覆盖原生 reader/C ABI、显式闭核、深层错误清理、全数组/仅占据数组精确对照，
 RMCDHF 的实际 SETMCP/加载链路与标准权重，MPI 1/2/4 ranks、单列消息、worker 契约错误、root 输入错误，
 以及左右态不同轨道表的多次插入、顺序冲突和无文本的完整变换/跃迁流程。
@@ -171,8 +175,8 @@ RMCDHF 的实际 SETMCP/加载链路与标准权重，MPI 1/2/4 ranks、单列�
 [V3 计算边界回归](../../test/test_v3_calculation_boundaries.py) 使用 rCSFs 生成测试输入，在串行和双进程 MPI
 下核对高 j 占据的退出状态、MCP 块标签、RCI 混合文件与能级表，以及 gj 的输出。
 
-完整回归结果、基线修正、源码身份和验证边界见
-[本次迁移验收记录](../reviews/evidence-0014-native-csf-descriptor-validation.md)。
+2026-11-17 原生输入迁移的完整回归结果、基线修正、源码身份和验证边界见
+[初次迁移验收记录](../reviews/evidence-0014-native-csf-descriptor-validation.md)。
 
 ### V3 数值回归（2026-11-21）
 

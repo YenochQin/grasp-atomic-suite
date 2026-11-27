@@ -1,8 +1,8 @@
 # 原生描述符迁移验收记录
 
-日期：2026-11-17。源码基线：suite `5806884`、rCSFs `fea061f`；验证对象为基线后的本次迁移增量。
+2026-11-17 的原生输入迁移以 Suite `5806884` 和 rCSFs `fea061f` 为源码基线，验证对象为基线之后的迁移增量。
 rCSFs 实现随后记录为提交 `f17a862d77c45164a6d31ae1e9cfeb4efbd04cf6`。
-输入契约、组件及构建方式见[实施说明](../implemented/design-0001-native-csf-descriptors.md)。
+2026-11-28 的 V3 复验见本文末节。[现行输入契约与构建方式](../implemented/design-0001-native-csf-descriptors.md)
 
 ## 范围和对照
 
@@ -87,3 +87,28 @@ RCI、GJ/RHFS/RIS4、biotransform、transition/phase 的串行小型产物与基
 
 最终构建矩阵和测试数量以本地 `audit/native-validation.json` 及对应 CTest 日志为准。
 该清单记录实际完成的配置，不把未运行的完整工具链组合或跨平台分发计入验收。
+
+## V3 专项验收（2026-11-28）
+
+Suite `5e5cfe6d9841666c7095f40995a439ecb40722f7` 在 macOS arm64 上重新构建，
+**40/40 项专项 CTest 通过**，总用时 43.54 秒。构建采用 GNU Fortran 16.2.0、
+`f2018-check` 和 Open MPI 5.0.11，启用串行应用、MPI 和 JJ2LSJ OpenMP。
+依赖 rCSFs 的测试夹具由 4.1.0 原生 CLI 生成。[接入计划归档](../archive/plan-0006-csf-descriptor-v3-integration.md)
+
+- 原生 Rust reader、C ABI 和 Fortran 适配覆盖块定位、损坏输入、失败后重开、描述符数组对照，以及计划指定的三条解析 CSF 和 bra/ket 交换。[原生 reader 集成测试](../../test/test_native_descriptors.py)
+- 回归覆盖串行及 MPI 1、2、4 ranks，核对 MCP 结构和角系数、zero-first 块前缀、四种 RMCDHF 的 MCP/占据输入与标准权重，以及 RCI 的 V3 高 J 边界和续算。[MPI 描述符测试](../../test/rangular/test_mpi_descriptors.py)
+- 双基组合并及端到端变换、跃迁、Landé 因子、JJ2LSJ 和 header-only 径向初猜均纳入本次选测。[CTest 登记](../../test/CMakeLists.txt)
+
+从 Suite 根目录运行。`build_dir` 指向已完成构建的 Check 目录，配置时启用上述目标并通过
+`RCSFS_TEST_CLI` 指定支持带索引 V3 的 CLI。
+
+```fish
+set -l build_dir ../temp/tests/suite-native-check
+set -l test_root (realpath ../temp/tests)
+set -lx TMPDIR (mktemp -d "$test_root/v3.XXXXXX")
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ctest --test-dir "$build_dir" --parallel 6 --output-on-failure \
+    -R 'descriptor|state_workflow|single_subshell_tensor|rmcdhf_mcp_paths|rwfnestimate_header_input|^rci_restart|^lande_factors|^radiative_transitions|^jj2lsj_parallel_regression'
+```
+
+本机日志位于工作区的 `temp/tests/p6/build.log` 和 `temp/tests/p6/ctest-final.log`。
+本次范围为本机专项回归。生产规模 MCP I/O 和资源预算继续按 [plan-0005](../plans/plan-0005-rmcdhf-mcp-production-io.md) 验收。

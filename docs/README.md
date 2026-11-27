@@ -25,7 +25,7 @@
 | [design-0016-inline-output-formats.md](implemented/design-0016-inline-output-formats.md) | 数字标签 `FORMAT` 内联，覆盖共享库和应用的 903 处 `WRITE`、2 处 `PRINT`；源码、预处理和字节对照已验证。 |
 | [design-0006-shared-library-naming.md](implemented/design-0006-shared-library-naming.md) | 共享状态与基础接口库的命名约定、Fortran 调用方迁移和完整模块对照。 |
 | [design-0007-shared-library-procedure-names.md](implemented/design-0007-shared-library-procedure-names.md) | 共享库过程名称迁移表与现行 Fortran 调用入口。 |
-| [design-0001-native-csf-descriptors.md](implemented/design-0001-native-csf-descriptors.md) | 现行 V3 生产 CSF 输入、ABI、MPI、双基组、低内存、错误传播和数值回归。接入设计与验收用例见 [已实施的 V3 设计与验收](plans/plan-0006-csf-descriptor-v3-integration.md)。 |
+| [design-0001-native-csf-descriptors.md](implemented/design-0001-native-csf-descriptors.md) | 现行 V3 生产 CSF 输入、ABI、MPI、双基组、低内存、错误传播和数值回归。接入设计与验收用例见 [plan-0006 归档](archive/plan-0006-csf-descriptor-v3-integration.md)。 |
 | [design-0018-rangular-angular-reuse.md](implemented/design-0018-rangular-angular-reuse.md) | 已实施，串行专项回归通过；默认关闭的有界 CSF 对缓存；保留顺序、占据/耦合及轨道共享关系，复用原始 T/V 系数，普通 MCP 写出不变；包含命中率、缓存容量与 RSS 测量，MPI 未接入；rangular OpenMP 已移除。 |
 | [design-0023-rwfnestimate-header-input.md](implemented/design-0023-rwfnestimate-header-input.md) | header 输入说明；保留 header 轨道表、电子数和初猜检查背景；当前仅 header 输入，无旧文本回退。 |
 | [adr-0002-retire-strict-and-diagnostic-rmcdhf.md](implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md) | 已移除被否决变体；删除 strict/diag 两个独立求解器、专用测试、构建/安装入口及当前二进制；普通四种 RMCDHF 和共享库保持原流程。 |
@@ -84,7 +84,7 @@
 | [多 J 块 MCP 容量与读写成本](reviews/evidence-0017-rangular-mcp-io.md) | 串行与双进程文件字节对照，48-rank 历史作业的容量和读写核算，以及面向 RMCDHF 的分块积分目录、每次密度更新后的流式收缩和验收方法。 |
 | [evidence-0016-fortran-source-and-readme-review.md](reviews/evidence-0016-fortran-source-and-readme-review.md) | 已修复审查列出的 Fortran 命名、注释及 README 问题，记录串行和 MPI 回归及 macOS 内存探测限制。 |
 | [evidence-0015-fortran-alias-audit.md](reviews/evidence-0015-fortran-alias-audit.md) | Fortran 导入重命名与旧命名兼容入口已清除，含迁移对照、旧接口拒绝验证及运行结果比较。 |
-| [evidence-0014-native-csf-descriptor-validation.md](reviews/evidence-0014-native-csf-descriptor-validation.md) | 原生 CSF 输入的功能回归、矩阵及告警门禁边界；保留独立验收证据。 |
+| [evidence-0014-native-csf-descriptor-validation.md](reviews/evidence-0014-native-csf-descriptor-validation.md) | 原生 CSF 输入迁移的功能回归、构建矩阵及告警门禁边界。2026-11-28 在 Suite `5e5cfe6d` 上完成 [V3 专项验收](reviews/evidence-0014-native-csf-descriptor-validation.md#v3-专项验收2026-11-28)，40/40 项 CTest 通过。 |
 | [evidence-0012-fortls-fortitude-audit.md](reviews/evidence-0012-fortls-fortitude-audit.md) | 迁移前工具审查；基准 5806884；保留原静态扫描及解析边界。之后生产 CSF reader 已替换，不能将旧风险与计数当作当前状态。 |
 | [evidence-0013-fortls-fortitude-rescan.md](reviews/evidence-0013-fortls-fortitude-rescan.md) | 工具对照证据；保留 S1–S4 后的解析器/编译器对照与检查边界；旧计数和 CSF 输入风险已由后续修改覆盖，不能直接作为当前执行清单。 |
 | [evidence-0011-rmcdhf-mcp-precontraction.md](reviews/evidence-0011-rmcdhf-mcp-precontraction.md) | 已完成依赖与预收缩分析；普通 RMCDHF 的矩阵/势两条 MCP 消费路径；EOL 动态密度限制、全冻结积分收缩为 H_fixed、角向模板和迭代期收缩缓存。数学可行性与现行支持分开，未改代码或运行收缩/SCF 实验。 |
@@ -111,6 +111,7 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
+| [CSF 描述符 V3 接入计划](archive/plan-0006-csf-descriptor-v3-integration.md) | 四步接入已完成，2026-11-28 归档。保留逐轨道累计耦合码设计及验收用例。 |
 | [普通 GRASP 导入](archive/2026-11-08-plan-0002-standard-grasp-integration.md) | 保存原始程序来源、接入范围及历史构建记录。 |
 | [GNU 15 迁移方案](archive/plan-0002-f2018-migration-gnu15.md) | 保留数值夹具与验收协议，旧构建和目标按原版本阅读。 |
 | [jj2lsj 后处理方案](archive/design-0030-jj2lsj-postprocessing-pipeline.md) | 稳定排序、计时和 ASF 排序已实施，跨块流水线经计时后暂缓。 |
@@ -128,8 +129,7 @@
 现有 gj 回归脚本缺口及 RIS 专项数值覆盖问题不能靠旧优化报告关闭；测试入口见
 [test/CMakeLists.txt](../test/CMakeLists.txt)和[求解器测试说明](../test/rmcdhf/README.md)。
 
-已完成的 USE ONLY、格式整理、大小写/首批改名、模块化、输入/数值修复和 F2018 分批报告，
-以及已完成的 CSF 接入计划均可从 Git 历史追溯。现行契约见
+已完成的 USE ONLY、格式整理、大小写/首批改名、模块化、输入/数值修复和 F2018 分批报告可从 Git 历史追溯。现行契约见
 [兼容性说明](implemented/design-0004-f2018-compatibility.md)和[原生输入说明](implemented/design-0001-native-csf-descriptors.md)。
 测试引用的来源快照、告警基线和仍供后续工作使用的清单继续保留。
 
