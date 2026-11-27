@@ -11,7 +11,7 @@ contains
     !        This routine calls setham to do the computation. It makes
     !        sure that the hamiltonian matrix is complete.
     !  Only node-0 has the correct, non-zero elsto. And in any case, elsto
-    !  is not added to the matrix elements in files *.res
+    !  is not added to the matrix elements in restart files
     !  This routine has been re-written to work in both single- and
     !  multi- processors.
     !
@@ -70,9 +70,9 @@ contains
         ! A more suitable report on all nodes can be done here, but this will
         ! set a synchronization point.
 
-        write (stderr_unit, *) restart_rows_read, " (total ", row_count, ") rows read from .res"
+        write (stderr_unit, *) restart_rows_read, " (total ", row_count, ") rows read from restart file"
         if (mpi_rank == 0) write (summary_output_unit, *) restart_rows_read, " (total ", row_count, &
-            ") rows read from .res"
+            ") rows read from restart file"
 
         ! Position the file for the next record from setham
 

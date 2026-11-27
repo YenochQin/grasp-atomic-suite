@@ -33,7 +33,7 @@ strict/diag 独立变体已按用户决定[移除](adr-0002-retire-strict-and-di
 | `isodata` | 核与同位素输入，由 `GETSCD → SETISO` 读取。 |
 | `name_desc.parquet` 与配套 TOML | `load_csf_basis_data` 安装 V3 占据和对称块信息，并与 MCP 元数据核对。 |
 | `name.initial.wfn` | 径向初猜或续算轨道。 |
-| `mcp.30`、`mcp.31`、`mcp.(32+k)` | 稀疏结构、一电子/二电子角系数及选项元数据；初始化后在矩阵和系数构造中复读。 |
+| `S.mcp.30`、`S.mcp.31`、`S.mcp.(32+k)` | 稀疏结构、一电子/二电子角系数及选项元数据；初始化后在矩阵和系数构造中复读。 |
 | 可选 `npol.inp` | `NPOL_INIT` 初始化局域核极化修正，并更新核势数组 `ZZ`；输入契约见[核极化说明](design-0022-rmcdhf-nuclear-polarization.md)。 |
 | 交互输入 | 优化目标与权重、冻结轨道、改善顺序、求解方法、阻尼、精度和迭代上限。 |
 | `name.wfn` | 写出当前径向轨道，收敛状态见计算摘要。 |
@@ -118,7 +118,7 @@ IF (ABS((WTAEV - WTAEV0)/WTAEV) < 0.001*ACCY) CONVG = .TRUE.
 [SETHAM](../../src/apps/rmcdhf/assemble_hamiltonian_block.f90) 同时包含两类贡献：
 
 - 用 `IQ/FCO/GCO` 等计算角系数的解析对角项，配合 `RINTI/SLATER` 累加。
-- 读 `mcp.31` 的一电子标签及贡献列表，或 `mcp.(32+k)` 的二电子列表；
+- 读 `S.mcp.31` 的一电子标签及贡献列表，或 `S.mcp.(32+k)` 的二电子列表；
   每个积分标签计算一次对应径向积分，再按 `INDX` 将 `TEGRAL*COEFF` 加入 `EMT`。
 
 不同积分标签的贡献可以落到相同的 `EMT` 元素，因此“积分可独立算”不意味着

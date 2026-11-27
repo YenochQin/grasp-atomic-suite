@@ -19,7 +19,6 @@ OBJS= \
 	 \
 	map_merged_orbitals.o \
 	 \
-	prepare_transition_mixing_coefficients.o \
 	 \
 	single_particle_transition_element.o \
 	 \

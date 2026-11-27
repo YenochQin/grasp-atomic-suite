@@ -15,7 +15,7 @@
 !
 ! Modified by Gediminas Gaigalas for new spin-angular integration
 ! and for reducing usage of CPU memory.        NIST, October 2017
-program rbiotransform_main
+program biorthtransform_main
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: int64, output_unit, real64
     use grasp_parameters,   only: max_orbitals, max_radial_points
@@ -26,6 +26,9 @@ program rbiotransform_main
     use radial_wavefunctions,          only: initial_radial_large_components, initial_radial_small_components, &
         final_radial_large_components, final_radial_small_components
     use biorthogonal_orbital_rotations,         only: initial_orbital_rotation_values, final_orbital_rotation_values
+    use biorthogonal_state_files, only: biorthogonal_pair, files_for_biorthogonal_pair, &
+        begin_biorthogonal_output, complete_biorthogonal_output
+    use csf_descriptor_reader, only: loaded_csf_basis_id
     use yes_no_input, only: read_yes_no
     use machine_constants, only: initialize_machine_constants
     use physical_constants, only: initialize_physical_constants
@@ -68,7 +71,10 @@ program rbiotransform_main
     character :: name(2)*24
     character(len=128) :: isotope_file_path
 
-    call begin_run_timer (start_clock_count, "RBIOTRANSFORM")
+    type(biorthogonal_pair) :: pair
+    character(64) :: basis_ids(2)
+
+    call begin_run_timer (start_clock_count, "BIORTHTRANSFORM")
     isotope_file_path = "isodata"
     ! Debug flags
     global_trace_level = 0
@@ -79,10 +85,9 @@ program rbiotransform_main
     write(*,*) "used in evaluation of the transition parameters"
     write(*,*) "Input files:  isodata, name1_desc.parquet, name1.wfn, name1.mix/name1.cimix"
     write(*,*) "              name2_desc.parquet, name2.wfn, name2.mix/name2.cimix         "
-    print*,"              name1.TB, name2.TB (optional angular files)"
-    write(*,*) "Output files: name1.bw, name1.(c)bm, "
-    write(*,*) "              name2.bw, name2.c(bm)"
-    write(*,*) "              name1.TB, name2.TB (angular files)"
+    print*,"              name1.biorth.angular.cache, name2.biorth.angular.cache (optional angular files)"
+    write(*,*) "Output: biorth/<initial>/<final>/<mcdhf|ci>/ (two orbitals, two mixing files, manifest)"
+    write(*,*) "              name1.biorth.angular.cache, name2.biorth.angular.cache (angular files)"
     write(*,*)
 
     write (output_unit, *) "Default settings?"
@@ -124,19 +129,28 @@ program rbiotransform_main
     call initialize_radial_stencil_weights
     ! Resolve the input paths and prepare output for the transformed orbitals and mixing coefficients.
     call read_state_pair(name(1), name(2))
-    call select_biorthogonal_symmetries(name)
+    if (name(1) == name(2)) then
+        write(*, "(a)") "Same state on both sides. Run rtransition with the original orbital and mixing files."
+        call finish_run_timer (start_clock_count, "BIORTHTRANSFORM")
+        stop
+    end if
+    pair = files_for_biorthogonal_pair(name, mixing_file_kind == 0, ".")
+    call select_biorthogonal_symmetries()
     ! Load the initial-state CSF descriptors.
     call load_merged_csf_basis (name(1), initial_core_subshell_count,1)
+    basis_ids(1) = loaded_csf_basis_id
     ! Preserve the initial-state data before loading the final state.
     call copy_state_csf_data (1)
     ! Load the final-state CSF descriptors.
     call load_merged_csf_basis (name(2), final_core_subshell_count,2)
+    basis_ids(2) = loaded_csf_basis_id
     ! Preserve the final-state data for the transformation.
     call copy_state_csf_data (2)
     ! Determine the number of kappa quantum numbers and
     ! the number of orbitals for each kappa quantum number
     ! for the initial state and final states
     call prepare_biorthogonal_subshells (global_trace_level, initial_core_subshell_count, final_core_subshell_count)
+    call begin_biorthogonal_output(pair)
     ! Read the the radial orbitals for the initial state
     call read_initial_radial_wavefunctions (name(1), global_trace_level)
     ! Read the the radial orbitals for the initial state
@@ -172,19 +186,20 @@ program rbiotransform_main
 
     call calculate_orbital_overlap_matrix
     ! Write the transformed radial functions to file
-    call write_transformed_radial_wavefunctions (name)
+    call write_transformed_radial_wavefunctions (pair%sides)
     ! Obtain one-electron coupling coefficients for the initial state.
     ! The coefficients are dumped on files one kappa in turn and
     ! thus the different kappa can be manipulated independently.
     ! The interface with the transformation part is in the routine mcp
-    call prepare_biorthogonal_mcp (name(1), 1, global_trace_level, mixing_file_kind)
+    call prepare_biorthogonal_mcp (name(1), 1, global_trace_level, mixing_file_kind, pair%sides(1)%mixing)
     ! Obtain one-electron coupling coefficients for the final state.
     ! The coefficients are dumped on files one kappa in turn and
     ! thus the different kappa can be manipulated independently.
     ! The interface with the transformation part is in the routine mcp
-    call prepare_biorthogonal_mcp (name(2), 2, global_trace_level, mixing_file_kind)
+    call prepare_biorthogonal_mcp (name(2), 2, global_trace_level, mixing_file_kind, pair%sides(2)%mixing)
 
-    call finish_run_timer (start_clock_count, "RBIOTRANSFORM")
+    call complete_biorthogonal_output(pair, name, basis_ids)
+    call finish_run_timer (start_clock_count, "BIORTHTRANSFORM")
 
     stop
-end program rbiotransform_main
+end program biorthtransform_main

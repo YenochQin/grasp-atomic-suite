@@ -20,7 +20,7 @@ def candidates() -> list[tuple[str, str, int]]:
               ("src/apps/rwfnestimate/solve_homogeneous_radial_equation.f90", "0.1e00", 1),
               ("src/apps/rwfnestimate/solve_homogeneous_radial_equation.f90", "0.2e00", 2)]
     cases += [(f"src/apps/{name}/radial_density_ratio.f90", "0.0219", 1) for name in ("rci", "rci_mpi")]
-    cases += [(f"src/apps/{name}/invert_banded_matrix.f90", "1.0e-8", 1) for name in ("rbiotransform", "rbiotransform_mpi")]
+    cases += [(f"src/apps/{name}/invert_banded_matrix.f90", "1.0e-8", 1) for name in ("biorthtransform", "biorthtransform_mpi")]
     cases += [("src/apps/jj2lsj/jj2lsj_conversion.f90", literal, 1)
               for literal in ("0.01", "1.0001", "0.00001", "1.001", ".998")]
     cases += [(f"src/apps/{name}/write_lsj_transition_probability.f90", "0.00000001", 1)

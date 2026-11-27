@@ -38,8 +38,8 @@
         "f2018_bndinv_interfaces",
         "f2018_numeric_provenance",
         "f2018_qed_boundary",
-        "f2018_bndinv_rbiotransform",
-        "f2018_bndinv_rbiotransform_mpi",
+        "f2018_bndinv_biorthtransform",
+        "f2018_bndinv_biorthtransform_mpi",
         "jj2lsj_nonfinite_ranking",
         "jj2lsj_unique_io_build",
         "jj2lsj_unique_io",
@@ -88,7 +88,7 @@
         "rangular",
         "csf_descriptor_verify",
         "rci",
-        "rbiotransform",
+        "biorthtransform",
         "rtransition",
         "rtransition_phase",
         "rmcdhf",
@@ -126,7 +126,7 @@
         "ris4_mpi",
         "rangular_mpi",
         "rci_mpi",
-        "rbiotransform_mpi",
+        "biorthtransform_mpi",
         "rtransition_mpi",
         "rmcdhf_mpi",
         "rmcdhf_mem_mpi"
@@ -216,13 +216,13 @@
         "test.mcp_io_rmcdhf",
         "test.mcp_io_rmcdhf_mem",
         "test.mcp_memory_rmcdhf_mem",
-        "test.csf_record_rbiotransform"
+        "test.csf_record_biorthtransform"
       ],
       "tests": [
         "f2018_mcp_io_rmcdhf",
         "f2018_mcp_io_rmcdhf_mem",
         "f2018_mcp_memory_rmcdhf_mem",
-        "f2018_csf_record_rbiotransform"
+        "f2018_csf_record_biorthtransform"
       ]
     },
     {
@@ -231,11 +231,11 @@
         "mpi"
       ],
       "targets": [
-        "test.csf_record_rbiotransform_mpi",
+        "test.csf_record_biorthtransform_mpi",
         "test.cpath_io"
       ],
       "tests": [
-        "f2018_csf_record_rbiotransform_mpi",
+        "f2018_csf_record_biorthtransform_mpi",
         "f2018_cpath_io_mpi"
       ]
     }

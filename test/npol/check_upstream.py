@@ -32,6 +32,7 @@ SPARSE_STORAGE_SNAPSHOT = Path("docs/reference/rmcdhf_sparse_storage_snapshot.js
 BASIS_OWNERSHIP_SNAPSHOT = Path("docs/reference/rmcdhf_basis_ownership_snapshot.json")
 HOST_MEMORY_SNAPSHOT = Path("docs/reference/rmcdhf_optional_host_memory_snapshot.json")
 STATE_INPUT_SNAPSHOT = Path("docs/reference/rmcdhf_required_state_input_snapshot.json")
+NAMED_MCP_SNAPSHOT = Path("docs/reference/rmcdhf_named_mcp_snapshot.json")
 
 
 def suite_source_path(root: Path, upstream_path: str, renamed_paths: dict[str, str]) -> Path:
@@ -503,7 +504,7 @@ def main(root: Path) -> None:
     for snapshot in (DIAGNOSTIC_LABELS_SNAPSHOT, V3_J_LABELS_SNAPSHOT, APP_COMMENTS_SNAPSHOT, MPI_RUN_LOGGING_SNAPSHOT,
                      MPI_MCP_IO_SNAPSHOT, RUN_TIMER_SNAPSHOT, REQUIRED_ASF_ROOTS_SNAPSHOT,
                      RADIAL_STREAM_SNAPSHOT, MIXING_STREAM_SNAPSHOT, MPI_F08_SNAPSHOT, SPARSE_STORAGE_SNAPSHOT,
-                     BASIS_OWNERSHIP_SNAPSHOT, HOST_MEMORY_SNAPSHOT, STATE_INPUT_SNAPSHOT):
+                     BASIS_OWNERSHIP_SNAPSHOT, HOST_MEMORY_SNAPSHOT, STATE_INPUT_SNAPSHOT, NAMED_MCP_SNAPSHOT):
         app_update = json.loads((root / snapshot).read_text())
         assert app_update["schema_version"] == 1, f"Unknown application snapshot schema: {snapshot}"
         assert app_update["previous_manifest_sha256"] == hashlib.sha256(

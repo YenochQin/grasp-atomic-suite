@@ -20,7 +20,7 @@ contains
     !
     ! Translated by Charlotte Froese Fischer
     !                        Gediminas Gaigalas  10/05/17
-    subroutine read_biorthogonal_mcp (name,ik,global_trace_level,mixing_file_kind)
+    subroutine read_biorthogonal_mcp (name,ik,global_trace_level,mixing_file_kind,output_path)
         ! Module dependencies
         use biorthogonal_subshell_layout, only: biorthogonal_angular_unit
         use mixing_file_format, only: mixing_file, open_transformed_mixing_stream, write_mixing_block, close_mixing_stream
@@ -49,11 +49,11 @@ contains
 
         ! Local declarations
         type(mixing_file) :: input_file
-        character(:), allocatable :: output_path
         integer :: biorthogonal_mixing_output_unit, io_status
 
         ! Arguments
         character(len=24), intent(in) :: name
+        character(*), intent(in) :: output_path
         integer, intent(in) :: ik, global_trace_level, mixing_file_kind
 
         ! Local constants
@@ -187,7 +187,6 @@ contains
             call dalloc (transformed_ci_workspace, "transformed_ci_workspace", "read_biorthogonal_mcp")
             ! Write the rotated CI vectors using the source symmetry directory and basis digest.
             if (symmetry_block_index == 1) then
-                output_path = trim(name)//merge(".cbm", ".bm ", mixing_file_kind == 0)
                 call open_transformed_mixing_stream(input_file, trim(output_path), biorthogonal_mixing_output_unit, io_status)
                 if (io_status /= 0) call fail_input_io(io_status, -1, "Cannot create "//trim(output_path))
             end if

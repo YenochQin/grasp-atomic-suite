@@ -11,15 +11,17 @@ Original publication: [Ekman et al. Comput. Phys. Comm. 235 (2019) 433](https://
 `ris4` is the serial program and `ris4_mpi` distributes the matrix-element
 calculation across MPI ranks. Both read `isodata`, `name_desc.parquet`,
 `name_header.toml`, `name.wfn`, and either `name.mix` or `name.cimix`. They
-write `name.i` for MCDHF or `name.ci` for CI. These per-state reports are the
+write `name.mcdhf.isotope-shift` for MCDHF or `name.ci.isotope-shift` for CI. These per-state reports are the
 inputs to [FICAL](#fical). An optional one-body or two-body angular cache can
 be reused across mixing vectors and field models on the same ordered CSF basis.
 RIS4 recomputes coefficients for legacy caches and for incompatible basis or operator settings.
 
 ### FICAL
 
-`fical` reads the two states' RIS4 `.i` or `.ci` reports and an `isodata` file in
-the working directory. It prompts for the state names and writes
+`fical` reads the two states' RIS4 reports and an `isodata` file in the working
+directory. Optional LSJ labels use `name.mcdhf.lsj.labels` or `name.ci.lsj.labels`.
+FICAL tries the previous `.txt` names before falling back to `.i` or `.ci`
+for the RIS4 reports and `.lsj.lbl` for the labels. It writes
 `<state1>.<state2>.fi` or `<state1>.<state2>.cfi`. It uses the unit on each
 converted NMS and SMS row and reports differences in the requested GHz, MHz,
 or meV units. A missing or unsupported mass-shift unit is an input error.
@@ -101,8 +103,8 @@ cmake --build build-gf16 --target fical
 
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
-| [`open_isotope_shift_angular_cache.f90`](open_isotope_shift_angular_cache.f90) | 按算符类别找 `.IOB` 或 `.ITB`，先探测底层流可读性，再检查 `-1` 结束记录及其后的版本、基组摘要、算符、轨道标签基数和筛选阈值。通过后回卷供读取，缺失、不完整或不匹配时重算。 |
-| [`open_summary_file.f90`](open_summary_file.f90) | 按状态和混合文件类型为 `.i` 或 `.ci` 建立报告输出单元，交给电子因子例程写入。 |
+| [`open_isotope_shift_angular_cache.f90`](open_isotope_shift_angular_cache.f90) | 按算符类别找 `.ris4.one-body.angular.cache` 或 `.ris4.two-body.angular.cache`，先探测底层流可读性，再检查 `-1` 结束记录及其后的版本、基组摘要、算符、轨道标签基数和筛选阈值。通过后回卷供读取，缺失、不完整或不匹配时重算。 |
+| [`open_summary_file.f90`](open_summary_file.f90) | 按状态和混合文件类型建立电子因子报告的输出单元，交给电子因子例程写入。 |
 | [`read_field_shift_factors.f90`](read_field_shift_factors.f90) | 读取缓存的 CSF 对和单电子角系数。重建接触密度、NMS 和径向矩的矩阵元，再用当前混合系数得到能级值。 |
 | [`read_field_shift_factors_mpi.f90`](read_field_shift_factors_mpi.f90) | 按记录所属 rank 取缓存的一体角系数，以对应轨道积分组装局部的 $\rho(0)$、NMS 和径向矩贡献。 |
 | [`read_seltzer_field_shift_factors.f90`](read_seltzer_field_shift_factors.f90) | 复用缓存一体角系数并同时重建每个 CSF 对的径向密度剖面，收缩到能级后交给拟合。 |

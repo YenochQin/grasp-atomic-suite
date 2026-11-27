@@ -1,13 +1,13 @@
-# rbiotransform：轨道双正交变换
+# biorthtransform：轨道双正交变换
 
-`rbiotransform` 为分别优化的初态和末态准备辐射跃迁输入。它将两套径向轨道变换为
+`biorthtransform` 为分别优化的初态和末态准备辐射跃迁输入。它将两套径向轨道变换为
 双正交轨道，并对混合系数做相应的补偿变换，以保持各自的多电子态。
 
 程序读取 `isodata`，以及每个态的 `name_desc.parquet`、`name_header.toml`、`name.wfn`
-和 `name.mix` 或 `name.cimix`。程序为每个态写出 `name.bw` 和 `name.bm`（MCDHF）或
-`name.cbm`（CI）供跃迁程序读取。可选的 `name.TB` 文件保存角向数据。复用时校验块头和末尾完成记录中的基组摘要、κ 分组及所选 J。旧格式或身份不匹配时会重算；关闭保存且需要重算时，角记录通过临时文件传给系数变换。
+和 `name.mix` 或 `name.cimix`。变换产物写入 `biorth/<初态>/<末态>/<mcdhf|ci>/`，由两侧轨道和混合流以及完成清单组成。同态跃迁直接用原始轨道和混合流。 [路径与校验规则](../../../docs/reviews/evidence-0033-output-file-formats.md#有序态对交接与跃迁报告)
+可选的 `name.biorth.angular.cache` 保存角向数据。复用时校验块头及完成记录中的基组摘要、κ 分组和所选 J。身份不匹配时重算。关闭保存时，通过临时文件传递重算的角记录。
 
-[rtransition](../rtransition/README.md) · [rtransition_phase](../rtransition_phase/README.md) · [MPI 版本](../rbiotransform_mpi/README.md)
+[rtransition](../rtransition/README.md) · [rtransition_phase](../rtransition_phase/README.md) · [MPI 版本](../biorthtransform_mpi/README.md)
 
 ## 计算流程
 
@@ -28,7 +28,7 @@
 | [`configure_radial_grid.f90`](configure_radial_grid.f90) | 按核模型设置 `RNT`、`H`、`HP`、点数和精度。在非默认模式读取覆盖值，为两套轨道建立共同插值网格。 |
 | [`copy_state_csf_data.f90`](copy_state_csf_data.f90) | 把共享基组的电子、CSF、轨道计数和 $n,\kappa,l,2j$ 及标签复制到指定态的专用数组，以便后续加载另一态。 |
 | [`load_merged_csf_basis.f90`](load_merged_csf_basis.f90) | 加载指定状态的原生描述符基组及块信息。按加载阶段释放旧占据／耦合数组或保留相应状态映射，供双正交角系数处理。 |
-| [`rbiotransform_main.f90`](rbiotransform_main.f90) | 装入初末态的描述符、径向波函数与重叠网格，按 $\kappa$ 配对后求跨态重叠。变换轨道，再逐态求反变换后的混合系数，写出 `.bw` 与 `.bm`／`.cbm`。 |
+| [`biorthtransform_main.f90`](biorthtransform_main.f90) | 装入初末态的描述符、径向波函数与重叠网格，按 $\kappa$ 配对后求跨态重叠。变换轨道，再逐态求反变换后的混合系数，写出 `.biorth.wfn` 与 `.biorth.mix`／`.biorth.cimix`。 |
 | [`read_final_radial_wavefunctions.f90`](read_final_radial_wavefunctions.f90) | 同样验证并扫描末态径向文件，按末态轨道顺序保留成功匹配的记录，对其 $P,Q$ 执行末态插值。 |
 | [`read_initial_radial_wavefunctions.f90`](read_initial_radial_wavefunctions.f90) | 读初态 `RAD--WFN`，按量子数匹配轨道，保存能量和原点参数，再把初态大小分量插值至工作网格。 |
 | [`select_biorthogonal_symmetries.f90`](select_biorthogonal_symmetries.f90) | 在公共模块校验初末态名后，处理同名计算并询问是否继续。若只变换特定 $J$，把用户的 `2J` 转成程序的 `2J+1` 选择列表。 |
@@ -47,7 +47,7 @@
 | [`prepare_biorthogonal_mcp.f90`](prepare_biorthogonal_mcp.f90) | 为选定态重新装入 CSF 数据，初始化阶乘表，生成或复用双正交一体角记录，再用记录和变换矩阵反变换态向量。 |
 | [`prepare_biorthogonal_subshells.f90`](prepare_biorthogonal_subshells.f90) | 收集两态的 $\kappa$ 值并建立对称组，生成原轨道、组内顺序与闭核／活跃分区间的映射，为方阵重叠和不等维变换准备索引。 |
 | [`transform_orbital_sets.f90`](transform_orbital_sets.f90) | 各 $\kappa$ 组取共同方块重叠 $S$，把 $S^{-1}$ 作 UL 分解，得到满足 $C_i^{\mathsf T}SC_f=I$ 的轨道旋转。额外轨道以共同子空间的投影消去重叠，再按两侧变换矩阵更新 $P,Q$ 及反变换所需数据。 |
-| [`write_biorthogonal_mcp.f90`](write_biorthogonal_mcp.f90) | 遍历选择的 $J$ 块及 CSF 对，生成子壳间的一体角系数。收集轨道对、CSF 左右索引和系数，排序后写入或复用 `.TB`。 |
+| [`write_biorthogonal_mcp.f90`](write_biorthogonal_mcp.f90) | 遍历选择的 $J$ 块及 CSF 对，生成子壳间的一体角系数。收集轨道对、CSF 左右索引和系数，排序后写入或复用 `.biorth.angular.cache`。 |
 
 ### 径向积分与轨道
 
@@ -66,7 +66,7 @@
 | --- | --- |
 | [`apply_occupation_factor.f90`](apply_occupation_factor.f90) | 为指定子壳计算依赖该 CSF 占据的对角变换幂，逐能级把这个比例作用到对应的混合系数。 |
 | [`apply_subshell_transfer.f90`](apply_subshell_transfer.f90) | 查找转移的轨道对和匹配的 MCP 角项，用一体激发系数与轨道变换元更新目标 CSF 向量，供反变换的非对角高阶项累加。 |
-| [`read_biorthogonal_mcp.f90`](read_biorthogonal_mcp.f90) | 逐块读取原混合向量和已整理角记录，按 $\kappa$ 组应用反变换，用原根、能量和块维数写出变换后的 `.bm`／`.cbm`。MPI 的共享混合输出由 rank 0 写。 |
+| [`read_biorthogonal_mcp.f90`](read_biorthogonal_mcp.f90) | 逐块读取原混合向量和已整理角记录，按 $\kappa$ 组应用反变换，用原根、能量和块维数写出变换后的 `.biorth.mix`／`.biorth.cimix`。MPI 的共享混合输出由 rank 0 写。 |
 | [`transform_ci_coefficients.f90`](transform_ci_coefficients.f90) | 先累乘满占据惰性壳上的对角因子，再逐活跃子壳应用依赖占据的缩放及非对角转移。将逐阶转移按逆阶乘相加，构造补偿轨道旋转后的 CI 向量。 |
 
 ### 存储与输出
@@ -77,7 +77,7 @@
 | [`print_matrix_symmetry.f90`](print_matrix_symmetry.f90) | 读取打包三角存储，按起止索引逐行输出矩阵，供 LU 分解诊断。 |
 | [`sort_biorthogonal_mcp.f90`](sort_biorthogonal_mcp.f90) | 对轨道对打包标签执行堆排序，保持左右 CSF 与系数对应。按相同标签重组并记录每组贡献的边界。 |
 | [`write_matrix.f90`](write_matrix.f90) | 按给定子矩阵范围格式化打印工作区，供重叠、分解和变换矩阵诊断使用。 |
-| [`write_transformed_radial_wavefunctions.f90`](write_transformed_radial_wavefunctions.f90) | 分别按 `RAD--WFN` 写初、末态 `.bw`，保存变换后的大、小分量、能量、原点参数和对应的径向格点。 |
+| [`write_transformed_radial_wavefunctions.f90`](write_transformed_radial_wavefunctions.f90) | 分别按 `RAD--WFN` 写初、末态 `.biorth.wfn`，保存变换后的大、小分量、能量、原点参数和对应的径向格点。 |
 
 ### 支持例程
 

@@ -7,11 +7,11 @@ module connect_ci_restart_file_interface
     public :: connect_ci_restart_file
 contains
 
-    !   Open, check, load data from the  .res  file.
+    ! Open, validate and load the state-specific restart file.
     !
     ! Written by Farid A. Parpia. Last revision: 06 Oct 1992
     ! Modified by Xinghong. Last revision: 23 Jun 1998
-    subroutine connect_ci_restart_file(isotope_file_path, radial_file_path, block_labels, is_restart)
+    subroutine connect_ci_restart_file(state, isotope_file_path, radial_file_path, block_labels, is_restart)
         ! Module dependencies
         use array_memory_management, only: alloc
         use calculation_input_defaults, only: nondefault_options_flag
@@ -22,6 +22,7 @@ contains
         use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_logical, mpi_rank
         use yes_no_input, only: read_yes_no
         use rci_restart_records, only: open_rci_restart_file
+        use calculation_state_files, only: rci_restart_path
 
         ! Procedure interfaces
         use read_ci_restart_interface, only: read_ci_restart
@@ -31,17 +32,13 @@ contains
         implicit none (type, external)
 
         ! Arguments
+        character(*), intent(in) :: state
         character  :: isotope_file_path*(*)
         character  :: radial_file_path*(*)
         character(len=8)  :: block_labels(*)
 
         logical, intent(out) :: is_restart
 
-        character(11) :: file_path
-        character(3) :: block_label_text
-        ! Compose the "rciXXX.res" file names (for each node)
-        write (block_label_text, "(I3.3)") mpi_rank
-        file_path = "rci" // block_label_text // ".res"
         ! Ask if this is a restart
         if (mpi_rank == 0) then
             if (nondefault_options_flag /= 0) then
@@ -53,7 +50,8 @@ contains
 
         end if
         call mpi_bcast (is_restart, 1, mpi_logical, 0, mpi_comm_world, mpi_error_code)
-        call open_rci_restart_file(restart_matrix_unit, file_path, is_restart, abort_input_mpi)
+        call open_rci_restart_file(restart_matrix_unit, rci_restart_path(state, mpi_rank), is_restart, &
+            abort_input_mpi)
         ! If restart, load the contents. Otherwise generate them via getcid
         !
         ! But first of all, iccutblk() is needed in both cases

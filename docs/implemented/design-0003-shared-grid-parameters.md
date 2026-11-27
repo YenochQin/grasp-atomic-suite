@@ -54,7 +54,7 @@ RMCDHF 的 `THRESH=0.05D0`、`METHOD=3`、`ODAMP=0` 保持原版。
 
 CSFG 的专用源码、构建和测试已于 `4c17db6` 移除，该提交保留历史参数记录。
 
-普通 `rwfnestimate`、串行/MPI `rci`、串行/MPI `rbiotransform` 和三个 `rtransition` 变体新增八个网格入口；普通 RCI 保留原有公共网格初始化，未启用注释中的点核分支。`rangular` 不初始化径向网格，但通过同一 `grasp_parameters` 使用轨道容量和打包参数。普通 `rwfnestimate` 的六个实现/接口文件已移除局部径向容量定义；修改中央容量无需逐个修改这些文件。
+普通 `rwfnestimate`、串行/MPI `rci`、串行/MPI `biorthtransform` 和三个 `rtransition` 变体新增八个网格入口；普通 RCI 保留原有公共网格初始化，未启用注释中的点核分支。`rangular` 不初始化径向网格，但通过同一 `grasp_parameters` 使用轨道容量和打包参数。普通 `rwfnestimate` 的六个实现/接口文件已移除局部径向容量定义；修改中央容量无需逐个修改这些文件。
 
 ## 网格实验与重编译
 

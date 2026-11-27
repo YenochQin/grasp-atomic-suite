@@ -8,9 +8,18 @@ module open_isotope_shift_angular_cache_interface
 
     ! Module interface
     private
-    public :: open_isotope_shift_angular_cache, finish_angular_cache
+    public :: open_isotope_shift_angular_cache, finish_angular_cache, isotope_shift_cache_path
     character(8), parameter :: cache_version = "RISANG01"
 contains
+    function isotope_shift_cache_path(name, operator) result(path)
+        character(*), intent(in) :: name
+        integer, intent(in) :: operator
+        character(:), allocatable :: path
+        character(*), parameter :: suffixes(2) = [".ris4.one-body.angular.cache", ".ris4.two-body.angular.cache"]
+
+        path = trim(name)//suffixes(operator)
+    end function isotope_shift_cache_path
+
     subroutine finish_angular_cache(unit, operator)
         integer, intent(in) :: unit, operator
 
@@ -20,8 +29,7 @@ contains
             transfer(matrix_element_screening_cutoff, 0_int64)
     end subroutine finish_angular_cache
 
-    !    Checks if the angular files name.IOB (one-body) or
-    !    name.ITB (Two-body) are available
+    ! Checks whether the one- or two-body angular cache is available.
     !
     ! Modified by C. Naz\'e  Oct. 2011
     !
@@ -41,7 +49,7 @@ contains
         ! Local declarations
         logical :: found
         integer :: cache_probe_unit, istat, iword, close_status
-        character(len=28) :: filename
+        character(:), allocatable :: filename
         character(8) :: version
         character(64) :: basis
         integer :: operator, radix
@@ -51,15 +59,12 @@ contains
         avail = .false.
         cache_unit = -1
         status = 0
-        if (whichone==1) then
-            filename = trim(name)//".IOB"
-        else if (whichone==2) then
-            filename = trim(name)//".ITB"
-        else
+        if (whichone < 1 .or. whichone > 2) then
             status = 1
             return
         end if
-        inquire(file=trim(filename), exist=found, iostat=status)
+        filename = isotope_shift_cache_path(name, whichone)
+        inquire(file=filename, exist=found, iostat=status)
         if (status /= 0) return
         if (.not.found) then
             if (whichone==1) print *, " One-body angular file not available"

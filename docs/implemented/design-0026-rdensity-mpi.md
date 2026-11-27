@@ -48,10 +48,11 @@ targets use the restored upstream `GETSMD` initialization and `grasp_parameters`
 finite nuclei default to `N=NNNP=590`, with `NNN1=600`. Use the
 [common-parameter contract](design-0003-shared-grid-parameters.md) to configure other grids.
 
-Only rank zero writes `name.nw` and `name.d`/`name.cd`. Existing density files
-cause an error before calculation; `.nw` is replaced, as in upstream. Occupations
-and rotation coefficients are printed in output orbital order. The unformatted
-`.nw` file uses the Suite `RAD--WFN` stream and retains the original orbital energy fields;
+Only rank zero writes `name.natural.wfn` for MCDHF or `name.ci.natural.wfn` for CI,
+alongside `name.d` or `name.cd`. An existing density file causes an error before
+calculation. Natural orbitals replace the output for the selected source. Occupations
+and rotation coefficients are printed in output orbital order. The `RAD--WFN` stream
+retains the original orbital energy fields,
 these fields are not natural-orbital energies. CI coefficients are not rotated
 or written: perform a subsequent RCI calculation in the new orbital basis when
 new mixing coefficients are needed.
@@ -66,8 +67,9 @@ new mixing coefficients are needed.
   `IC=rank+1,NCF,workers`, as in RHFS/RIS. Each process has its own mutable angular
   workspace. Exact J/parity and one-body occupation selection rules reject zero
   contributions before `ONESCALAR`; the coefficient cutoff remains `1D-10`.
-- Each rank accumulates `rho(NW,NW,NVEC)`. `GDRSUMMPI_ROOT` reduces one state at a
-  time. Idle ranks participate with zero matrices. Root computes radial densities
+- Each rank accumulates `rho(NW,NW,NVEC)`. `MPI_Reduce` reduces one state at a
+  time into the root's existing matrix with `MPI_IN_PLACE`. Idle ranks participate
+  with zero matrices. Root computes radial densities
   in the original orbital basis, forms the `(2J+1)` statistical average over all
   input levels, and diagonalizes each actual kappa block with LAPACK `DSYEV`.
 - The contraction uses diagonal terms plus twice each off-diagonal term. This is
@@ -92,13 +94,18 @@ new mixing coefficients are needed.
   lifetime despite the suite's `-fno-automatic` compiler flag. No OpenMP regions
   surround the stateful angular library.
 
-Input dimension, truncated mixing-record, finite-coefficient and vector-norm
-checks fail through a serial error or `MPI_Abort`. The older shared CSF/radial
+Input checks cover dimensions, CSF partition, J/parity, truncated mixing records,
+finite coefficients and vector norms. Diagnostics use a serial error or `MPI_Abort`.
+The older shared CSF/radial
 readers retain their existing error handling. The migration does not establish
 bitwise MPI reproducibility; sums may differ in their final rounding bits.
 Degenerate natural-orbital subspaces are not individually unique.
 
 ## Validation
+
+The later F2018 follow-up compares frozen one-electron and Ni I inputs against
+Suite `bd4dcaa`, including a degenerate occupation subspace and ranks with no
+CSF columns. [Density and natural-orbital evidence](../reviews/evidence-0032-density-natural-orbitals.md)
 
 Local results: all 16 Debug CTest cases passed with array bounds checks enabled;
 all five RDENSITY tests passed in Release, including 1/2/4-rank MPI; the separate

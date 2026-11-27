@@ -26,7 +26,7 @@ def main() -> None:
                 (whichone, name, contents) for whichone in (1, 2) for name, contents in cases.items()):
             work = Path(temporary) / f"{whichone}-{name}"
             work.mkdir()
-            filename = "cache.IOB" if whichone == 1 else "cache.ITB"
+            filename = "cache.ris4.one-body.angular.cache" if whichone == 1 else "cache.ris4.two-body.angular.cache"
             if contents is not None:
                 (work / filename).write_bytes(contents)
             if name == "unreadable":

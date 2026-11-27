@@ -104,7 +104,8 @@ program rangular_mpi_main
     stage_start_count = stage_clock()
     is_restart = .false.
 
-    call open_mcp_outputs_mpi (core_subshell_count, block_labels, files%mcp, input_options%descriptors, indexed_output)
+    call open_mcp_outputs_mpi (core_subshell_count, block_labels, files%indexed_mcp_prefix, &
+        input_options%descriptors, indexed_output)
     if (nondefault_options_flag/=0 .and. mpi_rank==0) call write_input_summary
     call initialize_log_factorial_table
     call record_stage("mcp_setup_including_interaction_input",0,stage_start_count)

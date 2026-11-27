@@ -10,8 +10,9 @@ contains
     ! This routine controls the main sequence of routine calls for the
     ! calculation  of  data for transitions between multiconfiguration
     ! Dirac-Fock energy levels.
-    subroutine calculate_oscillator_strengths(name)
+    subroutine calculate_oscillator_strengths(name, paths)
         ! Module dependencies
+        use calculation_state_files, only: state_files
         use mixing_file_format, only: mixing_file, open_mixing_input
         use transition_basis_blocks, only: transition_csf_basis_ids
         use calculation_file_units, only: lsj_transition_output_unit, summary_output_unit
@@ -35,7 +36,6 @@ contains
         use transition_lsj_labels, only: nvectoti, nvectotf, iopen_status1, iopen_status2
 
         ! Procedure interfaces
-        use prepare_transition_mixing_coefficients_interface, only: prepare_transition_mixing_coefficients
         use resize_transition_matrix_arrays_interface, only: resize_transition_matrix_arrays
         use resize_transition_integral_arrays_interface, only: resize_transition_integral_arrays
         use map_merged_orbitals_interface, only: map_merged_orbitals
@@ -68,9 +68,8 @@ contains
         integer, parameter :: nca = 65536
 
         ! Local declarations
-        integer :: copied_mixing_unit
         type(mixing_file) :: initial_mixing, final_mixing
-        character(:), allocatable :: mixing_suffix, initial_mixing_path
+        type(state_files), intent(in) :: paths(2)
         integer :: kka, transition_type_index, transition_angular_unit, my_nelec, initial_csf_count, &
             initial_orbital_count, iopar, initial_block_index, final_csf_count, &
             final_orbital_count, final_block_index, level_pair_count, m, ielec, initial_level_index, &
@@ -84,7 +83,6 @@ contains
         !
         ! for the case that the inital file and final file are same
         same_initial_and_final_state = trim(name(1)) == trim(name(2))
-        if (same_initial_and_final_state) call prepare_transition_mixing_coefficients (name, input_mixing_file_kind)
         ! write header for the result file
         if (same_initial_and_final_state) then
             write(summary_output_unit,*) "Transition in file:"
@@ -134,12 +132,11 @@ contains
         !             =  (-1)**(N+1)  Magnetic N-pole.
         !                             N > 0
         kka = 1
-        mixing_suffix = trim(merge(".cbm", ".bm ", input_mixing_file_kind == 0))
-        initial_mixing_path = trim(name(1))//mixing_suffix
-        if (same_initial_and_final_state) initial_mixing_path = trim(name(2))//"_CP"//mixing_suffix
         do transition_type_index = 1, requested_multipole_count
             unequal_j = different_j_only(requested_multipole_codes(transition_type_index))
-            call open_mixing_input(initial_mixing, initial_mixing_path, transition_csf_basis_ids(1))
+            call open_mixing_input(initial_mixing, paths(1)%mixing, transition_csf_basis_ids(1))
+            ! Positional reads let the two sides share a unit and use independent block indices.
+            if (same_initial_and_final_state) final_mixing = initial_mixing
             electron_count = initial_mixing%electron_count
             initial_csf_count = initial_mixing%csf_count
             initial_orbital_count = initial_mixing%orbital_count
@@ -152,7 +149,7 @@ contains
             write (*, *)
             ! lbl
             icount1 = 0
-            call load_initial_lsj_labels (name(1))
+            call load_initial_lsj_labels(name(1), input_mixing_file_kind == 0)
             ! If not available generate angular coefficients for all pares of blocks
             call write_transition_angular_coefficients (iopar, transition_type_index, name, transition_angular_unit)
             do initial_block_index = 1, initial_transition_block_count
@@ -160,8 +157,11 @@ contains
                 ! lbl
                 icount1 = initial_level_count + icount1
                 ! read the head of the file of mixing coef. for final
-                call open_mixing_input(final_mixing, trim(name(2))//mixing_suffix, &
-                    transition_csf_basis_ids(2))
+                if (same_initial_and_final_state) then
+                    final_mixing%block = 0
+                else
+                    call open_mixing_input(final_mixing, paths(2)%mixing, transition_csf_basis_ids(2))
+                end if
                 electron_count = final_mixing%electron_count
                 final_csf_count = final_mixing%csf_count
                 final_orbital_count = final_mixing%orbital_count
@@ -174,7 +174,7 @@ contains
                 write (*, *)
                 ! lbl
                 if(initial_block_index == 1) then
-                    call load_final_lsj_labels (name(2))
+                    call load_final_lsj_labels(name(2), input_mixing_file_kind == 0)
                     if(iopen_status1==0 .and. iopen_status2 ==0) then
                         ilbl = 1
                         call write_input_summary(name,input_mixing_file_kind,ilbl)
@@ -311,7 +311,7 @@ contains
                     call dalloc (final_level_parity_signs, "final_level_parity_signs", "calculate_oscillator_strengths")
 
                 end do
-                close(final_mixing%unit)
+                if (.not. same_initial_and_final_state) close(final_mixing%unit)
                 ! Deallocate storage; this is allocated in READMIX
                 call dalloc (initial_shifted_eigenvalues, "initial_shifted_eigenvalues", "calculate_oscillator_strengths")
                 call dalloc (initial_csf_mixing_coefficients, "initial_csf_mixing_coefficients", "calculate_oscillator_strengths")
@@ -324,15 +324,6 @@ contains
             close(transition_angular_unit)
         end do
         call dalloc (requested_multipole_codes, "requested_multipole_codes", "calculate_oscillator_strengths")
-        ! close and delete duplicated mixing file
-        if (same_initial_and_final_state) then
-            if (input_mixing_file_kind == 0) then
-                open(newunit=copied_mixing_unit, file=trim(name(2))//"_CP.cbm")
-            else
-                open(newunit=copied_mixing_unit, file=trim(name(2))//"_CP.bm")
-            end if
-            close(copied_mixing_unit, status="delete")
-        end if
         call resize_transition_matrix_arrays (jja, jjb, hb1, hb2, hc1, hc2, hm1, hm2, packed_transition_integral_labels, &
             transition_integral_coefficient_offsets, transition_matrix_capacity, 3)
         call resize_transition_integral_arrays (transition_bra_csf_indices, transition_ket_csf_indices, &

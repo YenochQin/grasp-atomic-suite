@@ -316,25 +316,25 @@ if(Python3_Interpreter_FOUND)
             --mpiexec "${MPIEXEC_EXECUTABLE}")
         set_tests_properties(hyperfine_constants_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
     endif()
-    if(TARGET rbiotransform)
+    if(TARGET biorthtransform)
         add_test(NAME biorthogonal_states_serial COMMAND ${Python3_EXECUTABLE}
-            ${CMAKE_CURRENT_SOURCE_DIR}/test_biorthogonal_states.py $<TARGET_FILE:rbiotransform>)
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_biorthogonal_states.py $<TARGET_FILE:biorthtransform>)
         set_tests_properties(biorthogonal_states_serial PROPERTIES TIMEOUT 180)
     endif()
-    if(TARGET rbiotransform_mpi AND MPIEXEC_EXECUTABLE)
+    if(TARGET biorthtransform_mpi AND MPIEXEC_EXECUTABLE)
         add_test(NAME biorthogonal_states_mpi COMMAND ${Python3_EXECUTABLE}
-            ${CMAKE_CURRENT_SOURCE_DIR}/test_biorthogonal_states.py $<TARGET_FILE:rbiotransform_mpi>
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_biorthogonal_states.py $<TARGET_FILE:biorthtransform_mpi>
             --mpiexec "${MPIEXEC_EXECUTABLE}")
         set_tests_properties(biorthogonal_states_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
     endif()
-    if(TARGET rbiotransform AND TARGET rtransition AND TARGET rtransition_phase)
+    if(TARGET biorthtransform AND TARGET rtransition AND TARGET rtransition_phase)
         add_test(NAME radiative_transitions_serial COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/test_radiative_transitions.py $<TARGET_FILE:rtransition>)
         add_test(NAME radiative_transitions_phase COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/test_radiative_transitions.py $<TARGET_FILE:rtransition_phase>)
         set_tests_properties(radiative_transitions_serial radiative_transitions_phase PROPERTIES TIMEOUT 180)
     endif()
-    if(TARGET rbiotransform_mpi AND TARGET rtransition_mpi AND MPIEXEC_EXECUTABLE)
+    if(TARGET biorthtransform_mpi AND TARGET rtransition_mpi AND MPIEXEC_EXECUTABLE)
         add_test(NAME radiative_transitions_mpi COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/test_radiative_transitions.py $<TARGET_FILE:rtransition_mpi>
             --mpiexec "${MPIEXEC_EXECUTABLE}")
@@ -342,13 +342,13 @@ if(Python3_Interpreter_FOUND)
     endif()
 endif()
 
-if(TARGET rbiotransform AND TARGET rtransition AND TARGET rtransition_phase AND Python3_Interpreter_FOUND)
+if(TARGET biorthtransform AND TARGET rtransition AND TARGET rtransition_phase AND Python3_Interpreter_FOUND)
     add_test(NAME descriptor_dual_basis_pipeline COMMAND ${Python3_EXECUTABLE}
-        ${CMAKE_CURRENT_SOURCE_DIR}/test_descriptor_pipeline.py --bin $<TARGET_FILE_DIR:rbiotransform>)
+        ${CMAKE_CURRENT_SOURCE_DIR}/test_descriptor_pipeline.py --bin $<TARGET_FILE_DIR:biorthtransform>)
     set_tests_properties(descriptor_dual_basis_pipeline PROPERTIES TIMEOUT 180)
-    if(TARGET rbiotransform_mpi AND TARGET rtransition_mpi AND MPIEXEC_EXECUTABLE)
+    if(TARGET biorthtransform_mpi AND TARGET rtransition_mpi AND MPIEXEC_EXECUTABLE)
         add_test(NAME descriptor_dual_basis_pipeline_mpi COMMAND ${Python3_EXECUTABLE}
-            ${CMAKE_CURRENT_SOURCE_DIR}/test_descriptor_pipeline.py --bin $<TARGET_FILE_DIR:rbiotransform_mpi>
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_descriptor_pipeline.py --bin $<TARGET_FILE_DIR:biorthtransform_mpi>
             --mpiexec "${MPIEXEC_EXECUTABLE}" --ci)
         set_tests_properties(descriptor_dual_basis_pipeline_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
     endif()

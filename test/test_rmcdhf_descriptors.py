@@ -68,7 +68,7 @@ def main() -> None:
                 assert (work / f"occupations.{rank:03d}.bin").read_bytes() == expected
             if ranks > 1:
                 # Alter the electron count on just one rank.
-                path = work / "001/mcp.mcpidx"
+                path = work / "001/rcsf.mpi.mcpidx"
                 original = path.read_bytes()
                 data = bytearray(original)
                 struct.pack_into("=q", data, 8 + 8*4 + 5*8, 99)

@@ -173,7 +173,7 @@ def two_s_input(work: Path, order: tuple[int, int]) -> None:
 def one_electron(work: Path, ris: Path, fical: Path, mpi: list[str]) -> None:
     ls_input(work)
     run(work, ris, mpi, "y\ntest\nn\nn\nn\n", "ls")
-    levels = factors(work / "test.i")
+    levels = factors(work / "test.mcdhf.isotope-shift")
     for key, n, density in [
         ((1, "1/2", "+"), 1, 1 / math.pi),
         ((1, "1/2", "-"), 2, 9 / (384 * math.pi * C**2)),
@@ -188,17 +188,17 @@ def one_electron(work: Path, ris: Path, fical: Path, mpi: list[str]) -> None:
         d = work / name
         two_s_input(d, order)
         if name == "upper":
-            for ext in ("IOB", "ITB"):
+            for ext in ("ris4.one-body.angular.cache", "ris4.two-body.angular.cache"):
                 shutil.copyfile(work / "lower" / f"test.{ext}", d / f"test.{ext}")
         run(d, ris, mpi, "y\ntest\nn\nn\ny\n", "save")
         if name == "upper":
             assert (d / "save.log").read_text().count("incomplete or incompatible") == 2
-        result = (d / "test.i").read_bytes()
+        result = (d / "test.mcdhf.isotope-shift").read_bytes()
         run(d, ris, mpi, "y\ntest\nn\nn\n", "reuse")
-        assert (d / "test.i").read_bytes() == result
+        assert (d / "test.mcdhf.isotope-shift").read_bytes() == result
         assert (d / "reuse.log").read_text().count("angular file available") == 2
-        shutil.copyfile(d / "test.i", work / (name + ".i"))
-        (states[name],) = factors(d / "test.i").values()
+        shutil.copyfile(d / "test.mcdhf.isotope-shift", work / (name + ".mcdhf.isotope-shift"))
+        (states[name],) = factors(d / "test.mcdhf.isotope-shift").values()
     close(states["upper"].density, 1 / (8 * math.pi), rel=4e-5)
     key = (1, "1/2", "+")
     for upper, lower, masses in [
@@ -222,8 +222,25 @@ def one_electron(work: Path, ris: Path, fical: Path, mpi: list[str]) -> None:
         )
 
 
+def reject_wrong_mixing_symmetry(work: Path, ris: Path, mpi: list[str]) -> None:
+    ls_input(work)
+    mixing = work / "test.mix"
+    original = mixing.read_bytes()
+    # Change only 2J in the third CSF--MIX directory row; the digest and payload stay valid.
+    offset = struct.calcsize("<8s5q64s") + 2*struct.calcsize("<6q")
+    assert struct.unpack_from("<q", original, offset) == (3,)
+    damaged = bytearray(original)
+    struct.pack_into("<q", damaged, offset, 5)
+    mixing.write_bytes(damaged)
+    run(
+        work, ris, mpi, "y\ntest\nn\nn\nn\n", "wrong-j",
+        error="Mixing block J or parity does not match the CSF basis",
+    )
+    assert not (work / "test.mcdhf.isotope-shift").exists()
+
+
 def reject_damaged_reports(work: Path, fical: Path) -> None:
-    lines = (work / "test.i").read_text().rstrip().splitlines()
+    lines = (work / "test.mcdhf.isotope-shift").read_text().rstrip().splitlines()
     last = lines[-1]
     cases = [
         (lines[:4], "reading energy"),
@@ -243,7 +260,7 @@ def reject_damaged_reports(work: Path, fical: Path) -> None:
         ),
     ]
     for index, (damaged, diagnostic) in enumerate(cases):
-        (work / "bad.i").write_text("\n".join(damaged) + "\n")
+        (work / "bad.mcdhf.isotope-shift").write_text("\n".join(damaged) + "\n")
         run(
             work,
             fical,
@@ -275,11 +292,11 @@ def nickel(work: Path, ris: Path, rci: Path, fical: Path, mpi: list[str]) -> Non
                 + "1 2\n1\n1 2 3\n1\n1 2\n"
             )
             run(work, rci, mpi, answers, "breit")
-            for ext in ("IOB", "ITB"):
+            for ext in ("ris4.one-body.angular.cache", "ris4.two-body.angular.cache"):
                 (work / f"test.{ext}").unlink()
         mode = "y" if ci else "n"
         run(work, ris, mpi, f"y\ntest\n{mode}\ny\nn\n", "ris-" + mode)
-        path = work / ("test.ci" if ci else "test.i")
+        path = work / f"test.{'ci' if ci else 'mcdhf'}.isotope-shift"
         levels = factors(path)
         assert len(levels) == 9
         pairs = {}
@@ -367,6 +384,7 @@ def main() -> None:
     mpi = [args.mpiexec, "-n", "2"] if args.mpiexec else []
     with tempfile.TemporaryDirectory(prefix="ris-") as tmp:
         one_electron(Path(tmp) / "ls", args.ris.resolve(), args.fical.resolve(), mpi)
+        reject_wrong_mixing_symmetry(Path(tmp) / "wrong-j", args.ris.resolve(), mpi)
         nickel(
             Path(tmp) / "ni",
             args.ris.resolve(),

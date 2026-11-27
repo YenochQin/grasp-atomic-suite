@@ -1,4 +1,4 @@
-EXE=${GRASP}/bin/rbiotransform_mpi
+EXE=${GRASP}/bin/biorthtransform_mpi
 LIBS=-L ${GRASP}/lib/ -lrang90 -lgrasp_mpi -l9290 -lgrasp_shared
 FC_MODULES= -I ${GRASP}/src/lib/spin_angular -I ${GRASP}/src/lib/mpi -I ${GRASP}/src/lib/core -I ${GRASP}/src/lib/grasp_shared
 
@@ -81,7 +81,7 @@ OBJS= \
 	 \
 	transform_orbital_sets.o \
 	 \
-	rbiotransform_mpi_main.o
+	biorthtransform_mpi_main.o
 
 $(EXE): $(OBJS)
 	$(FC_MPI) -o $@ $? $(FC_MPILD) $(LIBS) $(LAPACK_LIBS)

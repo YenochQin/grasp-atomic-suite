@@ -25,12 +25,12 @@ program descriptor_rmcdhf
    call mpi_comm_rank(mpi_comm_world,mpi_rank,status)
    call mpi_comm_size(mpi_comm_world,mpi_process_count,status)
    write(rank_text,'(I3.3)') mpi_rank
-   mcp_prefix=rank_text//"/mcp"
+   mcp_prefix=rank_text//"/rcsf.mpi"
 #else
    mpi_rank=0
    mpi_process_count=1
    rank_text="000"
-   mcp_prefix="mcp"
+   mcp_prefix="rcsf.mcp"
 #endif
    call connect_mcp_files(closed_core_subshell_count,max_symmetry_blocks,labels,trim(mcp_prefix))
 #ifdef DESCRIPTOR_MPI

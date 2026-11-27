@@ -35,7 +35,6 @@ APP_OBJ= \
          read_final_radial_wavefunctions.o read_transition_options.o calculate_biorthogonal_overlap.o read_multipole_options.o write_input_summary.o calculate_oscillator_strengths.o map_merged_orbitals.o \
          resize_transition_matrix_arrays.o resize_transition_integral_arrays.o  read_transition_angular_coefficients.o write_transition_csf_weights.o write_transition_probability.o single_particle_transition_element.o check_transition_mixing_coefficients.o sort_transition_angular_coefficients.o \
          build_transition_bessel_functions.o resize_transition_label_arrays.o resize_transition_coefficient_arrays.o setcslm.o open_transition_angular_cache.o write_transition_level_energies.o write_transition_angular_coefficients.o \
-         prepare_transition_mixing_coefficients.o \
 	load_initial_lsj_labels.o load_final_lsj_labels.o write_lsj_transition_probability.o
 
 $(EXE): $(APP_OBJ)

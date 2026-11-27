@@ -155,7 +155,7 @@ if '--timings' in sys.argv:
         )
         self.assertEqual(result.returncode, 2)
         self.assertEqual(self.report()["status"], "error")
-        self.assertIn("no mcp", self.report()["error"])
+        self.assertIn("no MCP structure files", self.report()["error"])
         self.assertTrue((self.output / "trial_001_reference_text/stdout.log").exists())
 
     def test_timeout_preserves_failure_report(self) -> None:

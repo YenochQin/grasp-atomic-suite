@@ -20,11 +20,13 @@ def wave():
 if name=='rwfnestimate':
     Path('sweep.initial.wfn').write_bytes(wave())
 elif name=='rangular':
+    prefix='sweep.mcp' if mode=='named_mcp' else 'mcp'
+    print(f' Output files: {prefix}.30, {prefix}.31, ...')
     for n in (30,31,32,33):
         if mode=='missing' and n==33: continue
         sizes=[12,4,8,15,12,12,11,4,8] if n==30 else [15,12,12,15,8]
         if mode=='missing_record': sizes=sizes[:-1]
-        Path(f'mcp.{n}').write_bytes(b''.join(record(b'x'*size) for size in sizes))
+        Path(f'{prefix}.{n}').write_bytes(b''.join(record(b'x'*size) for size in sizes))
     Path('sweep.rangular.log').write_text('angle 1.0\n')
 else:
     Path('sweep.wfn').write_bytes(wave())
@@ -79,7 +81,7 @@ class FirstSweepTests(unittest.TestCase):
             return result
 
     def test_only_documented_metadata_can_differ(self) -> None:
-        for mode in ('good', 'time'):
+        for mode in ('good', 'time', 'named_mcp'):
             result = self.compare(mode)
             self.assertEqual(result.returncode, 0, result.stderr)
         self.assertNotEqual(normalize('time step 1\n'), normalize('time step 2\n'))
@@ -91,6 +93,12 @@ class FirstSweepTests(unittest.TestCase):
                   "Wall time: 9 seconds\n")
         self.assertEqual(normalize(first), normalize(second))
         self.assertNotEqual(normalize(first), normalize(second + "Wall time: unavailable\n"))
+        for template in ("     Free  memory on computer:", "        Free memory on computer"):
+            with self.subTest(template=template):
+                old = f"{template}      6.53 Gb\n"
+                new = f"{template}     10.51 Gb\n"
+                self.assertEqual(normalize(old), normalize(new))
+                self.assertNotEqual(normalize(old), normalize(new.replace("Gb", "Mb")))
 
     def test_changed_science_warning_iteration_or_completion_fails(self) -> None:
         for mode in ('warning', 'energy', 'iteration', 'unfinished'):

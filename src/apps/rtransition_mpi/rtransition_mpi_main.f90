@@ -1,5 +1,5 @@
 ! Calculate radiative multipole transitions using MPI-distributed angular contributions.
-! Use orbitals transformed by rbiotransform so the two orbital sets are biorthogonal.
+! Use orbitals transformed by biorthtransform so the two orbital sets are biorthogonal.
 ! Written by Per Jonsson,   Department of Computer Science
 !                         Vanderbilt University, USA
 !
@@ -27,7 +27,7 @@ program rtransition_mpi_main
     use calculate_oscillator_strengths_interface, only: calculate_oscillator_strengths
 
     ! Module dependencies
-    use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
+    use mpi_state, only: mpi_barrier, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
         processor_name, processor_name_length
 
     use posix_services, only: terminate_process
@@ -35,6 +35,10 @@ program rtransition_mpi_main
     use mpi_utilities, only: finish_mpi_application
     use isotope_data_input, only: read_isotope_data
     use mpi_change_directory, only: change_mpi_directory
+    use biorthogonal_state_files, only: biorthogonal_pair, files_for_biorthogonal_pair, &
+        validate_biorthogonal_input, release_biorthogonal_lock
+    use transition_basis_blocks, only: transition_csf_basis_ids
+    use mpi_io_errors, only: abort_input_mpi
     implicit none (type, external)
     integer :: ntest,label_output_option,permanent_directory_length,scratch_directory_length, iii
     integer(int64) :: start_clock_count
@@ -43,6 +47,8 @@ program rtransition_mpi_main
     character :: fullname(2)*128
     character(len=3)  ::  block_label_text
     character(len=128) :: isotope_file_path,startup_directory,permanent_directory,scratch_directory
+    type(biorthogonal_pair) :: pair
+
     ! Initialize MPI and set up the I/O and scratch directories.
     call initialize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length, &
         & start_clock_count,           &
@@ -105,6 +111,9 @@ program rtransition_mpi_main
     end if
 
     call merge_transition_csf_bases (fullname)
+    pair = files_for_biorthogonal_pair(name, input_mixing_file_kind == 0, startup_directory)
+    if (mpi_rank == 0) call validate_biorthogonal_input(pair, name, transition_csf_basis_ids, abort_input_mpi)
+    call mpi_barrier(mpi_comm_world, mpi_error_code)
     !
     !
     !
@@ -113,7 +122,7 @@ program rtransition_mpi_main
     call read_isotope_data(isotope_file_path)
 
     ! Get the remaining information
-    call read_transition_options (fullname)
+    call read_transition_options (pair%sides)
     ! Open the transition report and record the input settings.
     if (mpi_rank == 0) then
         iii = len_trim(startup_directory)
@@ -134,9 +143,11 @@ program rtransition_mpi_main
     ! Initialize the log-factorial table for angular algebra.
     call initialize_log_factorial_table
     ! Proceed with the transition calculation
-    call calculate_oscillator_strengths (name,fullname,scratch_directory,startup_directory,block_label_text)
+    call calculate_oscillator_strengths (name, fullname, scratch_directory, startup_directory, &
+        block_label_text, pair%sides)
 
     call finish_mpi_application (mpi_rank, start_clock_count, "RTRANSITION_MPI")
+    if (mpi_rank == 0) call release_biorthogonal_lock(pair)
 
     stop
 end program rtransition_mpi_main

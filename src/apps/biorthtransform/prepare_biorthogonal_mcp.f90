@@ -10,7 +10,7 @@ contains
     !   one-particle coupling coefficients.
     !
     ! Written by Per Jonsson                                 June 1996
-    subroutine prepare_biorthogonal_mcp(name, ic, global_trace_level, inpci)
+    subroutine prepare_biorthogonal_mcp(name, ic, global_trace_level, inpci, output_path)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
 
@@ -30,6 +30,7 @@ contains
         integer  :: global_trace_level
         integer  :: inpci
         character, intent(in) :: name*24
+        character(*), intent(in) :: output_path
 
         ! Local declarations
         integer :: unused_core_subshell_count
@@ -43,7 +44,7 @@ contains
         call initialize_log_factorial_table
         ! Proceed with the generation of MCP coefficients
         call write_biorthogonal_mcp (name, ic, global_trace_level, inpci)
-        call read_biorthogonal_mcp (name, ic, global_trace_level, inpci)
+        call read_biorthogonal_mcp (name, ic, global_trace_level, inpci, output_path)
 
         write (output_unit, *)
         return

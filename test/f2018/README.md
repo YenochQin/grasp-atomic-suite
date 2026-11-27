@@ -188,6 +188,8 @@ was collected for Suite `0f35673` with GNU Fortran 16.2.1 on Linux x86-64.
 It covers the indexed MPI MCP source and test targets. The earlier 16.2.0
 macOS arm64 observation remains in Git at `0ca7970e`.
 [Current per-file index](../../docs/reference/f2018/evidence-0019-gnu16-warning-baseline.md)
+The biorthogonal transform entries use the current `biorthtransform` and
+`biorthtransform_mpi` paths and targets with their recorded warning counts and source hashes.
 Diagnostic identity includes target, source, position, warning option and message;
 counts are separate for each configuration. A new diagnostic cannot be offset by
 removing another, or by removing it from another target. The default budget

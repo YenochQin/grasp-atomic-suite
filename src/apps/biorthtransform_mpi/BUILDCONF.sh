@@ -1,4 +1,4 @@
-EXE=rbiotransform_mpi
+EXE=biorthtransform_mpi
 LIBRARIES="spin_angular grasp_mpi core grasp_shared"
 LAPACK=true
 ISMPI=true
@@ -43,7 +43,7 @@ transpose_matrix.f90
 combine_upper_lower_factors.f90
 transform_ci_coefficients.f90
 transform_orbital_sets.f90
-rbiotransform_mpi_main.f90
+biorthtransform_mpi_main.f90
 
 # These routines were not being compiled in the original makefile. The
 # interface file for ORBORD this was still linked though.

@@ -36,6 +36,7 @@ program ris4_mpi_main
     ! Module dependencies
     use mpi_utilities, only: finish_mpi_application
     use mpi_utilities, only: start_mpi_application
+    use mpi_io_errors, only: abort_input_mpi
     implicit none (type, external)
     integer :: input_status, mixing_file_kind, unused_core_subshell_count
     integer(int64) :: start_clock_count
@@ -45,7 +46,7 @@ program ris4_mpi_main
     call start_mpi_application(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_clock_count, &
         "RIS4_MPI", "This is the MPI RIS program", &
         "isodata, descriptor Parquet/header, name.mix/name.cimix, name.wfn", &
-        "name.i or name.ci", .true.)
+        "name.mcdhf.isotope-shift or name.ci.isotope-shift", .true.)
 
     name = " "
     mixing_file_kind = 1
@@ -102,10 +103,10 @@ program ris4_mpi_main
     call configure_debug_output
     call initialize_machine_constants
     call initialize_physical_constants
-    if (mpi_rank == 0) call open_summary_file(name,mixing_file_kind)
     call load_csf_basis_mpi(name,unused_core_subshell_count)
     call prepare_isotope_calculation(name)
-    call read_mixing_blocks(name,mixing_file_kind)
+    call read_mixing_blocks(name,mixing_file_kind,abort_input_mpi)
+    if (mpi_rank == 0) call open_summary_file(name,mixing_file_kind)
     call initialize_log_factorial_table
     call calculate_isotope_shifts_mpi(name)
 

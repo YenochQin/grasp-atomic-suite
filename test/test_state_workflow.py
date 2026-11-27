@@ -101,8 +101,13 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
             assert (launch / (name + extension)).read_text().splitlines()[0] == name
         for rank in range(2 if launcher else 1):
             channel_dir = scratch / f"{rank:03d}" if launcher else permanent
-            assert (channel_dir / ("mcp.mcpidx" if launcher else "mcp.30")).stat().st_size > 0
-            assert not list(channel_dir.glob(f"{name}.mcp*"))
+            channels = list(channel_dir.glob(f"{name}.mpi.mcpidx" if launcher else f"{name}.mcp.[0-9][0-9]"))
+            assert len(channels) == (1 if launcher else 4), channels
+            previous_files.update({path: path.read_bytes() for path in channels})
+            restart_name = f"{name}.rci.rank{rank:03d}.restart" if launcher else f"{name}.rci.restart"
+            restart = channel_dir / restart_name
+            assert restart.stat().st_size > 0
+            previous_files[restart] = restart.read_bytes()
 
     assert (permanent / "N.initial.wfn").read_bytes() != (
         permanent / "N_3s.initial.wfn"
@@ -118,6 +123,10 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
         "rmcdhf.log",
         "rangular.log",
         "mcp000.30",
+        "mcp.30",
+        "mcp.mcpidx",
+        "rci.res",
+        "rci000.res",
     ):
         assert not list(root.rglob(generic)), generic
 
@@ -136,6 +145,10 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
     assert result.returncode != 0 and "N_3s.wfn" in result.stderr, result.stderr
     assert not saved_wave.exists()
     assert archived_wave.read_bytes() == previous_files[saved_wave]
+
+    # Resume the first state after the second state has generated its own MCP and RCI files.
+    run("rci" + suffix, "n\nN\ny\nn\n1\n")
+    assert (permanent / "N.cimix").read_bytes() == previous_files[permanent / "N.cimix"]
 
     if not launcher:
         result = subprocess.run(
@@ -224,7 +237,7 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
     run("rci" + suffix, ci_answers + "1\t2\n1\n")
     path = permanent / "blocks.cimix"
     check_roots(path)
-    outputs = {item: item.read_bytes() for item in [path, *root.rglob("rci*.res")]}
+    outputs = {item: item.read_bytes() for item in [path, *root.rglob("blocks.rci*.restart")]}
     assert len(outputs) == (3 if launcher else 2)
     run("rci" + suffix, ci_answers + "\n1\n", failure="Missing ASF selection. Block 1 (0+)")
     assert all(item.read_bytes() == previous for item, previous in outputs.items())
@@ -241,15 +254,15 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
 
     # Mark the disposable MCP headers as diagonal-only to exercise the legacy EAL rejection.
     if launcher:
-        for shard in scratch.glob("*/mcp.mcpidx"):
+        for shard in scratch.glob("*/blocks.mpi.mcpidx"):
             data = bytearray(shard.read_bytes())
             flags_offset = struct.calcsize("=8s8i8q")
             struct.pack_into("=q", data, flags_offset, 1)
             shard.write_bytes(data)
     else:
-        for channel in permanent.glob("mcp.[0-9][0-9]"):
+        for channel in permanent.glob("blocks.mcp.[0-9][0-9]"):
             data = records(channel)
-            flags_index = 5 if channel.name == "mcp.30" else 2
+            flags_index = 5 if channel.name == "blocks.mcp.30" else 2
             data[flags_index] = struct.pack("=i", 1) + data[flags_index][4:]
             write_records(channel, data)
     for solver in ("rmcdhf", "rmcdhf_mem"):

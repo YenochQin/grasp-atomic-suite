@@ -16,11 +16,11 @@
 | `rangular`、`rangular_mpi` | 输入状态名后读取 `name_desc.parquet` 和 `name_header.toml`；`--csf-descriptors FILE.parquet --header FILE.toml` 可显式指定输入路径 |
 | `rmcdhf{,_mem,_mpi,_mem_mpi}` | 同一状态的描述符文件对、`name.initial.wfn` 和对应 MCP；输出 `name.wfn` 及 OL/EOL 的 `name.mix` |
 | `rci{,_mpi}`、`gj{,_mpi}`、`rhfs{,_mpi}`、`ris4{,_mpi}`、`rdensity{,_mpi}`、JJ2LSJ | 状态名 `name` 对应 `name_desc.parquet` + `name_header.toml` |
-| `rbiotransform{,_mpi}`、`rtransition{,_mpi,_phase}` | 初态、末态分别提供上述状态名对应的两套文件 |
+| `biorthtransform{,_mpi}`、`rtransition{,_mpi,_phase}` | 初态、末态分别提供上述状态名对应的两套文件 |
 | `rwfnestimate` | `name_header.toml` 或 `--header FILE.toml`；只读轨道表和含 core 的 `header_info.electron_count`，写出初猜 `name.initial.wfn` |
 
-三步使用同一状态名时，直接以各自的输出文件衔接。串行 rangular 输出 `mcp.NN`。
-`rangular_mpi` 在每个 rank 的工作目录写 `mcp.mcpidx`，两种 MPI RMCDHF 用相同基组和 rank 布局读取。
+三步使用同一状态名时，直接以各自的输出文件衔接。串行 rangular 输出 `name.mcp.NN`。
+`rangular_mpi` 在每个 rank 的工作目录写 `name.mpi.mcpidx`，两种 MPI RMCDHF 用相同基组和 rank 布局读取。
 旧 MPI 角系数需用当前生成器重新生成。[MPI MCP 格式和验收](design-0020-rmcdhf-mcp-io.md)
 状态名 `name` 对应 `name_desc.parquet` 和 `name_header.toml`。
 串行与 MPI 的 MCP 位置、日志及状态名输入见[状态名计算流程](../../README_ZH.md#输入与输出)。
@@ -49,7 +49,7 @@ serial I/O 目录为基准。其他应用原有状态名及 MPI CPATH 长度限�
 重新生成。RCI 在新算例的速度选项之后询问分区，续算沿用 `.res` 中的设置。
 
 轨道表沿用 rCSFs 的 `spdfghiklmn`，最高为 `l=10`。rangular、新组装矩阵的 RCI、
-gj、rhfs、ris4、rdensity、rbiotransform 和 rtransition 在加载基组时核查自旋角积分项表。
+gj、rhfs、ris4、rdensity、biorthtransform 和 rtransition 在加载基组时核查自旋角积分项表。
 对于 `j ≥ 9/2` 的部分占据子壳层，项表支持一个或两个电子。即使单空穴与单电子有相同的 J，
 reader 也按实际电子数判断。超出项表范围时，串行和 MPI 都在计算前以非零状态退出，
 诊断给出块、CSF、轨道和占据数。闭壳层沿用闭壳层规则。

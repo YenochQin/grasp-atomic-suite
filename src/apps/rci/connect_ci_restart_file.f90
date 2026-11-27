@@ -7,11 +7,11 @@ module connect_ci_restart_file_interface
     public :: connect_ci_restart_file
 contains
 
-    !   Open, check, load data from the  .res  file.
+    ! Open, validate and load the state-specific restart file.
     !
     ! Written by Farid A. Parpia. Last revision: 06 Oct 1992
     ! Modified by Xinghong. Last revision: 23 Jun 1998
-    subroutine connect_ci_restart_file(isotope_file_path, radial_file_path, block_labels, is_restart)
+    subroutine connect_ci_restart_file(state, isotope_file_path, radial_file_path, block_labels, is_restart)
         ! Module dependencies
         use array_memory_management, only: alloc
         use calculation_input_defaults, only: nondefault_options_flag
@@ -21,6 +21,7 @@ contains
         use standard_io_units, only: stderr_unit
         use yes_no_input, only: read_yes_no
         use rci_restart_records, only: open_rci_restart_file
+        use calculation_state_files, only: rci_restart_path
 
         ! Procedure interfaces
         use read_ci_restart_interface, only: read_ci_restart
@@ -28,13 +29,13 @@ contains
         implicit none (type, external)
 
         ! Arguments
+        character(*), intent(in) :: state
         character  :: isotope_file_path*(*)
         character  :: radial_file_path*(*)
         character(len=8)  :: block_labels(*)
 
         logical, intent(out) :: is_restart
 
-        character(*), parameter :: file_path = "rci.res"
         ! Ask if this is a restart
         if (nondefault_options_flag /= 0) then
             write (stderr_unit, *) "Restarting RCI90 ?"
@@ -42,7 +43,7 @@ contains
         else
             is_restart = .false.
         end if
-        call open_rci_restart_file(restart_matrix_unit, file_path, is_restart)
+        call open_rci_restart_file(restart_matrix_unit, rci_restart_path(state), is_restart)
         ! If restart, load the contents. Otherwise generate them via getcid
         !
         ! But first of all, iccutblk() is needed in both cases

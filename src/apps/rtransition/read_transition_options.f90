@@ -11,7 +11,7 @@ contains
     ! lem.
     !
     ! Written by Per Jonsson. Last revision: June 1996
-    subroutine read_transition_options(isotope_file_path,name)
+    subroutine read_transition_options(isotope_file_path, paths)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: input_unit, output_unit
         use, intrinsic :: iso_fortran_env, only: real64
@@ -19,6 +19,7 @@ contains
         use atomic_calculation_state, only: working_tolerance, max_radial_points, nuclear_charge, speed_of_light_au, &
             vacuum_speed_of_light_au
         use hamiltonian_correction_flags, only: use_first_order_csf_perturbation
+        use calculation_state_files, only: state_files
         use calculation_input_defaults, only: nondefault_options_flag
         use first_order_csf_cutoffs, only: first_order_csf_cutoff
         use radial_grid_state, only: transformed_grid_step, asymptotic_grid_step, radial_point_count, radial_grid_scale
@@ -41,7 +42,7 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        character  :: name(2)*24
+        type(state_files), intent(in) :: paths(2)
         character(len=*) :: isotope_file_path
 
         ! Local declarations
@@ -149,9 +150,9 @@ contains
         ! Build the radial grid and its derivative arrays.
         call initialize_radial_grid
         ! Load the initial state radial wavefunctions.
-        call read_initial_radial_wavefunctions (name(1))
+        call read_initial_radial_wavefunctions (paths(1)%orbitals)
         ! Load the final state radial wavefunctions.
-        call read_final_radial_wavefunctions (name(2))
+        call read_final_radial_wavefunctions (paths(2)%orbitals)
 
         ! Construct the radial overlap matrix.
         call calculate_biorthogonal_overlap

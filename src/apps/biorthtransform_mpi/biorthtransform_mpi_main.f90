@@ -14,7 +14,7 @@
 !
 ! Modified by Gediminas Gaigalas for new spin-angular integration
 ! and for reducing usage of CPU memory.        NIST, October 2017
-program rbiotransform_mpi_main
+program biorthtransform_mpi_main
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: output_unit
     use, intrinsic :: iso_fortran_env, only: int64, real64
@@ -26,8 +26,12 @@ program rbiotransform_mpi_main
     use radial_wavefunctions,          only: initial_radial_large_components, initial_radial_small_components, &
         final_radial_large_components, final_radial_small_components
     use biorthogonal_orbital_rotations,         only: initial_orbital_rotation_values, final_orbital_rotation_values
-    use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
+    use mpi_state, only: mpi_barrier, mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
         processor_name, processor_name_length
+    use biorthogonal_state_files, only: biorthogonal_pair, files_for_biorthogonal_pair, &
+        begin_biorthogonal_output, complete_biorthogonal_output
+    use csf_descriptor_reader, only: loaded_csf_basis_id
+    use mpi_io_errors, only: abort_input_mpi
     use yes_no_input, only: read_yes_no
     use machine_constants, only: initialize_machine_constants
     use physical_constants, only: initialize_physical_constants
@@ -89,9 +93,12 @@ program rbiotransform_mpi_main
     character(len=128) :: fullname(2)
     character (len = 128) :: startup_directory,permdir,tmpdir
     ! Initialize MPI and set up the I/O and scratch directories.
+    type(biorthogonal_pair) :: pair
+    character(64) :: basis_ids(2)
+
     call initialize_mpi_runtime_with_status (mpi_rank, mpi_process_count, processor_name, processor_name_length, &
         & start_clock_count,            &
-        startup_directory, permdir, tmpdir, "RBIOTRANSFORM_MPI")
+        startup_directory, permdir, tmpdir, "BIORTHTRANSFORM_MPI")
     write (block_label_text, "(I3.3)") mpi_rank
     print*, tmpdir , " = tmpdir"
 
@@ -150,7 +157,13 @@ program rbiotransform_mpi_main
     call initialize_radial_stencil_weights
     ! Resolve the input paths and prepare output for the transformed orbitals and mixing coefficients.
     call read_mpi_state_pair(name)
-    if (mpi_rank == 0) call select_biorthogonal_symmetries(name)
+    if (name(1) == name(2)) then
+        if (mpi_rank == 0) write(*, "(a)") "Same state on both sides. Run rtransition with the original orbital and mixing files."
+        call finish_mpi_application (mpi_rank, start_clock_count, "BIORTHTRANSFORM_MPI")
+        stop
+    end if
+    pair = files_for_biorthogonal_pair(name, mixing_file_kind == 0, trim(startup_directory))
+    if (mpi_rank == 0) call select_biorthogonal_symmetries()
     call mpi_bcast(ntrans, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
     if (ntrans == 1) then
         call mpi_bcast(jqj1, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
@@ -167,16 +180,20 @@ program rbiotransform_mpi_main
     print *, "DBG: myid=",mpi_rank, " fullname(2)=", fullname(2)
     ! Load the initial-state CSF descriptors.
     call load_merged_csf_basis (fullname(1), initial_core_subshell_count,1)
+    basis_ids(1) = loaded_csf_basis_id
     ! Preserve the initial-state data before loading the final state.
     call copy_state_csf_data (1)
     ! Load the final-state CSF descriptors.
     call load_merged_csf_basis (fullname(2), final_core_subshell_count,2)
+    basis_ids(2) = loaded_csf_basis_id
     ! Preserve the final-state data for the transformation.
     call copy_state_csf_data (2)
     ! Determine the number of kappa quantum numbers and
     ! the number of orbitals for each kappa quantum number
     ! for the initial state and final states
     call prepare_biorthogonal_subshells (ntestg, initial_core_subshell_count, final_core_subshell_count)
+    if (mpi_rank == 0) call begin_biorthogonal_output(pair, abort_input_mpi)
+    call mpi_barrier(mpi_comm_world, mpi_error_code)
     ! Read the the radial orbitals for the initial state
     call read_initial_radial_wavefunctions (fullname(1), ntestg)
     ! Read the the radial orbitals for the initial state
@@ -216,7 +233,7 @@ program rbiotransform_mpi_main
 
     call calculate_orbital_overlap_matrix
     ! Write the transformed radial functions to file
-    if (mpi_rank == 0) call write_transformed_radial_wavefunctions(fullname)
+    if (mpi_rank == 0) call write_transformed_radial_wavefunctions(pair%sides)
     ! Obtain one-electron coupling coefficients for the initial state.
     ! The coefficients are dumped on files one kappa in turn and
     ! thus the different kappa can be manipulated independently.
@@ -228,7 +245,7 @@ program rbiotransform_mpi_main
     call change_mpi_directory(trim(tmpdir)//"/"//block_label_text,iii+4,mpi_error_code)
     call initialize_log_factorial_table
     call write_biorthogonal_mcp(name(1),startup_directory,1,ntestg,mixing_file_kind)
-    call read_biorthogonal_mcp(name(1),startup_directory,1,ntestg,mixing_file_kind)
+    call read_biorthogonal_mcp(name(1),startup_directory,1,ntestg,mixing_file_kind,pair%sides(1)%mixing)
 
     ! added by Yu Zou, Feb.18,2000 ***********
     ! R      DO K = 1,KAMAX
@@ -246,7 +263,7 @@ program rbiotransform_mpi_main
     iii = len_trim(tmpdir)
     call change_mpi_directory(trim(tmpdir)//"/"//block_label_text,iii+4,mpi_error_code)
     call write_biorthogonal_mcp(name(2),startup_directory,2,ntestg,mixing_file_kind)
-    call read_biorthogonal_mcp(name(2),startup_directory,2,ntestg,mixing_file_kind)
+    call read_biorthogonal_mcp(name(2),startup_directory,2,ntestg,mixing_file_kind,pair%sides(2)%mixing)
 
     ! R      DO K = 1,KAMAX
     ! R        close(UNIT=80+K,STATUS="DELETE")
@@ -254,6 +271,7 @@ program rbiotransform_mpi_main
 
     ! Report elapsed time.
 
-    call finish_mpi_application (mpi_rank, start_clock_count, "RBIOTRANSFORM_MPI")
+    if (mpi_rank == 0) call complete_biorthogonal_output(pair, name, basis_ids, abort_input_mpi)
+    call finish_mpi_application (mpi_rank, start_clock_count, "BIORTHTRANSFORM_MPI")
     stop
-end program rbiotransform_mpi_main
+end program biorthtransform_mpi_main

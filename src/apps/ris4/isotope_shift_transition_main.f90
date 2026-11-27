@@ -1,7 +1,7 @@
 ! Combine two RIS4 state reports and nuclear data into a line isotope shift.
 program isotope_shift_transition_main
     ! Module dependencies
-    use calculation_state_files, only: read_state_pair
+    use calculation_state_files, only: read_state_pair, isotope_shift_input_path, lsj_label_input_path
     use, intrinsic :: iso_fortran_env, only: int64, real64
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use run_timer, only: begin_run_timer, finish_run_timer
@@ -119,7 +119,7 @@ program isotope_shift_transition_main
     write(*,*) "Computes line frequency isotope shift parameters and/or energies using"
     write(*,*) "output files from ris4"
     write(*,*)
-    write(*,*) "Input files: <state1>.(c)i, <state2>.(c)i"
+    write(*,*) "Input files: both states' .mcdhf.isotope-shift or .ci.isotope-shift reports, isodata"
     write(*,*) "Output file: <state1>.<state2>.(c)fi"
 
     ! Read the requested units and options.
@@ -210,15 +210,13 @@ program isotope_shift_transition_main
 
     ! Resolve the two state reports and the transition output path.
 
-    file5 = trim(state1)//".lsj.lbl"
-    file6 = trim(state2)//".lsj.lbl"
+    file5 = lsj_label_input_path(state1, ci == "y")
+    file6 = lsj_label_input_path(state2, ci == "y")
+    file1 = isotope_shift_input_path(state1, ci == "y")
+    file2 = isotope_shift_input_path(state2, ci == "y")
     if(ci=="y") then
-        file1 = trim(state1)//".ci"
-        file2 = trim(state2)//".ci"
         file3 = trim(state1)//"."//trim(state2)//".cfi"
     else
-        file1 = trim(state1)//".i"
-        file2 = trim(state2)//".i"
         file3 = trim(state1)//"."//trim(state2)//".fi"
     end if
 
@@ -780,30 +778,29 @@ contains
 
         ! Arguments and local declarations
         integer :: isotope_shift_input_unit
-        character(len=200) :: string
         character(*), intent(in) :: name, nameout
         real(real64), intent(out) :: z
-        real(real64) :: a,c,radmom3(4)
+        real(real64) :: nuclear_mass_number, a,c,radmom3(4)
 
         open (newunit=isotope_shift_input_unit,file=name,status="old",action="read",form="formatted")
         call read_isotope_value(isotope_shift_input_unit,name,"atomic number",z)
-        call next_report_line(isotope_shift_input_unit,name,"mass number label",string)
-        call next_report_line(isotope_shift_input_unit,name,"mass number",string)
+        call read_isotope_value(isotope_shift_input_unit,name,"mass number",nuclear_mass_number)
         call read_isotope_value(isotope_shift_input_unit,name,"Fermi diffuseness",a)
         call read_isotope_value(isotope_shift_input_unit,name,"Fermi radius",c)
-        a = a*4.0_real64*log(3.0_real64)
-        if (a > 0.0_real64 .and. c > 0.0_real64) then
-            call fermi_nuclear_distribution(c,a,0.0_real64,0.0_real64,0.0_real64,1,radmom3)
-        else if (max(abs(a),abs(c)) <= 0.0_real64) then
+        if (nuclear_mass_number == 0.0_real64) then
+            a = 0.0_real64
+            c = 0.0_real64
             radmom3 = 0.0_real64
         else
-            error stop "FICAL: invalid Fermi parameters in "//trim(name)
+            if (a <= 0.0_real64 .or. c <= 0.0_real64) error stop "FICAL: invalid Fermi parameters in "//trim(name)
+            a = a*4.0_real64*log(3.0_real64)
+            call fermi_nuclear_distribution(c,a,0.0_real64,0.0_real64,0.0_real64,1,radmom3)
         end if
         open (newunit=isotope_shift_output_unit,file=nameout,status="replace",form="formatted")
         write(isotope_shift_output_unit,*)
         write(isotope_shift_output_unit,"(a)") " REFERENCE ISOTOPE DATA FROM ISODATA"
         write(isotope_shift_output_unit,"(a,f10.6)") " Atomic number: ", z
-        if (a > 0.0_real64) then
+        if (nuclear_mass_number /= 0.0_real64) then
             write(isotope_shift_output_unit,"(a)") " Fermi nucleus: "
         else
             write(isotope_shift_output_unit,"(a)") " Point nucleus: "

@@ -11,7 +11,10 @@ module calculation_state_files
     public :: read_state_entry, read_state_pair, property_state_arguments, resolve_mixing_file
     public :: named_angular_output
     public :: orbital_input_path, mixing_input_path, ci_mixing_suffix
+    public :: natural_orbital_path, isotope_shift_report_path, isotope_shift_input_path
+    public :: lsj_label_path, lsj_label_input_path, transition_report_path
     public :: descriptor_input_path
+    public :: rci_restart_path
     public :: check_orbital_output
 
     ! Module constants
@@ -25,7 +28,7 @@ module calculation_state_files
     type :: state_files
         ! Components
         character(:), allocatable :: descriptors, header, initial_orbitals, orbitals, mixing
-        character(:), allocatable :: mcp, temporary, angular_log, angular_debug
+        character(:), allocatable :: mcp, indexed_mcp_prefix, temporary, angular_log, angular_debug
         character(:), allocatable :: estimate_summary, estimate_debug, scf_log, scf_summary, scf_debug
     end type
 contains
@@ -38,7 +41,8 @@ contains
         files%initial_orbitals = trim(name)//initial_orbital_suffix
         files%orbitals         = orbital_input_path(name)
         files%mixing           = mixing_input_path(name, .false.)
-        files%mcp              = "mcp"
+        files%mcp              = trim(name)//".mcp"
+        files%indexed_mcp_prefix = trim(name)//".mpi"
         files%temporary        = trim(name)//".tmp"
         files%angular_log      = trim(name)//".rangular.log"
         files%angular_debug    = trim(name)//".rangular.dbg"
@@ -48,6 +52,99 @@ contains
         files%scf_summary      = trim(name)//".rmcdhf.summary"
         files%scf_debug        = trim(name)//".rmcdhf.dbg"
     end function
+
+    function rci_restart_path(name, rank) result(path)
+        character(*), intent(in) :: name
+        integer, optional, intent(in) :: rank
+        character(:), allocatable :: path
+        character(16) :: rank_text
+
+        path = trim(name)//".rci"
+        if (present(rank)) then
+            write(rank_text,"(I0.3)") rank
+            path = path//".rank"//trim(rank_text)
+        end if
+        path = path//".restart"
+    end function
+
+    function natural_orbital_path(name, from_ci) result(path)
+        character(*), intent(in) :: name
+        logical, intent(in) :: from_ci
+        character(:), allocatable :: path
+
+        path = trim(name)//".natural.wfn"
+        if (from_ci) path = trim(name)//".ci.natural.wfn"
+    end function natural_orbital_path
+
+    function isotope_shift_report_path(name, from_ci) result(path)
+        character(*), intent(in) :: name
+        logical, intent(in) :: from_ci
+        character(:), allocatable :: path
+
+        path = source_report_stem(name, from_ci)//".isotope-shift"
+    end function isotope_shift_report_path
+
+    function isotope_shift_input_path(name, from_ci) result(path)
+        character(*), intent(in) :: name
+        logical, intent(in) :: from_ci
+        character(:), allocatable :: path
+
+        path = isotope_shift_report_path(name, from_ci)
+        call use_legacy_path_if_missing(path, trim(name)//trim(merge(".ci", ".i ", from_ci)))
+    end function isotope_shift_input_path
+
+    function lsj_label_path(name, from_ci) result(path)
+        character(*), intent(in) :: name
+        logical, intent(in) :: from_ci
+        character(:), allocatable :: path
+
+        path = source_report_stem(name, from_ci)//".lsj.labels"
+    end function lsj_label_path
+
+    function lsj_label_input_path(name, from_ci) result(path)
+        character(*), intent(in) :: name
+        logical, intent(in) :: from_ci
+        character(:), allocatable :: path
+
+        path = lsj_label_path(name, from_ci)
+        call use_legacy_path_if_missing(path, trim(name)//".lsj.lbl")
+    end function lsj_label_input_path
+
+    function transition_report_path(initial_state, final_state, from_ci, with_lsj, with_phase) result(path)
+        character(*), intent(in) :: initial_state, final_state
+        logical, intent(in) :: from_ci, with_lsj, with_phase
+        character(:), allocatable :: path
+
+        path = source_report_stem(trim(initial_state)//"."//trim(final_state), from_ci)//".transition"
+        if (with_phase) path = path//".phase"
+        if (with_lsj) path = path//".lsj"
+    end function transition_report_path
+
+    function source_report_stem(name, from_ci) result(stem)
+        character(*), intent(in) :: name
+        logical, intent(in) :: from_ci
+        character(:), allocatable :: stem
+
+        stem = trim(name)//trim(merge(".ci   ", ".mcdhf", from_ci))
+    end function source_report_stem
+
+    subroutine use_legacy_path_if_missing(path, legacy_path)
+        character(:), allocatable, intent(inout) :: path
+        character(*), intent(in) :: legacy_path
+        character(:), allocatable :: previous_path
+        logical :: exists
+
+        inquire(file=path, exist=exists)
+        if (exists) return
+
+        previous_path = path//".txt"
+        inquire(file=previous_path, exist=exists)
+        if (exists) then
+            path = previous_path
+        else
+            path = legacy_path
+        end if
+    end subroutine use_legacy_path_if_missing
 
     ! Accept an explicit mixing file or resolve a state to one of its existing mixing files.
     function resolve_mixing_file(entry, interactive) result(path)
@@ -150,14 +247,20 @@ contains
         stem = basename(:dot-1)
         channel = stem(index(stem, ".", back=.true.)+1:)
         select case (basename(dot+1:))
+        case ("mcpidx")
+            named_angular_output = .true.
         case ("log", "dbg")
             named_angular_output = channel == "rangular"
         case default
+            if (channel == "mcpidx" .and. index(basename(dot+1:), "part-") == 1) then
+                named_angular_output = .true.
+                return
+            end if
             if (len(basename)-dot /= 2 .or. verify(basename(dot+1:), "0123456789") /= 0) return
             if (len(channel) == 6) then
                 if (verify(channel(4:), "0123456789") == 0) channel = channel(:3)
             end if
-            named_angular_output = channel == "tmp"
+            named_angular_output = channel == "tmp" .or. channel == "mcp"
         end select
     end function
 

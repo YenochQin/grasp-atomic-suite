@@ -5,14 +5,14 @@ program rlevels
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use, intrinsic :: iso_fortran_env, only: error_unit, int64, iostat_end, output_unit, real64
     use mixing_file_format, only: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels
-    use calculation_state_files, only: read_state_entry, resolve_mixing_file
+    use calculation_state_files, only: read_state_entry, resolve_mixing_file, lsj_label_input_path
     use run_timer, only: begin_run_timer, finish_run_timer
     implicit none (type, external)
 
     real(real64), parameter :: rydberg_wavenumber_cm = 109737.31568508_real64
     real(real64), parameter :: hartree_to_wavenumber_cm = 2.0_real64*rydberg_wavenumber_cm
     real(real64), parameter :: label_energy_tolerance = 1.0e-8_real64
-    integer, parameter :: label_column = 37, label_width = 164 ! jj2lsj_omp .lsj.lbl layout
+    integer, parameter :: label_column = 37, label_width = 164 ! jj2lsj_omp LSJ label layout
 
     ! Derived types
     type :: level
@@ -129,7 +129,7 @@ contains
         if (suffix > 0 .and. file_level_count > 0) then
             select case (name(suffix:))
             case ('.mix', '.cimix')
-                call read_labels(name(:suffix-1)//'.lsj.lbl', entries, blocks, with_labels)
+                call read_labels(lsj_label_input_path(name(:suffix-1), name(suffix:) == '.cimix'), entries, blocks, with_labels)
             end select
         end if
         used = file_end

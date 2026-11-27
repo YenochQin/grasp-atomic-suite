@@ -29,11 +29,11 @@ program jj2lsj_main
     print *, "        (C) Copyright by   G. Gaigalas and Ch. F. Fischer,"
     print *, "        (2025)."
     print *, "        Input files: name_desc.parquet, name_header.toml, name.mix/name.cimix"
-    print *, "         (optional)  name.lsj.T"
-    print *, "        Ouput files: name.lsj.lbl,"
+    print *, "         (optional)  name.lsj.transform.cache"
+    print *, "        Output files: name.mcdhf.lsj.labels or name.ci.lsj.labels,"
     print *, "         (optional)  name.lsj.c, name.lsj.j,"
     print *, "                     name.uni.lsj.lbl, name.uni.lsj.sum,"
-    print *, "                     name.lsj.T"
+    print *, "                     name.lsj.transform.cache"
     print *, " "
     ! Initialize the log-factorial table for angular algebra.
     call initialize_physical_constants

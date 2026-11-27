@@ -3,16 +3,18 @@
 module density_parallel
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: int64, real64
-    use mpi_f08, only: mpi_abort, mpi_bcast, mpi_character, mpi_comm_world, mpi_count_kind, mpi_integer
+    use mpi_f08, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_count_kind, mpi_integer, &
+        mpi_double_precision, mpi_in_place, mpi_reduce, mpi_success, mpi_sum
     use mpi_element_counts, only: checked_mpi_count
-    use mpi_utilities, only: start_mpi_application, finish_mpi_application, reduce_mpi_real_sum_to_root
+    use mpi_io_errors, only: density_abort => abort_input_mpi
+    use mpi_utilities, only: start_mpi_application, finish_mpi_application
     use mpi_state, only: mpi_rank, mpi_process_count, processor_name, processor_name_length
     implicit none (type, external)
 
     ! Module interface
     private
     public :: mpi_rank, mpi_process_count, parallel_start, parallel_finish
-    public :: broadcast_options, sum_density, density_fail
+    public :: broadcast_options, sum_density, density_fail, density_abort
     public :: load_density_basis
 
     ! Module state
@@ -32,7 +34,8 @@ contains
     subroutine parallel_start
         call start_mpi_application(mpi_rank, mpi_process_count, processor_name, processor_name_length, start_count, &
             "RDENSITY_MPI", "MPI density and natural orbitals", &
-            "isodata, descriptor Parquet/header, name.wfn, name.mix/name.cimix", "name.nw, name.(c)d", .true.)
+            "isodata, descriptor Parquet/header, name.wfn, name.mix/name.cimix", &
+            "name.natural.wfn or name.ci.natural.wfn, name.(c)d", .true.)
     end subroutine parallel_start
 
     subroutine parallel_finish
@@ -56,18 +59,28 @@ contains
     subroutine sum_density(matrix)
         ! Arguments
         real(real64), contiguous, intent(inout) :: matrix(:,:)
-        ! Reduce one state's NW*NW block at a time, using the suite helper.
-        call reduce_mpi_real_sum_to_root(matrix, checked_mpi_count(size(matrix,kind=mpi_count_kind), "RDENSITY matrix reduction"))
+
+        ! Local declarations
+        integer :: element_count, mpi_status
+        real(real64) :: unused_receive_buffer(1)
+
+        element_count = checked_mpi_count(size(matrix,kind=mpi_count_kind), "RDENSITY matrix reduction")
+        if (mpi_rank == 0) then
+            call mpi_reduce(mpi_in_place, matrix, element_count, mpi_double_precision, mpi_sum, 0, mpi_comm_world, mpi_status)
+        else
+            ! MPI ignores the receive buffer on workers, including ranks with no CSF columns.
+            call mpi_reduce(matrix, unused_receive_buffer, element_count, mpi_double_precision, mpi_sum, 0, &
+                mpi_comm_world, mpi_status)
+        end if
+        if (mpi_status /= mpi_success) call density_fail("Density matrix reduction failed")
     end subroutine sum_density
 
     subroutine density_fail(message)
         ! Arguments
         character(*), intent(in) :: message
 
-        ! Local declarations
-        integer :: mpi_status
         write(*,*) "RDENSITY rank ", mpi_rank, ": ", message
-        call mpi_abort(mpi_comm_world, 1, mpi_status)
+        call density_abort()
         error stop 1
     end subroutine density_fail
 end module density_parallel

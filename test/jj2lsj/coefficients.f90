@@ -3,7 +3,7 @@
 program coefficients
     use jj2lsj_conversion, only: transform_asf_to_ls, asf_set_ls, max_symmetry_blocks, release_ls_expansion, &
         & coefficient_threshold, &
-       & read_ls_conversion_options, build_ls_basis, max_selected_levels
+        & read_ls_conversion_options, build_ls_basis, max_selected_levels, close_transformation_cache
     use orbital_csf_basis, only: csf_count
     use selected_level_indices, only: active_level_count
     use eigenstate_expansions, only: csf_mixing_coefficients
@@ -56,6 +56,7 @@ program coefficients
         end do
         call release_ls_expansion(asf_set_LS)
     end do
+    if (outt /= 0) call close_transformation_cache(outt)
     close(coefficient_output_unit)
     print *, "Coefficient dump complete"
 end program coefficients

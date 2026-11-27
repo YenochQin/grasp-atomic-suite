@@ -8,13 +8,13 @@
 
 ## 文件名和标识符
 
-- `rbiotransform` 和 `rbiotransform_mpi` 的原 `check_orbital_order.f90` 文件名暗示会检查轨道顺序。两份文件均改为 `check_orbital_order_stub.f90`，保留历史模块名、过程接口和直接返回的行为。应用 README 与迁移记录已更新路径，实际轨道顺序检查仍由 `prepare_biorthogonal_subshells` 执行。[串行占位过程](../../src/apps/rbiotransform/check_orbital_order_stub.f90) · [MPI 占位过程](../../src/apps/rbiotransform_mpi/check_orbital_order_stub.f90) · [轨道顺序处理](../../src/apps/rbiotransform/prepare_biorthogonal_subshells.f90#L189)
+- `rbiotransform` 和 `rbiotransform_mpi` 的原 `check_orbital_order.f90` 文件名暗示会检查轨道顺序。两份文件均改为 `check_orbital_order_stub.f90`，保留历史模块名、过程接口和直接返回的行为。应用 README 与迁移记录已更新路径，实际轨道顺序检查仍由 `prepare_biorthogonal_subshells` 执行。[串行占位过程](../../src/apps/biorthtransform/check_orbital_order_stub.f90) · [MPI 占位过程](../../src/apps/biorthtransform_mpi/check_orbital_order_stub.f90) · [轨道顺序处理](../../src/apps/biorthtransform/prepare_biorthogonal_subshells.f90#L189)
 - 串行和 MPI 的 `tabulate_slater_integrals` 将原 `n` 和 `key` 改为 `slater_integral_count` 和 `orbital_index_base`。基数仍为 `orbital_count + 1`。串行主程序和 MPI 归约包装过程中的计数名称也已同步。[串行 Slater 积分表](../../src/apps/rci/tabulate_slater_integrals.f90#L27) · [MPI Slater 积分表](../../src/apps/rci_mpi/tabulate_slater_integrals.f90#L27) · [MPI 归约](../../src/apps/rci_mpi/tabulate_slater_integrals_mpi.f90#L27)
 - `rwfnestimate` 将原 `b1` 至 `b4` 改为表示当前点及沿积分方向前三个已知点的权重名称。声明旁说明这些权重作用于径向大、小分量采样值，导数权重来自 `starting_step_weights`。[径向传播常量](../../src/apps/rwfnestimate/integrate_homogeneous_radial_segment.f90#L34)
 
 ## 源码注释
 
-- 两份轨道顺序占位过程的文件头现在明确说明入口直接返回，并移除了宣称会执行检查的旧注释。[串行文件头](../../src/apps/rbiotransform/check_orbital_order_stub.f90#L1) · [MPI 文件头](../../src/apps/rbiotransform_mpi/check_orbital_order_stub.f90#L1)
+- 两份轨道顺序占位过程的文件头现在明确说明入口直接返回，并移除了宣称会执行检查的旧注释。[串行文件头](../../src/apps/biorthtransform/check_orbital_order_stub.f90#L1) · [MPI 文件头](../../src/apps/biorthtransform_mpi/check_orbital_order_stub.f90#L1)
 - 四种普通 RMCDHF 的 SCF 循环将旧的 `.rwf` 注释改为说明每轮写入调用方选定的输出路径。命名计算使用 `name.wfn`，空状态名使用 `rwfn.out`。四份导入源码的注释快照已同步。[串行循环](../../src/apps/rmcdhf/run_scf_iterations.f90#L203) · [串行内存版循环](../../src/apps/rmcdhf_mem/run_scf_iterations.f90#L203) · [MPI 循环](../../src/apps/rmcdhf_mpi/run_scf_iterations_mpi.f90#L226) · [MPI 内存版循环](../../src/apps/rmcdhf_mem_mpi/run_scf_iterations_mpi.f90#L226) · [状态路径](../../src/lib/core/calculation_state_files.f90#L32)
 
 ## README 与实现的差异

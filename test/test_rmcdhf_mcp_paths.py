@@ -104,8 +104,8 @@ def run_paths(root: Path, binaries: Path, mpiexec: str) -> None:
     execute([*launcher, str(binaries / "rangular_mpi")], indexed, "case\nn\n", name="angular")
     raw = {}
     for rank in ("000", "001"):
-        shard = indexed / rank / "mcp.mcpidx"
-        assert list((indexed / rank).glob("mcp.*")) == [shard]
+        shard = indexed / rank / "case.mpi.mcpidx"
+        assert list((indexed / rank).glob("*.mcpidx")) == [shard]
         raw[rank] = indexed_blocks(shard)
 
     solver = str(binaries / "rmcdhf_mpi")
@@ -123,10 +123,10 @@ def run_paths(root: Path, binaries: Path, mpiexec: str) -> None:
             assert retained_outputs.setdefault(suffix, data) == data
         run_reads = 0
         for rank in ("000", "001"):
-            data = (work / rank / "mcp.bits").read_bytes()
+            data = (work / rank / "case.mcp.bits").read_bytes()
             assert retained_bits.setdefault(rank, data) == data
             stages.update(line.split()[0] for line in data.splitlines())
-            with (work / rank / "mcp.io.csv").open(newline="") as stream:
+            with (work / rank / "case.mcp.io.csv").open(newline="") as stream:
                 trace = list(csv.DictReader(stream))
             calls = [row for row in trace if row["phase"] == "potential_coefficients"]
             assert {row["epoch"] for row in calls} == {"1", "2"}
@@ -177,12 +177,12 @@ def run_paths(root: Path, binaries: Path, mpiexec: str) -> None:
         ("sparse-32-overflow", "invalid sparse block dimensions or offset"),
     ]:
         work = shutil.copytree(indexed, root / name)
-        shard = work / "001/mcp.mcpidx"
+        shard = work / "001/case.mpi.mcpidx"
         if name == "basis":
             for suffix in ("_desc.parquet", "_header.toml"):
                 shutil.copyfile(reordered / f"case{suffix}", work / f"case{suffix}")
         elif name == "rank":
-            shutil.copyfile(work / "000/mcp.mcpidx", shard)
+            shutil.copyfile(work / "000/case.mpi.mcpidx", shard)
         elif name == "truncated":
             with shard.open("r+b") as stream:
                 stream.truncate(shard.stat().st_size - 1)

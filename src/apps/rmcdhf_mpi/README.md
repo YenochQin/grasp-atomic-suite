@@ -28,7 +28,7 @@ OL/EOL 计算的 `name.mix` 写入永久 I/O 目录，SCF 日志写入启动目�
 | --- | --- |
 | [`configure_debug_output.f90`](configure_debug_output.f90) | 初始化 SCF 径向、角向、矩阵与正交化诊断位，按需打开指定 `.dbg` 路径。 |
 | [`configure_debug_output_mpi.f90`](configure_debug_output_mpi.f90) | 在 rank 0 处理调试选项并广播诊断位，使各 rank 采用相同的临时诊断设置。 |
-| [`connect_mcp_files.f90`](connect_mcp_files.f90) | 打开本 rank 的 `mcp.mcpidx`，校验分片身份及布局并安装基组和相互作用元数据。 |
+| [`connect_mcp_files.f90`](connect_mcp_files.f90) | 打开本 rank 的 `name.mpi.mcpidx`，校验分片身份及布局并安装基组和相互作用元数据。 |
 | [`load_csf_basis_data_mpi.f90`](load_csf_basis_data_mpi.f90) | 调用 MPI 适配器，由 rank 0 验证并读取描述符，各 rank 对照自己的 MCP 元数据并取得广播的占据和块信息。 |
 | [`read_al_average_options_mpi.f90`](read_al_average_options_mpi.f90) | 由 rank 0 选择 AL/EAL 权重和迭代控制选项并广播，使各 rank 构造一致的平均占据和正交化设置。 |
 | [`read_al_level_weights.f90`](read_al_level_weights.f90) | 按等权、$2J+1$ 或用户给出的正权重填入向量，对总和归一化供平均能量与占据计算。 |

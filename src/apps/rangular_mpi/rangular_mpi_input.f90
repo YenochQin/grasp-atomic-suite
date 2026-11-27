@@ -89,7 +89,7 @@ contains
             case ("--help")
                 print "(A)", "rangular_mpi [--csf-descriptors FILE] [--header FILE.toml] [--timings NEW_FILE.csv]"
                 print "(A)", "Enter a state to read NAME_desc.parquet in the MPI serial I/O directory."
-                print "(A)", "Only rank zero reads CSFs. Relative input paths use the MPI serial I/O directory."
+                print "(A)", "Rank zero reads CSFs from the serial I/O directory. Each rank writes NAME.mpi.mcpidx locally."
                 print "(A)", "Timings: NEW_FILE.rank000.csv, etc.; relative paths use each MPI rank work directory."
                 stop
             case default

@@ -231,7 +231,8 @@ def check_lines(lines: dict[tuple[int, str], Line], case: str) -> None:
 
 def regression(root: Path, binary: Path, launcher: list[str]) -> None:
     signed = binary.name == "rtransition_phase"
-    bio = binary.with_name("rbiotransform_mpi" if launcher else "rbiotransform")
+    report_suffix = ".mcdhf.transition.phase" if signed else ".mcdhf.transition"
+    bio = binary.with_name("biorthtransform_mpi" if launcher else "biorthtransform")
 
     def transition(
         work: Path, reverse: bool = False, restricted: bool = False
@@ -239,7 +240,7 @@ def regression(root: Path, binary: Path, launcher: list[str]) -> None:
         first, last = ("right", "left") if reverse else ("left", "right")
         answers = f"y\nn\n{first}\n{last}\nE1,M1\n" + ("y\n" if restricted else "n\n")
         execute(binary, work, answers, launcher, native=True)
-        return read_lines(work / f"{first}.{last}.t", reverse, signed)
+        return read_lines(work / f"{first}.{last}{report_suffix}", reverse, signed)
 
     all_lines = {}
     for case in ("strong", "weak", "flip", "half-gap", "degenerate", "donor"):
@@ -261,8 +262,51 @@ def regression(root: Path, binary: Path, launcher: list[str]) -> None:
         half = all_lines["half-gap"][key]
         close(half.rate / line.rate, (half.strength / line.strength) / 8)
     work = root / "strong"
+    forward = work / "biorth/left/right/mcdhf"
+    original_manifest = (forward / "manifest").read_bytes()
+    reverse_answers = "y\nn\nright\nleft\nE1,M1\nn\n"
+    execute(binary, work, reverse_answers, launcher, native=True, failure="Cannot lock biorthogonal results")
+    execute(bio, work, "y\nn\nright\nleft\ny\n", launcher, native=True)
     assert transition(work, reverse=True) == strong
-    caches = sorted(work.rglob("left.right.-1T"))
+
+    # Reuse the initial state with a different final prefix in the same directory.
+    for suffix in ("_desc.parquet", "_header.toml", ".mix", ".wfn"):
+        shutil.copyfile(work / f"right{suffix}", work / f"another{suffix}")
+    execute(bio, work, "y\nn\nleft\nanother\ny\n", launcher, native=True)
+    execute(binary, work, "y\nn\nleft\nanother\nE1,M1\nn\n", launcher, native=True)
+    assert read_lines(work / f"left.another{report_suffix}", False, signed) == strong
+    assert (forward / "manifest").read_bytes() == original_manifest
+
+    # An interrupted writer must not publish a mixed batch. Force the final mixing
+    # OPEN to fail after the radial files and initial mixing have been written.
+    final_mix = forward / "final.biorth.mix"
+    final_mix.unlink()
+    final_mix.mkdir()
+    execute(bio, work, "y\nn\nleft\nright\ny\n", launcher, native=True, failure="Cannot create")
+    assert not (forward / "manifest").exists()
+    execute(binary, work, "y\nn\nleft\nright\nE1,M1\nn\n", launcher, native=True,
+            failure="Missing biorthogonal manifest")
+    final_mix.rmdir()
+    execute(bio, work, "y\nn\nleft\nright\ny\n", launcher, native=True)
+    assert transition(work) == strong
+
+    with final_mix.open("ab") as stream:
+        stream.write(b"changed")
+    execute(binary, work, "y\nn\nleft\nright\nE1,M1\nn\n", launcher, native=True,
+            failure="Biorthogonal output digest mismatch")
+    with final_mix.open("r+b") as stream:
+        stream.truncate(final_mix.stat().st_size - len(b"changed"))
+    assert transition(work) == strong
+
+    original_mix = work / "right.mix"
+    with original_mix.open("ab") as stream:
+        stream.write(b"changed")
+    execute(binary, work, "y\nn\nleft\nright\nE1,M1\nn\n", launcher, native=True,
+            failure="Biorthogonal input digest mismatch")
+    with original_mix.open("r+b") as stream:
+        stream.truncate(original_mix.stat().st_size - len(b"changed"))
+    assert transition(work) == strong
+    caches = sorted(work.rglob("4.left.right.rtransition.e1.angular.cache"))
     ranks = 2 if launcher else 1
     assert len(caches) == ranks
 
@@ -281,12 +325,24 @@ def regression(root: Path, binary: Path, launcher: list[str]) -> None:
         shutil.copyfile(caches[0], shard)
         repeat("Rebuilding incompatible", 1)
     repeat("Rebuilding incompatible", ranks, restricted=True)
+
+    # Dots in state names must preserve the ordered pair boundary in cache paths.
+    for target, source in (("left.dot", "left"), ("dot.right", "right")):
+        for suffix in ("_desc.parquet", "_header.toml", ".mix", ".wfn"):
+            shutil.copyfile(work / f"{source}{suffix}", work / f"{target}{suffix}")
+    for first, last in (("left.dot", "right"), ("left", "dot.right")):
+        execute(bio, work, f"y\nn\n{first}\n{last}\ny\n", launcher, native=True)
+        execute(binary, work, f"y\nn\n{first}\n{last}\nE1\nn\n", launcher, native=True)
+    for first_length in (4, 8):
+        path = f"{first_length}.left.dot.right.rtransition.e1.angular.cache"
+        assert len(list(work.rglob(path))) == ranks
+
     # E3 has the correct parity for s -> p but violates the J triangle.
     execute(binary, work, "y\nn\nleft\nright\nE3\n", launcher, native=True)
-    report = work / "left.right.t"
+    report = work / ("left.right" + report_suffix)
     assert "Electric 2**( 3)-pole" in report.read_text()
     assert not read_lines(report, False, signed)
-    for cache in work.rglob("left.right.*T"):
+    for cache in work.rglob("4.left.right.rtransition.*.angular.cache"):
         cache.unlink()
     execute(
         binary,
@@ -296,7 +352,7 @@ def regression(root: Path, binary: Path, launcher: list[str]) -> None:
         native=True,
     )
     assert read_lines(report, False, signed) == strong
-    assert not list(work.rglob("left.right.*T"))
+    assert not list(work.rglob("4.left.right.rtransition.*.angular.cache"))
 
 
 def nickel(work: Path, binary: Path, launcher: list[str]) -> None:
@@ -305,16 +361,31 @@ def nickel(work: Path, binary: Path, launcher: list[str]) -> None:
     state = "nickel_transition_state"
     for source, target in (
         ("isodata", "isodata"),
-        ("test.wfn", f"{state}.bw"),
-        ("test.mix", f"{state}.bm"),
+        ("test.wfn", f"{state}.wfn"),
+        ("test.mix", f"{state}.mix"),
+        ("test.lsj.lbl", f"{state}.mcdhf.lsj.labels"),
         ("test_desc.parquet", f"{state}_desc.parquet"),
         ("test_header.toml", f"{state}_header.toml"),
     ):
         shutil.copyfile(data / source, work / target)
     signed = binary.name == "rtransition_phase"
-    report = work / f"{state}.{state}.t"
+    report_suffix = ".mcdhf.transition.phase" if signed else ".mcdhf.transition"
+    report = work / f"{state}.{state}{report_suffix}"
     execute(binary, work, f"y\nn\n{state}\n{state}\nM1,E2\nn\nn\n", launcher, native=True)
     lines = read_report(report, signed)
+    assert not (work / "biorth").exists()
+    assert not list(work.glob(f"{state}_CP.*"))
+    lsj_report = report.with_name(report.name + ".lsj")
+    assert "3s(2).3p(6).3d(8)3F.4s(2)_3F" in lsj_report.read_text()
+    if signed:
+        phase_reports = {path: path.read_bytes() for path in (report, lsj_report)}
+        execute(
+            binary.with_name("rtransition"), work, f"y\nn\n{state}\n{state}\nM1,E2\nn\nn\n", launcher, native=True
+        )
+        ordinary_report = work / f"{state}.{state}.mcdhf.transition"
+        assert read_report(ordinary_report, False).keys() == lines.keys()
+        assert ordinary_report.with_name(report.name + ".lsj").is_file()
+        assert all(path.read_bytes() == content for path, content in phase_reports.items())
     assert {g: sum(k[-1] == g for k in lines) for g in ("M", "C", "B")} == {
         "M": 14,
         "C": 25,

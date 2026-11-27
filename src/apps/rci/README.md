@@ -4,7 +4,7 @@
 可选修正包括横向 Breit 相互作用、质量位移、真空极化及自能估计。
 
 程序读取 `isodata`、`name_desc.parquet`、`name_header.toml` 和轨道优化得到的 `name.wfn`，
-写出 `name.cimix`、`name.csum`、`name.clog` 和续算文件 `rci.res`。
+写出 `name.cimix`、`name.csum`、`name.clog` 和续算文件 `name.rci.restart`。
 `name.cimix` 可用于生成能级表，也可作为原子性质程序的 CI 输入。
 
 [能级表程序](../rlevels/README.md) · [MPI 版本](../rci_mpi/README.md)
@@ -12,7 +12,7 @@
 ## 计算流程
 
 1. 装入固定径向轨道与描述符基组。根据用户选择建立 Dirac–Coulomb 积分表与可选的 Breit、质量位移、真空极化和自能数据。[程序入口](rci_main.f90) · [计算选项](read_ci_options.f90)
-2. 对每个对称性块，逐个 CSF 对把角系数乘到相应的一体、二体径向积分上，再累加启用的修正，按阈值保存下三角条目。已有有效的 `.res` 可以用于恢复已完成的行。[矩阵组装](assemble_hamiltonian_block.f90) · [续算位置恢复](assemble_ci_matrix.f90)
+2. 对每个对称性块，逐个 CSF 对把角系数乘到相应的一体、二体径向积分上，再累加启用的修正，按阈值保存下三角条目。已有有效的 `.rci.restart` 可以用于恢复已完成的行。[矩阵组装](assemble_hamiltonian_block.f90) · [续算位置恢复](assemble_ci_matrix.f90)
 3. 以块平均能量为位移，按矩阵规模和存储选择 `DSPEVX` 或 Davidson 路径。写出选择的根、对称性、块偏移及本征向量。绝对能量由报告中的位移与对应本征值相加。[对角化](diagonalize_hamiltonian_block.f90) · [分块求解与输出](solve_hamiltonian_blocks.f90)
 
 ## 逐文件计算与数据流程
@@ -24,7 +24,7 @@
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
 | [`configure_ci_debug_output.f90`](configure_ci_debug_output.f90) | 为 CI 初始化诊断标志，包括角向输出和调试路径的开关。主流程以这些标志控制后续记录。 |
-| [`connect_ci_restart_file.f90`](connect_ci_restart_file.f90) | 为新算例创建 `.res` 并写 `RCI92` 标记，或打开既有续算文件并校验标记。分别调用计算选项或续算读入路径。MPI 按 rank 选择文件。 |
+| [`connect_ci_restart_file.f90`](connect_ci_restart_file.f90) | 为新算例创建 `.rci.restart` 并写 `R92RES` 标记，或打开既有续算文件并校验标记。分别调用计算选项或续算读入路径。MPI 按 rank 选择文件。 |
 | [`load_csf_basis_data.f90`](load_csf_basis_data.f90) | 调用 `open_csf_blocks` 安装描述符头及块标签，准备按对称性块装入 CSF。矩阵求解循环访问各块。 |
 | [`rci_main.f90`](rci_main.f90) | 读取运行模式与状态，打开基组、续算、混合及摘要文件，制备 Slater 与可选 Breit 积分表，再按对称性块求本征对。 |
 | [`read_ci_mixing_coefficients.f90`](read_ci_mixing_coefficients.f90) | 按块读取目标根编号，计算每块请求根数、最大根号、根到块的映射和向量总大小，供混合流写入器建立块目录。 |
@@ -43,7 +43,7 @@
 | [`diagonalize_hamiltonian_block.f90`](diagonalize_hamiltonian_block.f90) | 读取块的对角和稀疏记录并减去平均能量。根据矩阵大小与存储，选择 LAPACK `DSPEVX` 的打包直接求解，或以主子空间初猜和矩阵乘回调驱动 Davidson 迭代，再保存所选根。 |
 | [`initialize_dense_eigenvectors.f90`](initialize_dense_eigenvectors.f90) | 从已打包矩阵提取小主子矩阵，调用 `DSPEVX` 求低端根，按原 CSF 下标回填为全维 Davidson 初猜列。 |
 | [`initialize_sparse_eigenvectors.f90`](initialize_sparse_eigenvectors.f90) | 从稀疏行中收集限定子空间内的条目，组装并求解打包主子矩阵，然后把本征向量嵌回大块工作区。 |
-| [`multiply_restart_hamiltonian.f90`](multiply_restart_hamiltonian.f90) | 逐批从 `.res` 读取稀疏元素并对输入试向量执行点积与散加，恢复对称矩阵的两侧贡献，按求解模式处理对角项。 |
+| [`multiply_restart_hamiltonian.f90`](multiply_restart_hamiltonian.f90) | 逐批从 `.rci.restart` 读取稀疏元素并对输入试向量执行点积与散加，恢复对称矩阵的两侧贡献，按求解模式处理对角项。 |
 | [`multiply_sparse_hamiltonian.f90`](multiply_sparse_hamiltonian.f90) | 按列尾偏移遍历内存稀疏结构，在一侧点积的同时将另一侧贡献散加到向量，并加入独立的对角元。 |
 | [`satisfies_breit_group1_triangle.f90`](satisfies_breit_group1_triangle.f90) | 依据四个轨道的 $l,j$ 检验第 1 组横向积分允许的三角及宇称组合，作为制表筛选。 |
 | [`satisfies_breit_group2_triangle.f90`](satisfies_breit_group2_triangle.f90) | 对第二组横向 Breit 算符使用对应的 $l,j$ 和径向阶三角选择，过滤禁止预制的轨道组合。 |

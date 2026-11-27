@@ -91,7 +91,8 @@ program rmcdhf_mem_mpi_main
 
     if (mpi_rank == 0) call open_summary_file (trim(serial_io_directory)//"/"//files%scf_summary)
 
-    call connect_mcp_files (closed_core_subshell_count, maximum_input_symmetry_blocks, block_labels, files%mcp)
+    call connect_mcp_files (closed_core_subshell_count, maximum_input_symmetry_blocks, block_labels, &
+        files%indexed_mcp_prefix)
     if(mpi_rank == 0) csf_descriptor_path = trim(serial_io_directory)//"/"//files%descriptors
     call load_csf_basis_data_mpi (csf_descriptor_path, core_subshell_count, block_labels)
     if (closed_core_subshell_count /= core_subshell_count) stop "rmcdhf_mem_mpi_main: closed-core subshell count mismatch"

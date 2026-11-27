@@ -49,6 +49,7 @@ METADATA = (
 )
 RUN_TIMESTAMP = re.compile(r"(Date and Time:|Finish Date and Time:) \d{4}-\d{2}-\d{2} "
                            r"\d{2}:\d{2}:\d{2}\.\d{3} [+-]\d{4}")
+FREE_MEMORY = re.compile(r"(\s*(?:Free  memory on computer:|Free memory on computer))\s+\d+\.\d{2} Gb")
 
 
 def solver_inputs(iteration_limit: int) -> str:
@@ -74,8 +75,12 @@ def normalize(text: str) -> str:
             result.append("<wall seconds>\n")
         elif timestamp:
             result.append(f"{timestamp[1]} <date/time metadata>\n")
+        elif memory := FREE_MEMORY.fullmatch(line.rstrip("\n")):
+            result.append(f"{memory[1]} <free memory metadata> Gb\n")
         elif any(re.fullmatch(pattern, line) for pattern in METADATA):
             result.append("<date/time metadata>\n")
+        elif line.strip() == "Output files: sweep.mcp.30, sweep.mcp.31, ...":
+            result.append(line.replace("sweep.mcp.", "mcp."))
         else:
             result.append(line)
         wall_time = line.strip() == "Wall time:"
@@ -116,12 +121,15 @@ def run(binary: Path, stdin: str, work: Path) -> dict[str, object]:
     return {"returncode": result.returncode, "stdout": normalize(result.stdout), "stderr": normalize(result.stderr)}
 
 
-def check_binary_files(work: Path) -> None:
-    actual = {p.name for p in work.glob("mcp.*")}
-    if actual != {"mcp.30", "mcp.31", "mcp.32", "mcp.33"}:
+def check_binary_files(work: Path) -> dict[str, Path]:
+    actual = {p.name for pattern in ("mcp.*", "sweep.mcp.*") for p in work.glob(pattern)}
+    legacy = set(MCP_RECORD_SIZES)
+    named = {f"sweep.{name}" for name in legacy}
+    if actual not in (legacy, named):
         raise ValueError(f"Incomplete/unexpected MCP file set: {sorted(actual)}")
+    paths = {name: work / (f"sweep.{name}" if actual == named and name in legacy else name) for name in BINARY_FILES}
     for name in BINARY_FILES:
-        path = work / name
+        path = paths[name]
         if not path.is_file() or not path.stat().st_size:
             raise ValueError(f"Missing/empty required output: {name}")
         records = []
@@ -146,6 +154,7 @@ def check_binary_files(work: Path) -> None:
             values = block.energies + list(struct.unpack("<d", block.coefficients))
             if not all(map(math.isfinite, values)):
                 raise ValueError("Nonfinite mixing coefficients/energy")
+    return paths
 
 
 def prepare_inputs(work: Path) -> dict[str, str]:
@@ -164,7 +173,7 @@ def exercise(bindir: Path, solver: str, work: Path, inputs: Path, input_hashes: 
     runs = {}
     for binary, stdin in (("rwfnestimate", "sweep\ny\n2\n*\n"), ("rangular", "sweep\ny\n"), (solver, solver_inputs(1))):
         runs[binary] = run(bindir / binary, stdin, work)
-    check_binary_files(work)
+    binaries = check_binary_files(work)
     texts = {}
     for name in sorted(NATIVE_TEXT_FILES):
         path = work / name
@@ -175,13 +184,13 @@ def exercise(bindir: Path, solver: str, work: Path, inputs: Path, input_hashes: 
         texts[name] = normalize(text)
     if any(sha256((work / name).read_bytes()) != digest for name, digest in input_hashes.items()):
         raise ValueError(f"Production input changed: {work}")
-    expected = BINARY_FILES | NATIVE_TEXT_FILES | set(INPUT_FILES)
+    expected = {path.name for path in binaries.values()} | NATIVE_TEXT_FILES | set(INPUT_FILES)
     for binary in runs:
         expected |= {f"{binary}.stdin", f"{binary}.stdout.log", f"{binary}.stderr.log"}
     actual = {p.name for p in work.iterdir()}
     if actual != expected:
         raise ValueError(f"Unexpected output inventory: missing={expected-actual}, extra={actual-expected}")
-    return {"binaries": {name: sha256((work / name).read_bytes()) for name in sorted(BINARY_FILES)},
+    return {"binaries": {name: sha256(binaries[name].read_bytes()) for name in sorted(BINARY_FILES)},
             "runs": runs, "scientific_text": texts}
 
 

@@ -49,7 +49,7 @@ contains
         use vinti_radial_integral_interface, only: vinti_radial_integral
         use specific_mass_shift_radial_integral_2_interface, only: specific_mass_shift_radial_integral_2
         use specific_mass_shift_radial_integral_3_interface, only: specific_mass_shift_radial_integral_3
-        use open_isotope_shift_angular_cache_interface, only: open_isotope_shift_angular_cache
+        use open_isotope_shift_angular_cache_interface, only: open_isotope_shift_angular_cache, isotope_shift_cache_path
 
         ! Module dependencies
         use mpi_io_errors, only: fail_input_io_mpi
@@ -78,7 +78,6 @@ contains
         character(len=24), intent(in) :: name
 
         ! Local declarations
-        integer :: first_name_blank
         real(real64), pointer :: field_shift_radial_integral_profiles(:, :, :)
         real(real64), pointer   :: level_electron_density_profiles(:, :)
         real(real64), pointer     :: electron_density_fit(:)
@@ -266,9 +265,9 @@ contains
         if (serial_save) then
             call mpi_barrier(mpi_comm_world, mpi_error_code)
             if (mpi_rank == 0) then
-                first_name_blank = index(name," ")
                 if (avail_ob) then
-                    open(newunit=one_body_cache_unit,file = name(1:first_name_blank-1)//".IOB",status="OLD",form="UNFORMATTED")
+                    open(newunit=one_body_cache_unit, file=isotope_shift_cache_path(name, 1), &
+                        status="OLD", form="UNFORMATTED")
                     if (yes2) then
                         call read_seltzer_field_shift_factors(contact_density_integrals,total_nms_integrals, &
                             & radius_integrals,radius_squared_integrals,inverse_radius_integrals,inverse_radius_squared_integrals, &
@@ -282,8 +281,8 @@ contains
                     close(one_body_cache_unit)
                 else
                     if (one_body_cache_mode == 1) then
-                        open(newunit=one_body_cache_unit,file = name(1:first_name_blank-1)//".IOB",status="REPLACE",form= &
-                            & "UNFORMATTED")
+                        open(newunit=one_body_cache_unit, file=isotope_shift_cache_path(name, 1), &
+                            status="REPLACE", form="UNFORMATTED")
                     end if
                     if (yes2) then
                         call calculate_seltzer_field_shift_factors(one_body_cache_mode,contact_density_integrals, &
@@ -299,13 +298,14 @@ contains
                 end if
 
                 if (avail_tb) then
-                    open(newunit=two_body_cache_unit,file = name(1:first_name_blank-1)//".ITB",status="OLD",form="UNFORMATTED")
+                    open(newunit=two_body_cache_unit, file=isotope_shift_cache_path(name, 2), &
+                        status="OLD", form="UNFORMATTED")
                     call read_specific_mass_shift(vinti_integrals,recoil_corrected_vinti_integrals)
                     close(two_body_cache_unit)
                 else
                     if (two_body_cache_mode == 1) then
-                        open(newunit=two_body_cache_unit,file = name(1:first_name_blank-1)//".ITB",status="REPLACE",form= &
-                            & "UNFORMATTED")
+                        open(newunit=two_body_cache_unit, file=isotope_shift_cache_path(name, 2), &
+                            status="REPLACE", form="UNFORMATTED")
                     end if
                     call calculate_specific_mass_shift(two_body_cache_mode,vinti_integrals,recoil_corrected_vinti_integrals)
                 end if
@@ -313,8 +313,8 @@ contains
             call mpi_barrier(mpi_comm_world, mpi_error_code)
         else
             if (avail_ob) then
-                first_name_blank = index(name," ")
-                open(newunit=one_body_cache_unit,file = name(1:first_name_blank-1)//".IOB",status="OLD",form="UNFORMATTED")
+                open(newunit=one_body_cache_unit, file=isotope_shift_cache_path(name, 1), &
+                    status="OLD", form="UNFORMATTED")
                 if (yes2) then
                     call read_seltzer_field_shift_factors_mpi(contact_density_integrals,total_nms_integrals, &
                         & radius_integrals,radius_squared_integrals,inverse_radius_integrals,inverse_radius_squared_integrals, &
@@ -340,8 +340,8 @@ contains
             end if
 
             if (avail_tb) then
-                first_name_blank = index(name," ")
-                open(newunit=two_body_cache_unit,file = name(1:first_name_blank-1)//".ITB",status="OLD",form="UNFORMATTED")
+                open(newunit=two_body_cache_unit, file=isotope_shift_cache_path(name, 2), &
+                    status="OLD", form="UNFORMATTED")
                 call read_specific_mass_shift_mpi(vinti_integrals,recoil_corrected_vinti_integrals)
                 close(two_body_cache_unit)
             else

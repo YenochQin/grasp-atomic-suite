@@ -3,11 +3,11 @@
 `rtransition` 计算选定能级间的电、磁多极辐射跃迁，给出跃迁能量、Einstein `A` 系数、
 加权振子强度 `gf` 和线强度 `S`。电多极跃迁可采用 Coulomb 和 Babushkin 规范。
 
-程序读取 `isodata`，以及初、末态各自的 `name_desc.parquet`、`name_header.toml` 和
-双正交变换得到的 `name.bw`、`name.bm` 或 `name.cbm`。主报告为 `initial.final.t`（MCDHF）
-或 `initial.final.ct`（CI）。可选的 `name.lsj.lbl` 提供 `.t.lsj` 或 `.ct.lsj` 输出所需的标签。
+程序读取 `isodata`、初态和末态的描述符文件对，以及 `biorth/<初态>/<末态>/<mcdhf|ci>/` 中的两侧轨道和混合流。同态时直接读取原始 `.wfn` 与 `.mix` 或 `.cimix`。
+`A.B.mcdhf.transition` 和 `A.B.ci.transition` 分别保存两种来源的主报告。两侧标签可用时另写对应的 `.transition.lsj`。 [路径与校验规则](../../../docs/reviews/evidence-0033-output-file-formats.md#有序态对交接与跃迁报告)
+标签优先读取 `name.mcdhf.lsj.labels` 或 `name.ci.lsj.labels`，缺失时依次查找带 `.txt` 的旧版标签和 `name.lsj.lbl`。
 
-[双正交变换程序](../rbiotransform/README.md) · [带符号矩阵元版本](../rtransition_phase/README.md) · [MPI 版本](../rtransition_mpi/README.md)
+[双正交变换程序](../biorthtransform/README.md) · [带符号矩阵元版本](../rtransition_phase/README.md) · [MPI 版本](../rtransition_mpi/README.md)
 
 ## 计算流程
 
@@ -23,21 +23,20 @@
 
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
-| [`load_final_lsj_labels.f90`](load_final_lsj_labels.f90) | 将末态 `.lsj.lbl` 的标签和级记录装入末态标签数组，供配对时使用。 |
+| [`load_final_lsj_labels.f90`](load_final_lsj_labels.f90) | 将末态 LSJ 标签文件的标签和级记录装入末态标签数组，供配对时使用。 |
 | [`load_final_transition_basis.f90`](load_final_transition_basis.f90) | 加载末态描述符，保存电子数、闭核、块前缀和轨道编码。安装用于合并的另一套 CSF 数据。 |
-| [`load_initial_lsj_labels.f90`](load_initial_lsj_labels.f90) | 打开初态 `.lsj.lbl` 并读入根编号、LSJ 标签和相关能量字段，供可选谱线输出匹配。 |
+| [`load_initial_lsj_labels.f90`](load_initial_lsj_labels.f90) | 打开初态 LSJ 标签文件并读入根编号、LSJ 标签和相关能量字段，供可选谱线输出匹配。 |
 | [`load_initial_transition_basis.f90`](load_initial_transition_basis.f90) | 加载初态描述符，保存其闭核、块前缀、轨道、占据和累计耦合数组，以便载入另一态后仍能访问原始 CSF。 |
 | [`map_merged_orbitals.f90`](map_merged_orbitals.f90) | 对合并后的轨道表逐项匹配原初、末态轨道，建立公共索引到两套径向数组槽位的映射。 |
 | [`merge_transition_basis_records.f90`](merge_transition_basis_records.f90) | 调用共享基组合并器，在内存中统一轨道、重映射占据与耦合。无法合并时打印两态名和错误原因并终止。 |
 | [`merge_transition_csf_bases.f90`](merge_transition_csf_bases.f90) | 依次加载两套描述符基组并连接基组归并例程，让后续张量角计算按共同轨道顺序访问两套态。 |
-| [`prepare_transition_mixing_coefficients.f90`](prepare_transition_mixing_coefficients.f90) | 初末使用同一状态时复制混合记录到独立的读入流，使各块的两侧记录可以分别定位和读取。 |
-| [`read_final_radial_wavefunctions.f90`](read_final_radial_wavefunctions.f90) | 读取末态 `.bw` 的径向数组及量子数，以末态索引保存匹配记录供跨态积分使用。 |
-| [`read_initial_radial_wavefunctions.f90`](read_initial_radial_wavefunctions.f90) | 打开初态 `.bw`，验证二进制标记并按 $n,\kappa$ 匹配网格记录，载入初态轨道的分量、能量和原点参数。 |
+| [`read_final_radial_wavefunctions.f90`](read_final_radial_wavefunctions.f90) | 读取末态 轨道文件 的径向数组及量子数，以末态索引保存匹配记录供跨态积分使用。 |
+| [`read_initial_radial_wavefunctions.f90`](read_initial_radial_wavefunctions.f90) | 打开初态 轨道文件，验证二进制标记并按 $n,\kappa$ 匹配网格记录，载入初态轨道的分量、能量和原点参数。 |
 | [`read_multipole_options.f90`](read_multipole_options.f90) | 把 `E1`、`M2` 等词元解析成同时编码阶数和宇称的整数，拒绝不可识别的输入，并读取 M1/E2 是否限于异 $J$ 态。 |
 | [`calculation_state_files.f90`](../../lib/core/calculation_state_files.f90) | 读取初态与末态状态名，按顺序交给文件加载和跨态输出路径解析。 |
 | [`read_transition_mixing_coefficients.f90`](read_transition_mixing_coefficients.f90) | 读取已定位的初、末态混合块，分别提取各级编号、对称性、平均能量、本征值和 CSF 向量。 |
 | [`read_transition_options.f90`](read_transition_options.f90) | 设置核和径向网格、选择电／磁多极、能量单位、阈值和输出模式，装入两态双正交轨道并检查跨态径向重叠。 |
-| [`rtransition_main.f90`](rtransition_main.f90) | 载入初末态名，合并描述符基组并建立径向及多极设置。读双正交轨道和混合块后进入振幅收缩，写 `.t` 或 `.ct` 主报告。 |
+| [`rtransition_main.f90`](rtransition_main.f90) | 载入初末态名，合并描述符基组并建立径向及多极设置。读双正交轨道和混合块后进入振幅收缩，写跃迁主报告。 |
 
 ### 矩阵与角向系数
 
@@ -68,7 +67,7 @@
 | [`check_transition_mixing_coefficients.f90`](check_transition_mixing_coefficients.f90) | 将已读进的两态维数、恢复偏移后的本征值、级和 CSF 系数完整打印供诊断。 |
 | [`open_transition_angular_cache.f90`](open_transition_angular_cache.f90) | 核对块头和末尾完成记录中的初末态描述符摘要、多极代码、J 筛选及进程布局。旧格式、截断或身份不符的角缓存会重算。[共享格式](../../lib/core/transition_angular_cache.f90) |
 | [`read_transition_angular_coefficients.f90`](read_transition_angular_coefficients.f90) | 读取指定块／多极的积分数、打包轨道对、每组的贡献边界及系数，检查并扩充工作数组后交给振幅计算。 |
-| [`write_input_summary.f90`](write_input_summary.f90) | 由初、末态名及混合来源构造 `.t`／`.ct` 报告路径，写两态输入摘要。启用标签时建立相应的 `.lsj` 输出。 |
+| [`write_input_summary.f90`](write_input_summary.f90) | 由初、末态名及混合来源构造并打开跃迁报告，启用标签时建立对应的 LSJ 报告。 |
 | [`write_lsj_transition_probability.f90`](write_lsj_transition_probability.f90) | 把级编号映射为初末 LSJ 标签，配合频率或波长及两规范的强度，写出可选的带标签谱线记录。 |
 | [`write_transition_level_energies.f90`](write_transition_level_energies.f90) | 把本征值加回块平均位移后列出两态各级总能量，按 Hartree、cm⁻¹ 与 eV 生成可比较的能级数据。 |
 | [`write_transition_probability.f90`](write_transition_probability.f90) | 把振幅平方并乘频率、角动量简并度及单位因子，生成 Einstein `A`、加权振子强度 `gf` 和线强度。按能量差确定上、下能级顺序并累计各规范总概率。 |

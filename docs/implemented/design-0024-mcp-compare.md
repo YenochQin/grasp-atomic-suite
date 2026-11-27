@@ -10,7 +10,9 @@
 ## 使用
 
 下列命令从本仓库根目录执行。`reference` 和 `candidate` 是分别保存原版和修改版输出的目录，
-各自保留完整的串行 `mcp.*`、MPI rank 分片 `RRR/mcp.mcpidx` 或旧归档 `RRR/mcp.*`、`mcpRRR.*`。
+各自保留完整的串行 `S.mcp.NN` 或 MPI rank 分片 `RRR/S.mpi.mcpidx`。
+同一目录有多个状态时，用 `--state` 选择参考状态，并用 `--candidate-state` 选择候选状态。
+旧归档可放在独立目录直接读取。
 归档时保留生成 MCP 的 CSF 输入和行序信息。
 
 ```fish
@@ -67,16 +69,16 @@ CSF 与轨道行序，再用 `--assume-same-csfs` 记录并继续比较。已检
 
 ## 格式及边界
 
-- 带目录的 `mcp.mcpidx` 为每 rank 一个流文件。目录按对称块和积分组定位稀疏数据与系数。
+- 带目录的 `S.mpi.mcpidx` 为每 rank 一个流文件。目录按对称块和积分组定位稀疏数据与系数。
   [格式契约](design-0020-rmcdhf-mcp-io.md#带目录格式第-1-版)
-- `mcp.30`：全局结构头、三个公共头记录、各 block 的 MCP 头、NNONZ、IENDC/IROW。
-- `mcp.31`：T 系数。`mcp.(32+k)`：V(k)，包括空通道。
+- `S.mcp.30` 保存全局结构头、三个公共头记录、各 block 的 MCP 头、NNONZ、IENDC/IROW。
+- `S.mcp.31` 保存 T 系数，`S.mcp.(32+k)` 保存 V(k)，包括空通道。
 - 系数 block 包含 `MCP, block, NCF, NCOEFF`；其后重复 `LABEL, NCONTR`
   和交错的 `(ICLMN, INDEX, REAL*8 coefficient)` 数组，以 `(0,0)` 结束。
 - 自动识别大小端、4/8 字节记录标记和 4/8 字节 INTEGER/LOGICAL。
   支持 GNU Fortran 对大数组记录采用的连续子记录，包括在数值内部切分。
   小型头记录须未被切分；REAL 必须是 IEEE float64。
-- 自动发现目录格式 `000/mcp.mcpidx`、串行 `mcp.30…` 和旧 MPI 归档 `000/mcp.30…` 或 `mcp000.30…`。输入须覆盖所有 ranks 和通道。
+- 输入须覆盖所有 ranks 和通道。可读取旧归档 `000/mcp.mcpidx`、`mcp.30…`、`000/mcp.30…` 或 `mcp000.30…`。
   混放串行与 MPI 文件、遗留额外通道、缺 rank/文件、截断、尾随数据、计数不符、
   非法索引、重复稀疏位置、缺对角元素、无序积分标签和 NaN/Inf 都会拒绝。
 - 保留标准的 MPI 循环列分配、每列对角项位于末尾的格式约定。

@@ -43,6 +43,10 @@ contains
         real(real64), contiguous, intent(inout) :: matrix(:,:)
     end subroutine sum_density
 
+    subroutine density_abort()
+        error stop 1
+    end subroutine density_abort
+
     subroutine density_fail(message)
         ! Arguments
         character(*), intent(in) :: message

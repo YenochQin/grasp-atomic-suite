@@ -8,7 +8,7 @@ module select_biorthogonal_symmetries_interface
 contains
 
     ! Written by Per Jonsson
-    subroutine select_biorthogonal_symmetries(name)
+    subroutine select_biorthogonal_symmetries()
         ! Module dependencies
         use mpi_io_errors, only: fail_input_io_mpi
         use, intrinsic :: iso_fortran_env, only: output_unit
@@ -16,29 +16,9 @@ contains
         use yes_no_input, only: read_yes_no
         implicit none (type, external)
 
-        ! Arguments
-        character(len=24), intent(in) :: name(2)
-
         ! Local declarations
         integer :: i
         logical :: yes
-        ! Per april 2007
-        ! Check if the initial and final states are identical.
-
-        if (trim(name(1)) == trim(name(2))) then
-            print *
-            print *, " Initial and final states are identical and there is"
-            print *, " no need for the biorthogonal transformation. Just  "
-            print *, " copy name.wfn to name.bw and name.mix/name.cimix to name.(c)bm "
-            print *, " and run rtransition.                               "
-            print *
-
-            print *, " Do you want to continue anyway ? "
-            yes = read_yes_no ()
-            if (yes.eqv..false.) stop
-        end if
-
-        ! end Per 2007
         write (output_unit, *) " Transformation of all J symmetries?"
         yes = read_yes_no()
         if (yes) then

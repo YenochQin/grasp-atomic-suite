@@ -54,6 +54,10 @@ contains
             error = "Non-finite density matrix"
             return
         end if
+        if (maxval(abs(matrix-transpose(matrix))) > 32*epsilon(1.0_real64)*max(1.0_real64,maxval(abs(matrix)))) then
+            error = "Density matrix is not symmetric"
+            return
+        end if
         allocate(ascending_occupations(orbital_count), density_eigenvectors(orbital_count, orbital_count), &
             ordered_eigenvector_indices(orbital_count), eigenvector_assigned(orbital_count))
         density_eigenvectors = matrix
@@ -63,7 +67,15 @@ contains
             error = "DSYEV workspace query failed"
             return
         end if
-        diagonalization_workspace_size = max(1, ceiling(workspace_size_query(1)))
+        if (.not.ieee_is_finite(workspace_size_query(1))) then
+            error = "DSYEV returned a non-finite workspace size"
+            return
+        end if
+        if (workspace_size_query(1) < 1.0_real64 .or. workspace_size_query(1) > real(huge(0),real64)) then
+            error = "DSYEV workspace size exceeds the supported range"
+            return
+        end if
+        diagonalization_workspace_size = ceiling(workspace_size_query(1))
         allocate(diagonalization_workspace(diagonalization_workspace_size))
         call dsyev("V", "U", orbital_count, density_eigenvectors, orbital_count, &
             ascending_occupations, diagonalization_workspace, diagonalization_workspace_size, lapack_status)

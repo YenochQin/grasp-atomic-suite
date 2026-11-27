@@ -44,11 +44,14 @@ program natural_orbitals_test
     if (maxval(abs(q-0.1_real64*p)) > 1e-12_real64) error stop "inconsistent Q phase"
     if (maxval(abs(origin-matmul(original_origin,rotation))) > 1e-12_real64) error stop "inconsistent PZ phase"
 
-    ! Repeated calls must release local workspace under -fno-automatic.
+    ! Repeated calls must release local workspace.
     call diagonalize_density(matrix, 1, occupation, rotation, error)
     if (len_trim(error) /= 0) error stop "dominance ordering failed"
     matrix(1:2,1:2) = reshape([1e0_real64,0.5_real64,0.5_real64,1e0_real64],[2,2])
     call diagonalize_density(matrix(1:2,1:2), 1, occupation(:2), rotation(:2,:2), error)
     if (len_trim(error) == 0) error stop "ambiguous dominance accepted"
+    matrix(2,1) = 0.0_real64
+    call diagonalize_density(matrix(1:2,1:2), 2, occupation(:2), rotation(:2,:2), error)
+    if (error /= "Density matrix is not symmetric") error stop "asymmetric density accepted"
     print *, "Natural-orbital eigensystem, ordering and phase checks passed"
 end program natural_orbitals_test

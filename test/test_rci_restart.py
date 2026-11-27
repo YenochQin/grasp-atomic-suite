@@ -110,14 +110,18 @@ def exercise(root: Path, estimator: Path, rci: Path, launcher: list[str], ranks:
     shutil.copyfile(cold / "case.initial.wfn", cold / "case.wfn")
     command = [*launcher, str(rci)]
     run(command, cold, "y\ncase\n" + ("n\n" if launcher else "") + "n\n" * 6 + "1-2\n")
-    files = sorted(path.relative_to(cold) for path in cold.rglob("rci*.res"))
-    assert len(files) == ranks, files
+    files = sorted(path.relative_to(cold) for path in cold.rglob("case.rci*.restart"))
+    expected = (
+        [f"{rank:03d}/case.rci.rank{rank:03d}.restart" for rank in range(ranks)]
+        if launcher else ["case.rci.restart"]
+    )
+    assert [path.as_posix() for path in files] == expected, files
     restart_answers = "n\ncase\ny\nn\n1-2\n"
     warm = root / "warm"
     shutil.copytree(cold, warm)
     (warm / "case.cimix").unlink()
     output = run(command, warm, restart_answers)
-    assert output.count("rows read from .res") == ranks, output
+    assert output.count("rows read from restart file") == ranks, output
     compare_roots(cold, warm)
     assert all((cold / file).read_bytes() == (warm / file).read_bytes() for file in files)
 

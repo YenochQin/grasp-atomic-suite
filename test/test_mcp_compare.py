@@ -179,6 +179,18 @@ class MCPTests(unittest.TestCase):
         fixture(self.right, ranks=4)
         self.assertEqual(self.compare()["status"], "equal")
 
+    def test_select_named_state_in_directory_with_multiple_sets(self) -> None:
+        for channel in list(self.left.glob("mcp.[0-9][0-9]")):
+            shutil.copyfile(channel, channel.with_name(f"triplet.a.{channel.name}"))
+            channel.rename(channel.with_name(f"triplet.b.{channel.name}"))
+        with self.assertRaisesRegex(mcp.MCPError, "multiple MCP sets"):
+            mcp.Dataset(self.left)
+        code, _, errors = self.run_cli(
+            "compare", str(self.left), str(self.left), "--state", "triplet.a",
+            "--candidate-state", "triplet.b",
+        )
+        self.assertEqual(code, 0, errors)
+
     def test_difference_location_and_tolerance(self) -> None:
         terms = list(TERMS)
         terms[3] = (*terms[3][:-1], terms[3][-1] + 1e-9)

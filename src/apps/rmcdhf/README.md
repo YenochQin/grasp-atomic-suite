@@ -4,7 +4,7 @@
 在组装哈密顿量和构造轨道方程时，程序按需从磁盘读取 MCP 数据。
 
 输入包括 `isodata`、`name_desc.parquet`、`name_header.toml`、`rwfnestimate` 生成的
-`name.initial.wfn`，以及 `rangular` 生成的 `mcp.NN` 通道。可通过 `npol.inp`
+`name.initial.wfn`，以及 `rangular` 生成的 `name.mcp.NN` 通道。可通过 `npol.inp`
 为径向势加入核极化修正。
 
 程序写出 `name.wfn`、`name.rmcdhf.summary` 和 `name.rmcdhf.log`。OL/EOL 计算还写出
@@ -29,7 +29,7 @@
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
 | [`configure_debug_output.f90`](configure_debug_output.f90) | 初始化 SCF 径向、角向、矩阵与正交化诊断位，按需打开指定 `.dbg` 路径。 |
-| [`connect_mcp_files.f90`](connect_mcp_files.f90) | 读 `mcp.30` 的闭核数、块长度、标签和最大多极阶，再核对各通道的电子、CSF、轨道数及 rank／进程数。保留各块位置与相互作用截止。内存版在这里预载已检查的通道。 |
+| [`connect_mcp_files.f90`](connect_mcp_files.f90) | 读 `name.mcp.30` 的闭核数、块长度、标签和最大多极阶，再核对各通道的电子、CSF、轨道数及 rank／进程数。保留各块位置与相互作用截止。内存版在这里预载已检查的通道。 |
 | [`load_csf_basis_data.f90`](load_csf_basis_data.f90) | 以已经读出的 MCP 元数据调用 RMCDHF 描述符适配器，核查轨道、CSF 和对称性块，随后装入占据及块量子数，供 SCF 用统一的全基组下标访问。 |
 | [`read_al_average_options.f90`](read_al_average_options.f90) | 设置 AL/EAL 的权重、迭代上限及正交化策略，将 CSF 占据按选定权重收缩成各轨道的平均占据。 |
 | [`read_al_level_weights.f90`](read_al_level_weights.f90) | 按等权、$2J+1$ 或用户给出的正权重填入向量，对总和归一化供平均能量与占据计算。 |

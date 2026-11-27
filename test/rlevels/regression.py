@@ -62,12 +62,13 @@ def check_real_fixture(binary: Path, data: Path, work: Path) -> None:
 
 def check_multiple_files(binary: Path, work: Path) -> None:
     mcdhf = work / ("MCDHF with spaces " + "x" * 76 + ".mix")
-    rci = work / "RCI.cimix"
+    rci = mcdhf.with_suffix(".cimix")
     write_stream(mcdhf, 1, 4, [block(4, -1, [3, 108], -2.0, [1.0, 1.0]), block(1, 1, [1], -2.0, [0.0])])
     write_stream(rci, 1, 4, [block(4, -1, [5], -1.0, [0.0])])
     label_header = " Pos   J   Parity      Energy Total      Comp. of ASF\n"
     long_label = "3s(2)." * 12 + "4s_2S"
-    mcdhf.with_suffix(".lsj.lbl").write_text(
+    mcdhf.with_suffix(".lsj.lbl").write_text("stale label report", encoding="ascii")
+    mcdhf.with_suffix(".mcdhf.lsj.labels").write_text(
         label_header
         + label(1, "3/2", "-", -1.0, long_label)
         + label(2, "3/2", "-", -1.0, "other_degenerate_root")
@@ -75,7 +76,7 @@ def check_multiple_files(binary: Path, work: Path) -> None:
         + label(1, "0", "+", 2.0, "opposite_sign"),
         encoding="ascii",
     )
-    rci.with_suffix(".lsj.lbl").write_text(label_header + label(1, "3/2", "-", -1.0, "rci_root"), encoding="ascii")
+    rci.with_suffix(".ci.lsj.labels").write_text(label_header + label(1, "3/2", "-", -1.0, "rci_root"), encoding="ascii")
     assert rows(run(binary, mcdhf, rci)) == [
         ["1", "1", "0", "+", "-2.0000000", "0.00", "0.00"],
         ["2", "3", "3/2", "-", "-1.0000000", "219474.63", "219474.63", long_label],

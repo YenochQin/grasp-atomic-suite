@@ -175,6 +175,7 @@ module jj2lsj_conversion
         "R","T","U","V","W","X","Y","Z" ]
     integer, parameter :: max_symmetry_blocks  = 20
     integer, parameter :: max_selected_levels = 100000
+    character(*), private, parameter :: transformation_signature = "LSJTRN02", transformation_done = "LSJDONE1"
 
     ! Module state
     integer, private :: ls_csf_output_unit = -1
@@ -186,7 +187,7 @@ module jj2lsj_conversion
 
 contains
     ! Parallel rows are committed in the original LS order. The unchanged
-    ! scalar backend remains the reference and handles sequential *.lsj.T I/O.
+    ! scalar backend remains the reference and handles sequential transformation-cache I/O.
     subroutine transform_asf_to_ls(parity_reference_position,retained_csf_mask,selected_level_count,symmetry_block_index, &
         & levels,first_csf_index, &
         & last_csf_index,transformation_output_mode)
@@ -335,23 +336,16 @@ contains
         integer, intent(in) :: first_csf_index, last_csf_index
         integer, intent(in) :: retained_csf_mask(:)
         integer, intent(in) :: levels(max_symmetry_blocks, max_selected_levels)
-        character(len=18) :: string
         integer      :: jj_number, lev, level, ls_number, ijj, ils
-        integer      :: weight_target_reached, stored_block_index
+        integer      :: weight_target_reached, cache_status
         real(real64) :: wa_transformation
         real(real64) :: ls_amplitudes(max_selected_levels)
         real(real64) :: cumulative_weights(max_selected_levels)
         integer(int64) :: level_mixing_offset, csf_count_int64
         cumulative_weights = zero
         csf_count_int64 = csf_count
-        if(transformation_output_mode == 1) write(transformation_unit) " *   Block Number=",symmetry_block_index
-        if(transformation_output_mode == 2) then
-            read(transformation_unit) string, stored_block_index
-            if(string(1:18) /= " *   Block Number=" .or.                  &
-                stored_block_index /= symmetry_block_index) then
-                print*, "Error in transformation file *.lsj.T"
-            end if
-        end if
+        if (transformation_output_mode /= 0) call check_transformation_block(transformation_output_mode, &
+            symmetry_block_index, retained_csf_mask(first_csf_index:last_csf_index))
         do ls_number = 1, asf_set_ls%csf_set_ls%ls_csf_count
             if(((ls_number/2000)*2000) == ls_number)                      &
                 print*, "LS_number=",ls_number
@@ -374,12 +368,10 @@ contains
                         if(transformation_output_mode == 1) write(transformation_unit)                             &
                             jj_number-first_csf_index+1,ls_number,wa_transformation
                         if(transformation_output_mode == 2) then
-                            read(transformation_unit) ijj, ils, wa_transformation
-                            if(ijj /= jj_number-first_csf_index+1 .or.                 &
-                                ils /= ls_number ) then
-                                print*, "Error in jj2lsj transformation file"
-                                stop
-                            end if
+                            read(transformation_unit, iostat=cache_status) ijj, ils, wa_transformation
+                            if (cache_status /= 0) error stop "Incomplete JJ2LSJ transformation cache"
+                            if (ijj /= jj_number-first_csf_index+1 .or. ils /= ls_number) &
+                                error stop "Unexpected coefficient indices in JJ2LSJ transformation cache"
                         end if
                         do lev = 1,selected_level_count
                             level = levels(symmetry_block_index,lev)
@@ -402,6 +394,22 @@ contains
         end do
         return
     end subroutine transform_asf_to_ls_serial
+
+    subroutine check_transformation_block(mode, block, retained)
+        integer, intent(in) :: mode, block, retained(:)
+        integer :: status, stored_block
+        integer, allocatable :: stored_mask(:)
+
+        if (mode == 1) then
+            write(transformation_unit) block, retained
+        else
+            allocate(stored_mask(size(retained)))
+            read(transformation_unit, iostat=status) stored_block, stored_mask
+            if (status /= 0) error stop "Incomplete JJ2LSJ transformation block"
+            if (stored_block /= block .or. any(stored_mask /= retained)) &
+                error stop "Selected blocks or retained CSFs differ from the JJ2LSJ transformation cache"
+        end if
+    end subroutine check_transformation_block
 
     !     Returns the value of the LS-jj transformation matrix for a given *
     !     set of quantum numbers form an array LS_jj_*_*.
@@ -1304,7 +1312,7 @@ contains
         use transition_basis_blocks,           only: transition_level_counts_by_block, transition_csf_counts_by_block, &
             transition_block_count, transition_two_j_by_block
         use csf_pair_angular_state,             only: core_orbital_count
-        use calculation_state_files, only: read_state_name
+        use calculation_state_files, only: read_state_name, lsj_label_path
         use atomic_calculation_state,           only: nuclear_charge, electron_count
 
         ! Procedure interfaces
@@ -1323,12 +1331,9 @@ contains
         integer, intent(out) :: number_of_levels(max_symmetry_blocks)
         integer, intent(out) :: levels(max_symmetry_blocks, max_selected_levels)
         real(real64) :: phase_start
-        integer            :: nelecdum, ncftotdum, nwdum, nblockdum
-        integer            :: jbdum, ncfinblkdum, nevinblkdum, iatjpdum
-        integer            :: i, ii, isum, k, nci, io_status, jb
+        integer            :: i, ii, isum, k, nci, io_status
         integer            :: iblock, number_of_levels_tmp
         logical            :: yes, fail
-        character(len=6)   :: mixing_file_signature
         character(len=24)  :: name
         character(len=256) :: record, util_csl_file
         integer    :: posi(max_symmetry_blocks)
@@ -1488,13 +1493,13 @@ contains
             end if
             if(max_omitted_percent == zero) then
                 write (stderr_unit,*)                                            &
-                    "Do you need the transformation output file *.lsj.T?  (y/n)"
+                    "Do you need the transformation output file *.lsj.transform.cache?  (y/n)"
                 yes = read_yes_no ()
                 if (yes) then
                     transformation_output_mode = 1
                 else
                     write (stderr_unit,*)                                         &
-                        "Will you use the transformation file *.lsj.T?  (y/n)"
+                        "Will you use the transformation file *.lsj.transform.cache?  (y/n)"
                     yes = read_yes_no ()
                     if (yes) then
                         transformation_output_mode = 2
@@ -1525,14 +1530,14 @@ contains
         if (ls_convention == 0) then
             write (*,"(A)")                                                &
                 " Seniority notaton is used for d shell identification in"
-            write (*,"(5A)")"   ",name(1:k-1)//".lsj"//".lbl", ", ",       &
+            write (*,"(5A)")"   ",lsj_label_path(name, nci == 0), ", ",       &
                 name(1:k-1)//".uni.lsj"//".lbl",","
             write (*,"(5A)")"   ",name(1:k-1)//".uni.lsj"//".sum",", and ",&
                 name(1:k-1)//".lsj"//".j","  files"
         else
             write (*,"(A)")                                                &
                 " Nielson-Koster indexes is used for d shell identification in"
-            write (*,"(5A)")"   ",name(1:k-1)//".lsj"//".lbl", ", ",       &
+            write (*,"(5A)")"   ",lsj_label_path(name, nci == 0), ", ",       &
                 name(1:k-1)//".uni.lsj"//".lbl",","
             write (*,"(5A)")"   ",name(1:k-1)//".uni.lsj"//".sum",", and ",&
                 name(1:k-1)//".lsj"//".j","  files"
@@ -1541,6 +1546,7 @@ contains
             " while seniority notation for this shell is used in other files"
         ! 2024 end
         print *, " "
+        if (transformation_output_mode /= 0) call open_transformation_cache(name, transformation_output_mode)
         ! Opening the files  *.lsj.c
         if(write_csf_list == 1) then
             util_csl_file = name(1:k-1)//".lsj"//".c"
@@ -1550,8 +1556,8 @@ contains
                 stop
             end if
         end if
-        ! opening the files  *.lsj.lbl
-        util_csl_file = name(1:k-1)//".lsj"//".lbl"
+        ! Open the source-specific LSJ label report.
+        util_csl_file = lsj_label_path(name, nci == 0)
         call open_calculation_file(lsj_label_unit,util_csl_file,"formatted","UNKNOWN",io_status)
         if (io_status == 1) then
             print *, "Error when opening",util_csl_file
@@ -1585,60 +1591,65 @@ contains
             write (j_vector_output_unit,"(2X,A6,A,F5.1,A,I3,A,I7)" )    &
                 name(1:k-1),"  Z = ",nuclear_charge ,"  NEL = ",electron_count,"   NCFG ="! ,asf_set_LS%csf_set_LS%nocsf
         end if
-        ! Opening the files   *.lsj.T and
-        if(transformation_output_mode == 1) then
-            util_csl_file = name(1:k-1)//".lsj"//".T"
-            open(newunit=transformation_unit,file=util_csl_file,form="unformatted",status="NEW",   &
-                iostat=io_status)
-            if (io_status /= 0) then
-                print *, "Error when opening ",util_csl_file
-                stop
-            end if
-            write (transformation_unit) "jj2lsj"
-            write (transformation_unit) electron_count, csf_count, orbital_count, transition_block_count
-            do jb = 1, transition_block_count
-                iatjpdum = transition_two_j_by_block(jb) +1
-                write (transformation_unit) jb, transition_csf_counts_by_block(jb), transition_level_counts_by_block(jb), iatjpdum
-            end do
-        else if(transformation_output_mode == 2) then
-            util_csl_file = name(1:k-1)//".lsj"//".T"
-            open(newunit=transformation_unit,file=util_csl_file,form="unformatted",status="OLD",   &
-                iostat=io_status)
-            if (io_status /= 0) then
-                print *, "Error when opening ",util_csl_file
-                stop
-            end if
-            read (transformation_unit, iostat=io_status) mixing_file_signature
-            if (io_status/=0 .or. mixing_file_signature/="jj2lsj") then
-                write (stderr_unit, *) "Not a jj2lsj Transformation File;"
-                close(transformation_unit)
-                stop
-            end if
-            read (transformation_unit) nelecdum, ncftotdum, nwdum, nblockdum
-            if(nelecdum /= electron_count .or. ncftotdum /= csf_count .or. nwdum /= orbital_count   &
-                .or. nblockdum /= transition_block_count) then
-                print*, electron_count, csf_count, orbital_count, transition_block_count
-                print*, nelecdum, ncftotdum, nwdum, nblockdum
-                print*, "Wrong transformation file *.lsj.T"
-                close(transformation_unit)
-                stop
-            end if
-            do jb = 1, nblockdum
-                iatjpdum = transition_two_j_by_block(jb) +1
-                read (transformation_unit) jbdum, ncfinblkdum, nevinblkdum, iatjpdum
-                if(jbdum /= jb .or. ncfinblkdum /= transition_csf_counts_by_block(jb) .or.       &
-                    nevinblkdum /= transition_level_counts_by_block(jb) .or.                        &
-                    iatjpdum /= transition_two_j_by_block(jb) +1) then
-                    print*, jb,transition_csf_counts_by_block(jb), transition_level_counts_by_block(jb), &
-                        transition_two_j_by_block(jb) +1
-                    print*, jbdum, ncfinblkdum, nevinblkdum, iatjpdum
-                    print*, "Wrong transformation file *.lsj.T"
-                    close(transformation_unit)
-                    stop
-                end if
-            end do
-        end if
     end subroutine read_ls_conversion_options
+
+    subroutine open_transformation_cache(name, mode)
+        use atomic_calculation_state, only: electron_count
+        use csf_descriptor_reader, only: loaded_csf_basis_id
+        use orbital_csf_basis, only: csf_count, orbital_count
+        use transition_basis_blocks, only: transition_block_count, transition_csf_counts_by_block, &
+            transition_level_counts_by_block, transition_two_j_by_block
+
+        character(*), intent(in) :: name
+        integer, intent(in) :: mode
+        character(:), allocatable :: path
+        character(len(transformation_signature)) :: signature
+        character(len(loaded_csf_basis_id)) :: basis_id
+        integer :: status, block, convention, dimensions(4), block_header(4), stored(4)
+
+        path = trim(name)//".lsj.transform.cache"
+        dimensions = [electron_count, csf_count, orbital_count, transition_block_count]
+        if (mode == 1) then
+            open(newunit=transformation_unit, file=path, form="unformatted", status="new", action="write", iostat=status)
+            if (status /= 0) error stop "Cannot create JJ2LSJ transformation cache: "//path
+            write(transformation_unit) transformation_signature, loaded_csf_basis_id, ls_convention, dimensions
+        else
+            open(newunit=transformation_unit, file=path, form="unformatted", status="old", action="read", iostat=status)
+            if (status /= 0) error stop "Cannot open JJ2LSJ transformation cache: "//path
+            read(transformation_unit, iostat=status) signature, basis_id, convention, stored
+            if (status /= 0) error stop "Invalid JJ2LSJ transformation cache header: "//path
+            if (signature /= transformation_signature) error stop "Unsupported JJ2LSJ transformation cache: "//path
+            if (basis_id /= loaded_csf_basis_id) error stop "JJ2LSJ transformation cache CSF basis differs: "//path
+            if (convention /= ls_convention .or. any(stored /= dimensions)) &
+                error stop "JJ2LSJ transformation cache convention or dimensions differ: "//path
+        end if
+        do block = 1, transition_block_count
+            block_header = [block, transition_csf_counts_by_block(block), transition_level_counts_by_block(block), &
+                transition_two_j_by_block(block)+1]
+            if (mode == 1) then
+                write(transformation_unit) block_header
+            else
+                read(transformation_unit, iostat=status) stored
+                if (status /= 0) error stop "Incomplete JJ2LSJ transformation cache directory: "//path
+                if (any(stored /= block_header)) error stop "JJ2LSJ transformation cache block metadata differ: "//path
+            end if
+        end do
+    end subroutine open_transformation_cache
+
+    subroutine close_transformation_cache(mode)
+        integer, intent(in) :: mode
+        integer :: status
+        character(len(transformation_done)) :: completion
+
+        if (mode == 1) then
+            write(transformation_unit) transformation_done
+        else
+            read(transformation_unit, iostat=status) completion
+            if (status /= 0) error stop "Missing JJ2LSJ transformation cache completion record"
+            if (completion /= transformation_done) error stop "Unexpected records in JJ2LSJ transformation cache"
+        end if
+        close(transformation_unit)
+    end subroutine close_transformation_cache
 
     !     Attempts to interprete the serial level numbers which are given
     !     in record. These level numbers can be given in the format:
@@ -1993,7 +2004,7 @@ contains
                         end if
                     end do
                 end do
-                ! output to *.lsj.lbl
+                ! Output the LSJ label report.
                 call profile_emit("ls_stdout",phase_start,symmetry_block_index,level)
                 phase_start=profile_time()
                 format_seconds=0.0_real64
@@ -2044,6 +2055,7 @@ contains
             deallocate(rankings)
             call profile_emit("release",phase_start,symmetry_block_index)
         end do
+        if (transformation_output_mode /= 0) call close_transformation_cache(transformation_output_mode)
         deallocate(retained_csf_mask)
         if(write_csf_list == 1) call profile_file_size("csf_bytes",ls_csf_output_unit)
         if (ls_csf_output_unit /= -1) close(ls_csf_output_unit)

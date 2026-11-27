@@ -1,4 +1,4 @@
-EXE=rbiotransform
+EXE=biorthtransform
 LIBRARIES="spin_angular core grasp_shared"
 LAPACK=true
 FILES="
@@ -42,7 +42,7 @@ combine_vectors.f90
 prepare_biorthogonal_mcp.f90
 transform_ci_coefficients.f90
 transform_orbital_sets.f90
-rbiotransform_main.f90
+biorthtransform_main.f90
 
 # The _implementations_ for these routines were not being compiled in the
 # original makefile. The interface files were still linked though.

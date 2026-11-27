@@ -18,7 +18,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "rmcdhf"))
 from compare_rwfn import Orbital, read_radial_stream, read_rwfn
 
 
-def execute(binary: Path, directory: Path, stdin: str, launcher: list[str], *, native: bool) -> None:
+def execute(
+    binary: Path, directory: Path, stdin: str, launcher: list[str], *, native: bool, failure: str = ""
+) -> None:
     result = subprocess.run(
         [*launcher, str(binary)],
         cwd=directory,
@@ -37,11 +39,14 @@ def execute(binary: Path, directory: Path, stdin: str, launcher: list[str], *, n
     )
     (directory / (binary.name + ".stdout")).write_text(result.stdout)
     (directory / (binary.name + ".stderr")).write_text(result.stderr)
+    if failure:
+        assert result.returncode != 0 and failure in result.stderr, result.stdout + result.stderr
+        return
     assert (
         result.returncode == 0 and "Execution complete" in result.stdout + result.stderr
     ), result.stdout + result.stderr
     if native:
-        if binary.name.startswith(("rbiotransform", "rtransition")):
+        if binary.name.startswith(("biorthtransform", "rtransition")):
             assert result.stderr.count("Name of state:") == 2, result.stderr
             assert result.stderr.index("Initial state") < result.stderr.index("Final state"), result.stderr
         else:
@@ -71,16 +76,20 @@ def pipeline(
         else:
             shutil.copyfile(template / "case.c", work / f"{stem}.c")
     suffix = "_mpi" if launcher else ""
+    biorthogonal_program = "biorthtransform" if native else "rbiotransform"
     execute(
-        binaries / ("rbiotransform" + suffix), work, f"y\n{ci_answer}\nleft\nright\ny\n", launcher, native=native
+        binaries / (biorthogonal_program + suffix), work, f"y\n{ci_answer}\nleft\nright\ny\n", launcher, native=native
     )
     outputs: dict[str, bytes | list[Block] | dict[tuple[int, int], Orbital]] = {}
-    for stem in ("left", "right"):
+    pair = work / "biorth/left/right" / ("ci" if ci else "mcdhf")
+    for stem, side in (("left", "initial"), ("right", "final")):
         wavefunction = work / f"{stem}.bw"
         mixing = work / f"{stem}.{transformed_mix_suffix}"
         if native:
-            outputs[wavefunction.name] = read_radial_stream(wavefunction)
-            outputs[mixing.name] = read_stream(mixing, work / f"{stem}_desc.parquet")
+            outputs[wavefunction.name] = read_radial_stream(pair / f"{side}.biorth.wfn")
+            outputs[mixing.name] = read_stream(
+                pair / f"{side}.biorth.{mix_suffix}", work / f"{stem}_desc.parquet"
+            )
         else:
             outputs[wavefunction.name] = read_rwfn(wavefunction)
             outputs[mixing.name] = mixing_blocks(mixing)
@@ -113,7 +122,8 @@ def pipeline(
         answers = "y\ncase\nn\n" + ("n\nn\n" if program == "ris4" else "")
         execute(binaries / (program + suffix), rci_work, answers, launcher, native=native)
         for extension in extensions:
-            path = rci_work / f"case.{extension}"
+            suffix_name = "mcdhf.isotope-shift" if native and extension == "i" else extension
+            path = rci_work / f"case.{suffix_name}"
             assert path.stat().st_size > 0
             outputs[program + "." + extension] = path.read_bytes()
     execute(binaries / ("gj" + suffix), rci_work, "y\ncase\ny\n", launcher, native=native)
@@ -124,10 +134,14 @@ def pipeline(
         destination = root / program
         shutil.copytree(work, destination)
         execute(binaries / program, destination, f"y\n{ci_answer}\nleft\nright\nE1\n", launcher, native=native)
-        assert (destination / transition_name).stat().st_size > 0
+        name = transition_name
+        if native:
+            phase = ".phase" if program == "rtransition_phase" else ""
+            name = f"left.right.{'ci' if ci else 'mcdhf'}.transition{phase}"
+        assert (destination / name).stat().st_size > 0
         if native:
             assert not (destination / "SLASK").exists()
-        outputs[program + ".t"] = (destination / transition_name).read_bytes()
+        outputs[program + ".t"] = (destination / name).read_bytes()
     return outputs
 
 

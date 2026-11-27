@@ -33,7 +33,7 @@ no tolerance and must be bitwise identical. The even fixture has blocks larger
 than both two- and four-thread batches and exercises partially filled last batches.
 
 The tests cover default settings, full transformation, 25% maximum omitted norm,
-selected levels in reverse order with skipped blocks, sequential `.lsj.T`
+selected levels in reverse order with skipped blocks, sequential `.lsj.transform.cache`
 generation/replay, and unique labels. Default `.expected.lbl` files were generated
 with the original workspace GRASP executable, whose source snapshot is identified
 in [the provenance manifest](../../docs/reference/jj2lsj/source-manifest.json).

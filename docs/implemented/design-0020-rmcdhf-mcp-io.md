@@ -8,7 +8,7 @@ Zn I AS2 已完成目标 XFS 的矩阵分段及逐轮页驻留诊断，Cd I 已�
 
 ## MPI 计算链
 
-直接运行 `rangular_mpi`，各 rank 在工作目录生成一个 `mcp.mcpidx`。随后以相同的 rank 数、
+直接运行 `rangular_mpi`，各 rank 在工作目录生成一个 `S.mpi.mcpidx`，其中 `S` 是状态名。随后以相同的 rank 数、
 进程布局和描述符基组运行 `rmcdhf_mpi` 或 `rmcdhf_mem_mpi`。同一工作目录连续生成时，各 rank 完成写入后才发布新分片。已有旧 MCP 的计算可用新版本 `rangular_mpi` 重新生成。读取遇到缺失、截断或身份不符的分片时
 通过 MPI 报错。
 
@@ -26,13 +26,13 @@ MPI 内存版读取同一目录，将结构和系数装入原有求解数组。�
 - `rangular_mpi --timings timing.csv` 输出每 rank、块和通道的生成、排序及写出时间和记录数。
   当前生成器按块、通道排序，系数排序数组约占每条贡献 20 字节。生成端的临时记录、排序下标与
   块内稀疏位置使用有界的 32 位整数，到达上界时报告错误。全块非零数和三角容量按 64 位计算。
-- `rmcdhf_mpi --mcp-trace` 在各 rank 工作目录写 `mcp.io.csv`。`epoch` 随 EOL 密度权重更新递增。
+- `rmcdhf_mpi --mcp-trace` 在各 rank 工作目录写 `S.mcp.io.csv`。`epoch` 随 EOL 密度权重更新递增。
   结构行记录本地稀疏块读取、行号数及字节。通道行记录读过或跳过的组、贡献数、字节和最大组。
   缓存行记录结构、收缩表、工作区估计和分配大小。阶段行记录矩阵装配、势系数构造、径向计算、
   归约、普通及追加更新、径向求解失败重试和每轮 SCF 墙钟。
 - `bytes_read` 计应用消费的逻辑记录或流内容，包括已消费的标签和目录，以字节表示。跳过的负载大小单列。设备和页缓存的流量需用目标系统计数器量测。
   矩阵已有的 barrier 和归约分别计时，归约耗时可包含等候较慢 rank 的时间。
-- `rmcdhf_mpi --mcp-verify` 在各 rank 工作目录写 `mcp.bits`，记录收缩和、DA/YA/XA 的标签和值、
+- `rmcdhf_mpi --mcp-verify` 在各 rank 工作目录写 `S.mcp.bits`，记录收缩和、DA/YA/XA 的标签和值、
   矩阵、乘子及径向数组的 IEEE 64 位模式。性能对照时关闭此选项。
 
 ## 带目录格式第 1 版

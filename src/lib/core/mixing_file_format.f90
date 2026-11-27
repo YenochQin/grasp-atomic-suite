@@ -6,6 +6,7 @@ module mixing_file_format
     implicit none (type, external)
     private
     public :: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, read_mixing_vectors
+    public :: validate_mixing_basis
     public :: open_mixing_stream, open_transformed_mixing_stream, write_mixing_block, close_mixing_stream
 
     character(8), parameter :: stream_signature = "CSF--MIX"
@@ -272,6 +273,32 @@ contains
         if (offset /= file_size .or. levels /= file%level_count .or. csfs /= file%csf_count) &
             call fail_input_io(0,file%unit,"Mixing stream totals disagree with the directory")
     end subroutine
+
+    subroutine validate_mixing_basis(file, abort_handler)
+        ! The stored digest identifies the descriptor, but cannot certify the mixing directory.
+        use atomic_calculation_state, only: electron_count
+        use orbital_csf_basis, only: csf_count, orbital_count
+        use transition_basis_blocks, only: transition_block_count, cumulative_csf_counts
+        use csf_quantum_queries, only: csf_total_j_code, csf_parity_code
+
+        type(mixing_file), intent(in) :: file
+        procedure(abort_input), optional :: abort_handler
+
+        integer :: block, preceding_csfs
+
+        if (file%electron_count /= electron_count .or. file%orbital_count /= orbital_count .or. &
+            file%csf_count /= csf_count .or. file%block_count /= transition_block_count) &
+            call fail_input_io(0, file%unit, "Mixing dimensions do not match the loaded CSF basis", abort_handler)
+        preceding_csfs = 0
+        do block = 1, transition_block_count
+            if (file%directory(3,block) /= cumulative_csf_counts(block)-preceding_csfs) &
+                call fail_input_io(0, file%unit, "Mixing block does not match the CSF partition", abort_handler)
+            if (file%directory(1,block)+1 /= csf_total_j_code(preceding_csfs+1) .or. &
+                file%directory(2,block) /= csf_parity_code(preceding_csfs+1)) &
+                call fail_input_io(0, file%unit, "Mixing block J or parity does not match the CSF basis", abort_handler)
+            preceding_csfs = cumulative_csf_counts(block)
+        end do
+    end subroutine validate_mixing_basis
 
     subroutine next_mixing_block(file, block, csfs, levels, j_code, parity, status)
         type(mixing_file), intent(inout) :: file

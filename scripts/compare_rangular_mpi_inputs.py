@@ -119,16 +119,22 @@ def run_mode(arguments: argparse.Namespace, inputs: Path, mode: str, repetition:
     execution["rank_stages"] = read_rank_timings(directory, arguments.ranks)
     root_stages = execution["rank_stages"][0]
     execution["root_input_seconds"] = root_stages["input_header_and_broadcast"] + root_stages["csf_load_and_broadcast"]
-    fingerprints = {
-        path.relative_to(directory).as_posix(): mcp_fingerprints(path)
-        for path in sorted(directory.glob("[0-9][0-9][0-9]/mcp*.*"))
-    }
+    fingerprints = {}
+    for rank_index in range(arguments.ranks):
+        rank = f"{rank_index:03d}"
+        rank_dir = directory / rank
+        indexed = [path for name in ("csfs.mpi.mcpidx", "mcp.mcpidx") if (path := rank_dir / name).is_file()]
+        if indexed:
+            if len(indexed) != 1:
+                raise ValueError(f"Multiple indexed MCP files for rank {rank_index}")
+            fingerprints[f"{rank}/{indexed[0].name}"] = mcp_fingerprints(indexed[0])
+        elif (rank_dir / "mcp.30").is_file():
+            for path in sorted(rank_dir.glob("mcp.[0-9][0-9]")):
+                fingerprints[f"{rank}/{path.name}"] = mcp_fingerprints(path)
+        else:
+            raise ValueError(f"Missing MCP sparse structure for rank {rank_index}")
     execution["output_sha256"] = {path: raw for path, (raw, _) in fingerprints.items()}
     execution["normalized_mcp_sha256"] = {path: normalized for path, (_, normalized) in fingerprints.items()}
-    for rank_index in range(arguments.ranks):
-        rank_dir = directory / f"{rank_index:03d}"
-        if not any((rank_dir / name).is_file() for name in ("mcp.mcpidx", "mcp.30")):
-            raise ValueError(f"Missing MCP sparse structure for rank {rank_index}")
     save_json(directory / "execution.json", execution)
     print(f"Finished {mode}: wall={execution['wall_seconds']:.6f}s, "
           f"rank-0 input+broadcast={execution['root_input_seconds']:.6f}s", flush=True)

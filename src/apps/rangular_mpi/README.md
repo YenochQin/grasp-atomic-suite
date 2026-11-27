@@ -4,7 +4,7 @@
 程序读取 `name_desc.parquet` 和配套的 `name_header.toml`。启用零阶优先分区时，
 从头文件的 `[block_info].zero_order_counts` 取得各块的零阶 CSF 数。
 
-各 rank 在自己的工作目录写入 `mcp.mcpidx` 分片，rank 0 在启动目录写入 `name.rangular.log`。
+各 rank 在自己的工作目录写入 `name.mpi.mcpidx` 分片，rank 0 在启动目录写入 `name.rangular.log`。
 后续 MPI MCDHF 需要使用相同的基组、进程数和临时目录布局。
 
 [MCP 通道说明](../rangular/README.md) · [rmcdhf_mpi](../rmcdhf_mpi/README.md) · [rmcdhf_mem_mpi](../rmcdhf_mem_mpi/README.md)
@@ -17,7 +17,7 @@
 
 1. rank 0 打开原生描述符并验证头文件，向所有 rank 广播块信息。选择零阶优先分区时使用头文件的每块零阶 CSF 数作截止，再逐块广播占据和耦合。[MPI 输入](rangular_mpi_input.f90) · [分区与通道设置](open_mcp_outputs_mpi.f90)
 2. 对一块的下三角矩阵，各 rank 按进程数为步长遍历自己负责的 CSF 列，计算 T 和 $V^{(k)}$，确定本地矩阵元位置后按积分标签排序。[分布式角系数](compute_mcp_angular_coefficients_mpi.f90) · [排序](sort_mcp_coefficients.f90)
-3. 各 rank 写本地带目录的 `mcp.mcpidx`，其中包含结构、积分组和进程布局。后续 MPI MCDHF 使用同一 rank 布局读取。[通道头与布局](connect_mcp_files.f90) · [稀疏记录](write_mcp_sparsity.f90)
+3. 各 rank 写本地带目录的 `name.mpi.mcpidx`，其中包含结构、积分组和进程布局。后续 MPI MCDHF 使用同一 rank 布局读取。[通道头与布局](connect_mcp_files.f90) · [稀疏记录](write_mcp_sparsity.f90)
 
 ## 逐文件计算与数据流程
 

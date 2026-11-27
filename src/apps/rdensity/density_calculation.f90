@@ -3,6 +3,7 @@
 ! Accumulate one-body density matrices before contracting radial functions.
 module density_calculation
     ! Module dependencies
+    use calculation_state_files, only: natural_orbital_path
     use grasp_parameters, only: max_orbitals
     use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals, orbital_count, &
         orbital_kappa, orbital_principal_n
@@ -101,7 +102,7 @@ contains
         if (mpi_rank == 0) then
             ! Use the original radial basis before rotating PF and QF.
             call write_density(name, mixing_file_kind, rho)
-            call make_natural_orbitals(name, ordering, rho)
+            call make_natural_orbitals(natural_orbital_path(name, mixing_file_kind == 0), ordering, rho)
         end if
     end subroutine calculate_density
 
@@ -152,13 +153,13 @@ contains
         if (io_status /= 0) call density_fail("Error writing "//filename)
     end subroutine write_density
 
-    recursive subroutine make_natural_orbitals(name, ordering, rho)
+    recursive subroutine make_natural_orbitals(path, ordering, rho)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: real64
         use radial_wavefunction_format, only: write_radial_orbitals
 
         ! Arguments
-        character(*), intent(in) :: name
+        character(*), intent(in) :: path
         integer, intent(in) :: ordering
         real(real64), intent(in) :: rho(:,:,:)
 
@@ -219,12 +220,12 @@ contains
             end do
             deallocate(orbits, matrix, rotation, occupation, p, q, origin)
         end do
-        open(newunit=unit, file=trim(name)//".nw", access="stream", form="unformatted", status="replace", &
+        open(newunit=unit, file=path, access="stream", form="unformatted", status="replace", &
             action="write", iostat=io_status)
-        if (io_status /= 0) call density_fail("Cannot create natural-orbital file")
+        if (io_status /= 0) call density_fail("Cannot create natural-orbital file: "//path)
         call write_radial_orbitals(unit)
         close(unit, iostat=io_status)
-        if (io_status /= 0) call density_fail("Error writing natural-orbital file")
-        write(*,*) "Natural orbitals written to ", trim(name)//".nw"
+        if (io_status /= 0) call density_fail("Error writing natural-orbital file: "//path)
+        write(*,*) "Natural orbitals written to ", path
     end subroutine make_natural_orbitals
 end module density_calculation

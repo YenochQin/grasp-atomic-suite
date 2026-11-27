@@ -73,8 +73,6 @@ program ris4_main
     call initialize_machine_constants
     ! Initialize physical constants.
     call initialize_physical_constants
-    ! Open the  .i  file
-    call open_summary_file(name,mixing_file_kind)
     ! Load the configuration state functions from the descriptor pair.
     call load_angular_csf_basis(name,unused_core_subshell_count)
     ! Get the remaining information
@@ -82,6 +80,7 @@ program ris4_main
     ! Get the eigenvectors
 
     call read_mixing_blocks(name,mixing_file_kind)
+    call open_summary_file(name,mixing_file_kind)
     ! Record the input settings in the calculation report.
     !
     ! Initialize the log-factorial table for angular algebra.

@@ -78,12 +78,12 @@ def verify(binaries: Path, root: Path, mpiexec: str | None) -> None:
         ]:
             output = run(program, work, answers, failure=error)
             assert "block 1, CSF 1" in output
-        assert not list(work.rglob("mcp.*"))
+        assert not list(work.rglob("case.mcp*"))
         assert not (work / "case.gj").exists()
 
     def check_mcp(work: Path, label: str) -> None:
         run("rangular", work, angular_answers)
-        files = sorted(work.rglob("mcp.mcpidx" if mpiexec else "mcp.30"))
+        files = sorted(work.rglob("case.mpi.mcpidx" if mpiexec else "case.mcp.30"))
         assert len(files) == (2 if mpiexec else 1), files
         labels = [path.read_bytes()[200:208] if mpiexec else records(path)[2] for path in files]
         assert all(value == label.encode().ljust(8) for value in labels), files
@@ -150,7 +150,7 @@ def verify(binaries: Path, root: Path, mpiexec: str | None) -> None:
             assert re.search(level, summary), summary
         if not mpiexec and name in ("10m", "11n", "n-pair"):
             run("jj2lsj_omp", work, "case\ny\nn\ny\n")
-            labels = (work / "case.lsj.lbl").read_text()
+            labels = (work / "case.ci.lsj.labels").read_text()
             assert re.search(level, labels), labels
             if name in ("10m", "11n"):
                 assert f"{name}_2{name[-1].upper()}" in labels, labels

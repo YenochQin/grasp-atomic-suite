@@ -50,13 +50,13 @@ reader 源码已内置于本仓库，随 suite 编译为 `build/lib/libcsf_descr
 
 | 程序 | 源码目录 | CMake 目标 | 说明 |
 | --- | --- | --- | --- |
-| 普通 GRASP 计算链 | `src/apps/rangular*`、`rwfnestimate`、`rci*`、`rbiotransform*`、`rtransition*` | `rangular{,_mpi}`、`rwfnestimate`、`rci{,_mpi}`、`rbiotransform{,_mpi}`、`rtransition{,_phase,_mpi}` | 十个目标复用 Suite 共享库与集中容量参数。[导入记录](docs/archive/2026-11-08-plan-0002-standard-grasp-integration.md) |
+| 普通 GRASP 计算链 | `src/apps/rangular*`、`rwfnestimate`、`rci*`、`biorthtransform*`、`rtransition*` | `rangular{,_mpi}`、`rwfnestimate`、`rci{,_mpi}`、`biorthtransform{,_mpi}`、`rtransition{,_phase,_mpi}` | 十个目标复用 Suite 共享库与集中容量参数。[导入记录](docs/archive/2026-11-08-plan-0002-standard-grasp-integration.md) |
 | `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | 普通 CSF 的 OpenMP jj–LS 转换，按 LS 行并行并保留原截断顺序；见[构建、运行和验证说明](docs/implemented/design-0028-jj2lsj-openmp.md)。与 `jj2lsj_csfg` 分开。 |
 | `rlevels` | `src/apps/rlevels` | 从 RMCDHF `.mix` 和 RCI `.cimix` 生成能级表，可附加 `jj2lsj` 标签。见[用法和输出格式](docs/implemented/design-0025-rlevels.md)。 |
 | `gj` | `src/apps/gj` | `gj`, `gj_mpi` | 从 RHFS 计算链路中拆出的 Landé `g_J` 因子程序，读取 `isodata`、该状态的 CSF 描述符文件对、`name.mix/name.cimix`、`name.wfn`，输出 `name.gj/name.cgj`。 |
 | `rhfs` | `src/apps/rhfs` | `rhfs`, `rhfs_mpi` | 相对论超精细结构程序，计算超精细常数和相关矩阵元，输出 `name.h/name.ch` 与 `name.hoffd/name.choffd`。 |
 | `rdensity` | `src/apps/rdensity` | `rdensity`、`rdensity_mpi` | 径向电子密度与按 `2J+1` 平均的自然轨道，详见[迁移与验证说明](docs/implemented/design-0026-rdensity-mpi.md)。 |
-| `ris4` | `src/apps/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，输出 `name.i/name.ci` 及中间角向数据。 |
+| `ris4` | `src/apps/ris4` | `ris4`, `ris4_mpi` | 相对论同位素位移程序，计算正常质量位移、特殊质量位移和场位移电子因子，按混合系数来源输出电子因子报告及中间角向数据。 |
 | 原版 RMCDHF + 可选 NP | `src/apps/rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` | 从工作区 grasp 新复制，保留原版求解流程；仅这四个读取 `npol.inp`。详见[NP 接口与来源](docs/implemented/design-0022-rmcdhf-nuclear-polarization.md)。 |
 
 已否决的 strict/diag 独立求解器及专用测试、运行入口均已[移除](docs/implemented/adr-0002-retire-strict-and-diagnostic-rmcdhf.md)。
@@ -167,11 +167,11 @@ CMake 会自动查找 BLAS/LAPACK，并要求 GNU Fortran 15 或更新版本。
 | 步骤 | 按状态名读取 | 按状态名写出 |
 | --- | --- | --- |
 | `rwfnestimate` | `name_header.toml` | 初猜轨道 `name.initial.wfn` |
-| `rangular` | `name_desc.parquet` 和配套头文件 | 角系数 `mcp.NN`、`name.rangular.log` |
+| `rangular` | `name_desc.parquet` 和配套头文件 | 角系数 `name.mcp.NN`、`name.rangular.log` |
 | `rmcdhf`、`rmcdhf_mem` | 同一描述符文件对、初猜轨道和 MCP | 优化轨道 `name.wfn`、OL/EOL 混合系数 `name.mix`、`name.rmcdhf.summary`、`name.rmcdhf.log` |
-| `rci` | 同一描述符文件对和 `name.wfn` | CI 混合系数 `name.cimix`、`name.csum`、`name.clog` |
+| `rci` | 同一描述符文件对和 `name.wfn` | CI 混合系数 `name.cimix`、`name.csum`、`name.clog`、`name.rci.restart` |
 
-MPI 版本由 rank 0 询问状态名。`rangular_mpi` 在每个 rank 的临时目录写入 `mcp.mcpidx`，随后用相同基组和 rank 布局运行 `rmcdhf_mpi` 或 `rmcdhf_mem_mpi`。已有旧格式的作业需用当前 `rangular_mpi` 重新生成。描述符和轨道位于永久 I/O 目录，角系数程序和 SCF 的日志位于启动目录。`isodata` 和适用的 `npol.inp` 按目录共用。`rci` 沿用先询问默认设置、再询问状态名的顺序。供 `gj` 等性质程序使用的状态名应控制在 23 个字符以内。[MPI MCP 格式和验收](docs/implemented/design-0020-rmcdhf-mcp-io.md)
+MPI 版本由 rank 0 询问状态名。`rangular_mpi` 在每个 rank 的临时目录写入 `name.mpi.mcpidx`，随后用相同基组和 rank 布局运行 `rmcdhf_mpi` 或 `rmcdhf_mem_mpi`。旧文件的复用和恢复方式见[命名迁移](docs/implemented/design-0034-cache-restart-mcp-names.md)。描述符和轨道位于永久 I/O 目录，角系数程序和 SCF 的日志位于启动目录。`isodata` 和适用的 `npol.inp` 按目录共用。`rci` 沿用先询问默认设置、再询问状态名的顺序。供 `gj` 等性质程序使用的状态名应控制在 23 个字符以内。[MPI MCP 格式和验收](docs/implemented/design-0020-rmcdhf-mcp-io.md)
 
 RMCDHF 和 RCI 的串行与 MPI 版本都要求为 CSF 基组中的每个 `J/Parity` 块选择至少一个有效 ASF 根。每块输入一行根编号。空行、`0` 或其他无效选择会终止运行并指出对应的块。RMCDHF 将选中的各根纳入共同的轨道优化。选择多个根时，还需输入 EOL 权重选项。旧的仅对角 (E)AL MCP 数据需要用 Suite 对应的 `rangular` 程序重新生成角系数。
 
@@ -192,7 +192,9 @@ RMCDHF 和 RCI 的串行与 MPI 版本都要求为 CSF 基组中的每个 `J/Par
 
 - `gj`：`name.gj` 或 `name.cgj`。
 - `rhfs`：`name.h/name.ch` 和 `name.hoffd/name.choffd`。
-- `ris4`：`name.i/name.ci`，并可能生成 `name.IOB`、`name.ITB` 等角向中间文件。
+- `rdensity`：`name.natural.wfn`（MCDHF）或 `name.ci.natural.wfn`（CI），另写 `name.d` 或 `name.cd`。
+- `jj2lsj_omp`：`name.mcdhf.lsj.labels` 或 `name.ci.lsj.labels`。
+- `ris4`：`name.mcdhf.isotope-shift` 或 `name.ci.isotope-shift`，并可能生成 `name.ris4.one-body.angular.cache` 和 `name.ris4.two-body.angular.cache`。
 
 `gj_mpi` 接受状态名和 `--nonci` 或 `--ci`。从计算目录运行，并将
 `suite_bin` 设为构建目录下 `bin` 的绝对路径。CI 模式读取 `name.cimix`。
@@ -212,7 +214,8 @@ mpiexec -n 2 "$suite_bin/gj_mpi" name --ci
 
 RMCDHF 的 `.mix` 与 RCI 的 `.cimix` 共用 `CSF--MIX`。文件依次包含基组 SHA-256、
 对称性块目录、ASF 根编号与绝对总能量以及混合系数。每个 ASF 的有符号
-`float64` 系数连续存放，列顺序与对应 V3 描述符块一致。双正交输出 `.bm` 和 `.cbm` 使用相同格式，保留来源基组的 SHA-256。
+`float64` 系数连续存放，列顺序与对应 V3 描述符块一致。双正交输出 `*.biorth.mix` 和 `*.biorth.cimix` 使用相同格式，保留来源基组的 SHA-256。
+见[有序态对交接](docs/reviews/evidence-0033-output-file-formats.md#有序态对交接与跃迁报告)。
 读取器要求 `CSF--MIX` 签名。旧 `G92MIX` 顺序记录需重新生成 Suite 流文件。[字段布局和 NumPy 示例](README.md#indexed-asf-mixing-stream)
 
 ## 验证数据

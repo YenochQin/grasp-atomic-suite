@@ -20,8 +20,8 @@ def main() -> None:
 
             answers = f"y\ntest\nn\n{higher_order}\n"
             run(command, work, answers + "y\n")
-            caches = {path: path.read_bytes() for path in (work / "test.IOB", work / "test.ITB")}
-            report = work / "test.i"
+            caches = {path: path.read_bytes() for path in (work / "test.ris4.one-body.angular.cache", work / "test.ris4.two-body.angular.cache")}
+            report = work / "test.mcdhf.isotope-shift"
             expected = report.read_bytes()
             report.unlink()
 

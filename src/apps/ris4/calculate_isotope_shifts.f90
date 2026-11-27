@@ -57,7 +57,7 @@ contains
         use vinti_radial_integral_interface, only: vinti_radial_integral
         use specific_mass_shift_radial_integral_2_interface, only: specific_mass_shift_radial_integral_2
         use specific_mass_shift_radial_integral_3_interface, only: specific_mass_shift_radial_integral_3
-        use open_isotope_shift_angular_cache_interface, only: open_isotope_shift_angular_cache
+        use open_isotope_shift_angular_cache_interface, only: open_isotope_shift_angular_cache, isotope_shift_cache_path
 
         ! Module dependencies
         use input_error_handling, only: fail_input_io
@@ -78,7 +78,6 @@ contains
         character(len=24), intent(in) :: name
 
         ! Local declarations
-        integer :: first_name_blank
 
         real(real64), pointer :: field_shift_radial_integral_profiles(:, :, :)
         real(real64), pointer   :: level_electron_density_profiles(:, :)
@@ -266,9 +265,8 @@ contains
         else
             ! Check if the user wants to save one-body ang. coeff.
             if(one_body_cache_mode ==1) then
-                first_name_blank = index(name," ")
-                open(newunit=one_body_cache_unit,file = name(1:first_name_blank-1)//".IOB",status="REPLACE"     &
-                    ,form="UNFORMATTED")
+                open(newunit=one_body_cache_unit, file=isotope_shift_cache_path(name, 1), &
+                    status="REPLACE", form="UNFORMATTED")
             end if
             if(yes2) then
                 call calculate_seltzer_field_shift_factors(one_body_cache_mode,contact_density_integrals, &
@@ -291,9 +289,8 @@ contains
         else
             ! Check if the user wants to save two-body ang. coeff.
             if(two_body_cache_mode==1) then
-                first_name_blank = index(name," ")
-                open(newunit=two_body_cache_unit,file = name(1:first_name_blank-1)//".ITB",status="REPLACE"     &
-                    ,form="UNFORMATTED")
+                open(newunit=two_body_cache_unit, file=isotope_shift_cache_path(name, 2), &
+                    status="REPLACE", form="UNFORMATTED")
             end if
             call calculate_specific_mass_shift(two_body_cache_mode,vinti_integrals,recoil_corrected_vinti_integrals)
         end if

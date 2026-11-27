@@ -114,14 +114,14 @@ class AngularReuseTests(unittest.TestCase):
         for options in (
             ["--reuse-cache-mib", "-1"], ["--reuse-cache-mib", "4097"],
             ["--reuse-stats", "stats.csv"],
-            ["--reuse-cache-mib", "1", "--reuse-stats", "mcp.30"],
+            ["--reuse-cache-mib", "1", "--reuse-stats", "case.mcp.30"],
             ["--reuse-cache-mib", "1", "--timings", "same.csv", "--reuse-stats", "same.csv"],
         ):
             with self.subTest(options=options):
                 result = subprocess.run([str(ARGUMENTS.rangular), *options], cwd=self.root,
                                         input="case\ny\n", capture_output=True, text=True, timeout=10)
                 self.assertNotEqual(result.returncode, 0)
-                self.assertFalse(list(self.root.glob("mcp.*")))
+                self.assertFalse(list(self.root.glob("case.mcp.*")))
         existing = self.root / "stats.csv"
         existing.write_text("preserve me\n")
         result = subprocess.run([str(ARGUMENTS.rangular), "--reuse-cache-mib", "1", "--reuse-stats", str(existing)],

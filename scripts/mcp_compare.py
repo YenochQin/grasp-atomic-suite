@@ -326,18 +326,25 @@ def indexed_coefficient_groups(
 class Dataset:
     """A complete serial set or a complete collection of MPI rank files."""
 
-    def __init__(self, directory: Path):
+    def __init__(self, directory: Path, state: str | None = None):
         self.directory = directory
-        channels = {
-            p.relative_to(directory)
-            for pattern in ("mcp*.*", "[0-9][0-9][0-9]/mcp.*")
-            for p in directory.glob(pattern)
-            if re.fullmatch(r"mcp(?:\d+)?\.\d+", p.name)
-        }
-        indexed_paths = sorted(
-            path for pattern in ("mcp*.mcpidx", "[0-9][0-9][0-9]/mcp.mcpidx") for path in directory.glob(pattern)
-            if re.fullmatch(r"mcp(?:[0-9]+)?\.mcpidx", path.name)
-        )
+        sets: dict[str, set[Path]] = {}
+        legacy: set[Path] = set()
+        for pattern in ("*.*", "[0-9][0-9][0-9]/*.*"):
+            for path in directory.glob(pattern):
+                named = re.fullmatch(r"(.+)\.(?:mcp\.[0-9]+|mpi\.mcpidx)", path.name)
+                if named:
+                    sets.setdefault(named[1], set()).add(path)
+                elif re.fullmatch(r"mcp[0-9]*\.(?:[0-9]+|mcpidx)", path.name):
+                    legacy.add(path)
+        if state is not None:
+            paths = sets.get(state, set())
+        elif len(sets) + bool(legacy) > 1:
+            raise MCPError(f"{directory}: multiple MCP sets; select a state or use separate directories")
+        else:
+            paths = next(iter(sets.values()), legacy)
+        channels = {path.relative_to(directory) for path in paths if path.suffix != ".mcpidx"}
+        indexed_paths = sorted(path for path in paths if path.suffix == ".mcpidx")
         if indexed_paths:
             if channels:
                 raise MCPError(f"{directory}: mixed indexed and sequential MCP file sets")
@@ -345,7 +352,7 @@ class Dataset:
             return
         files = [directory / p for p in sorted(channels) if p.suffix == ".30"]
         if not files:
-            raise MCPError(f"{directory}: no mcp.30 or mcpNNN.30 files")
+            raise MCPError(f"{directory}: no MCP structure files for the selected dataset")
         if (directory / "mcp.30") in files and len(files) != 1:
             raise MCPError(
                 f"{directory}: mixed serial and MPI files; use separate directories"
@@ -387,7 +394,8 @@ class Dataset:
                     self.header = h
                 elif meta != self.metadata or h.nprocs != self.header.nprocs:
                     r.fail("inconsistent headers between MPI ranks")
-                if path.stem != "mcp" and int(path.stem[3:]) != h.rank:
+                filename_rank = re.fullmatch(r"mcp([0-9]+)", path.stem)
+                if filename_rank and int(filename_rank[1]) != h.rank:
                     r.fail("filename rank does not match header")
                 if path.parent != directory and int(path.parent.name) != h.rank:
                     r.fail("rank directory does not match header")
@@ -434,7 +442,7 @@ class Dataset:
         if [s.header.rank for s in self.shards] != list(range(self.header.nprocs)):
             raise MCPError(f"{directory}: missing or duplicate MPI ranks")
         expected = {
-            s.prefix.with_suffix(f".{unit}").relative_to(directory)
+            s.prefix.with_name(f"{s.prefix.name}.{unit}").relative_to(directory)
             for s in self.shards
             for unit in range(30, self.kmax + 33)
         }
@@ -458,7 +466,8 @@ class Dataset:
                 raise MCPError(f"{path}: inconsistent indexed shard metadata")
             if path.parent != self.directory and int(path.parent.name) != shard.header.rank:
                 raise MCPError(f"{path}: rank directory does not match header")
-            if path.stem != "mcp" and int(path.stem[3:]) != shard.header.rank:
+            filename_rank = re.fullmatch(r"mcp([0-9]+)", path.stem)
+            if filename_rank and int(filename_rank[1]) != shard.header.rank:
                 raise MCPError(f"{path}: filename rank does not match header")
             self.shards.append(shard)
         self.shards.sort(key=lambda shard: shard.header.rank)
@@ -501,7 +510,7 @@ class Dataset:
                 if indexed:
                     files.append(stack.enter_context(shard.prefix.open("rb")))
                 else:
-                    path = shard.prefix.with_suffix(f".{unit}")
+                    path = shard.prefix.with_name(f"{shard.prefix.name}.{unit}")
                     r = Records(path, stack.enter_context(path.open("rb")), False)
                     if header(r) != shard.header:
                         r.fail("coefficient header differs from mcp.30")
@@ -870,6 +879,7 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument(
             "reference", type=Path, help="directory containing a complete MCP set"
         )
+        p.add_argument("--state", help="state prefix of the reference MCP files")
         p.add_argument(
             "--keyorb",
             type=int,
@@ -878,6 +888,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         if command == "compare":
             p.add_argument("candidate", type=Path)
+            p.add_argument("--candidate-state", help="state prefix of the candidate MCP files")
             p.add_argument("--atol", type=nonnegative, default=0.0)
             p.add_argument("--rtol", type=nonnegative, default=0.0)
             p.add_argument("--sum-duplicates", action="store_true")
@@ -899,12 +910,12 @@ def main(argv: list[str] | None = None) -> int:
             raise MCPError("--keyorb must be >= 2")
         if args.command == "compare" and args.max_diffs < 0:
             raise MCPError("--max-diffs must be nonnegative")
-        dataset = Dataset(args.reference)
+        dataset = Dataset(args.reference, args.state)
         if dataset.header.nw >= args.keyorb:
             raise MCPError("NW must be less than --keyorb")
         other: Dataset | None = None
         if args.command == "compare":
-            other = Dataset(args.candidate)
+            other = Dataset(args.candidate, args.candidate_state)
             if other.header.nw >= args.keyorb:
                 raise MCPError("candidate NW must be less than --keyorb")
             first, second = dataset.shards[0], other.shards[0]

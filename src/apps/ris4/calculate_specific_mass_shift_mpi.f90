@@ -9,7 +9,7 @@ contains
 
     ! MPI version of SMSNEW. Each rank handles a strided subset of the
     ! outer IC loop and can optionally write a per-rank angular-data
-    ! fragment that the root process later merges into name.ITB.
+    ! fragment that the root process later merges into name.ris4.two-body.angular.cache.
     subroutine calculate_specific_mass_shift_mpi(angular_cache_write_mode,vinti_integrals,recoil_corrected_vinti_integrals)
         ! Module dependencies
         use calculation_file_units, only: two_body_cache_unit

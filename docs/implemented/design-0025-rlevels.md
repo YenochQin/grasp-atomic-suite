@@ -27,7 +27,7 @@ cmake --install build --component rlevels
 `Splitting` 是相对于前一行的能差，两者沿用上游的换算因子 `2 × 109737.31568508 cm⁻¹/Hartree`。
 最低能级的两列都为零，没有构型标签时也可直接读取这两列。
 
-可选的 `name.lsj.lbl` 必须与 `.mix` 或 `.cimix` 同目录、同文件名主体。
+`name.mcdhf.lsj.labels` 与 `name.mix` 配对，`name.ci.lsj.labels` 与 `name.cimix` 配对。标签与混合文件同目录。对应文件缺失时，依次查找带 `.txt` 的旧版标签和 `name.lsj.lbl`。
 构型列取 `jj2lsj` 或 `jj2lsj_omp` 所列的第一条构型，仅在对应混合文件内匹配块内序号、`J`、宇称及带符号总能量，容差为 `10⁻⁸` Hartree。
 某个能级缺少匹配标签时，构型列留空。标签位置字段为 `***` 时，该行没有可用于匹配的序号。
 

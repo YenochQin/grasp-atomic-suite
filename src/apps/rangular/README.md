@@ -3,8 +3,8 @@
 `rangular` 按对称性块生成 Dirac–Coulomb 哈密顿量的一电子和二电子角系数及稀疏矩阵结构。
 MCDHF 在优化轨道时将这些系数与径向积分结合，组装哈密顿量。
 
-程序读取 `name_desc.parquet` 和配套的 `name_header.toml`。`mcp.30` 保存矩阵结构，
-`mcp.31` 保存一电子角系数，`mcp.32` 起的通道保存各阶二电子角系数，
+程序读取 `name_desc.parquet` 和配套的 `name_header.toml`。`name.mcp.30` 保存矩阵结构，
+`name.mcp.31` 保存一电子角系数，`name.mcp.32` 起的通道保存各阶二电子角系数，
 `name.rangular.log` 记录运行选项。后续串行 MCDHF 使用同一基组和生成的 MCP 文件。
 
 [rmcdhf](../rmcdhf/README.md) · [rmcdhf_mem](../rmcdhf_mem/README.md) · [MPI 版本](../rangular_mpi/README.md)
@@ -15,7 +15,7 @@ MCDHF 在优化轨道时将这些系数与径向积分结合，组装哈密顿�
 
 1. 读 V3 描述符头和交互设置，保留原对称性块及块内 CSF 顺序。按块安装占据、单壳层态与累计耦合编码。[程序入口](rangular_main.f90) · [描述符与选项](rangular_input.f90)
 2. 对每块遍历允许的下三角 CSF 对。一电子标量算符生成 T 系数，二电子角运算按多极阶 $k$ 生成 V 系数。可选的块内缓存按完整的 CSF 对状态匹配并还原系数及轨道标签。[角系数主循环](compute_mcp_angular_coefficients.f90) · [CSF 对复用](rangular_reuse.f90)
-3. 给保留的矩阵元赋稀疏位置，将贡献按积分标签堆排序。`mcp.30` 存结构，`mcp.31` 存 T，`mcp.(32+k)` 存 $V^{(k)}$。后续 MCDHF 将每个角系数乘以相应径向积分再累加。[稀疏结构](write_mcp_sparsity.f90) · [通道排序与写出](sort_mcp_coefficients.f90)
+3. 给保留的矩阵元赋稀疏位置，将贡献按积分标签堆排序。`name.mcp.30` 存结构，`name.mcp.31` 存 T，`name.mcp.(32+k)` 存 $V^{(k)}$。后续 MCDHF 将每个角系数乘以相应径向积分再累加。[稀疏结构](write_mcp_sparsity.f90) · [通道排序与写出](sort_mcp_coefficients.f90)
 
 ## 逐文件计算与数据流程
 
@@ -43,7 +43,7 @@ MCDHF 在优化轨道时将这些系数与径向积分结合，组装哈密顿�
 
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
-| [`connect_mcp_files.f90`](connect_mcp_files.f90) | 从轨道的最大 `2j` 确定 V 通道数。创建 `mcp.30` 起的二进制文件，把闭核数、块大小与标签写入结构文件，并写各通道的 MCP 标记和 rank 布局。 |
+| [`connect_mcp_files.f90`](connect_mcp_files.f90) | 从轨道的最大 `2j` 确定 V 通道数。创建 `name.mcp.30` 起的二进制文件，把闭核数、块大小与标签写入结构文件，并写各通道的 MCP 标记和 rank 布局。 |
 | [`locate_mcp_restart_position.f90`](locate_mcp_restart_position.f90) | 扫描 MCP 记录以定位已完成的 CSF 对，根据已保留记录恢复矩阵位置和各积分通道计数。正常的 `rangular` 和 `rangular_mpi` 主程序把续算标志初始化为假。 |
 | [`open_mcp_outputs.f90`](open_mcp_outputs.f90) | 调用 `connect_mcp_files` 打开通道，读取相互作用选项，并将电子数、轨道数、CSF 数和对角／一阶设置写入 MCP 记录。 |
 | [`open_summary_file.f90`](open_summary_file.f90) | 把路径关联到摘要输出单元，检查打开状态。摘要内容由输入汇总例程写入。 |

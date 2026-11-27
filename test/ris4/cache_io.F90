@@ -33,7 +33,8 @@ program cache_io
     loaded_csf_basis_id = repeat("a",64)
     matrix_element_screening_cutoff = 1e-10_real64
     if (rank == 0 .and. (scenario == "stamp" .or. scenario == "cutoff")) then
-        open(newunit=cache_unit,file=merge("cache.IOB","cache.ITB",whichone==1), &
+        open(newunit=cache_unit,file=merge( &
+            "cache.ris4.one-body.angular.cache","cache.ris4.two-body.angular.cache",whichone==1), &
             status="old",form="unformatted",position="append")
         call finish_angular_cache(cache_unit, whichone)
         close(cache_unit)
@@ -46,9 +47,9 @@ program cache_io
             call open_isotope_shift_angular_cache(name, available, whichone)
             ! The external baseline reader owns the connection.
             if (whichone == 1) then
-                inquire(file="cache.IOB", number=cache_unit)
+                inquire(file="cache.ris4.one-body.angular.cache", number=cache_unit)
             else
-                inquire(file="cache.ITB", number=cache_unit)
+                inquire(file="cache.ris4.two-body.angular.cache", number=cache_unit)
             end if
             status = 0
 #else

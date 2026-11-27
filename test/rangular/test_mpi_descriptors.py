@@ -72,7 +72,7 @@ class MpiDescriptorTests(unittest.TestCase):
 
     @staticmethod
     def outputs(directory: Path) -> dict[str, bytes]:
-        return {str(path.relative_to(directory)): path.read_bytes() for path in directory.glob("[0-9][0-9][0-9]/mcp.*")}
+        return {str(path.relative_to(directory)): path.read_bytes() for path in directory.glob("[0-9][0-9][0-9]/case.mpi.mcpidx")}
 
     def dataset(self, directory: Path) -> mcp_compare.Dataset:
         return mcp_compare.Dataset(directory)

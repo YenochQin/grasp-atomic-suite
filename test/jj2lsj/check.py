@@ -140,7 +140,7 @@ def main() -> None:
             prepare(work, "f3", unused_orbitals=unused)
             run(executable, work, "default", 1)
             run(coefficients, work, "default", 1)
-        for output in ("test.lsj.lbl", "coefficients.raw"):
+        for output in ("test.mcdhf.lsj.labels", "coefficients.raw"):
             assert (padded / output).read_bytes() == (reference / output).read_bytes(), output
 
         # A same-width block with the wrong parity cannot label this basis.
@@ -176,11 +176,11 @@ def main() -> None:
                                      for b in parsed for v in b)
                 run(executable, scalar, mode, 4, force_serial=True)
                 if mode == "default":
-                    assert (scalar / "test.lsj.lbl").read_bytes() == (
+                    assert (scalar / "test.mcdhf.lsj.labels").read_bytes() == (
                         FIXTURES / f"{case}.expected.lbl"
                     ).read_bytes(), (case, "upstream label reference")
                 outputs = {p.name: p.read_bytes() for p in scalar.glob("test.lsj.*")
-                           if p.suffix != ".T"}
+                           if p.suffix != ".cache"}
                 for repeat, threads in enumerate((1, 2, 4, 4)):
                     parallel = root / f"{case}-{mode}-{threads}-{repeat}"
                     prepare(parallel, case, identity=(mode in ("full", "selected")))
@@ -193,22 +193,35 @@ def main() -> None:
                     comparisons += 1
         assert truncated, "Fixture did not exercise early truncation with a zero LS tail"
 
-        # Sequential T files must stay byte-compatible and replayable even
-        # when the executable is launched with multiple OpenMP threads.
+        # The sequential cache must be deterministic and replayable with different thread counts.
         for threads in (1, 4):
             work = root / f"transformation-{threads}"
             prepare(work, "even", identity=True)
             output = run(coefficients, work, "write", threads)
             assert "jj2lsj OpenMP:" not in output
             expected = (work / "coefficients.raw").read_bytes()
-            transformation = (work / "test.lsj.T").read_bytes()
+            transformation = (work / "test.lsj.transform.cache").read_bytes()
             run(coefficients, work, "read", threads)
             assert (work / "coefficients.raw").read_bytes() == expected
-            assert (work / "test.lsj.T").read_bytes() == transformation
+            assert (work / "test.lsj.transform.cache").read_bytes() == transformation
             if threads == 1:
                 scalar_transformation = transformation
             else:
                 assert transformation == scalar_transformation
+
+        cache = work / "test.lsj.transform.cache"
+        digest_offset = 4 + len(b"LSJTRN02")  # GNU Fortran sequential record marker and cache signature.
+        assert set(transformation[digest_offset:digest_offset+64]) <= set(b"0123456789abcdef")
+        first_digit = b"a" if transformation[digest_offset:digest_offset+1] != b"a" else b"b"
+        foreign = transformation[:digest_offset] + first_digit + transformation[digest_offset+1:]
+        for payload, diagnostic in [
+            (foreign, "transformation cache CSF basis differs"),
+            (transformation[:-16], "Missing JJ2LSJ transformation cache completion record"),
+        ]:
+            cache.write_bytes(payload)
+            result = subprocess.run([str(coefficients)], cwd=work, input=input_text("read"), text=True,
+                                    capture_output=True, timeout=30, check=False)
+            assert result.returncode != 0 and diagnostic in result.stderr, result.stdout + result.stderr
 
         for threads in (1, 4):
             work = root / f"unique-{threads}"
@@ -238,7 +251,7 @@ def main() -> None:
             with (work / "jj2lsj_omp.profile.csv").open() as handle:
                 rows = list(csv.DictReader(handle))
             assert rows[-1]["phase"] == "total"
-            for phase, suffix in [("label_bytes", ".lsj.lbl"), ("csf_bytes", ".lsj.c"), ("vector_bytes", ".lsj.j")]:
+            for phase, suffix in [("label_bytes", ".mcdhf.lsj.labels"), ("csf_bytes", ".lsj.c"), ("vector_bytes", ".lsj.j")]:
                 measured = next(int(r["items"]) for r in rows if r["phase"] == phase)
                 assert measured == (work / ("test" + suffix)).stat().st_size
             assert all(float(r["seconds"]) >= 0 for r in rows)

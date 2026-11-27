@@ -77,7 +77,7 @@ contains
         open(newunit=mcp_append_unit, file=output_file_prefix//".30", status="OLD", form="UNFORMATTED", iostat=io_status&
             , position="APPEND")
         if (io_status /= 0) then
-            write (stderr_unit, *) " Error when opening the file mcp.30"
+            write (stderr_unit, *) " Error when opening ", output_file_prefix//".30"
             stop
         end if
 

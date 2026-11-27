@@ -23,7 +23,8 @@ contains
         type(transition_cache_key), intent(out) :: key
         logical, intent(out) :: available
         type(transition_cache_key) :: stored
-        character(2) :: label
+        character(16) :: initial_name_length, multipole_rank
+        character :: multipole_kind
         character(:), allocatable :: path
         integer :: status, header(6), fields
         logical :: exists
@@ -33,8 +34,12 @@ contains
         key%different_j = merge(1, 0, different_j_only(multipole))
         key%ranks = ranks
         key%rank = rank
-        write(label, "(sp,i2)") multipole
-        path = trim(names(1))//"."//trim(names(2))//"."//label//"T"
+        ! State names may contain dots. The first length preserves the pair boundary.
+        write(initial_name_length, "(I0)") len_trim(names(1))
+        write(multipole_rank, "(I0)") abs(multipole)
+        multipole_kind = merge("e", "m", sign(1, multipole) == (-1)**abs(multipole))
+        path = trim(initial_name_length)//"."//trim(names(1))//"."//trim(names(2))// &
+            ".rtransition."//multipole_kind//trim(multipole_rank)//".angular.cache"
         inquire(file=path, exist=exists)
         available = .false.
         if (exists) then

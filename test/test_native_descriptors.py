@@ -63,8 +63,8 @@ def main() -> None:
             env=os.environ | {"PATH": "/nonexistent", "OPENBLAS_NUM_THREADS": "1"},
         )
         assert result.returncode == 0, result.stdout + result.stderr
-        assert (root / "mcp.30").is_file(), result.stdout
-        assert (root / "mcp.31").stat().st_size > 0
+        assert (root / "case.mcp.30").is_file(), result.stdout
+        assert (root / "case.mcp.31").stat().st_size > 0
         legacy_parquet = root / "csfs_descriptors.parquet"
         shutil.copyfile(parquet, legacy_parquet)
         rejected = subprocess.run(

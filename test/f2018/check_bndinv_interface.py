@@ -37,7 +37,7 @@ end program bndinv_contract
 
 def main() -> None:
     root = Path(__file__).resolve().parents[2]
-    for variant in ("rbiotransform", "rbiotransform_mpi"):
+    for variant in ("biorthtransform", "biorthtransform_mpi"):
         app = root / "src/apps" / variant
         implementation = app / "invert_banded_matrix.f90"
         source = implementation.read_text()

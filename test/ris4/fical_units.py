@@ -64,11 +64,29 @@ def ris4_report(path: Path, levels: tuple[Level, ...], *, fitted: bool) -> None:
 
 
 def run_fical(binary: Path, directory: Path, unit: str, *, ci: bool = False, relativistic: bool = False,
-              fitted: bool = False, upper: tuple[Level, ...] = UPPER) -> tuple[subprocess.CompletedProcess[str], Path]:
+              fitted: bool = False, upper: tuple[Level, ...] = UPPER,
+              nuclear_mass_number: int = 20,
+              source_report_suffix: str | None = None) -> tuple[subprocess.CompletedProcess[str], Path]:
     extension = "ci" if ci else "i"
-    ris4_report(directory / f"upper.{extension}", upper, fitted=fitted)
-    ris4_report(directory / f"lower.{extension}", LOWER, fitted=fitted)
-    (directory / "isodata").write_text("Z\n10.0\nlabel\nlabel\nlabel\n0.52\nlabel\n3.00\n")
+    source = "ci" if ci else "mcdhf"
+    for name, levels in (("upper", upper), ("lower", LOWER)):
+        legacy = directory / f"{name}.{extension}"
+        if source_report_suffix is None:
+            ris4_report(legacy, levels, fitted=fitted)
+        else:
+            report = directory / f"{name}.{source}.isotope-shift{source_report_suffix}"
+            ris4_report(report, levels, fitted=fitted)
+            legacy.write_text("stale electronic factors\n")
+            (directory / f"{name}.lsj.lbl").write_text("stale labels\n")
+            labels = [" Pos   J   Parity      Energy Total      Comp. of ASF"]
+            for level in levels:
+                labels.append(f"{level.number:3d} {'0':>4}     +        {level.energy:16.9f}     100.000%")
+                labels.append(" " * 36 + f"{source}_{name}_{level.number}")
+            (directory / f"{name}.{source}.lsj.labels{source_report_suffix}").write_text("\n".join(labels) + "\n")
+            if not source_report_suffix:
+                report.with_name(report.name + ".txt").write_text("stale electronic factors\n")
+                (directory / f"{name}.{source}.lsj.labels.txt").write_text("stale labels\n")
+    (directory / "isodata").write_text(f"Z\n10.0\nMass number\n{nuclear_mass_number}\nFermi a\n0.52\nFermi c\n3.00\n")
     answers = ["n", "upper", "lower", "y" if ci else "n", "y" if fitted else "n", "para", unit,
                "y" if relativistic else "n"]
     result = subprocess.run(
@@ -124,8 +142,31 @@ def check_invalid_units(binary: Path) -> None:
             assert not report.exists(), report
 
 
+def check_source_reports(binary: Path) -> None:
+    for suffix in ("", ".txt"):
+        with tempfile.TemporaryDirectory(prefix="fical-sources-") as work:
+            for ci, source in ((False, "mcdhf"), (True, "ci")):
+                result, report = run_fical(binary, Path(work), "GHz", ci=ci, source_report_suffix=suffix)
+                assert result.returncode == 0, result.stderr
+                contents = report.read_text()
+                assert f"{source}_upper_101" in contents and f"{source}_lower_201" in contents
+
+
+def check_point_nucleus(binary: Path) -> None:
+    with tempfile.TemporaryDirectory(prefix="fical-point-nucleus-") as work:
+        result, report = run_fical(binary, Path(work), "GHz", nuclear_mass_number=0)
+        assert result.returncode == 0, result.stderr + result.stdout
+        reference = report.read_text().split("LINE MASS SHIFT PARAMETERS", 1)[0]
+        assert "Point nucleus:" in reference
+        for label in ("c:", "r_rms:", "t:"):
+            line = next(line for line in reference.splitlines() if line.strip().startswith(label))
+            assert float(line.split()[1]) == 0.0, line
+
+
 if __name__ == "__main__":
     tool = Path(sys.argv[1]).resolve()
     check_mixed_units(tool)
     check_invalid_units(tool)
+    check_source_reports(tool)
+    check_point_nucleus(tool)
     print("FICAL mixed MHz/GHz records, conversions, and unit-error handling passed")

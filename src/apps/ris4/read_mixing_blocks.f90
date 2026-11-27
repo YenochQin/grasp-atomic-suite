@@ -15,12 +15,14 @@ contains
     !
     !     This is a modified version of cvtmix.f
     ! written by Per Jonsson, September 2003
-    subroutine read_mixing_blocks(state_name, ci_input_mode)
+    subroutine read_mixing_blocks(state_name, ci_input_mode, abort_handler)
         ! Module dependencies
         use mixing_file_format, only: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, read_mixing_vectors
+        use mixing_file_format, only: validate_mixing_basis
+        use input_error_handling, only: abort_input, fail_input_io
         use csf_descriptor_reader, only: loaded_csf_basis_id
         use, intrinsic :: iso_fortran_env, only: output_unit
-        use, intrinsic :: iso_fortran_env, only: real64
+        use, intrinsic :: iso_fortran_env, only: int64, real64
         use calculation_state_files, only: mixing_input_path
         use array_memory_management, only: alloc
         use atomic_calculation_state, only: electron_count
@@ -33,6 +35,7 @@ contains
         ! Arguments and local declarations
         integer, intent(in)           :: ci_input_mode
         character(len=24), intent(in) :: state_name
+        procedure(abort_input), optional :: abort_handler
         integer :: total_csf_count, nvectot, nblock, nvecpat, &
             ncfpat, nvecsizpat, neavsum, jb, nb, ncfblk, nevblk, iatjp, iaspa
         real(real64) :: eavsum
@@ -41,11 +44,12 @@ contains
 
         file_path = mixing_input_path(state_name, ci_input_mode == 0)
         call open_mixing_input(input_file, file_path, loaded_csf_basis_id)
-        electron_count = input_file%electron_count
-        orbital_count = input_file%orbital_count
+        call validate_mixing_basis(input_file, abort_handler)
         total_csf_count = input_file%csf_count
         nvectot = input_file%level_count
         nblock = input_file%block_count
+        if (int(total_csf_count,int64)*nvectot > huge(csf_count)) &
+            call fail_input_io(0, input_file%unit, "Mixing vector size exceeds integer index capacity", abort_handler)
         write (*, *) "   nelec  = ", electron_count
         write (*, *) "   ncftot = ", total_csf_count
         write (*, *) "   nw     = ", orbital_count
@@ -83,7 +87,6 @@ contains
 
             call next_mixing_block(input_file, nb, ncfblk, nevblk, iatjp, iaspa)
             write (*, "(5I8)") nb, ncfblk, nevblk, iatjp, iaspa
-            if (jb /= nb) stop "jb .NE. nb"
 
             if (nevblk > 0) then
 
@@ -123,7 +126,6 @@ contains
 
         close(input_file%unit)
 
-        csf_count = total_csf_count
         active_level_count = nvectot
 
         return

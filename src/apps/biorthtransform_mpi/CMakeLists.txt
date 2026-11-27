@@ -1,4 +1,4 @@
-add_executable(rbiotransform_mpi
+add_executable(biorthtransform_mpi
     open_biorthogonal_angular_cache.f90
     invert_banded_matrix.f90
     calculate_orbital_overlap_matrix.f90
@@ -39,7 +39,7 @@ add_executable(rbiotransform_mpi
     combine_upper_lower_factors.f90
     transform_ci_coefficients.f90
     transform_orbital_sets.f90
-    rbiotransform_mpi_main.f90
+    biorthtransform_mpi_main.f90
 )
-target_link_libraries_Fortran(rbiotransform_mpi PUBLIC spin_angular grasp_mpi core grasp_shared)
-install(TARGETS rbiotransform_mpi DESTINATION bin/)
+target_link_libraries_Fortran(biorthtransform_mpi PUBLIC spin_angular grasp_mpi core grasp_shared)
+install(TARGETS biorthtransform_mpi DESTINATION bin/)

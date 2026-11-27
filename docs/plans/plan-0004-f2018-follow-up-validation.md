@@ -55,7 +55,7 @@ Suite 的生产和测试 MPI 调用统一使用 `mpi_f08`。`mpi_state` 继续�
 | --- | --- |
 | CSF 装载与广播 | 保留每批最多 8192 个 CSF 的上限，再按最宽列和默认 MPI 元素数限额缩小批次。数组形状、可选字段和批次大小先在各 rank 对齐。通过 Fortran 的 `contiguous` 形参传入连续批次，跨步实参由编译器打包并回写。零列不发送 payload。[描述符广播](../../src/lib/mpi/mpi_csf_collectives.f90) |
 | 两个 MPI RMCDHF 变体 | 直接系数以各 rank 的实际元素数执行 `MPI_Allgatherv`，用宽整数检查累计元素位移后转成默认整数界面。空贡献发送零个元素。保留按 rank 合并的顺序与径向求解器既有的有效系数数目。[RMCDHF 汇总](../../src/apps/rmcdhf_mpi/improve_orbital_mpi.f90) · [位移校验](../../src/lib/mpi/mpi_element_counts.f90) |
-| 稀疏向量、双正交、密度和超精细矩阵 | 归约前以 `MPI_COUNT_KIND` 取得数组长度或计算维度乘积，再通过公共范围检查转换。现有密集初值与 RCI 稠密分支的阶数分别受求解器门槛约束。短标量、轨道和块元数据沿用相应 MPI 数据类型。[稀疏矩阵乘](../../src/lib/mpi/mpi_sparse_matrix_product.f90) · [双正交归约](../../src/apps/rbiotransform_mpi/transform_ci_coefficients.f90) · [密度归约](../../src/apps/rdensity/density_parallel_mpi.f90) |
+| 稀疏向量、双正交、密度和超精细矩阵 | 归约前以 `MPI_COUNT_KIND` 取得数组长度或计算维度乘积，再通过公共范围检查转换。现有密集初值与 RCI 稠密分支的阶数分别受求解器门槛约束。短标量、轨道和块元数据沿用相应 MPI 数据类型。[稀疏矩阵乘](../../src/lib/mpi/mpi_sparse_matrix_product.f90) · [双正交归约](../../src/apps/biorthtransform_mpi/transform_ci_coefficients.f90) · [密度归约](../../src/apps/rdensity/density_parallel_mpi.f90) |
 | 文件及数值 ABI | `MPI_COUNT_KIND` 用于内存中的计数计算。输入输出文件的索引、记录和偏移使用各自格式规定的 kind。BLAS/LAPACK 仍通过 Suite 的 LP64 显式接口调用，MPI datatype 句柄不参与这些数值调用。[MCP 目录](../../src/lib/mpi/mpi_indexed_mcp.f90) · [BLAS/LAPACK 接口](../../src/lib/grasp_shared/blas_lapack_interfaces.f90) |
 
 GNU Fortran 16.2.1 与本机 Open MPI 5.0.11 提供 `mpi_f08`，FindMPI 报告 MPI 标准版本 3.1。试编译仅广播一个元素的 `1_MPI_COUNT_KIND` 形式时，编译器报告没有匹配的 `MPI_Bcast` 重载。本次验收覆盖默认整数 collective 和有界分块路径。MPI-4 大计数重载须用提供该接口的部署库验证。[大计数标准接口](https://www.mpi-forum.org/docs/mpi-4.1/mpi41-report/node499.htm)
@@ -90,7 +90,7 @@ RCI 的 `.res` 按列存储，每列元素数和 CSF 索引为默认整数。串
 
 矩阵值、列尾和 CSF 索引由模块中的 `allocatable` 持有。RCI 装配期间按列容量分配，求解时按所选存储方式分配。RMCDHF 按块分配，轨道势例程在其独立阶段使用索引数组。调用链上没有这三个数组的原地扩容或指针别名。普通串行及两个内存版的跳块分支原先漏释放矩阵值，现将值数组分配放到跳过判定之后。串行 RCI 的内存估算及 MPI RMCDHF 的工作区预留已计入每个列尾 8 字节。通用 `ralloc` 的显式下界整数和字节重载按新旧下标区间的交集复制，覆盖空交集。GNU 16.2.1 在旧实现中复现了从 `-2:1` 扩到 `-3:3` 时读取旧数组下标 `-3` 的越界。[数组回归](../../test/f2018/array_memory.f90) · [跳块及重用回归](../../test/f2018/ci_damping.F90) · [RMCDHF 来源清单](../reference/rmcdhf_sparse_storage_snapshot.json)
 
-本地用 GNU Fortran 16.2.1、LP64 OpenBLAS 和 Open MPI 5.0.11 构建候选工作树，在 `f2018-check` 下验证。串行构建通过 83 项 CTest。MPI 构建首轮通过 126 项，更新来源清单后复跑两个来源检查通过，使用较短临时路径重跑双基组流程也通过，共 129 项。RCI 续算和生产块求解的分配、跳块及重用覆盖 MPI 1、2、4 ranks。另有稀疏矩阵乘与空分区用例。和 `f493c99` 的串行固定首轮对照中，两种求解器各七份二进制输出逐字节一致，科学文本一致。内存版的主机空闲内存日志随运行时变化。两个 MPI 变体用同一套双对称块输入分别在 1、2、4 ranks 运行，改造前后均由求解器在第 2 轮结束。各布局的能量输出、混合系数和径向波函数逐字节一致，普通 MPI 版的每 rank 矩阵及径向追踪也逐字节一致。构建目录和日志在工作区的 `temp/tests/suite-p1-sparse/`。本批未运行超过 32 位累计位置的完整大矩阵或全配置验收矩阵。
+本地用 GNU Fortran 16.2.1、LP64 OpenBLAS 和 Open MPI 5.0.11 构建候选工作树，在 `f2018-check` 下验证。串行构建通过 83 项 CTest。MPI 构建首轮通过 126 项，更新来源清单后复跑两个来源检查通过，使用较短临时路径重跑双基组流程也通过，共 129 项。RCI 续算和生产块求解的分配、跳块及重用覆盖 MPI 1、2、4 ranks。另有稀疏矩阵乘与空分区用例。和 `f493c99` 的串行固定首轮对照中，两种求解器各七份二进制输出逐字节一致，科学文本一致。当时的比较器因内存版主机空闲内存日志变化返回失败。本批已规范化这两种日志且复核留存结果。两个 MPI 变体用同一套双对称块输入分别在 1、2、4 ranks 运行，改造前后均由求解器在第 2 轮结束。各布局的能量输出、混合系数和径向波函数逐字节一致，普通 MPI 版的每 rank 矩阵及径向追踪也逐字节一致。构建目录和日志在工作区的 `temp/tests/suite-p1-sparse/`。本批未运行超过 32 位累计位置的完整大矩阵或全配置验收矩阵。
 
 ### P1 · 基组与活动系数、混合流及多根回归
 
@@ -146,7 +146,11 @@ Zn I AS1 的 14,551 个 CSF 分成四个偶宇称块，按统计权重优化七�
 
 ### P1 · 同位素质量位移、场位移与谱线两态差
 
-单电子检验了 NMS 极限、零 SMS 和接触密度。Ni I 九根的 MCDHF 与 Coulomb+Breit CI 均已逐对核对质量位移、场位移及其总和。修复了同尺寸错误基组的角缓存误用、接触密度模式的多余二次项、交换同位素后的场位移符号，以及截断报告的误读。Check、Release 的串行与 MPI 1/2/4 ranks 共核对了 32 份态报告和 888 条谱线记录。下一项是 `rdensity`、`rdensity_mpi` 的密度矩阵和自然轨道。[同位素位移实测](../reviews/evidence-0031-isotope-shifts.md)
+单电子检验了 NMS 极限、零 SMS 和接触密度。Ni I 九根的 MCDHF 与 Coulomb+Breit CI 均已逐对核对质量位移、场位移及其总和。修复了同尺寸错误基组的角缓存误用、接触密度模式的多余二次项、交换同位素后的场位移符号，以及截断报告的误读。Check、Release 的串行与 MPI 1/2/4 ranks 共核对了 32 份态报告和 888 条谱线记录。[同位素位移实测](../reviews/evidence-0031-isotope-shifts.md)
+
+### P1 · 密度矩阵和自然轨道
+
+以 `bd4dcaa` 为基准，串行及 MPI 1/2/4 ranks 核对了单电子统计权重、两重简并投影、Ni I 九根的电子数和占据数，以及自然轨道 `RAD--WFN` 读回。候选在三个固定模型上的 24 份密度和轨道文件与同布局基准逐字节一致。Ni I 跨布局的矩阵和占据数最大差为 `1.78e-15`。同时关闭了 RIS4 错 J 标签和 FICAL 点核误判两项复现问题。[密度及性质输入实测](../reviews/evidence-0032-density-natural-orbitals.md)
 
 ## 后续批次与共享库
 
@@ -156,7 +160,7 @@ Zn I AS1 的 14,551 个 CSF 分成四个偶宇称块，按统计权重优化七�
 | --- | --- | --- |
 | `mpi` · P1 | 本机迁移覆盖 communicator、datatype、status、常规元素计数和已有分块调用。部署库升级时重新验证可用绑定和重载。[本批验证](#p1-mpi-绑定计数及分块) | 按部署环境记录 1/2/4 ranks 正常与失败路径、空分区、分块结果和计数范围。 |
 | `grasp_shared` · P1 | LP64 配置、稀疏矩阵存储、活动 SCF 系数和基组数组所有权已进行本地验收。`alloc` 约定传入无活跃目标的指针，先 `nullify` 再 `associated` 无法检测误传的活目标。按调用方选择拥有数据的 `allocatable` 或有明确生存期的借用视图。[LP64 配置验收](#p1-blaslapack-lp64-接口与配置验收) · [稀疏矩阵验收](#p1--稀疏矩阵存储与数组所有权) · [分配接口](../../src/lib/grasp_shared/array_memory_management.f90#L11) | 对改动的分配路径测试零长度、非 1 下界、重分配保留重叠区、释放后再用。维度扩大须在算术前转换，并在转入默认整数前检查上界。 |
-| `core` · P1，写入器多实例 P2 | 混合系数写入器约定每进程一次写一个流，MPI 由 root 写。已核对打开、写块、刷新、完成标记及关闭路径，并覆盖短写和根进程失败。双正交代码在文件末尾关闭输入和输出。有交错输出的真实需求时再引入显式写入器对象。径向网格与稀疏矩阵乘则按已确认的共享写入依赖收紧接口。[混合流](../../src/lib/core/mixing_file_format.f90#L25) · [双正交消费者](../../src/apps/rbiotransform/read_biorthogonal_mcp.f90#L188) · [网格](../../src/lib/core/radial_grid_setup.f90) | 正常文件可由独立解析器读回。核对块目录、基组摘要、根顺序和完成标记，验证中断或截断文件及 root 写入失败。保留各程序活动网格、填充点与精度初始化时序，并用同输入核对径向数组与矩阵乘结果。 |
+| `core` · P1，写入器多实例 P2 | 混合系数写入器约定每进程一次写一个流，MPI 由 root 写。已核对打开、写块、刷新、完成标记及关闭路径，并覆盖短写和根进程失败。双正交代码在文件末尾关闭输入和输出。有交错输出的真实需求时再引入显式写入器对象。径向网格与稀疏矩阵乘则按已确认的共享写入依赖收紧接口。[混合流](../../src/lib/core/mixing_file_format.f90#L25) · [双正交消费者](../../src/apps/biorthtransform/read_biorthogonal_mcp.f90#L188) · [网格](../../src/lib/core/radial_grid_setup.f90) | 正常文件可由独立解析器读回。核对块目录、基组摘要、根顺序和完成标记，验证中断或截断文件及 root 写入失败。保留各程序活动网格、填充点与精度初始化时序，并用同输入核对径向数组与矩阵乘结果。 |
 | `csf_descriptor` 与 Fortran reader · P1 | 现行 V3 跨语言接口已有版本、容量及分块检查。`descriptor_source` 拥有 Rust 句柄，调用方须显式关闭并避免复制活句柄。已覆盖不同基组交替读取、句柄关闭及失败后的重开和替换。[Fortran 所有权](../../src/lib/core/csf_descriptor_reader.f90#L19) · [C 绑定](../../src/lib/core/csf_descriptor_c_bindings.f90) · [Rust FFI](../../src/lib/csf_descriptor/src/descriptor_ffi.rs) | 双基组交替读取、失败后重开、重复关闭及错误摘要均可诊断。每个所有者只释放一次。块顺序、占据与耦合码逐项一致，分块读取记录峰值内存。 |
 | `davidson_eigensolver` · P1 | 保留显式矩阵乘回调，核对内部 assumed-size 数组的实际形状、下界和调用方式，先处理影响索引校验的入口。已用近简并双根夹具验证重启、返回向量重用和按根的残差判定。[回调](../../src/lib/davidson_eigensolver/davidson_eigensolver.f90) · [稀疏初值](../../src/lib/davidson_eigensolver/davidson_sparse_initial_estimates.f90) | 扩展已有解析矩阵和提前收敛用例，增加近简并多根、重启向量、空分区。分别比较每根本征残差、正交性和近简并子空间。 |
 | `spin_angular` · P1 核查，P2 按需整理 | 跟踪一个 bra/ket 配对的可变工作区。Wigner 6j 的显式缓存已有线程私有语义，检查冷启动、复用和线程数变化。只读表与可变缓存分别处理。[配对数据](../../src/lib/grasp_shared/csf_pair_angular_state.f90) · [6j 缓存](../../src/lib/spin_angular/wigner_6j.f90#L33) | 保留 NMTEJJ 整数对照，覆盖高 J、交换相位和解析选择定则零值。将角系数逐对读回，在实际启用 OpenMP 的消费者上另做多线程对照。 |
@@ -174,12 +178,12 @@ Zn I AS1 的 14,551 个 CSF 分成四个偶宇称块，按统计权重优化七�
 | `rangular`、`rangular_mpi` · P1 | 核对配对工作区、计数、排序、续写和空分区。串行按 MCP 通道读取，MPI 按 rank 使用索引分片。[生成路径](../implemented/design-0017-rangular-flow-and-state.md) · [MPI MCP](../../src/lib/mpi/mpi_indexed_mcp.f90) | 逐对称块、CSF 对和积分标签核对稀疏位置、系数与相位。覆盖首阶限制、串行复用开关、错基组和分片不匹配，由相应 RMCDHF 消费端读回。 |
 | `rmcdhf`、`rmcdhf_mem`、`rmcdhf_mpi`、`rmcdhf_mem_mpi` · P0 首轮夹具，P1 多根 | 分别冻结 EOL 根、权重、初始轨道、变化轨道、阻尼和停止参数。跟踪每块矩阵装配、每轮混合更新、轨道更新次序以及缓存或收缩失效条件。普通 MPI 按当前核势入口验收，另三种目标覆盖支持的 NP 关闭、零势和非零势。[SCF 状态及顺序](../implemented/design-0019-rmcdhf-flow-and-state.md) · [变体差异](../reviews/evidence-0007-rmcdhf-memory-variant-comparison.md) · [核极化范围](../implemented/design-0022-rmcdhf-nuclear-polarization.md) | 每个变体保存同输入下的固定轮次轨迹与独立收敛轨迹。逐轮核对能量、根与权重、系数、残差、P/Q 和停止原因。MPI 分别生成与本次 rank 布局匹配的 MCP；记录各 rank 峰值内存，检查 memory 路径是否因所有权调整引入多余副本。 |
 | `rci`、`rci_mpi` · P0 续算，P1 固定轨道 | 首批完成读取及局部失败回归。随后以同轨道、同基组、同算符，分别覆盖小稠密块、稀疏矩阵乘与磁盘续算，逐一切换 Coulomb、Breit 和实际支持的质量位移、QED 选项。[块求解](../../src/apps/rci/solve_hamiltonian_blocks.f90) · [已有 Breit 回归](../../test/rci_breit.py) | 核对块维度、矩阵元素和对称性、每根残差、总能量及激发能；冷启动与续算对照态身份与系数。保存最大差异的块、根和元素位置。 |
-| `rbiotransform`、`rbiotransform_mpi` · P1 本机解析验收完成 | 正逆序、不等维、非法顺序、奇异重叠有生产入口回归。复用角缓存前校验来源基组、κ 分组、选定 J 和 rank 身份。[解析验收](../reviews/evidence-0027-biorthogonal-states-and-cache.md) | 已核对交叉重叠、补偿后波函数、单位算符矩阵元及混合流的来源摘要。单侧独有 κ 组已在下一批的单电子跃迁流水线补验。 |
+| `biorthtransform`、`biorthtransform_mpi` · P1 本机解析验收完成 | 正逆序、不等维、非法顺序、奇异重叠有生产入口回归。复用角缓存前校验来源基组、κ 分组、选定 J 和 rank 身份。[解析验收](../reviews/evidence-0027-biorthogonal-states-and-cache.md) | 已核对交叉重叠、补偿后波函数、单位算符矩阵元及混合流的来源摘要。单侧独有 κ 组已在单电子跃迁流水线补验。两套独立优化的多电子轨道仍需从双正交变换到跃迁矩阵元做端到端对照。 |
 | `rtransition`、`rtransition_mpi`、`rtransition_phase` · P1 本机验收，P2 按需去重 | 单电子固定输入已覆盖允许、禁戒、弱线和相位约定。角缓存识别两套基组、多极、J 筛选及进程布局。[谱线验收](../reviews/evidence-0028-radiative-transition-lines.md) | 已复核 E1 两规范、M1、频率因子，以及 Ni I 的 M1 和 E2。更高多极的非零矩阵元和生产模型的物理收敛另行验证。 |
 | `gj`、`gj_mpi` · P1 本机验收完成 | 已验证三个单电子 LS 态、Ni I 的 MCDHF 与固定轨道 CI，并按对称块和向量重叠匹配九根。[Landé 因子实测](../reviews/evidence-0029-lande-g-factors.md) | 已核对七个 J>0 态的普通项、反常磁矩修正及总和。覆盖根重排、缺选根、整体相位和空 rank，已对照两个算符的局部矩阵元和归约。 |
 | `rhfs`、`rhfs_mpi` · P1 本机验收完成 | 已核对核矩缩放、零自旋、工作区释放和 Ni I 同对称块态匹配。[超精细结构实测](../reviews/evidence-0030-hyperfine-constants.md) | MCDHF、纯 Coulomb 及 Coulomb+Breit CI 已覆盖 ΔJ=0、1、2。翻转单态符号后复原带符号矩阵元，分别对照 MHz 常数、Hartree 矩阵元与各 rank 的五路张量贡献。 |
-| `ris4`、`ris4_mpi`、`fical` · P1 本机验收完成 | 已验证一体与二体缓存的基组身份、筛选阈值和有效复用。FICAL 逐段检查记录、单位与态标识。[同位素位移实测](../reviews/evidence-0031-isotope-shifts.md) | 已核对 NMS、SMS、接触密度和高阶场因子。两态差覆盖 MCDHF、CI、两种核半径输入及 GHz、MHz、meV 输出。 |
-| `rdensity`、`rdensity_mpi` · P1 | 检查密度矩阵形状、MPI 归约的 `size(matrix)` 计数和自然轨道求解时的工作区。[MPI 归约](../../src/apps/rdensity/density_parallel_mpi.f90#L55) | 验证密度矩阵对称性、迹与电子数、占据数、自然轨道正交及流文件读回。比较空 rank 和简并子空间，沿用现有串行及 1/2/4-rank 密度用例。 |
+| `ris4`、`ris4_mpi`、`fical` · P1 本机验收完成 | 已验证一体与二体缓存的基组身份、筛选阈值和有效复用。RIS4 核对混合流目录的维度、块边界、J 和宇称，FICAL 逐段检查记录与单位并按质量数识别点核。[同位素位移实测](../reviews/evidence-0031-isotope-shifts.md) | 已核对 NMS、SMS、接触密度和高阶场因子。两态差覆盖 MCDHF、CI、两种核半径输入及 GHz、MHz、meV 输出。 |
+| `rdensity`、`rdensity_mpi` · P1 本机验收完成 | 根进程直接归约二维矩阵，检查 MPI 元素计数和 DSYEV 工作区。校验混合流块身份。[密度实测](../reviews/evidence-0032-density-natural-orbitals.md) | 串行及 MPI 1/2/4 ranks 已核对对称性、迹、占据数、简并子空间、自然轨道正交及流文件读回。部署平台仍按整体验收。 |
 | `jj2lsj_omp` · P1 验收 | 分开核对控制器状态、只读表和线程私有缓存。关闭 OpenMP 时同一目标使用串行后端。[目标定义](../../src/apps/jj2lsj/CMakeLists.txt) · [已有 Gd I 回归](../reviews/evidence-0002-jj2lsj-gd-i-validation.md) | 串行与 OpenMP 1/2/4 线程对照完整系数、排序、标签和提前停止路径；在改动缓存生存期时加重复调用或线程组变化用例。 |
 | `rlevels` · P2 | 复用混合流 reader，核对多文件能级排序、可选 LSJ 标签匹配和高 J 输出。[能级入口](../../src/apps/rlevels/rlevels.f90) | 逐态核查绝对能量、激发能、相邻能级间隔与标签归属。覆盖同能不同对称性、缺标签和损坏记录，结构化输出继续通过现有文件回归。 |
 
@@ -199,7 +203,7 @@ Zn I AS1 的 14,551 个 CSF 分成四个偶宇称块，按统计权重优化七�
 
 ## 执行入口与验收记录
 
-以下示例从 Suite 仓库根目录运行。先在目标机加载匹配的 GNU Fortran 16.2、Open MPI 和 BLAS/LAPACK；示例使用工作区共享 Python 环境的 V3 `rcsfs`。每次建立独立构建目录，临时文件集中在工作区的 `temp/tests`，以满足双基组 MPI 流程的路径长度限制。第一组命令运行**已有**接口及工作流回归。新增的 RCI 坏记录、单分片失败和首轮实际二进制对照应在实现后加入对应测试组。
+以下示例从 Suite 仓库根目录运行。先在目标机加载匹配的 GNU Fortran 16.2、Open MPI 和 BLAS/LAPACK；示例使用工作区共享 Python 环境的 V3 `rcsfs`。每次建立独立构建目录，临时文件集中在工作区的 `temp/tests`，以满足双基组 MPI 流程的路径长度限制。第一组命令运行接口、续算及工作流回归。首轮驱动由 CTest 运行，实际二进制首轮对照使用独立的两构建入口。[首轮比较命令](../../test/f2018/README.md)
 
 ```fish
 set -gx FC (command -v gfortran)
@@ -214,14 +218,24 @@ set suite_run (realpath (mktemp -d ../temp/tests/suite-f2018.XXXXXXXX))
 set -gx TMPDIR (realpath ../temp/tests)
 ./configure.sh --debug --profile f2018-check --build-dir "$suite_run/check" -DRCSFS_TEST_CLI="$RCSFS_TEST_CLI"
 cmake --build "$suite_run/check" --parallel 4
-ctest --test-dir "$suite_run/check" --no-tests=error --output-on-failure -R '^(f2018_linear_algebra_contracts|f2018_array_memory|f2018_davidson_contracts|state_workflow_(serial|mpi))$'
+ctest --test-dir "$suite_run/check" --no-tests=error --output-on-failure -R '^(f2018_linear_algebra_contracts|f2018_array_memory|f2018_davidson_contracts|state_workflow_(serial|mpi)|rci_restart_(serial|mpi_[124])|f2018_first_sweep_driver)$'
 ```
 
-跨共享接口、绑定或发布候选的完整配置验收使用同一环境和以下命令。矩阵覆盖三种 profile，各有 serial、MPI 和 jj2lsj OpenMP 的八种组合。保留 `matrix-validate.json`、每个配置的 CTest 结果和严格配置的逐文件告警比对。某个组合单独通过时，按该组合报告。[矩阵执行器](../../test/f2018/matrix.py) · [警告预算与测试范围](../../test/f2018/README.md)
+跨共享接口、绑定或发布候选的完整配置验收使用同一环境和以下命令。矩阵覆盖三种 profile，各有 serial、MPI 和 jj2lsj OpenMP 的八种组合。保留 `matrix-validate.json`、每个配置的 CTest 结果和严格配置的逐文件告警比对。某个组合单独通过时，按该组合报告。历史告警基线缺少新加入的 core 源文件，直接验证会在 CTest 前中止。先用构建阶段采集 16 个严格配置的告警记录，逐项审查源文件变化和正确性诊断，再用审核后的基线验证。[矩阵执行器](../../test/f2018/matrix.py) · [警告预算与测试范围](../../test/f2018/README.md)
 
 ```fish
 "$suite_python" test/f2018/matrix.py "$suite_run/matrix" \
-    --rcsfs-cli "$RCSFS_TEST_CLI" --parallel-configs 2 --jobs 3
+    --rcsfs-cli "$RCSFS_TEST_CLI" --stage build --parallel-configs 2 --jobs 3
+"$suite_python" test/f2018/warning_inventory.py record "$suite_run/matrix" \
+    --output "$suite_run/candidate-warnings.json"
+```
+
+完成诊断审查后，用已审核的候选基线运行完整验收。
+
+```fish
+"$suite_python" test/f2018/matrix.py "$suite_run/matrix" \
+    --rcsfs-cli "$RCSFS_TEST_CLI" --baseline "$suite_run/candidate-warnings.json" \
+    --parallel-configs 2 --jobs 3
 ```
 
 每批在结果记录中写明基准与候选提交、受影响的程序、实际运行的配置、输入与日志位置、通过/失败/跳过项及未覆盖路径。数值对照同时报告最差差异的块、态、单位和终止原因。对已确认的错误保存修复前的表现、修复后的正反例和合法输入对照；对仅由诊断提示的风险保存调用链及可达性判断。完成相应验收后再更新本计划的状态。
@@ -230,5 +244,5 @@ ctest --test-dir "$suite_run/check" --no-tests=error --output-on-failure -R '^(f
 | --- | --- | --- |
 | 首批 · 基线与续算 | V3 实际首轮对照、串行/MPI 合法续算、坏记录和单 rank 失败报告 | GNU Fortran 16.2.1/OpenBLAS/Check 下，两套独立构建的 `rmcdhf`、`rmcdhf_mem` 首轮科学输出一致。串行和 Open MPI 5.0.11 的 1/2/4-rank 续算回归已完成。 |
 | MPI、ABI 与共享库 | 绑定和计数用例、链接库身份、错误传播、所有权及共享核差异报告 | 本机已增加 32 位边界、CSF 基组及活动系数所有权、混合流故障、Davidson 近简并和 Breit 回归。其余共享接口与部署环境继续按批核验。 |
-| 各程序的科学数值回归 | 四种 RMCDHF 各自的固定轮次/收敛记录、固定轨道 RCI、双正交及性质与跃迁分项对照 | 四种 RMCDHF 已完成小型多根、Zn I AS1 七根收敛及串行／2-rank 峰值内存对照。固定轨道 RCI 已覆盖小稠密块、解析存储分支及 Ni I 六种算符设置的双根对照。双正交已完成单电子解析和角缓存验收。辐射跃迁已完成单电子 E1/M1 及 Ni I 的 M1/E2 对照；Landé 因子已完成 LS、Ni I 态匹配和 MPI 归约对照。RHFS 已完成 A、B 及非对角元的相位、单位与归约对照。RIS4 与 FICAL 已核对 NMS、SMS、场位移及谱线总位移。 |
+| 各程序的科学数值回归 | 四种 RMCDHF 各自的固定轮次/收敛记录、固定轨道 RCI、双正交及性质与跃迁分项对照 | 四种 RMCDHF 已完成小型多根、Zn I AS1 七根收敛及串行／2-rank 峰值内存对照。固定轨道 RCI 已覆盖小稠密块、解析存储分支及 Ni I 六种算符设置的双根对照。双正交已完成单电子解析和角缓存验收。辐射跃迁已完成单电子 E1/M1 及 Ni I 的 M1/E2 对照；Landé 因子已完成 LS、Ni I 态匹配和 MPI 归约对照。RHFS 已完成 A、B 及非对角元的相位、单位与归约对照。RIS4 与 FICAL 已核对 NMS、SMS、场位移及谱线总位移。密度批次已完成单电子解析和 Ni I 九根的串行与 MPI 对照。 |
 | 整体验收 | 候选提交的 24 配置结果、正确性告警逐项处理结论及目标部署环境报告 | 历史矩阵供追溯，候选版本另行签收 |

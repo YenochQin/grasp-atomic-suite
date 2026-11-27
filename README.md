@@ -50,13 +50,13 @@ Ordinary application directories now omit the old `90` suffix; the Landé-factor
 
 | Program | Source directory | CMake targets | Purpose |
 | --- | --- | --- | --- |
-| Ordinary GRASP calculation chain | `src/apps/rangular*`, `rwfnestimate`, `rci*`, `rbiotransform*`, `rtransition*` | `rangular{,_mpi}`, `rwfnestimate`, `rci{,_mpi}`, `rbiotransform{,_mpi}`, `rtransition{,_phase,_mpi}` | Ten targets reuse the suite libraries and central capacities. See the [import record](docs/archive/2026-11-08-plan-0002-standard-grasp-integration.md). |
+| Ordinary GRASP calculation chain | `src/apps/rangular*`, `rwfnestimate`, `rci*`, `biorthtransform*`, `rtransition*` | `rangular{,_mpi}`, `rwfnestimate`, `rci{,_mpi}`, `biorthtransform{,_mpi}`, `rtransition{,_phase,_mpi}` | Ten targets reuse the suite libraries and central capacities. See the [import record](docs/archive/2026-11-08-plan-0002-standard-grasp-integration.md). |
 | `jj2lsj_omp` | `src/apps/jj2lsj` | `jj2lsj_omp` | Ordinary-CSF jj–LS conversion with OpenMP LS rows and ordered truncation; [build, runtime controls and validation](docs/implemented/design-0028-jj2lsj-openmp.md). CSFG support has been removed. |
 | `rlevels` | `src/apps/rlevels` | Energy tables from RMCDHF `.mix` and RCI `.cimix` files with optional `jj2lsj` labels. [Usage and output format](docs/implemented/design-0025-rlevels.md). |
 | `gj` | `src/apps/gj` | `gj`, `gj_mpi` | Standalone Landé `g_J` calculator extracted from the RHFS path. It reads `isodata`, the state's CSF descriptor pair, `name.mix/name.cimix`, and `name.wfn`, then writes `name.gj/name.cgj`. |
 | `rhfs` | `src/apps/rhfs` | `rhfs`, `rhfs_mpi` | Relativistic hyperfine-structure program. It computes hyperfine constants and related matrix elements, writing `name.h/name.ch` and `name.hoffd/name.choffd`. |
 | `rdensity` | `src/apps/rdensity` | `rdensity`, `rdensity_mpi` | Radial electron densities and statistically averaged natural orbitals; see [implementation and validation](docs/implemented/design-0026-rdensity-mpi.md). |
-| `ris4` | `src/apps/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing `name.i/name.ci` and angular intermediate data. |
+| `ris4` | `src/apps/ris4` | `ris4`, `ris4_mpi` | Relativistic isotope-shift program. It computes normal mass shift, specific mass shift, and field-shift electronic factors, writing source-specific isotope-shift reports and angular intermediate data. |
 | `fical` | `src/apps/ris4` | `fical` | Standalone [line isotope-shift postprocessor](src/apps/ris4/README.md#fical) for pairs of RIS4 reports. |
 | GRASP RMCDHF | `src/apps/rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | `rmcdhf`, `rmcdhf_mem`, `rmcdhf_mpi`, `rmcdhf_mem_mpi` | Copies from the workspace GRASP source, retaining its solver flow. Ordinary `rmcdhf_mpi` has no NP initialization; the other three optionally read `npol.inp`. See [NP interface and provenance](docs/implemented/design-0022-rmcdhf-nuclear-polarization.md). |
 
@@ -174,13 +174,14 @@ enter the same name at each `Name of state:` prompt. For example, the state
 | Step | State files read | State files written |
 | --- | --- | --- |
 | `rwfnestimate` | `name_header.toml` | `name.initial.wfn` (initial radial orbitals) |
-| `rangular` | `name_desc.parquet` and its header | `mcp.NN`, `name.rangular.log` |
-| `rmcdhf` and `rmcdhf_mem` | Same descriptor pair, `name.initial.wfn`, `mcp.NN` | `name.wfn` (optimized orbitals), `name.mix` (OL/EOL mixing), `name.rmcdhf.summary`, `name.rmcdhf.log` |
-| `rci` | Same descriptor pair and `name.wfn` | `name.cimix` (CI mixing), `name.csum`, `name.clog` |
+| `rangular` | `name_desc.parquet` and its header | `name.mcp.NN`, `name.rangular.log` |
+| `rmcdhf` and `rmcdhf_mem` | Same descriptor pair, `name.initial.wfn`, `name.mcp.NN` | `name.wfn` (optimized orbitals), `name.mix` (OL/EOL mixing), `name.rmcdhf.summary`, `name.rmcdhf.log` |
+| `rci` | Same descriptor pair and `name.wfn` | `name.cimix` (CI mixing), `name.csum`, `name.clog`, `name.rci.restart` |
 
-MPI uses the same state name. Each `rangular_mpi` rank writes `mcp.mcpidx` in
+MPI uses the same state name. Each `rangular_mpi` rank writes `name.mpi.mcpidx` in
 its scratch directory. Run `rmcdhf_mpi` or `rmcdhf_mem_mpi` with the same basis
-and rank layout. Use the current `rangular_mpi` to regenerate older MCP output.
+and rank layout. For existing caches, restart files and MCP data, see
+[file naming and migration](docs/implemented/design-0034-cache-restart-mcp-names.md).
 The descriptor and radial files live in the permanent I/O directory, and the
 angular and SCF logs live in the launch directory. `isodata` and applicable
 `npol.inp` are shared nuclear inputs. See [MPI MCP formats and validation](docs/implemented/design-0020-rmcdhf-mcp-io.md).
@@ -219,8 +220,11 @@ Common output files:
 
 - `gj`: `name.gj` or `name.cgj`.
 - `rhfs`: `name.h/name.ch` and `name.hoffd/name.choffd`.
-- `rdensity`: `name.nw` and `name.d/name.cd`.
-- `ris4`: `name.i/name.ci`, and possibly angular intermediate files such as `name.IOB` and `name.ITB`.
+- `rdensity`: `name.natural.wfn` (MCDHF) or `name.ci.natural.wfn` (CI), with `name.d` or `name.cd`.
+- `ris4`: `name.mcdhf.isotope-shift` or `name.ci.isotope-shift`, with optional `name.ris4.one-body.angular.cache` and `name.ris4.two-body.angular.cache`.
+- `jj2lsj_omp`: `name.mcdhf.lsj.labels` or `name.ci.lsj.labels`.
+- `rtransition`: `initial.final.mcdhf.transition` or `initial.final.ci.transition`,
+  with optional `.transition.lsj` reports. The phase executable adds `.phase` after `.transition`.
 
 `gj_mpi` accepts a state name with `--nonci` or `--ci`. Run it from the
 calculation directory and set `suite_bin` to the absolute path of the build's
@@ -297,7 +301,8 @@ The block directory starts at byte 112 and the level table starts at `112 + 48*n
 of a root's first coefficient is the block offset plus `8*n_csfs*root_row`, where `root_row` is its
 zero-based position in the block's level table. Readers can use the file tables without reading the
 coefficient payload. Readers require the `CSF--MIX` signature. `GRMIXTMP` marks an incomplete write.
-Biorthogonal `.bm` and `.cbm` files use the same stream and retain the source basis SHA-256.
+Biorthogonal `*.biorth.mix` and `*.biorth.cimix` files use the same stream and retain the source basis SHA-256.
+See the [ordered-pair handoff](docs/reviews/evidence-0033-output-file-formats.md#有序态对交接与跃迁报告).
 Sequential Fortran `G92MIX` files must be regenerated as Suite streams.
 
 ```python

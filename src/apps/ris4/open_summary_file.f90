@@ -16,6 +16,7 @@ contains
     subroutine open_summary_file(name, nci)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
+        use calculation_state_files, only: isotope_shift_report_path
         use calculation_file_units, only: summary_output_unit
         use file_open, only: open_calculation_file
         implicit none (type, external)
@@ -25,18 +26,11 @@ contains
         character, intent(in) :: name*24
 
         ! Local declarations
-        integer   :: k, open_status
-        character :: file_path*256, form*11, status*3
-        ! File  rdensity.sum  is FORMATTED
-        k = index(name," ")
-        if (nci == 0) then
-            file_path = name(1:k-1)//".ci"
-        else
-            file_path = name(1:k-1)//".i"
-        end if
-        form = "FORMATTED"
-        status = "NEW"
-        call open_calculation_file (summary_output_unit, file_path, form, status, open_status)
+        integer :: open_status
+        character(:), allocatable :: file_path
+
+        file_path = isotope_shift_report_path(name, nci == 0)
+        call open_calculation_file (summary_output_unit, file_path, "FORMATTED", "NEW", open_status)
         if (open_status /= 0) then
             write (output_unit, *) "Error when opening", file_path
             stop

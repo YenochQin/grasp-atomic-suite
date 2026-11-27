@@ -11,7 +11,6 @@ open_transition_angular_cache.f90
 build_transition_bessel_functions.f90
 calculate_biorthogonal_overlap.f90
 map_merged_orbitals.f90
-prepare_transition_mixing_coefficients.f90
 single_particle_transition_element.f90
 write_transition_csf_weights.f90
 write_transition_level_energies.f90

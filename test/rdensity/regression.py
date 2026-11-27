@@ -20,7 +20,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from native_fixture import descriptors, write_radial_stream
-from mixing_stream import Block, write_stream
+from mixing_stream import Block, read_stream, write_stream
+from test_biorthogonal_states import orbital_values
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "rmcdhf"))
 from compare_rwfn import read_radial_stream
@@ -147,6 +148,34 @@ def run(
     return output
 
 
+def degenerate_fixture(folder: Path) -> None:
+    """Two equally weighted roots span the plane perpendicular to (1, 1, 1)."""
+    folder.mkdir()
+    csf = folder / "case.c"
+    csf.write_text(
+        "Core subshells:\n\nPeel subshells:\n  1s   2s   3s\nCSF(s):\n"
+        + "".join(f"  {n}s ( 1)\n      1/2\n       1/2+\n" for n in (1, 2, 3))
+    )
+    descriptors(csf)
+    csf.unlink()
+    (folder / "isodata").write_text(
+        "Atomic number:\n1\nMass number:\n1\nFermi a:\n0.5233875553\n"
+        "Fermi c:\n1\nMass:\n1\nSpin:\n0.5\nDipole:\n1\nQuadrupole:\n0\n"
+    )
+    u, v = 1 / math.sqrt(2), 1 / math.sqrt(6)
+    write_stream(
+        folder / "case.mix", 1, 3,
+        [Block(1, 1, 3, [1, 2], [-0.5, -0.5], doubles([u, -u, 0.0, v, v, -2*v]))],
+        folder / "case_desc.parquet",
+    )
+    grid = [2e-6 * math.expm1(0.05 * i) for i in range(590)]
+    write_radial_stream(folder / "case.wfn", grid, [
+        (n, -1, 0.5/n**2, orbital_values(n, False, False, 0.0),
+         [r*orbital_values(n, False, False, r) for r in grid], [0.0]*len(grid))
+        for n in (1, 2, 3)
+    ])
+
+
 def read_blocks(output: str, title: str) -> dict[int, list[list[float]]]:
     lines = output.splitlines()
     kappa = ndim = 0
@@ -187,7 +216,58 @@ def close(a: float, b: float, tolerance: float = 2e-10) -> None:
     assert abs(a - b) <= tolerance * max(1.0, abs(a), abs(b)), (a, b)
 
 
-def check_analytic(output: str, folder: Path, multiblock: bool) -> None:
+def check_eigensystem(output: str, electron_count: int) -> None:
+    matrices = read_blocks(output, "density matrix:")
+    occupations = read_blocks(output, "occupations in output orbital order:")
+    eigenvectors = read_blocks(output, "eigenvectors in output orbital order (columns printed as rows):")
+    assert matrices and matrices.keys() == occupations.keys() == eigenvectors.keys()
+    trace = 0.0
+    for kappa, matrix in matrices.items():
+        values = [row[0] for row in occupations[kappa]]
+        vectors = eigenvectors[kappa]
+        for i, (row, value, vec) in enumerate(zip(matrix, values, vectors, strict=True)):
+            trace += row[i]
+            assert -1e-10 <= value <= 2*abs(kappa)+1e-10
+            for j, other in enumerate(vectors):
+                close(matrix[i][j], matrix[j][i])
+                close(math.fsum(a*b for a, b in zip(vec, other, strict=True)), float(i == j))
+                close(math.fsum(a*b for a, b in zip(matrix[j], vec, strict=True)), value*vec[j])
+    close(trace, electron_count)
+    close(math.fsum(row[0] for block in occupations.values() for row in block), electron_count)
+
+
+def check_degenerate(output: str, folder: Path) -> None:
+    check_eigensystem(output, 1)
+    matrix = read_blocks(output, "density matrix:")[-1]
+    occupations = read_blocks(output, "occupations in output orbital order:")[-1]
+    vectors = read_blocks(output, "eigenvectors in output orbital order (columns printed as rows):")[-1]
+    for value, expected in zip(sorted(row[0] for row in occupations), (0.0, 0.5, 0.5), strict=True):
+        close(value, expected)
+    for i, row in enumerate(matrix):
+        for j, value in enumerate(row):
+            projector = math.fsum(vec[i]*vec[j] for (occ,), vec in zip(occupations, vectors, strict=True) if occ > 0.25)
+            expected = float(i == j)-1/3
+            close(projector, expected)
+            close(value, expected/2)
+
+    source = read_radial_stream(folder / "case.wfn")
+    natural = read_radial_stream(folder / "case.natural.wfn")
+    assert source.keys() == natural.keys()
+    for orbital, vec in zip(natural.values(), vectors, strict=True):
+        for index, (p, q) in enumerate(zip(orbital.p, orbital.q, strict=True)):
+            close(p, math.fsum(c*original.p[index] for c, original in zip(vec, source.values(), strict=True)))
+            close(q, math.fsum(c*original.q[index] for c, original in zip(vec, source.values(), strict=True)))
+        close(orbital.origin, math.fsum(c*original.origin for c, original in zip(vec, source.values(), strict=True)))
+    for i, orbital in enumerate(natural.values()):
+        for j, other in enumerate(natural.values()):
+            overlap = 0.05*math.fsum(
+                (radius + 2e-6)*(p*other_p + q*other_q)
+                for radius, p, q, other_p, other_q in zip(orbital.r, orbital.p, orbital.q, other.p, other.q, strict=True)
+            )
+            close(overlap, float(i == j))
+
+
+def check_analytic(output: str, folder: Path, multiblock: bool, ci: bool = False) -> None:
     matrices = read_blocks(output, "density matrix:")
     occupations = read_blocks(output, "occupations in output orbital order:")
     scale = 1 / 3 if multiblock else 1.0
@@ -204,7 +284,7 @@ def check_analytic(output: str, folder: Path, multiblock: bool) -> None:
     close(sum(row[0] for block in occupations.values() for row in block), 1.0)
     # Check the binary NOs reconstruct the weighted radial density. This also
     # exercises the cross term and the P/Q rotations independently of MPI.
-    orbitals = read_radial_stream(folder / "case.nw")
+    orbitals = read_radial_stream(folder / ("case.ci.natural.wfn" if ci else "case.natural.wfn"))
     by_kappa: dict[int, int] = {}
     grid = max((orbital.r for orbital in orbitals.values()), key=len)
     reconstructed = [0.0] * len(grid)
@@ -215,7 +295,7 @@ def check_analytic(output: str, folder: Path, multiblock: bool) -> None:
         for index, (p, q) in enumerate(zip(orbital.p, orbital.q, strict=True)):
             reconstructed[index] += occupation * (p * p + q * q)
     densities: list[dict[float, float]] = []
-    for line in (folder / "case.d").read_text().splitlines()[2:]:
+    for line in (folder / ("case.cd" if ci else "case.d")).read_text().splitlines()[2:]:
         parts = line.split()
         if len(parts) == 3 and parts[0].isdigit():
             densities.append({})
@@ -231,9 +311,10 @@ def check_analytic(output: str, folder: Path, multiblock: bool) -> None:
         close(reconstructed[i], expected, 3e-9)
 
 
-def compare_outputs(reference: Path, actual: Path, name: str, ci: bool = False) -> None:
-    first = read_radial_stream(reference / f"{name}.nw")
-    second = read_radial_stream(actual / f"{name}.nw")
+def compare_outputs(reference: Path, actual: Path, name: str, actual_ci: bool = False) -> None:
+    first = read_radial_stream(reference / f"{name}.natural.wfn")
+    suffix = ".ci.natural.wfn" if actual_ci else ".natural.wfn"
+    second = read_radial_stream(actual / (name + suffix))
     assert list(first) == list(second)
     for key, orbital in first.items():
         other = second[key]
@@ -242,8 +323,6 @@ def compare_outputs(reference: Path, actual: Path, name: str, ci: bool = False) 
         for values, actual_values in ((orbital.p, other.p), (orbital.q, other.q), (orbital.r, other.r)):
             for x, y in zip(values, actual_values, strict=True):
                 close(x, y, 2e-8)
-    suffix = ".cd" if ci else ".d"
-
     def density_rows(
         path: Path,
     ) -> tuple[list[str], dict[tuple[int, float], tuple[float, float]]]:
@@ -258,8 +337,8 @@ def compare_outputs(reference: Path, actual: Path, name: str, ci: bool = False) 
                 rows[len(headers), r] = (density, rho)
         return headers, rows
 
-    ah, a = density_rows(reference / (name + suffix))
-    bh, b = density_rows(actual / (name + suffix))
+    ah, a = density_rows(reference / (name + ".d"))
+    bh, b = density_rows(actual / (name + (".cd" if actual_ci else ".d")))
     assert ah == bh
     # Positive-only output can omit a different subnormal tail row after
     # changing summation order. Missing rows represent zero, within tolerance.
@@ -293,10 +372,19 @@ def main() -> None:
             target = root / (case + "-candidate")
             fixture(target, gap, multiblock)
             output = run(parallel + ["case", "--ci"], target)
-            # Compare CI output to the same data in the non-CI format.
-            shutil.copyfile(target / "case.cd", target / "case.d")
-            check_analytic(output, target, multiblock)
-            compare_outputs(baseline, target, "case")
+            check_analytic(output, target, multiblock, ci=True)
+            compare_outputs(baseline, target, "case", actual_ci=True)
+
+            natural = baseline / "case.natural.wfn"
+            mcdhf_bytes = natural.read_bytes()
+            run(parallel + ["case", "--ci"], baseline)
+            assert natural.read_bytes() == mcdhf_bytes
+            assert not (baseline / "case.nw").exists()
+            compare_outputs(baseline, baseline, "case", actual_ci=True)
+
+        target = root / "degenerate"
+        degenerate_fixture(target)
+        check_degenerate(run(parallel + ["case", "--nonci"], target), target)
 
         # Existing repository data: 1042 CSFs, 5 J blocks, 9 levels.
         baseline = root / "ni-serial"
@@ -304,14 +392,13 @@ def main() -> None:
         for name in ("isodata", "test.mix", "test.wfn", "test_desc.parquet", "test_header.toml"):
             shutil.copyfile(args.data / name, baseline / name)
         ni_output = run(serial + ["test", "--nonci"], baseline)
-        occupations = read_blocks(ni_output, "occupations in output orbital order:")
-        close(sum(row[0] for block in occupations.values() for row in block), 28.0)
+        check_eigensystem(ni_output, 28)
         if args.mpi:
             target = root / "ni-mpi"
             target.mkdir()
             for name in ("isodata", "test.mix", "test.wfn", "test_desc.parquet", "test_header.toml"):
                 shutil.copyfile(args.data / name, target / name)
-            run(parallel + ["test", "--nonci"], target)
+            check_eigensystem(run(parallel + ["test", "--nonci"], target), 28)
             compare_outputs(baseline, target, "test")
         target = root / "interactive"
         fixture(target, False, False)
@@ -343,7 +430,7 @@ def main() -> None:
             output = run_interactive_failure(parallel, target, "y\ncase\nn\n" + answer)
             assert "Cannot read orbital ordering:" in output, output
             assert not (target / "case.d").exists()
-            assert not (target / "case.nw").exists()
+            assert not (target / "case.natural.wfn").exists()
         target = root / "unsupported-wavefunction"
         fixture(target, False, False)
         wavefunction = target / "case.wfn"
@@ -358,6 +445,16 @@ def main() -> None:
         fixture(target, False, False)
         (target / "case.mix").write_bytes((target / "case.mix").read_bytes()[:-8])
         run(parallel + ["case"], target, success=False)
+        target = root / "wrong-mixing-symmetry"
+        fixture(target, False, True)
+        descriptor = target / "case_desc.parquet"
+        mixing = target / "case.mix"
+        blocks = read_stream(mixing, descriptor)
+        blocks[1].two_j = 5
+        write_stream(mixing, 1, 3, blocks, descriptor)
+        output = run(parallel + ["case", "--nonci"], target, success=False)
+        assert "Mixing block J or parity does not match the CSF basis" in output, output
+        assert not (target / "case.d").exists() and not (target / "case.natural.wfn").exists()
     print(f"rdensity regression passed ({args.ranks if args.mpi else 0} MPI ranks)")
 
 

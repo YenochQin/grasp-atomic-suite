@@ -10,7 +10,7 @@ contains
     ! and performs some related setup.
     !
     ! Written by Per Jonsson                              June 1996
-    subroutine read_final_radial_wavefunctions(state_name)
+    subroutine read_final_radial_wavefunctions(orbital_path)
         ! Module dependencies
         use radial_wavefunction_format, only: wavefunction_layout, read_wavefunction_header, read_orbital_metadata, &
             open_wavefunction_input, read_orbital_payload
@@ -28,7 +28,7 @@ contains
 
         ! Arguments and local declarations
         integer :: wavefunction_input_unit
-        character , intent(in) :: state_name*128
+        character(*), intent(in) :: orbital_path
         integer :: j, k, nwin, io_status, npyff, nakyff, myff, jj
         real(real64) :: con, fkk, eyff, pzy
         real(real64), pointer :: pa(:), qa(:), ra(:)
@@ -36,9 +36,8 @@ contains
         ! Common relevant for the final state
         !
         ! Open the radial wave function file
-        j = index(state_name," ")
-        call open_wavefunction_input(wavefunction_input_unit, state_name(1:j-1)//".bw", io_status)
-        if (io_status /= 0) error stop "Cannot open radial wavefunction"
+        call open_wavefunction_input(wavefunction_input_unit, orbital_path, io_status)
+        if (io_status /= 0) error stop "Cannot open radial wavefunction: "//trim(orbital_path)
         ! Allocate storage to orbital arrays
         call alloc (final_radial_large_components, max_radial_points, final_orbital_count, "final_radial_large_components", &
             "read_final_radial_wavefunctions")

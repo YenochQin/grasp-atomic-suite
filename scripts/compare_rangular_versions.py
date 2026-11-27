@@ -223,7 +223,11 @@ def compare_outputs(
     candidate_files = {
         path.name: file_identity(path)["sha256"] for path in candidate_data.paths
     }
-    comparison["byte_identical"] = reference_files == candidate_files
+    # A Suite state prefix changes the channel filename, not its binary schema.
+    comparison["byte_identical"] = (
+        {Path(name).suffix: digest for name, digest in reference_files.items()}
+        == {Path(name).suffix: digest for name, digest in candidate_files.items()}
+    )
     comparison["reference_mcp_sha256"] = reference_files
     comparison["candidate_mcp_sha256"] = candidate_files
     return comparison

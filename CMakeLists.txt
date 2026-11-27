@@ -196,7 +196,7 @@ add_subdirectory("src/apps/rlevels")
 # Ordinary GRASP programs and fresh rmcdhf copies use the suite numerical libraries.
 # The retired rmcdhf_orbopt targets are not part of this source tree.
 if(GRASP_BUILD_SERIAL_APPS)
-    foreach(app rangular rwfnestimate rci rbiotransform
+    foreach(app rangular rwfnestimate rci biorthtransform
                 rtransition rtransition_phase)
         add_subdirectory("src/apps/${app}")
     endforeach()
@@ -204,7 +204,7 @@ if(GRASP_BUILD_SERIAL_APPS)
     add_subdirectory("src/apps/rmcdhf_mem")
 endif()
 if(TARGET grasp_mpi)
-    foreach(app rangular_mpi rci_mpi rbiotransform_mpi rtransition_mpi)
+    foreach(app rangular_mpi rci_mpi biorthtransform_mpi rtransition_mpi)
         add_subdirectory("src/apps/${app}")
     endforeach()
     add_subdirectory("src/apps/rmcdhf_mpi")

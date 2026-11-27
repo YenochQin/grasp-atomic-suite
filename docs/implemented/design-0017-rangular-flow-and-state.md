@@ -13,7 +13,7 @@
 
 `rangular` 从组态态函数（CSF）的占据数、角动量耦合和对称性信息，生成
 Dirac–Coulomb 哈密顿矩阵所需的角系数及稀疏结构。它按对称性 block 处理
-CSF 对，将贡献按径向积分标签整理到 `mcp.*` 文件。
+CSF 对，将贡献按径向积分标签整理到 `S.mcp.*` 文件。
 
 这里生成的是角系数，不是给定径向波函数后的完整哈密顿矩阵。
 后续 [rmcdhf](design-0019-rmcdhf-flow-and-state.md) 用当前径向轨道计算积分，再将积分乘以这些系数装配矩阵；部分对角贡献由 `SETHAM` 单独计算。
@@ -25,9 +25,9 @@ CSF 对，将贡献按径向积分标签整理到 `mcp.*` 文件。
 | --- | --- |
 | `name_desc.parquet` 与配套 TOML | `load_angular_header` 安装轨道表和对称块元数据，`load_angular_block` 读取本块占据数、子壳层态及耦合码。 |
 | 交互输入 | 选择全相互作用或一阶相互作用限制；串行程序在后一种模式下询问各块的截止位置 `ICCUT`。 |
-| `mcp.30` | block 元数据和稀疏结构；由 `SETMCP` 初始化，`SETSDA` 追加结构。 |
-| `mcp.31` | 按一电子积分标签组织的 T 系数列表。 |
-| `mcp.(32+k)` | 按二电子径向积分标签组织的 V(k) 系数列表，`k=0…KMAX`。 |
+| `S.mcp.30` | block 元数据和稀疏结构；由 `SETMCP` 初始化，`SETSDA` 追加结构。 |
+| `S.mcp.31` | 按一电子积分标签组织的 T 系数列表。 |
+| `S.mcp.(32+k)` | 按二电子径向积分标签组织的 V(k) 系数列表，`k=0…KMAX`。 |
 | `tmp.*` | 当前 block 的临时稀疏结构，以及内存不足转磁盘时的系数记录；正常处理后关闭并删除。 |
 | `rangular.log`、可选 `genmcp.dbg` | 交互记录与调试输出。入口的 `SETSUM` 调用已注释，不能据旧注释承诺正常生成 `genmcp.sum`。 |
 
@@ -103,7 +103,7 @@ graph TD
 | [SETQNA](../../src/lib/core/csf_pair_quantum_numbers.f90) | 从两个 CSF 提取占据数、壳层和耦合链，写入当前对的共享工作区。 | `csf_pair_angular_state` 中 `NQ1/2`、`JJQ1/2`、`JLIST/KLIST`、`JJC1/2` 等。 |
 | [CORD](../../src/lib/core/closed_shell_mcp.f90)、[SPEAK](../../src/lib/core/mcp_coefficient_output.f90) | 组织生成的角系数及标签；`SPEAK` 追加到当前对的缓冲。 | `NVCOEF` 增长，必要时 `ALCBUF(2)` 扩容。 |
 | [ALCBUF](../../src/lib/core/angular_coefficient_buffer.f90) | 当前对缓冲的分配、扩容、释放。 | `angular_coefficient_buffer_state` 的指针和容量；与 block 累积缓冲不同。 |
-| [SETSDA](../../src/apps/rangular/write_mcp_sparsity.f90)、[OUTSDA](../../src/apps/rangular/write_mcp_sparsity_summary.f90) | 临时 CSF 对记录 → 稀疏结构和统计；将结构追加到 `mcp.30`。 | 局部 `IENDC/IROW`、顺序文件读取、统计回调。 |
+| [SETSDA](../../src/apps/rangular/write_mcp_sparsity.f90)、[OUTSDA](../../src/apps/rangular/write_mcp_sparsity_summary.f90) | 临时 CSF 对记录 → 稀疏结构和统计；将结构追加到 `S.mcp.30`。 | 局部 `IENDC/IROW`、顺序文件读取、统计回调。 |
 | [SORTMEM](../../src/apps/rangular/sort_mcp_coefficients_in_memory.f90)、[SORT](../../src/apps/rangular/sort_mcp_coefficients.f90) | 将 block 的系数按积分标签整理，追加到最终 MCP 文件。 | 分别使用 `angular_coefficient_channels` 内存缓冲或磁盘记录；固定输出单元。 |
 | [FACTT](../../src/lib/core/log_factorial_table.f90)、[SIXJ](../../src/lib/spin_angular/wigner_6j.f90) | 提供角动量计算所需的表及 6-j 符号。 | 初始化表与按需更新的缓存应区别处理。 |
 

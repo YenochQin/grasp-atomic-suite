@@ -445,7 +445,7 @@ class DescriptorTests(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("spin-angular term table", result.stderr)
-        self.assertFalse(list(self.root.glob("mcp.*")))
+        self.assertFalse(list(self.root.glob("case.mcp.*")))
 
     def test_corrupt_parquet_rejected(self) -> None:
         original = self.parquet_path.read_bytes()
@@ -500,7 +500,7 @@ class DescriptorTests(unittest.TestCase):
                     shutil.copyfile(self.text_path, run_directory / "rcsf.inp")
                     outputs = {
                         path.name: path.read_bytes()
-                        for path in run_directory.glob("mcp.*")
+                        for path in run_directory.glob("case.mcp.*")
                     }
                     self.assertEqual(len(outputs), 6)
                     if generated_directories:

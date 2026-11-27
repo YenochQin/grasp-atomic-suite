@@ -18,12 +18,13 @@ contains
     subroutine read_mixing_blocks(state_name, ci_input_mode)
         ! Module dependencies
         use mixing_file_format, only: mixing_file, open_mixing_input, next_mixing_block, read_mixing_levels, read_mixing_vectors
+        use mixing_file_format, only: validate_mixing_basis
         use csf_descriptor_reader, only: loaded_csf_basis_id
         use, intrinsic :: iso_fortran_env, only: output_unit
         use, intrinsic :: iso_fortran_env, only: real64
         use calculation_state_files, only: mixing_input_path
         use array_memory_management, only: alloc
-        use density_parallel, only: density_fail
+        use density_parallel, only: density_fail, density_abort
         use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
         use, intrinsic :: iso_fortran_env, only: int64
         use atomic_calculation_state, only: electron_count
@@ -38,22 +39,16 @@ contains
         character(len=24), intent(in) :: state_name
         integer :: total_csf_count, nvectot, nblock, i, nvecpat, &
             ncfpat, nvecsizpat, neavsum, jb, nb, ncfblk, nevblk, iatjp, iaspa
-        integer :: nelecmix, nwmix
         real(real64) :: eavsum
         character :: file_path*256
         type(mixing_file) :: input_file
 
         file_path = mixing_input_path(state_name, ci_input_mode == 0)
         call open_mixing_input(input_file, file_path, loaded_csf_basis_id)
-        nelecmix = input_file%electron_count
-        nwmix = input_file%orbital_count
+        call validate_mixing_basis(input_file, density_abort)
         total_csf_count = input_file%csf_count
         nvectot = input_file%level_count
         nblock = input_file%block_count
-        if (nelecmix /= electron_count .or. total_csf_count /= csf_count .or. nwmix /= orbital_count) &
-            call density_fail("CSF and mixing-file dimensions do not match")
-        if (total_csf_count < 1 .or. nvectot < 1 .or. nblock < 1) &
-            call density_fail("Empty or invalid mixing file")
         if (int(total_csf_count,int64)*nvectot > huge(csf_count)) &
             call density_fail("Mixing vector size exceeds integer index capacity")
         write (*, *) "   nelec  = ", electron_count
@@ -92,11 +87,7 @@ contains
         do jb = 1, nblock
 
             call next_mixing_block(input_file, nb, ncfblk, nevblk, iatjp, iaspa)
-            if (ncfblk < 0 .or. nevblk < 0 .or. nevblk > ncfblk .or. &
-                ncfblk > total_csf_count-ncfpat .or. nevblk > nvectot-nvecpat .or. &
-                iatjp < 1 .or. abs(iaspa) /= 1) call density_fail("Invalid mixing block")
             write (*, "(5I8)") nb, ncfblk, nevblk, iatjp, iaspa
-            if (jb /= nb) call density_fail("Mixing blocks out of order")
 
             if (nevblk > 0) then
 
@@ -126,8 +117,6 @@ contains
         !    one eigenstate is calculated. It is not the averge of the
         !    total Hamiltonian.
 
-        if (ncfpat /= total_csf_count .or. nvecpat /= nvectot) &
-            call density_fail("Mixing block totals do not match the header")
         if (.not.all(ieee_is_finite(csf_mixing_coefficients))) call density_fail("Non-finite mixing coefficients")
         do i=1,nvectot
             if (abs(sum(csf_mixing_coefficients((i-1)*total_csf_count+1:i*total_csf_count)**2)-1.0_real64) > 1.0e-6_real64) &
@@ -143,7 +132,6 @@ contains
 
         close(input_file%unit)
 
-        csf_count = total_csf_count
         active_level_count = nvectot
 
         return

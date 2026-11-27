@@ -64,7 +64,7 @@ program rci_main
     write(*,*) "This is the configuration interaction program "
     write(*,*) "Input file:  isodata, name_desc.parquet, name_header.toml, name.wfn"
     write(*,*) "Outputfiles: name.cimix, name.csum, name.clog "
-    write(*,*) "             rci.res (can be used for restart)"
+    write(*,*) "             name.rci.restart (can be used for restart)"
     write(*,*)
 
     ! Read the default settings and restart choices.
@@ -99,8 +99,8 @@ program rci_main
         call open_summary_file (name)
 
         call load_csf_basis_data (descriptor_input_path(name), core_subshell_count, maximum_input_symmetry_blocks, block_labels)
-        ! Set up the  .res  file; determine if this is a restart.
-        call connect_ci_restart_file (isotope_file_path, orbital_input_path(name), block_labels, is_restart)
+        ! Set up the state-specific restart file; determine if this is a restart.
+        call connect_ci_restart_file (name, isotope_file_path, orbital_input_path(name), block_labels, is_restart)
         ! Validate the requested eigenpairs before writing mixing and restart records.
         call open_mixing_output (name, block_labels)
         if (.not. is_restart) call write_ci_restart_header()

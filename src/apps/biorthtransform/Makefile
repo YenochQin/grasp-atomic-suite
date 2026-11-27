@@ -1,4 +1,4 @@
-EXE=${GRASP}/bin/rbiotransform
+EXE=${GRASP}/bin/biorthtransform
 LIBS=-L ${GRASP}/lib/ -lrang90 -l9290 -lgrasp_shared
 FC_MODULES= -I ${GRASP}/src/lib/spin_angular -I ${GRASP}/src/lib/core -I ${GRASP}/src/lib/grasp_shared
 
@@ -82,7 +82,7 @@ OBJS= \
 	 \
 	transform_orbital_sets.o \
 	 \
-	rbiotransform_main.o
+	biorthtransform_main.o
 
 $(EXE): $(OBJS)
 	$(FC) -o $@ $? $(FC_LD) $(LIBS) $(LAPACK_LIBS)

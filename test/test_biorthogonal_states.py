@@ -111,15 +111,17 @@ def check_result(
     outputs = []
     coefficients = []
     state_error = 0.0
-    for stem, order in zip(("left", "right"), orders, strict=True):
+    pair = work / "biorth/left/right/mcdhf"
+    assert (pair / "manifest").is_file()
+    for stem, side, order in zip(("left", "right"), ("initial", "final"), orders, strict=True):
         original = read_radial_stream(work / f"{stem}.wfn")
-        result = read_radial_stream(work / f"{stem}.bw")
+        result = read_radial_stream(pair / f"{side}.biorth.wfn")
         assert set(original) == set(result) == {(n, -1) for n in order}
         outputs.append([result[n, -1] for n in order])
         vectors = []
-        for suffix in ("mix", "bm"):
+        for mixing_path in (work / f"{stem}.mix", pair / f"{side}.biorth.mix"):
             (block,) = read_stream(
-                work / f"{stem}.{suffix}", work / f"{stem}_desc.parquet"
+                mixing_path, work / f"{stem}_desc.parquet"
             )
             assert (
                 block.two_j,
@@ -218,7 +220,7 @@ def run_case(root: Path, label: str, binary: Path, launcher: list[str]) -> None:
             and errors[label] in log.lower()
             and "Execution complete" not in log
         ), (work, log)
-        assert not any(work.glob("*.bm")) and not any(work.glob("*.bw")), work
+        assert not list(work.rglob("manifest")), work
     else:
         assert code == 0 and "Execution complete" in log, (work, log)
         assert (
@@ -244,11 +246,8 @@ def check_caches(root: Path, binary: Path, launcher: list[str]) -> None:
         assert code == 0 and "Execution complete" in log, (tag, log)
         return log
 
-    expected = {
-        p.name: p.read_bytes()
-        for pattern in ("*.bw", "*.bm")
-        for p in work.glob(pattern)
-    }
+    pair = work / "biorth/left/right/mcdhf"
+    expected = {p: p.read_bytes() for p in pair.glob("*.biorth.*")}
     ranks = 2 if launcher else 1
     assert repeat("warm").count("Angular data read from file:") == 2 * ranks
     donor = root / "donor"
@@ -258,16 +257,16 @@ def check_caches(root: Path, binary: Path, launcher: list[str]) -> None:
         state(donor, stem, (1, 2), False, swap_csfs=(stem == "left"))
     code, log = execute(donor, binary, launcher)
     assert code == 0 and "Execution complete" in log, log
-    caches = sorted(work.rglob("left.TB"))
+    caches = sorted(work.rglob("left.biorth.angular.cache"))
     assert len(caches) == ranks
     # Replace a single shard with angular data for a different CSF row order.
     cache = caches[-1]
     shutil.copyfile(donor / cache.relative_to(work), cache)
     assert repeat("wrong-basis").count("Rebuilding incompatible") == 1
-    assert all((work / name).read_bytes() == data for name, data in expected.items())
+    assert all(path.read_bytes() == data for path, data in expected.items())
     cache.write_bytes(cache.read_bytes()[:-8])
     assert repeat("truncated").count("Rebuilding incompatible") == 1
-    assert all((work / name).read_bytes() == data for name, data in expected.items())
+    assert all(path.read_bytes() == data for path, data in expected.items())
     with cache.open("r+b") as stream:
         stream.seek(4)  # First record's CSF count, after its Fortran record marker.
         stream.write(struct.pack("=i", 0))
@@ -276,7 +275,7 @@ def check_caches(root: Path, binary: Path, launcher: list[str]) -> None:
         shutil.copyfile(caches[0], caches[1])
         assert repeat("wrong-rank").count("Rebuilding incompatible") == 1
         assert all(
-            (work / name).read_bytes() == data for name, data in expected.items()
+            path.read_bytes() == data for path, data in expected.items()
         )
     # A request for just J=1/2 uses the same block but a different selection key.
     assert (
@@ -285,20 +284,23 @@ def check_caches(root: Path, binary: Path, launcher: list[str]) -> None:
         )
         == 2 * ranks
     )
-    assert all((work / name).read_bytes() == data for name, data in expected.items())
+    assert all(path.read_bytes() == data for path, data in expected.items())
     for stem in ("left", "right"):
         shutil.copyfile(work / f"{stem}.mix", work / f"{stem}.cimix")
     assert (
         repeat("ci", "y\ny\nleft\nright\ny\n").count("Rebuilding incompatible")
         == 2 * ranks
     )
-    for stem in ("left", "right"):
-        assert (work / f"{stem}.cbm").read_bytes() == expected[f"{stem}.bm"]
-    for cache in work.rglob("*.TB"):
+    ci_pair = pair.with_name("ci")
+    assert (ci_pair / "manifest").is_file()
+    for side in ("initial", "final"):
+        assert (ci_pair / f"{side}.biorth.cimix").read_bytes() == expected[pair / f"{side}.biorth.mix"]
+    assert all(path.read_bytes() == data for path, data in expected.items())
+    for cache in work.rglob("*.biorth.angular.cache"):
         cache.unlink()
     repeat("scratch", "n\nn\nn\nn\nn\nleft\nright\ny\n")
-    assert not list(work.rglob("*.TB"))
-    assert all((work / name).read_bytes() == data for name, data in expected.items())
+    assert not list(work.rglob("*.biorth.angular.cache"))
+    assert all(path.read_bytes() == data for path, data in expected.items())
     for side, selection in (("initial", "41\n"), ("final", "1\n1\n-1\n")):
         code, log = execute(
             work,
@@ -327,7 +329,7 @@ def main() -> None:
         assert code != 0 and "Invalid state name" in log, log
         assert log.count("Initial state - Name of state:") == 1, log
         assert log.count("Final state - Name of state:") == 1, log
-        assert not list(invalid.glob("*.bw")) and not list(invalid.glob("*.bm"))
+        assert not (invalid / "biorth").exists()
         for label in CASES:
             run_case(work, label, args.binary.resolve(), launcher)
         check_caches(work, args.binary.resolve(), launcher)

@@ -80,7 +80,7 @@ Breit 混合系数文件也分别逐字节一致。
 以 `e8a15a9` 为基线，将 647 个应用过程放入原显式接口模块的 `contains` 下。
 过程定义提供显式接口，原 `use …, only: …` 调用保留。模块使用实现文件名，
 例如 `invert_banded_matrix_interface` 定义在
-[invert_banded_matrix.f90](../../src/apps/rbiotransform/invert_banded_matrix.f90)。
+[invert_banded_matrix.f90](../../src/apps/biorthtransform/invert_banded_matrix.f90)。
 RCI 的径向密度比和稀疏矩阵乘积规约分别移到自己的实现文件，MPI 版使用自身的规约实现。
 完整的过程、实现文件和原接口对应关系见[迁移清单](../reference/application_procedure_modules.json)。
 
@@ -92,13 +92,13 @@ CMake 目标继续编译实现文件。MCP、CI 和权重测试以同名测试�
 
 | 范围 | 实现提供的接口 |
 | --- | --- |
-| rbiotransform 和 MPI 版的 `print_matrix_symmetry`、MPI 版的 `write_transformed_radial_wavefunctions` | 用假定大小数组读取打包矩阵，用 128 字符接收两个文件名。 |
+| biorthtransform 和 MPI 版的 `print_matrix_symmetry`、MPI 版的 `write_transformed_radial_wavefunctions` | 用假定大小数组读取打包矩阵，用 128 字符接收两个文件名。 |
 | RIS4 的 `fit_electron_density`，rtransition 串行和 phase 版的 `load_initial_lsj_labels` | 输出六项场移电子因子，按假定长度读取 LSJ 文件名。 |
 | RCI 串行的 `calculate_vacuum_polarization_integral`、四个 RMCDHF 内存装载过程 | 将会交换的轨道索引定义为 `INTENT(INOUT)`，将用作循环上界的 `ncontr` 定义为 `INTENT(IN)`。 |
 | RCI 串行及 MPI 的 `accumulate_closed_shell_breit` | 计算过程保留只读形参。矩阵装配模块通过私有过程适配 `calculate_two_electron_angular_coefficients` 的回调签名。 |
 
 串行和 MPI RCI 直接从 `blas_lapack_interfaces` 导入 `dspevx`。`collect_breit_angular_coefficient` 承担 Breit 系数收集的链接时替换。
-已从跃迁目录清理两份无调用者的占据数接口，其实际实现归入 rbiotransform。
+已从跃迁目录清理两份无调用者的占据数接口，其实际实现归入 biorthtransform。
 suite 的 CMake 流程使用新模块。工作区其他源码仓库未发现对已迁移外部符号的调用。
 如有构建树之外的调用方直接链接这些旧外部符号，应改用相应模块并重新编译和链接。
 
@@ -124,14 +124,15 @@ GNU Fortran 15.3.0 的干净 Release 和 Check 构建均启用串行、MPI 和 j
 | `rwfnestimate90` | `rwfnestimate` | `rwfnestimate` |
 | `rci90` | `rci` | `rci` |
 | `rci90_mpi` | `rci_mpi` | `rci_mpi` |
-| `rbiotransform90` | `rbiotransform` | `rbiotransform` |
-| `rbiotransform90_mpi` | `rbiotransform_mpi` | `rbiotransform_mpi` |
+| `rbiotransform90` | `biorthtransform` | `biorthtransform` |
+| `rbiotransform90_mpi` | `biorthtransform_mpi` | `biorthtransform_mpi` |
 | `rtransition90` | `rtransition` | `rtransition` |
 | `rtransition90_mpi` | `rtransition_mpi` | `rtransition_mpi` |
 | `rtransition90_phase` | `rtransition_phase` | `rtransition_phase` |
 
 重命名阶段曾包含 strict/diag 两个独立求解器，后已按用户确认的否决决定[移除](adr-0002-retire-strict-and-diagnostic-rmcdhf.md)。
 上表为移除后仍保留的 13 个普通程序目录。
+双正交变换入口经 `rbiotransform`、`rbiotransform_mpi` 迁移至表中的现名。
 
 同时将入口文件 `gj90.f90`、`gj90_mpi.f90`、普通 `rci90mpi.f90` 改为
 `gj.f90`、`gj_mpi.f90`、`rci_mpi.f90`，并同步程序标识、GJ 帮助信息和 CMake 目标。

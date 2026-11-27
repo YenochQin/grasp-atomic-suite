@@ -1,5 +1,5 @@
 ! Calculate and report radiative multipole transitions from biorthogonal wavefunctions.
-! Use orbitals transformed by rbiotransform so the two orbital sets are biorthogonal.
+! Use orbitals transformed by biorthtransform so the two orbital sets are biorthogonal.
 ! Written by Per Jonsson,   Department of Computer Science
 !                         Vanderbilt University, USA
 !
@@ -29,6 +29,9 @@ program rtransition_main
 
     ! Module dependencies
     use run_timer, only: begin_run_timer, finish_run_timer
+    use biorthogonal_state_files, only: biorthogonal_pair, files_for_biorthogonal_pair, &
+        validate_biorthogonal_input, release_biorthogonal_lock
+    use transition_basis_blocks, only: transition_csf_basis_ids
     implicit none (type, external)
     integer :: ntest, label_output_option
     integer(int64) :: start_clock_count
@@ -36,19 +39,19 @@ program rtransition_main
     character :: name(2)*24
     character(len=128) :: isotope_file_path
 
+    type(biorthogonal_pair) :: pair
+
     call begin_run_timer (start_clock_count, "RTRANSITION")
     isotope_file_path = "isodata"
     ntest = 1001
     write(*,*) "This program computes transition parameters from"
     write(*,*) "transformed wave functions"
-    write(*,*) "Input files:  isodata, name1_desc.parquet, name1.bw, name1.(c)bm"
-    write(*,*) "              name2_desc.parquet, name2.bw, name2.(c)bm         "
-    write(*,*) "              optional, name1.lsj.lbl, name2.lsj.lbl"
-    write(*,*) "              name1.name2.KT (optional angular files)"
-    write(*,*) "Output files: name1.name2.(c)t                       "
-    write(*,*) "              optional, name1.name2.(c)t.lsj         "
-    write(*,*) "              name1.name2.KT (angular files)         "
-    write(*,*) "Here K is parity and rank of transition: -1,+1 etc   "
+    write(*,*) "Inputs: isodata, both descriptors, and biorth/<initial>/<final>/<mcdhf|ci>/."
+    write(*,*) "Same-state transitions read the original .wfn and .mix or .cimix."
+    write(*,*) "              optional, matching *.lsj.labels reports"
+    write(*,*) "              <length>.name1.name2.rtransition.<multipole>.angular.cache (optional angular files)"
+    write(*,*) "Output files: name1.name2.{mcdhf,ci}.transition[.lsj]"
+    write(*,*) "              <length>.name1.name2.rtransition.<multipole>.angular.cache (angular files)         "
 
     write (output_unit, *)
     write (output_unit, *) " Default settings?"
@@ -88,20 +91,23 @@ program rtransition_main
     call read_state_pair(name(1), name(2))
     ! Load and align the initial and final CSF bases in memory.
     call merge_transition_csf_bases (name)
+    pair = files_for_biorthogonal_pair(name, input_mixing_file_kind == 0, ".")
+    call validate_biorthogonal_input(pair, name, transition_csf_basis_ids)
     !
     !
     !
     !
     !   Get the remaining information
-    call read_transition_options (isotope_file_path,name)
+    call read_transition_options (isotope_file_path, pair%sides)
     ! Open the transition report and record the input settings.
     label_output_option = 0
     call write_input_summary (name, input_mixing_file_kind,label_output_option)
     ! Initialize the log-factorial table for angular algebra.
     call initialize_log_factorial_table
     ! Proceed with the transition calculation
-    call calculate_oscillator_strengths (name)
+    call calculate_oscillator_strengths (name, pair%sides)
 
+    call release_biorthogonal_lock(pair)
     call finish_run_timer (start_clock_count, "RTRANSITION")
     stop
 end program rtransition_main
