@@ -95,6 +95,7 @@
         "rmcdhf_mem"
       ],
       "tests": [
+        "biorthogonal_states_serial",
         "rdensity_serial_regression",
         "ris4_cache_reuse_serial",
         "rwfnestimate_Ni_high_l",
@@ -126,6 +127,7 @@
         "rmcdhf_mem_mpi"
       ],
       "tests": [
+        "biorthogonal_states_mpi",
         "rangular_mpi_descriptors",
         "grasp_mpi_local_sparse",
         "f2018_mixing_output_mpi",

@@ -5,14 +5,14 @@
 
 程序读取 `isodata`，以及两态各自的 `name_desc.parquet`、`name_header.toml`、`name.wfn`
 和 `name.mix` 或 `name.cimix`，为每个态写出 `name.bw` 和 `name.bm` 或 `name.cbm`。
-若保存角向数据，`.TB` 缓存文件头会记录 MPI rank 和进程数。
+各 rank 在各自的工作目录保存可选的 `.TB` 角缓存。rank 0 写出两个态的共享径向流与混合流。
 
 [串行版本](../rbiotransform/README.md) · [rtransition_mpi](../rtransition_mpi/README.md)
 
 ## 计算流程
 
 1. 广播运行设置，装入两态的径向轨道及基组，按 $\kappa$ 分组计算重叠。对每组的共同方块，以 $S^{-1}$ 的 UL 因子构造双正交旋转。处理不等维的剩余轨道。[MPI 主程序](rbiotransform_mpi_main.f90) · [轨道变换](transform_orbital_sets.f90)
-2. 按 rank 循环分配 CSF 行，生成子壳转移的一体角系数。缓存头包含 rank 和进程数，读取端据此校验可复用的 `.TB`。[分布式角数据](write_biorthogonal_mcp.f90) · [缓存检查](open_biorthogonal_angular_cache.f90)
+2. 按 rank 循环分配 CSF 行，生成子壳转移的一体角系数。每个 rank 校验本分片的完成记录、基组摘要、κ 分组、所选 J、进程数和 rank。旧格式或身份不匹配的分片会重新生成。[分布式角数据](write_biorthogonal_mcp.f90) · [缓存检查](open_biorthogonal_angular_cache.f90)
 3. 按两态各自的轨道变换矩阵执行混合系数补偿变换。在 CI 向量上应用占据因子和子壳跃迁展开后，由 rank 0 保存共享结果。[反变换与写出](read_biorthogonal_mcp.f90)
 
 ## 逐文件计算与数据流程
@@ -72,7 +72,7 @@
 
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
-| [`open_biorthogonal_angular_cache.f90`](open_biorthogonal_angular_cache.f90) | 寻找 `.TB`，核查 CSF、轨道、对称组以及 MPI 版本的进程数和 rank 元数据，返回缓存能否使用的状态。 |
+| [`open_biorthogonal_angular_cache.f90`](open_biorthogonal_angular_cache.f90) | 校验角缓存的完成记录、来源基组、κ 分组、所选 J 及进程布局，打开可复用缓存或为重算准备输出。[共享缓存格式](../../lib/core/biorthogonal_angular_cache.f90) |
 | [`print_matrix_symmetry.f90`](print_matrix_symmetry.f90) | 读取打包三角存储，按起止索引逐行输出矩阵，供 LU 分解诊断。 |
 | [`sort_biorthogonal_mcp.f90`](sort_biorthogonal_mcp.f90) | 对轨道对打包标签执行堆排序，保持左右 CSF 与系数对应。按相同标签重组并记录每组贡献的边界。 |
 | [`write_matrix.f90`](write_matrix.f90) | 按给定子矩阵范围格式化打印工作区，供重叠、分解和变换矩阵诊断使用。 |

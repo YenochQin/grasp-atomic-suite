@@ -14,6 +14,7 @@ contains
     ! Written by Per Jonsson
     subroutine read_state_filenames(name)
         ! Module dependencies
+        use input_error_handling, only: fail_input_io
         use calculation_state_files, only: read_state_pair
         use, intrinsic :: iso_fortran_env, only: output_unit
         use biorthogonal_transition_selection, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
@@ -54,11 +55,15 @@ contains
             ntrans = 1
             write (output_unit, *) " Number of initial state J symmetries to be transformed"
             read (*, *) jqj1
+            if (jqj1 < 0 .or. jqj1 > size(itjqj1)) &
+                call fail_input_io(0, -1, "Invalid number of selected J symmetries")
             write (output_unit, *) " Give the J symmetries in the form 2*J"
             read (*, *) (itjqj1(i),i=1,jqj1)
             itjqj1(:jqj1) = itjqj1(:jqj1) + 1
             write (output_unit, *) " Number of final state J symmetries to be transformed"
             read (*, *) jqj2
+            if (jqj2 < 0 .or. jqj2 > size(itjqj2)) &
+                call fail_input_io(0, -1, "Invalid number of selected J symmetries")
             write (output_unit, *) " Give the J symmetries in the form 2*J"
             read (*, *) (itjqj2(i),i=1,jqj2)
             itjqj2(:jqj2) = itjqj2(:jqj2) + 1

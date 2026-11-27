@@ -44,6 +44,7 @@ program rbiotransform_mpi_main
     use read_state_filenames_interface, only: read_state_filenames
     use load_merged_csf_basis_interface, only: load_merged_csf_basis
     use copy_state_csf_data_interface, only: copy_state_csf_data
+    use biorthogonal_transition_selection, only: ntrans, itjqj1, itjqj2, jqj1, jqj2
     use prepare_biorthogonal_subshells_interface, only: prepare_biorthogonal_subshells
     use read_initial_radial_wavefunctions_interface, only: read_initial_radial_wavefunctions
     use read_final_radial_wavefunctions_interface, only: read_final_radial_wavefunctions
@@ -149,6 +150,13 @@ program rbiotransform_mpi_main
     ! Resolve the input paths and prepare output for the transformed orbitals and mixing coefficients.
     if (mpi_rank == 0) call read_state_filenames (name)
     call mpi_bcast (name,48,mpi_character,0,mpi_comm_world,mpi_error_code)
+    call mpi_bcast(ntrans, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
+    if (ntrans == 1) then
+        call mpi_bcast(jqj1, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
+        call mpi_bcast(itjqj1, jqj1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
+        call mpi_bcast(jqj2, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
+        call mpi_bcast(itjqj2, jqj2, mpi_integer, 0, mpi_comm_world, mpi_error_code)
+    end if
     print *, "DBG: myid=",mpi_rank, " name(1)=", name(1)
     print *, "DBG: myid=",mpi_rank, " name(2)=", name(2)
     fullname(1) = trim(startup_directory) // "/" // trim(name(1))
@@ -207,7 +215,7 @@ program rbiotransform_mpi_main
 
     call calculate_orbital_overlap_matrix
     ! Write the transformed radial functions to file
-    call write_transformed_radial_wavefunctions(fullname)
+    if (mpi_rank == 0) call write_transformed_radial_wavefunctions(fullname)
     ! Obtain one-electron coupling coefficients for the initial state.
     ! The coefficients are dumped on files one kappa in turn and
     ! thus the different kappa can be manipulated independently.

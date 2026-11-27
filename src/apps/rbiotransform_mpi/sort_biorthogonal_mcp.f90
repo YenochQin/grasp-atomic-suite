@@ -31,7 +31,6 @@ contains
         use grasp_parameters,   only: orbital_index_radix
         use array_memory_management, only: alloc, dalloc
         use orbital_csf_basis, only: csf_count, orbital_count
-        use calculation_input_defaults, only: angular_output_dump_flag
         use mcp_coefficient_storage, only: mcp_coefficient_values, mcp_packed_orbital_pairs, mcp_coefficient_end_offsets, &
             mcp_bra_csf_indices, mcp_ket_csf_indices, mcp_coefficient_count, mcp_integral_count
         use mpi_state, only: mpi_process_count, mpi_rank
@@ -138,24 +137,16 @@ contains
         do i = 1, mcp_integral_count
             mcp_packed_orbital_pairs(i) = mcp_packed_orbital_pairs(mcp_coefficient_end_offsets(i))
         end do
-        ! If output option is set dump the data on file
-        if (angular_output_dump_flag == 1) then
-            ! If first set of data open the file and print
-            ! some data to later be able to identify the file
-            !
-            !         J = INDEX(NAME,' ')
-            !    :          STATUS='UNKNOWN',FORM='UNFORMATTED')
-            !         REWIND (biorthogonal_angular_unit)
-            if (nfile == 1) write (biorthogonal_angular_unit) csf_count,orbital_count,kamax,mpi_process_count,mpi_rank
-            ! Print out angular data for this kappa
-            write (biorthogonal_angular_unit) mcp_integral_count, mcp_coefficient_count
-            do i = 1, mcp_integral_count
-                write (biorthogonal_angular_unit) mcp_packed_orbital_pairs(i), mcp_coefficient_end_offsets(i)
-            end do
-            do i = 1, mcp_coefficient_count
-                write (biorthogonal_angular_unit) mcp_coefficient_values(i), mcp_bra_csf_indices(i), mcp_ket_csf_indices(i)
-            end do
-        end if
+        ! The same records feed both the scratch and reusable caches.
+        if (nfile == 1) write (biorthogonal_angular_unit) csf_count,orbital_count,kamax,mpi_process_count,mpi_rank
+        ! Print out angular data for this kappa
+        write (biorthogonal_angular_unit) mcp_integral_count, mcp_coefficient_count
+        do i = 1, mcp_integral_count
+            write (biorthogonal_angular_unit) mcp_packed_orbital_pairs(i), mcp_coefficient_end_offsets(i)
+        end do
+        do i = 1, mcp_coefficient_count
+            write (biorthogonal_angular_unit) mcp_coefficient_values(i), mcp_bra_csf_indices(i), mcp_ket_csf_indices(i)
+        end do
         call dalloc (mcp_bra_csf_indices,   "mcp_bra_csf_indices",   "sort_biorthogonal_mcp")
         call dalloc (mcp_ket_csf_indices,   "mcp_ket_csf_indices",   "sort_biorthogonal_mcp")
         call dalloc (mcp_packed_orbital_pairs, "mcp_packed_orbital_pairs", "sort_biorthogonal_mcp")

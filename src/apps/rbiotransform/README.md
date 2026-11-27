@@ -5,7 +5,7 @@
 
 程序读取 `isodata`，以及每个态的 `name_desc.parquet`、`name_header.toml`、`name.wfn`
 和 `name.mix` 或 `name.cimix`。程序为每个态写出 `name.bw` 和 `name.bm`（MCDHF）或
-`name.cbm`（CI）供跃迁程序读取。可选的 `name.TB` 文件保存可复用的角向数据。
+`name.cbm`（CI）供跃迁程序读取。可选的 `name.TB` 文件保存角向数据。复用时校验块头和末尾完成记录中的基组摘要、κ 分组及所选 J。旧格式或身份不匹配时会重算；关闭保存且需要重算时，角记录通过临时文件传给系数变换。
 
 [rtransition](../rtransition/README.md) · [rtransition_phase](../rtransition_phase/README.md) · [MPI 版本](../rbiotransform_mpi/README.md)
 
@@ -73,7 +73,7 @@
 
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
-| [`open_biorthogonal_angular_cache.f90`](open_biorthogonal_angular_cache.f90) | 寻找 `.TB`，核查 CSF、轨道、对称组以及 MPI 版本的进程数和 rank 元数据，返回缓存能否使用的状态。 |
+| [`open_biorthogonal_angular_cache.f90`](open_biorthogonal_angular_cache.f90) | 校验角缓存的完成记录、来源基组、κ 分组、所选 J 及进程布局，打开可复用缓存或为重算准备输出。[共享缓存格式](../../lib/core/biorthogonal_angular_cache.f90) |
 | [`print_matrix_symmetry.f90`](print_matrix_symmetry.f90) | 读取打包三角存储，按起止索引逐行输出矩阵，供 LU 分解诊断。 |
 | [`sort_biorthogonal_mcp.f90`](sort_biorthogonal_mcp.f90) | 对轨道对打包标签执行堆排序，保持左右 CSF 与系数对应。按相同标签重组并记录每组贡献的边界。 |
 | [`write_matrix.f90`](write_matrix.f90) | 按给定子矩阵范围格式化打印工作区，供重叠、分解和变换矩阵诊断使用。 |

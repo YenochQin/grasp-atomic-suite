@@ -88,6 +88,10 @@ contains
         end do
         pivot_ratio_tolerance = singularity_tolerance
         if (pivot_ratio_tolerance <= 0) pivot_ratio_tolerance = 1.0e-8_real64
+        if (abs(smallest_diagonal_pivot) <= 0.0_real64) then
+            inversion_status = 1
+            return
+        end if
         pivot_ratio = smallest_diagonal_pivot/largest_diagonal_pivot
         if (abs(pivot_ratio) < pivot_ratio_tolerance) then
             inversion_status = 1

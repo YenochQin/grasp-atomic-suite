@@ -21,6 +21,7 @@ contains
         use, intrinsic :: iso_fortran_env, only: real64
 
         ! Procedure interfaces
+        use mpi_io_errors, only: fail_input_io_mpi
         use invert_banded_matrix_interface, only: invert_banded_matrix
         use write_matrix_interface, only: write_matrix
         implicit none (type, external)
@@ -50,7 +51,7 @@ contains
         end if
         if (inversion_status /= 0) then
             write (output_unit, "(A,I3)") " INVERSION PROBLEM NUMBER..", inversion_status
-            stop
+            call fail_input_io_mpi(0, -1, "Singular biorthogonal overlap matrix")
         end if
         trace_level = 0
         if (trace_level /= 0) then

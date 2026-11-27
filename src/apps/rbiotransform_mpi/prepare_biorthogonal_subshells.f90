@@ -17,6 +17,7 @@ contains
     ! Written by Per Jonsson
     subroutine prepare_biorthogonal_subshells(ntestg, ncore1, ncore2)
         ! Module dependencies
+        use mpi_io_errors, only: fail_input_io_mpi
         use grasp_parameters,   only: max_orbitals
         use biorthogonal_orbital_sets,         only: initial_orbital_count, initial_orbital_kappa, &
             initial_orbital_principal_n, final_orbital_count, final_orbital_kappa, final_orbital_principal_n
@@ -205,9 +206,7 @@ contains
         end do
 
         if (initial_orbital_order_code /= final_orbital_order_code) then
-            write (*, *) " Orbital order of the initial and final states"
-            write (*, *) " should be the same. STOP"
-            stop
+            call fail_input_io_mpi(0, -1, "Initial and final orbital order must match")
         end if
         ! If not normal order check if reversed order
         if (initial_orbital_order_code == 1) then
@@ -229,9 +228,7 @@ contains
         end if
 
         if (initial_orbital_order_code==2 .or. final_orbital_order_code==2) then
-            write (*, *) " The orbital order is neither normal or reversed"
-            write (*, *) " STOP"
-            stop
+            call fail_input_io_mpi(0, -1, "Orbital order is neither normal nor reversed")
         end if
 
         ! w      write(*,*) 'Give nordii'

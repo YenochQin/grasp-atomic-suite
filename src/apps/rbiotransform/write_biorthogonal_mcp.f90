@@ -35,6 +35,7 @@ contains
         use csf_quantum_queries, only: csf_total_j_code
 
         ! Procedure interfaces
+        use biorthogonal_angular_cache, only: angular_cache_key, finish_cache_file
         use open_biorthogonal_angular_cache_interface, only: open_biorthogonal_angular_cache
         use sort_biorthogonal_mcp_interface, only: sort_biorthogonal_mcp
         implicit none (type, external)
@@ -51,11 +52,11 @@ contains
         real(real64), parameter :: cutoff = 1.0e-10_real64
 
         ! Local declarations
-        character(len=len(name)) :: cache_state_name
+        type(angular_cache_key) :: cache_key
         integer :: llistt(max_biorthogonal_kappa_groups)
         character(len=24) :: coefficient_filename
         integer :: nakinv(max_orbitals)
-        integer :: i, ntestl, ntest, ka, iopar, j, ncf0, iblk, k, &
+        integer :: i, ntestl, ntest, ka, iopar, ncf0, iblk, k, &
             bra_csf_index, ket_csf_index, ibb, orbital_index, ket_orbital_index, lab, jan, jbn, l
         real(real64) :: shell_coefficients(max_orbitals)
         logical   :: comp, avail
@@ -74,9 +75,7 @@ contains
         !   Check if angular data is available. If available read this data.
         !   If not available calculate the data
         !
-        ! The cache helper accepts a writable name and only reads its value here.
-        cache_state_name = name
-        call open_biorthogonal_angular_cache(cache_state_name, avail, kappa_group_count)
+        call open_biorthogonal_angular_cache(name, ik, cache_key, avail)
         write (output_unit, *) "AVAIL=", avail
         if (avail) return
 
@@ -85,11 +84,6 @@ contains
         else
             nakinv(:max_orbitals) = final_kappa_group_by_orbital(:max_orbitals)
         end if
-
-        write (output_unit, *) " open sorted ang. file .TB(NF)", 200
-        j = index(name," ")
-        open(newunit=biorthogonal_angular_unit, file=name(1:j-1)//".TB", status="UNKNOWN", form=&
-            "UNFORMATTED", position="asis")
 
         ncf0 = 1
         do iblk = 1, transition_block_count
@@ -184,6 +178,7 @@ contains
             end do
             ncf0 = cumulative_csf_counts(iblk) + 1
         end do
+        call finish_cache_file(biorthogonal_angular_unit, cache_key)
         ! Deallocate storage that is no longer required. This was
         ! allocated in lodcsl.
         deallocate(csf_subshell_occupations)

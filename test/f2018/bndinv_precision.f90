@@ -23,6 +23,9 @@ program bndinv_precision
         call invert_banded_matrix(a,work,2,determinant,0.5_real64,status,2)
         if (status /= 1) error stop "BNDINV explicit threshold ignored"
     end do
+    a = 0.0_real64
+    call invert_banded_matrix(a,work,2,determinant,0.0_real64,status,2)
+    if (status /= 1) error stop "BNDINV zero matrix"
     original=reshape([4.0_real64,1.0_real64,1.0_real64,3.0_real64],[2,2])
     a=original
     call invert_banded_matrix(a,work,2,determinant,0.0_real64,status,2)

@@ -284,6 +284,20 @@ add_test(NAME descriptor_merge_f2018 COMMAND "${CMAKE_Fortran_COMPILER}"
     -I$<TARGET_PROPERTY:grasp_shared,Fortran_MODULE_DIRECTORY>
     "${PROJECT_SOURCE_DIR}/src/lib/core/csf_basis_merging.f90")
 
+if(Python3_Interpreter_FOUND)
+    if(TARGET rbiotransform)
+        add_test(NAME biorthogonal_states_serial COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_biorthogonal_states.py $<TARGET_FILE:rbiotransform>)
+        set_tests_properties(biorthogonal_states_serial PROPERTIES TIMEOUT 180)
+    endif()
+    if(TARGET rbiotransform_mpi AND MPIEXEC_EXECUTABLE)
+        add_test(NAME biorthogonal_states_mpi COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/test_biorthogonal_states.py $<TARGET_FILE:rbiotransform_mpi>
+            --mpiexec "${MPIEXEC_EXECUTABLE}")
+        set_tests_properties(biorthogonal_states_mpi PROPERTIES TIMEOUT 180 PROCESSORS 2)
+    endif()
+endif()
+
 if(TARGET rbiotransform AND TARGET rtransition AND TARGET rtransition_phase AND Python3_Interpreter_FOUND)
     add_test(NAME descriptor_dual_basis_pipeline COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_CURRENT_SOURCE_DIR}/test_descriptor_pipeline.py --bin $<TARGET_FILE_DIR:rbiotransform>)
