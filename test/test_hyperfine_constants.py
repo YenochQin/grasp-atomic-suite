@@ -294,6 +294,12 @@ def main() -> None:
     launcher = [args.mpiexec, "-n", "2"] if args.mpiexec else []
     with tempfile.TemporaryDirectory(prefix="rhfs-") as tmp:
         work = Path(tmp)
+        if not launcher:
+            debug = work / "debug"
+            ls_input(debug)
+            run(debug, args.rhfs.resolve(), launcher, "n\ntest\nn\ny\n\ny\nn\nn\nn\nn\nn\nn\n", "debug")
+            assert (debug / "hyperfine.dbg").stat().st_size > 0
+            assert not (debug / "hyperfine.d").exists()
         one_electron(work / "ls", args.rhfs.resolve(), launcher)
         nickel(work / "ni", args.rhfs.resolve(), args.rci.resolve(), launcher)
 

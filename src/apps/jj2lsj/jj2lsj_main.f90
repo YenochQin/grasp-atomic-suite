@@ -14,7 +14,7 @@ program jj2lsj_main
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: int64
     use jj2lsj_profile, only: profile_finish, profile_start
-    use jj2lsj_conversion, only: run_ls_coupling_conversion, profile_finish, profile_start
+    use jj2lsj_conversion, only: run_ls_coupling_conversion
     use log_factorial_table, only: initialize_log_factorial_table
     use isotope_data_input, only: read_isotope_data
     use run_timer, only: begin_run_timer, finish_run_timer
@@ -35,6 +35,7 @@ program jj2lsj_main
     print *, "                     .csf-list, .expansion, .unique-labels, .unique-labels.summary"
     print *, "         (optional)  Transformation cache:"
     print *, "                     name.lsj.transform.cache"
+    print *, "         (optional)  .profile.csv with the same name.mcdhf.lsj or name.ci.lsj stem"
     print *, " "
     ! Initialize the log-factorial table for angular algebra.
     call initialize_physical_constants

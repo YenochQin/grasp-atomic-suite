@@ -11,7 +11,7 @@
 module jj2lsj_conversion
     ! Module dependencies
     use, intrinsic :: iso_fortran_env, only: real64
-    use jj2lsj_profile, only: profile_emit, profile_file_size, profile_finish, profile_start, profile_time
+    use jj2lsj_profile, only: profile_emit, profile_file_size, profile_time
     use jj2lsj_postprocessing, only: ls_ranking, post_worker_count, rank_ls_components
     implicit none (type, external)
 
@@ -1313,6 +1313,7 @@ contains
             transition_block_count, transition_two_j_by_block
         use csf_pair_angular_state,             only: core_orbital_count
         use calculation_state_files, only: read_state_name, lsj_label_path, lsj_output_stem
+        use jj2lsj_profile, only: profile_open
         use atomic_calculation_state,           only: nuclear_charge, electron_count
 
         ! Procedure interfaces
@@ -1330,7 +1331,7 @@ contains
         real(real64), intent(out) :: thresh
         integer, intent(out) :: number_of_levels(max_symmetry_blocks)
         integer, intent(out) :: levels(max_symmetry_blocks, max_selected_levels)
-        real(real64) :: phase_start
+        real(real64) :: phase_start, csf_read_start, csf_read_elapsed, jcoup_start, jcoup_elapsed
         integer            :: i, ii, isum, nci, io_status
         integer            :: iblock, number_of_levels_tmp
         logical            :: yes, fail
@@ -1342,14 +1343,14 @@ contains
         transition_block_count = 0
         call read_state_name(name)
         ! Load the configuration state functions from the descriptor pair.
-        phase_start=profile_time()
+        csf_read_start = profile_time()
         call load_csf_basis(name,core_orbital_count,io_status)
         if (io_status /= 0) error stop "JJ2LSJ descriptor basis load failed"
-        call profile_emit("csf_read_parse",phase_start,items=csf_count)
-        phase_start=profile_time()
+        csf_read_elapsed = profile_time() - csf_read_start
+        jcoup_start = profile_time()
         allocate(intermediate_two_j(1:orbital_count,1:csf_count))
         call select_ls_transition_labels
-        call profile_emit("jcoup",phase_start,items=csf_count)
+        jcoup_elapsed = profile_time() - jcoup_start
         write (stderr_unit,*)
         write (stderr_unit,*) "Mixing coefficients from a CI calc.?"
         yes = read_yes_no ()
@@ -1359,6 +1360,10 @@ contains
             nci = 1
         end if
         report_stem = lsj_output_stem(name, nci == 0)
+        ! The profile filename is known once the source has been selected.
+        call profile_open(report_stem//".profile.csv")
+        call profile_emit("csf_read_parse",csf_read_start,items=csf_count,elapsed=csf_read_elapsed)
+        call profile_emit("jcoup",jcoup_start,items=csf_count,elapsed=jcoup_elapsed)
         label_file = lsj_label_path(name, nci == 0)
         csf_list_file = report_stem//".csf-list"
         expansion_file = report_stem//".expansion"

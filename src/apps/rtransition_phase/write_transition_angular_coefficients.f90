@@ -74,8 +74,7 @@ contains
         ! Start of the block loops
         do initial_block_index = 1, initial_transition_block_count
             do final_block_index = 1, final_transition_block_count
-                ! Sometimes, when there has been an error, status need to be "unknown"
-                open(newunit=coefficient_scratch_unit, file="fort.93", status="unknown", form="UNFORMATTED")
+                open(newunit=coefficient_scratch_unit, status="scratch", form="unformatted", action="readwrite")
                 nmct = 0
                 ! If angular data is not available
                 ! Generate MCT coefficients for given rank/parity combination and
@@ -157,7 +156,7 @@ contains
                 ! Sort the MCT coefficients by integral labels
                 call sort_transition_angular_coefficients(coefficient_scratch_unit, transition_angular_unit, ldbpa(2), &
                     initial_block_index, final_block_index)
-                close(coefficient_scratch_unit, status="delete")
+                close(coefficient_scratch_unit)
                 ! end of the loops for blocks
             end do
         end do

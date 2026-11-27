@@ -90,7 +90,7 @@ program gj_mpi
     end if
     call mpi_bcast(state_name, len(state_name), mpi_character, 0, mpi_comm_world, mpi_error_code)
     call mpi_bcast(mixing_file_kind, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
-    call configure_debug_output
+    call configure_debug_output("gj.dbg")
     call initialize_machine_constants
     call initialize_physical_constants
     call load_csf_basis_mpi(state_name, unused_core_subshell_count)

@@ -247,7 +247,15 @@ def regression(root: Path, binary: Path, launcher: list[str]) -> None:
         work = root / case
         fixture(work, case)
         execute(bio, work, "y\nn\nleft\nright\ny\n", launcher, native=True)
+        if case == "strong":
+            directories = (work, work / "000", work / "001") if launcher else (work,)
+            old_scratch = {directory / "fort.93" for directory in directories}
+            for path in old_scratch:
+                path.write_bytes(b"unrelated file\n")
         lines = transition(work)
+        if case == "strong":
+            assert set(work.rglob("fort.93")) == old_scratch
+            assert all(path.read_bytes() == b"unrelated file\n" for path in old_scratch)
         if case != "donor":
             check_lines(lines, case)
         all_lines[case] = lines

@@ -26,7 +26,8 @@ contains
         ! Local declarations
         integer   :: open_status
         logical   :: yes
-        character :: file_path*256, default_file_path*11, form*11, status*3
+        character(*), parameter :: default_file_path = "rdensity.dbg"
+        character :: file_path*256, form*11, status*3
         ! Initialize the diagnostic output flags.
         ldbpa = .false.
         ldbpg = .false.
@@ -37,10 +38,9 @@ contains
         yes = read_yes_no()
         if (yes) then
             ! The  .dbg  file is formatted; open it on unit 99
-            default_file_path = "rdensity.dbg"
             form = "FORMATTED"
             status = "NEW"
-            write (output_unit, *) "File  rdensity.dbg  will be created as the"
+            write (output_unit, *) "File  ", default_file_path, "  will be created as the"
             write (output_unit, *) " rdensity DeBuG Printout File; enter another"
             write (output_unit, *) " file name if this is not acceptable;"
             write (output_unit, *) " null otherwise:"

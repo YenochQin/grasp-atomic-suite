@@ -16,6 +16,7 @@
 | `name.source.lsj.expansion` | 所选能级的能量及带符号的 LS 展开系数。每个向量的系数顺序对应同块的 CSF 列表。 |
 | `name.source.lsj.unique-labels` | 为能级分配的唯一 LSJ 标签。 |
 | `name.source.lsj.unique-labels.summary` | 唯一标签分配过程的摘要。 |
+| `name.source.lsj.profile.csv` | 设置 `JJ2LSJ_PROFILE=1` 时写出的分阶段计时。 |
 
 CSF 列表供检查变换时构造的 LS 基。Suite 求解器输入使用 jj 耦合的描述符文件对。
 选用非默认设置且允许省略的组分比例为零时，程序写出 CSF 列表和展开。比例大于零时，可分别选择是否写出这两份文件。

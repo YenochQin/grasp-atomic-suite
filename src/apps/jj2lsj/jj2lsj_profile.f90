@@ -7,7 +7,7 @@ module jj2lsj_profile
 
     ! Module interface
     private
-    public :: profile_start, profile_finish, profile_time, profile_emit
+    public :: profile_start, profile_open, profile_finish, profile_time, profile_emit
     public :: profile_file_size
 
     ! Module state
@@ -26,14 +26,21 @@ contains
         if (.not. enabled) return
         call system_clock(count_rate=rate)
         if (rate <= 0) error stop "profile_start: wall clock unavailable"
-        open(newunit=stream, file="jj2lsj_omp.profile.csv", status="replace", action="write", iostat=status)
+        beginning = profile_time()
+    end subroutine profile_start
+
+    subroutine profile_open(path)
+        character(*), intent(in) :: path
+        integer :: status
+
+        if (.not. enabled) return
+        open(newunit=stream, file=path, status="replace", action="write", iostat=status)
         if (status /= 0) then
-            write(error_unit,*) "Cannot write jj2lsj_omp.profile.csv"
+            write(error_unit,"(A)") "Cannot write "//path
             error stop 1
         end if
         write(stream,"(A)") "phase,block,level,items,seconds"
-        beginning = profile_time()
-    end subroutine profile_start
+    end subroutine profile_open
 
     function profile_time() result(seconds)
         ! Arguments

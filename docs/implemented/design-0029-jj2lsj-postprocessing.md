@@ -17,9 +17,8 @@ OMP_NUM_THREADS=8 OMP_DYNAMIC=FALSE JJ2LSJ_PROFILE=1 \
     /path/to/grasp-atomic-suite/bin/jj2lsj_omp < jj2lsj.inp > jj2lsj.log
 ```
 
-`JJ2LSJ_PROFILE=1` 在当前目录创建或覆盖 `jj2lsj_omp.profile.csv`。
-默认不记录计时；关闭开关时不会更新或删除旧计时文件。
-同目录连续转换多个计算时，应在下一次调用前保存该文件。
+`JJ2LSJ_PROFILE=1` 在当前目录写出 `S.mcdhf.lsj.profile.csv` 或 `S.ci.lsj.profile.csv`，
+其中 `S` 为输入的状态名。重复转换同一状态和来源时会覆盖对应的计时文件。默认关闭计时。
 
 `JJ2LSJ_POST_SERIAL=1` 仅让新排序按 ASF 顺序执行，可用于隔离排序并发的影响；
 `JJ2LSJ_SERIAL=1` 同时关闭转换和排序的并发。两种模式都使用新的稳定归并排序，

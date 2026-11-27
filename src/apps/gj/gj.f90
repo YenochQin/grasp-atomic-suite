@@ -59,7 +59,7 @@ program gj
     else
         mixing_file_kind = 1
     end if
-    call configure_debug_output
+    call configure_debug_output("gj.dbg")
     call initialize_machine_constants
     call initialize_physical_constants
     call load_angular_csf_basis(state_name, unused_core_subshell_count)

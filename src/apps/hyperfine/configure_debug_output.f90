@@ -11,7 +11,7 @@ contains
     ! the radial and angular modules of the GRASP92 suite.
     !
     ! Written by Farid A Parpia. Last update: 24 Dec 1992
-    subroutine configure_debug_output
+    subroutine configure_debug_output(default_file_path)
         ! Module dependencies
         use, intrinsic :: iso_fortran_env, only: output_unit
         use debug_output_settings, only: angular_debug_unit
@@ -21,10 +21,13 @@ contains
         use file_open, only: open_calculation_file
         implicit none (type, external)
 
+        ! Arguments
+        character(*), intent(in) :: default_file_path
+
         ! Local declarations
         integer   :: open_status
         logical   :: prompt_answer
-        character :: file_path*256, default_file_path*11, form*11, status*3
+        character :: file_path*256, form*11, status*3
         ! Initialize the diagnostic output flags.
         ldbpa = .false.
         ldbpg = .false.
@@ -35,11 +38,10 @@ contains
         prompt_answer = read_yes_no()
         if (prompt_answer) then
             ! The  .dbg  file is formatted; open it on unit 99
-            default_file_path = "hyperfine.dbg"
             form = "FORMATTED"
             status = "NEW"
-            write (output_unit, *) "File  hyperfine.dbg  will be created as the"
-            write (output_unit, *) " HFS92 DeBuG Printout File; enter another"
+            write (output_unit, *) "File  ", default_file_path, "  will be created as the"
+            write (output_unit, *) " debug printout file; enter another"
             write (output_unit, *) " file name if this is not acceptable;"
             write (output_unit, *) " null otherwise:"
             read (*, "(A)") file_path
@@ -48,7 +50,7 @@ contains
                 call open_calculation_file (angular_debug_unit, file_path, form, status, open_status)
                 if (open_status == 0) exit
                 do
-                    write (output_unit, *) "Enter a name for the HFS92 DeBuG Printout"
+                    write (output_unit, *) "Enter a name for the debug printout"
                     write (output_unit, *) " file that is to be created:"
                     read (*, "(A)") file_path
                     if (len_trim(file_path) /= 0) exit

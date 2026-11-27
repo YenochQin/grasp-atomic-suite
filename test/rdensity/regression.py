@@ -422,6 +422,12 @@ def main() -> None:
             assert "1 to 23 characters" in output, output
         run(parallel + ["missing"], root, success=False)
         if not args.mpi:
+            target = root / "debug"
+            fixture(target, False, False)
+            run(serial, target, stdin="n\ncase\nn\ny\n\ny\nn\nn\nn\nn\nn\nn\n2\n")
+            assert (target / "rdensity.dbg").stat().st_size > 0
+            assert not (target / "rdensity.db").exists()
+
             target = root / "archived-mixing"
             fixture(target, False, False)
             for native_suffix, old_suffix, flag in ((".mix", ".m", "--nonci"), (".cimix", ".cm", "--ci")):

@@ -106,7 +106,7 @@ program hyperfine_main
     else
         mixing_file_kind = 1
     end if
-    call configure_debug_output
+    call configure_debug_output("hyperfine.dbg")
     ! Initialize machine-dependent constants.
     call initialize_machine_constants
     ! Initialize physical constants.

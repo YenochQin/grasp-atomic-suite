@@ -217,9 +217,13 @@ GraspKit 的跃迁和径向流读取用例与 Tools 的结果收集用例也通�
 | JJ2LSJ 可选 LS 展开系数 | `S.mcdhf.lsj.expansion` | `S.ci.lsj.expansion` |
 | JJ2LSJ 可选唯一标签 | `S.mcdhf.lsj.unique-labels` | `S.ci.lsj.unique-labels` |
 | JJ2LSJ 可选唯一标签分配摘要 | `S.mcdhf.lsj.unique-labels.summary` | `S.ci.lsj.unique-labels.summary` |
+| JJ2LSJ 性能记录 | `S.mcdhf.lsj.profile.csv` | `S.ci.lsj.profile.csv` |
 | RLEVELS 输出由 Tools 保存 | `S.level` | `S.cilevel` |
 
 RCI 和 RCI_MPI 写出 `S.cimix`、`S.cisum` 和 `S.cilog`。
+
+串行 `rdensity`、`hyperfine` 和 `gj` 在启用非默认调试输出时分别使用
+`rdensity.dbg`、`hyperfine.dbg` 和 `gj.dbg` 作为默认文件名。三个跃迁入口使用匿名临时文件保存排序前的角系数。
 
 新写出的自然轨道沿用 `RAD--WFN`。占据数和旋转矩阵仍随 stdout 输出。
 `isotope`、JJ2LSJ 和跃迁文本沿用既有字段、单位和固定列。FICAL 优先读取 `.isotope-shift`，

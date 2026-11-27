@@ -278,6 +278,12 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="lande-") as tmp:
         root = args.output.resolve() if args.output else Path(tmp)
         root.mkdir(exist_ok=True)
+        if not launcher:
+            debug = root / "debug"
+            ls_input(debug)
+            run(debug, gj, launcher, "n\ntest\nn\ny\n\ny\nn\nn\nn\nn\nn\nn\n", "debug")
+            assert (debug / "gj.dbg").stat().st_size > 0
+            assert not list(debug.glob("hyperfine.d*"))
         ls = root / "ls"
         expected = ls_input(ls)
         run(ls, gj, launcher, "y\ntest\nn\n", "ls")

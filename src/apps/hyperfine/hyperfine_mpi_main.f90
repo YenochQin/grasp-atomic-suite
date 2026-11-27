@@ -97,7 +97,7 @@ program hyperfine_mpi_main
     end if
     call mpi_bcast(name, len(name), mpi_character, 0, mpi_comm_world, mpi_error_code)
     call mpi_bcast(mixing_file_kind, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
-    call configure_debug_output
+    call configure_debug_output("hyperfine.dbg")
     call initialize_machine_constants
     call initialize_physical_constants
     if (mpi_rank == 0) call open_summary_file(name, mixing_file_kind)

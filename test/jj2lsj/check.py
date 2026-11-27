@@ -25,14 +25,15 @@ import tempfile
 FIXTURES = Path(__file__).resolve().parent
 
 
-def prepare(work: Path, case: str, identity: bool = False, unused_orbitals: bool = False) -> None:
+def prepare(work: Path, case: str, identity: bool = False, unused_orbitals: bool = False, *, state: str = "test") -> None:
     work.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(FIXTURES / f"{case}.c", work / "test.c")
-    text = (work / "test.c").read_text().splitlines()
+    csf_file = work / f"{state}.c"
+    shutil.copyfile(FIXTURES / f"{case}.c", csf_file)
+    text = csf_file.read_text().splitlines()
     if unused_orbitals:
         text[3] = "  1s " + text[3] + "   5s"
-        (work / "test.c").write_text("\n".join(text) + "\n")
-    descriptors(work / "test.c")
+        csf_file.write_text("\n".join(text) + "\n")
+    descriptors(csf_file)
     groups: list[list[str]] = [[]]
     for line in text[5:]:
         if line.strip() == "*":
@@ -63,7 +64,7 @@ def prepare(work: Path, case: str, identity: bool = False, unused_orbitals: bool
             vectors.extend(values)
         blocks.append(Block(twice_j, parity, n, list(range(1, v + 1)), [-10.0 + 0.01 * i for i in range(v)],
                             struct.pack(f"<{len(vectors)}d", *vectors)))
-    write_stream(work / "test.mix", electrons, nw, blocks, work / "test_desc.parquet")
+    write_stream(work / f"{state}.mix", electrons, nw, blocks, work / f"{state}_desc.parquet")
     # Point-nucleus metadata for parser tests only.
     (work / "isodata").write_text(
         "Atomic number:\n10\nMass number:\n20\n"
@@ -73,8 +74,8 @@ def prepare(work: Path, case: str, identity: bool = False, unused_orbitals: bool
     )
 
 
-def input_text(mode: str, unique: bool = False, *, ci: bool = False) -> str:
-    head = f"test\n{'y' if ci else 'n'}\n{'y' if unique else 'n'}\n"
+def input_text(mode: str, unique: bool = False, *, ci: bool = False, state: str = "test") -> str:
+    head = f"{state}\n{'y' if ci else 'n'}\n{'y' if unique else 'n'}\n"
     if mode == "default":
         return head + "y\n"
     if mode == "omitted":
@@ -90,11 +91,11 @@ def input_text(mode: str, unique: bool = False, *, ci: bool = False) -> str:
 
 def run(executable: Path, work: Path, mode: str, threads: int,
         force_serial: bool = False, unique: bool = False,
-        profile: bool = False, post_serial: bool = False, *, ci: bool = False) -> str:
+        profile: bool = False, post_serial: bool = False, *, ci: bool = False, state: str = "test") -> str:
     env = dict(os.environ, OMP_NUM_THREADS=str(threads), OMP_DYNAMIC="FALSE",
                OPENBLAS_NUM_THREADS="1", JJ2LSJ_PROFILE="1" if profile else "0",
                JJ2LSJ_POST_SERIAL="1" if post_serial else "0", JJ2LSJ_SERIAL="1" if force_serial else "0")
-    result = subprocess.run([str(executable)], input=input_text(mode, unique, ci=ci),
+    result = subprocess.run([str(executable)], input=input_text(mode, unique, ci=ci, state=state),
                             text=True, capture_output=True, cwd=work, env=env,
                             timeout=30, check=False)
     output = result.stdout + result.stderr
@@ -226,16 +227,27 @@ def main() -> None:
         work = root / "mcdhf-and-ci"
         prepare(work, "even", identity=True)
         shutil.copyfile(work / "test.mix", work / "test.cimix")
-        run(executable, work, "full", 1, unique=True)
+        run(executable, work, "full", 1, unique=True, profile=True)
         suffixes = ("labels", "csf-list", "expansion", "unique-labels", "unique-labels.summary")
         expected_reports = {suffix: (work / f"test.mcdhf.lsj.{suffix}").read_bytes() for suffix in suffixes}
         assert all(expected_reports.values())
-        run(executable, work, "full", 1, unique=True, ci=True)
+        mcdhf_profile = work / "test.mcdhf.lsj.profile.csv"
+        expected_profile = mcdhf_profile.read_bytes()
+        run(executable, work, "full", 1, unique=True, profile=True, ci=True)
+        ci_profile = work / "test.ci.lsj.profile.csv"
+        ci_data = ci_profile.read_bytes()
         for suffix, expected_report in expected_reports.items():
             assert (work / f"test.ci.lsj.{suffix}").read_bytes() == expected_report
             assert (work / f"test.mcdhf.lsj.{suffix}").read_bytes() == expected_report
         for legacy_name in ("test.lsj.c", "test.lsj.j", "test.uni.lsj.lbl", "test.uni.lsj.sum"):
             assert not (work / legacy_name).exists()
+        prepare(work, "even", state="other-state")
+        run(executable, work, "default", 1, profile=True, state="other-state")
+        assert mcdhf_profile.read_bytes() == expected_profile
+        assert ci_profile.read_bytes() == ci_data
+        assert {path.name for path in work.glob("*.profile.csv")} == {
+            "test.mcdhf.lsj.profile.csv", "test.ci.lsj.profile.csv", "other-state.mcdhf.lsj.profile.csv",
+        }
 
         for threads in (1, 4):
             work = root / f"unique-{threads}"
@@ -244,7 +256,7 @@ def main() -> None:
             labels = [(work / f"test.mcdhf.lsj.{suffix}").read_bytes()
                       for suffix in ("unique-labels", "unique-labels.summary")]
             assert all(labels)
-            with (work / "jj2lsj_omp.profile.csv").open() as handle:
+            with (work / "test.mcdhf.lsj.profile.csv").open() as handle:
                 unique_profile = list(csv.DictReader(handle))
             assert {"unique_read", "unique_assign_summary", "unique_write", "unique_total"} <= {
                 row["phase"] for row in unique_profile}
@@ -258,12 +270,13 @@ def main() -> None:
             work = root / f"profile-{single_post}"
             prepare(work, "even", identity=True)
             run(executable, work, "full", 4, profile=True, post_serial=single_post)
-            outputs = {p.name: p.read_bytes() for p in work.glob("test.mcdhf.lsj.*")}
+            profile_path = work / "test.mcdhf.lsj.profile.csv"
+            outputs = {p.name: p.read_bytes() for p in work.glob("test.mcdhf.lsj.*") if p != profile_path}
             if single_post:
                 post_reference = outputs
             else:
                 assert outputs == post_reference
-            with (work / "jj2lsj_omp.profile.csv").open() as handle:
+            with profile_path.open() as handle:
                 rows = list(csv.DictReader(handle))
             assert rows[-1]["phase"] == "total"
             for phase, suffix in [("label_bytes", "labels"), ("csf_bytes", "csf-list"), ("vector_bytes", "expansion")]:
@@ -274,7 +287,7 @@ def main() -> None:
                 r["phase"] for r in rows}
             workers = [int(r["items"]) for r in rows if r["phase"] == "ls_rank_wall"]
             assert max(workers) == (1 if single_post or not args.openmp else 4)
-        assert not (root / "even-full-scalar/jj2lsj_omp.profile.csv").exists()
+        assert not list((root / "even-full-scalar").glob("*.profile.csv"))
     print(f"{comparisons} signed-double/file comparisons; orthonormality, truncation, T replay and unique labels passed")
 
 
