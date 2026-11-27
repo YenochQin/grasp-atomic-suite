@@ -191,9 +191,9 @@ contains
     end subroutine read_ci_options
 
     subroutine write_ci_restart_header()
-        use atomic_calculation_state, only: electron_count, nuclear_charge, nuclear_mass_in_electron_masses, speed_of_light_au
+        use atomic_calculation_state, only: nuclear_charge, nuclear_mass_in_electron_masses, speed_of_light_au
         use hamiltonian_symmetry_blocks, only: symmetry_block_count
-        use orbital_csf_basis, only: csf_count, orbital_count, orbital_energy_parameters, orbital_origin_exponents
+        use orbital_csf_basis, only: orbital_count, orbital_energy_parameters, orbital_origin_exponents
         use radial_wavefunctions, only: orbital_last_grid_index, orbital_origin_parameters, radial_large_components, &
             radial_small_components
         use nuclear_model_parameters_state, only: nuclear_model_parameter_count, nuclear_model_parameters
@@ -205,14 +205,11 @@ contains
         use hamiltonian_correction_flags, only: use_first_order_csf_perturbation, include_normal_mass_shift, &
             include_specific_mass_shift, include_transverse_interaction, include_vacuum_polarization
         use breit_frequency_scale, only: transverse_photon_frequency_scale
+        use rci_restart_records, only: write_rci_restart_identity
 
         integer :: symmetry_block_index, np10, orbital_index
 
-        write (restart_matrix_unit) "R92RES"
-        ! Write the basic parameters of the model electron cloud to the
-        ! .res  file; this is the second record on the file --- the
-        ! first is the file signature
-        write (restart_matrix_unit) electron_count, csf_count, orbital_count, symmetry_block_count ! ncf is ncftot, from setcsll
+        call write_rci_restart_identity(restart_matrix_unit)
         ! Write the nuclear parameters and $- r \times V_ (r)$
         ! to the  .res  file; these are the third, fourth, and fifth
         ! records on the file

@@ -24,7 +24,7 @@
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
 | [`configure_ci_debug_output.f90`](configure_ci_debug_output.f90) | 为 CI 初始化诊断标志，包括角向输出和调试路径的开关。主流程以这些标志控制后续记录。 |
-| [`connect_ci_restart_file.f90`](connect_ci_restart_file.f90) | 为新算例创建 `.rci.restart` 并写 `R92RES` 标记，或打开既有续算文件并校验标记。分别调用计算选项或续算读入路径。MPI 按 rank 选择文件。 |
+| [`connect_ci_restart_file.f90`](connect_ci_restart_file.f90) | 为新算例打开 `.rci.restart`，或在续算时读取 `R92RS2` 文件并校验当前 V3 描述符的 SHA-256。旧 `R92RES` 文件须通过冷启动重新生成。 |
 | [`load_csf_basis_data.f90`](load_csf_basis_data.f90) | 调用 `open_csf_blocks` 安装描述符头及块标签，准备按对称性块装入 CSF。矩阵求解循环访问各块。 |
 | [`rci_main.f90`](rci_main.f90) | 读取运行模式与状态，打开基组、续算、混合及摘要文件，制备 Slater 与可选 Breit 积分表，再按对称性块求本征对。 |
 | [`read_ci_mixing_coefficients.f90`](read_ci_mixing_coefficients.f90) | 按块读取目标根编号，计算每块请求根数、最大根号、根到块的映射和向量总大小，供混合流写入器建立块目录。 |

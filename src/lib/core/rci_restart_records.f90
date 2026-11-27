@@ -1,11 +1,15 @@
-! Read the record boundaries shared by the serial and distributed RCI restart files.
+! Handle records shared by the serial and distributed RCI restart files.
 module rci_restart_records
     use, intrinsic :: iso_fortran_env, only: iostat_end, real64
     use input_error_handling, only: abort_input, fail_input_io
+    use csf_descriptor_reader, only: loaded_csf_basis_id
     implicit none (type, external)
 
     private
-    public :: open_rci_restart_file, read_rci_restart_header, scan_rci_matrix_block
+    public :: open_rci_restart_file, write_rci_restart_identity, read_rci_restart_header, scan_rci_matrix_block
+
+    character(*), parameter :: restart_signature = "R92RS2"
+    character(*), parameter :: digest_digits = "0123456789abcdef"
 
 contains
 
@@ -16,19 +20,39 @@ contains
         procedure(abort_input), optional :: abort_handler
 
         integer :: status
-        character(6) :: signature
+        character(len(restart_signature)) :: signature
 
         if (is_restart) then
             open(newunit=unit, file=path, status="old", form="unformatted", position="rewind", iostat=status)
             if (status /= 0) call fail_input_io(status, -1, "RCI cannot open restart file "//path, abort_handler)
             read(unit, iostat=status) signature
             if (status /= 0) call fail_input_io(status, unit, "RCI restart signature", abort_handler)
-            if (signature /= "R92RES") call fail_input_io(0, unit, "RCI restart signature must be R92RES", abort_handler)
+            if (signature == "R92RES") call fail_input_io(0, unit, &
+                "Legacy R92RES restart has no CSF basis digest. Start a new RCI calculation.", abort_handler)
+            if (signature /= restart_signature) call fail_input_io(0, unit, &
+                "RCI restart signature must be "//restart_signature, abort_handler)
         else
             open(newunit=unit, file=path, status="unknown", form="unformatted", position="rewind", iostat=status)
             if (status /= 0) call fail_input_io(status, -1, "RCI cannot open matrix file "//path, abort_handler)
         end if
     end subroutine open_rci_restart_file
+
+    subroutine write_rci_restart_identity(unit, abort_handler)
+        use atomic_calculation_state, only: electron_count
+        use orbital_csf_basis, only: csf_count, orbital_count
+        use hamiltonian_symmetry_blocks, only: symmetry_block_count
+
+        integer, intent(in) :: unit
+        procedure(abort_input), optional :: abort_handler
+        integer :: status
+
+        if (verify(loaded_csf_basis_id, digest_digits) /= 0) &
+            call fail_input_io(0, unit, "RCI cannot write restart without a valid CSF basis digest", abort_handler)
+        write(unit, iostat=status) restart_signature
+        if (status /= 0) call fail_input_io(status, unit, "RCI writing restart signature", abort_handler)
+        write(unit, iostat=status) electron_count, csf_count, orbital_count, symmetry_block_count, loaded_csf_basis_id
+        if (status /= 0) call fail_input_io(status, unit, "RCI writing restart basis identity", abort_handler)
+    end subroutine write_rci_restart_identity
 
     ! The original header and radial records were written by Farid A. Parpia and Xinghong He.
     subroutine read_rci_restart_header(unit, abort_handler)
@@ -53,13 +77,18 @@ contains
         procedure(abort_input), optional :: abort_handler
 
         integer :: status, file_csfs, file_orbitals, file_blocks, record_count, padded_points, orbital, last_point
+        character(len(loaded_csf_basis_id)) :: file_basis_id
         character(16) :: orbital_label
 
-        read(unit, iostat=status) left_electron_count, file_csfs, file_orbitals, file_blocks
-        if (status /= 0) call fail_input_io(status, unit, "RCI restart basis counts", abort_handler)
+        read(unit, iostat=status) left_electron_count, file_csfs, file_orbitals, file_blocks, file_basis_id
+        if (status /= 0) call fail_input_io(status, unit, "RCI restart basis identity", abort_handler)
         if (left_electron_count /= electron_count .or. file_csfs /= csf_count .or. file_orbitals /= orbital_count .or. &
             file_blocks /= symmetry_block_count) &
             call fail_input_io(0, unit, "RCI restart basis counts differ from the current basis", abort_handler)
+        if (verify(file_basis_id, digest_digits) /= 0) &
+            call fail_input_io(0, unit, "RCI restart has an invalid CSF basis digest", abort_handler)
+        if (file_basis_id /= loaded_csf_basis_id) &
+            call fail_input_io(0, unit, "RCI restart basis digest differs from the current CSF basis", abort_handler)
 
         read(unit, iostat=status) nuclear_charge, nuclear_mass_in_electron_masses
         if (status /= 0) call fail_input_io(status, unit, "RCI restart nuclear charge and mass", abort_handler)

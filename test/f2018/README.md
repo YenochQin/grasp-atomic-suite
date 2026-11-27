@@ -289,8 +289,10 @@ against the analytic sine modes. The production applications pass limits of
 `rci_restart_serial` and `rci_restart_mpi_{1,2,4}` use `rwfnestimate` and
 the production RCI writer to prepare a four-CSF block with two selected roots.
 Each test compares a fresh calculation, a restart with a complete matrix and
-a restart where one file ends cleanly before its matrix block. The serial and
-two-rank tests also cover missing files, invalid signatures, out-of-range
-counts and short records. In the two-rank test, each case affects only one of
-the two shards. A nonzero exit must report the relevant record and filename.
-A timeout fails the test.
+a restart where one file ends cleanly before its matrix block. Each layout
+also rejects a descriptor with two CSFs swapped in the same block. The serial
+and two-rank tests cover missing files, invalid signatures, legacy `R92RES`
+files, malformed or mismatched basis digests, out-of-range counts and short
+records. In the two-rank test, each file fault affects only one shard. A
+failure must exit nonzero and report the relevant record and filename before
+the timeout.

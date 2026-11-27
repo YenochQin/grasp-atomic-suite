@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from hashlib import sha256
 import math
 import os
 from pathlib import Path
@@ -15,6 +16,9 @@ from mixing_stream import read_stream
 from native_fixture import descriptors
 from rdensity.regression import records, write_records
 from test_csf_descriptors import Record, Shell, text_record
+
+
+RESTART_BASIS = struct.Struct("=4i64s")
 
 
 def compare_roots(cold: Path, resumed: Path) -> None:
@@ -37,7 +41,7 @@ def check_eigenpairs(work: Path, files: list[Path]) -> tuple[float, float]:
     seen_rows: set[int] = set()
     for file in files:
         shard = records(work / file)
-        _, _, orbitals, _ = struct.unpack("=4i", shard[1])
+        _, _, orbitals, _, _ = RESTART_BASIS.unpack(shard[1])
         matrix_header = 7 + 2 * orbitals
         csfs, _, rank, ranks = struct.unpack("=4i", shard[matrix_header])
         assert csfs == order and ranks == len(files)
@@ -77,11 +81,11 @@ def exercise(root: Path, estimator: Path, rci: Path, launcher: list[str], ranks:
     cold.mkdir()
     shutil.copyfile(data / "isodata", cold / "isodata")
     basis = cold / "case.c"
-    basis.write_text(
-        "Core subshells:\n\nPeel subshells:\n  1s   2s   3s   4s\nCSF(s):\n"
-        + "".join(text_record(Record((Shell(f"{n}s", 2),), 0)) for n in range(1, 5))
-    )
+    basis_header = "Core subshells:\n\nPeel subshells:\n  1s   2s   3s   4s\nCSF(s):\n"
+    csf_rows = [text_record(Record((Shell(f"{n}s", 2),), 0)) for n in range(1, 5)]
+    basis.write_text(basis_header + "".join(csf_rows))
     descriptors(basis)
+    basis_id = sha256((cold / "case_desc.parquet").read_bytes()).hexdigest().encode("ascii")
     failures = []
 
     def run(command: list[str], work: Path, answers: str, diagnostic: tuple[str, ...] = ()) -> str:
@@ -116,6 +120,9 @@ def exercise(root: Path, estimator: Path, rci: Path, launcher: list[str], ranks:
         if launcher else ["case.rci.restart"]
     )
     assert [path.as_posix() for path in files] == expected, files
+    for file in files:
+        signature, identity, *_ = records(cold / file)
+        assert signature == b"R92RS2" and RESTART_BASIS.unpack(identity) == (2, 4, 4, 1, basis_id), file
     restart_answers = "n\ncase\ny\nn\n1-2\n"
     warm = root / "warm"
     shutil.copytree(cold, warm)
@@ -131,7 +138,7 @@ def exercise(root: Path, estimator: Path, rci: Path, launcher: list[str], ranks:
     (partial / "case.cimix").unlink()
     path = partial / files[-1]
     rows = records(path)
-    _, _, orbital_count, _ = struct.unpack("=4i", rows[1])
+    _, _, orbital_count, _, _ = RESTART_BASIS.unpack(rows[1])
     matrix_header = 7 + 2 * orbital_count
     write_records(path, rows[:matrix_header])
     run(command, partial, restart_answers)
@@ -141,9 +148,26 @@ def exercise(root: Path, estimator: Path, rci: Path, launcher: list[str], ranks:
           f"{max(value[0] for value in checks):.3e}, max orthogonality error "
           f"{max(value[1] for value in checks):.3e}", flush=True)
 
+    reordered = root / "reordered-basis"
+    shutil.copytree(cold, reordered)
+    (reordered / "case_desc.parquet").unlink()
+    (reordered / "case_header.toml").unlink()
+    (reordered / "case.c").write_text(basis_header + "".join([csf_rows[1], csf_rows[0], *csf_rows[2:]]))
+    descriptors(reordered / "case.c")
+    reordered_id = sha256((reordered / "case_desc.parquet").read_bytes()).hexdigest().encode("ascii")
+    assert reordered_id != basis_id
+    run(command, reordered, restart_answers,
+        ("RCI restart basis digest differs from the current CSF basis", "Input file:", "case.rci.", "Input I/O failure"))
+    assert (reordered / "case.cimix").read_bytes() == (cold / "case.cimix").read_bytes()
+    assert all((reordered / file).read_bytes() == (cold / file).read_bytes() for file in files)
+
     cases = [
         ("missing", "cannot open restart file", None, b""),
         ("signature", "restart signature", 0, b"BADRES"),
+        ("legacy-signature", "Legacy R92RES restart has no CSF basis digest", 0, b"R92RES"),
+        ("short-basis-digest", "RCI restart basis identity", 1, b""),
+        ("invalid-basis-digest", "invalid CSF basis digest", 1, b"?" * len(basis_id)),
+        ("wrong-basis-digest", "basis digest differs", 1, reordered_id),
         ("nuclear-count", "nuclear model parameter count", 3, struct.pack("=i", 3)),
         ("negative-grid", "radial point count", 4, struct.pack("=i", -1)),
         ("oversize-grid", "radial point count", 4, struct.pack("=i", 591)),
@@ -163,7 +187,12 @@ def exercise(root: Path, estimator: Path, rci: Path, launcher: list[str], ranks:
                 path.unlink()
             else:
                 rows = records(path)
-                if label == "orbital-tail":
+                if label == "legacy-signature":
+                    rows[0] = payload
+                    rows[1] = rows[1][:-len(basis_id)]
+                elif index == 1:
+                    rows[index] = rows[index][:-len(basis_id)] + payload
+                elif label == "orbital-tail":
                     rows[index] = rows[index][:-4] + payload
                 elif label in ("nuclear-count", "negative-grid", "oversize-grid", "matrix-count"):
                     rows[index] = payload + rows[index][4:]
@@ -178,6 +207,7 @@ def exercise(root: Path, estimator: Path, rci: Path, launcher: list[str], ranks:
                     assert (bad / other).read_bytes() == (cold / other).read_bytes(), other
     if failures:
         raise RuntimeError("\n".join(failures))
+    print(f"{rci.name}/{ranks}: reordered CSF basis rejected", flush=True)
     if not launcher or ranks == 2:
         print(f"{rci.name}/{ranks}: malformed records and missing shards rejected", flush=True)
 

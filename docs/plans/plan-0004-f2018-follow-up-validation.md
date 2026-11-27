@@ -9,7 +9,7 @@
 | 已核对的事实 | 对实施的影响 |
 | --- | --- |
 | 现有代码已采用显式过程接口、标准 kind 和严格构建配置。生产 `f2018-release` 默认用 `-O2`，Check/Audit 开启 `-std=f2018 -pedantic-errors` 和隐式接口诊断。GNU 16.2.1 下已有 `0f35673` 的 24 配置通过记录。 | 在基准和候选提交各记录实际编译命令、依赖库和测试清单。标准符合性、运行时检查、警告变化及数值回归各有验收结果。[构建配置](../../cmake/FortranProfiles.cmake) · [验收矩阵](../../test/f2018/README.md) |
-| 当前 CSF 输入是 V3 Parquet 描述符及 TOML 头文件。波函数和混合系数分别要求 `RAD--WFN` 和 `CSF--MIX`，双正交输出也使用当前流格式。RCI 的 `.res` 是另一套续算协议。 | 固定输入的顺序、块身份和摘要。比较跨格式历史数据时按物理字段解码，比较本次同格式、同运算顺序的改造时可加字节对照。[文件契约](../../README_ZH.md) · [RCI 续算写端](../../src/apps/rci/read_ci_options.f90#L211) |
+| 当前 CSF 输入是 V3 Parquet 描述符及 TOML 头文件。波函数和混合系数分别要求 `RAD--WFN` 和 `CSF--MIX`，双正交输出也使用当前流格式。RCI 的 `.restart` 使用带基组摘要的 `R92RS2` 顺序记录。 | 固定输入的顺序、块身份和摘要。比较跨格式历史数据时按物理字段解码，比较本次同格式、同运算顺序的改造时可加字节对照。[文件契约](../../README_ZH.md) · [RCI 续算写端](../../src/lib/core/rci_restart_records.f90#L40) |
 | 必需测试已覆盖 BLAS 调用、Davidson 小矩阵、MPI 消息、部分缓存和错误路径。`state_workflow` 已要求在两个对称块选根，检查根编号、缺根失败及已有输出。 | 在现有测试上扩展真实多根轨迹、态匹配与性质对照。历史上的 Zn I 三轮、Cd I 一轮 MCP 对照用于核验指定迭代和 I/O 行为，Zn I AS1 的独立正常收敛轨迹见本次生产多根实测。[已注册清单](../../test/f2018/required.json) · [选根用例](../../test/test_state_workflow.py#L197) · [MCP 对照](plan-0005-rmcdhf-mcp-production-io.md) |
 
 本文的 **P0** 表示已定位且影响正常生产入口的错误处理缺口，以及验证修复所需的最小基线。**P1** 表示按调用链推进的绑定、接口和科学数值验收。**P2** 表示有实际消费者、所有权冲突或重复维护成本时再实施的设计改进。历史 GNU 15 方案的 P0–P9 是当时的阶段编号。F2018 允许模块状态、显式 `SAVE`、`POINTER` 和 assumed-size 形参，是否重构要结合有效输入、别名、生存期、并发及可检验性判断。[兼容性实施记录](../implemented/design-0004-f2018-compatibility.md) · [历史方案](../archive/plan-0002-f2018-migration-gnu15.md)
@@ -31,7 +31,7 @@
 1. 从写端列出每条记录的字段、计数、目标数组和后继使用者。用实际写端生成的小型合法文件作为正例。点核的参数个数为 0，现有有限核模型为 2。核对活动网格、含 10 个填充点的工作容量、每轨道尾点，以及 CSF 和对称块计数。[模型输入](../../src/lib/core/isotope_data_records.f90) · [串行写端](../../src/apps/rci/read_ci_options.f90#L215)
 2. 在依赖计数的读取前验证取值和目标形状。对“计数与数组同记录”的情况，可先仅读计数，检查成功后 `BACKSPACE` 回到该记录再完整读取，对探读、定位和重读分别检查 `iostat`。顺序无格式文件中两次普通 `READ` 会消费两条记录，须用既有合法文件验明记录位置。尽量将记录解析供串行和 MPI 共用，由入口决定退出方式。
 3. 按文件名、记录及适用的块或轨道报告首个错误。用合法边界值、越界计数、负计数、截断记录和非法轨道尾点做回归。正例做同模型冷启动与续算的态、能量和系数对照。负例要求程序主动给出可定位的非零失败，避免仅依赖 Debug 的运行时检查。
-4. 单列基组身份问题。现有头记录可核对电子、CSF、轨道和块数，同维度文件仍可能对应不同的 CSF 排列。先追踪完整写入、读取与分片信息，再评估是否增加摘要或版本。若需改动磁盘协议，另列读写端覆盖、既有文件处置及同维异基组回归，把该项与读取边界修复独立提交。
+4. 同尺寸异序基组的校验由后续 `R92RS2` 格式实现。该版本保留原有计数检查，并在读取矩阵前核对描述符摘要。[格式及旧文件处置](../implemented/design-0034-cache-restart-mcp-names.md)
 
 ### P0 · 处理 RCI 的单 rank 分片失败
 
@@ -52,6 +52,12 @@
 2026-11-27，在 Suite `8298b1ec` 上，单 rank MPI 的四 CSF、两根部分续算在 12 次复跑中失败 10 次。续算文件只保存每条轨道至其最后有效点的 P/Q 分量。径向差分仍访问整个活动网格，读到未初始化的尾部后可能写出错误的 Hamiltonian 对角元，随后在输出 ASF 贡献时越界。串行和 MPI 共用的读取器现将最后有效点之后至活动网格末端的 P/Q 补零，与冷启动读入轨道时的约定一致。复现日志在 `temp/tests/fv.raqrp1/rci-repeat-2.log`。[公共读取器](../../src/lib/core/rci_restart_records.f90#L104) · [径向差分](../../src/lib/core/radial_wavefunction_derivatives.f90#L43)
 
 在 `8298b1ec` 加上本次修复的工作树中，用 macOS arm64、GNU Fortran 16.2.0、LP64 OpenBLAS 0.3.34 和 Open MPI 5.0.11 复验。`f2018-check` 和 `f2018-release` 各通过串行及 MPI 1、2、4 ranks 的 4 项续算回归。完整续算和从干净记录边界补算均复现各自冷启动的两个根，能量差和相位对齐后的系数差分别在 `1e-10 Ha` 和 `1e-8` 的容差内。两种构建的最大归一化本征残差为 `9.618e-17`，最大正交误差为 `2.220e-16`。串行及双 rank 负例均按预期拒绝缺失或损坏的记录。Check 的单 rank 用例另连续通过 12 次。构建日志和 `check-ctest.log`、`release-ctest.log`、`check-mpi1-repeat.log` 保存在工作区 `temp/tests/rci-tail-fix.gPdghA/`。[续算回归](../../test/test_rci_restart.py)
+
+### P0 · RCI 续算基组身份
+
+2026-11-27，以 `8298b1ec` 加径向尾部修复的构建为对照，在同一四 CSF、两根夹具中只交换第一对 CSF。旧 `R92RES` 的四个计数仍匹配，串行和 MPI 双 rank 均成功读取旧矩阵并为异序基组写出混合流。以 `ef3d5902` 为基线的候选工作树改用 `R92RS2`，在第二条记录的原有计数后写入 V3 Parquet 描述符的 64 字符 SHA-256。MPI 将摘要广播给所有 rank，各 rank 在读取各自的核模型、轨道和矩阵前先核对身份。任一分片不符即报告文件并终止作业。旧 `R92RES` 须从冷启动重新生成。[续算格式](../implemented/design-0034-cache-restart-mcp-names.md) · [共用读写](../../src/lib/core/rci_restart_records.f90) · [MPI 广播](../../src/lib/mpi/mpi_csf_block_input.f90)
+
+用 macOS arm64、GNU Fortran 16.2.0、LP64 OpenBLAS 0.3.34 和 Open MPI 5.0.11 复验。Check 和 Release 各通过串行及 MPI 1、2、4 ranks 的 4 项续算回归。四种布局均拒绝同尺寸异序描述符，并保留原有混合流和续算文件。串行与双 rank 负例覆盖旧签名、缺失或损坏的摘要及同尺寸错误摘要。双 rank 逐一验证 root 和 worker 分片单独出错。合法的完整续算和部分补算均复现冷启动的两个根，最大归一化本征残差为 `9.618e-17`，最大正交误差为 `2.220e-16`。Check 另通过串行和 MPI 状态工作流、MPI Breit 和网格补丁回归。旧版对照、输入及 `legacy-control.log`、`check-ctest.log`、`release-ctest.log` 保存在工作区 `temp/tests/rci-id.K3G3CZ/`。[基组身份回归](../../test/test_rci_restart.py#L151)
 
 ## P1 MPI 绑定、计数及分块
 
@@ -254,7 +260,7 @@ ctest --test-dir "$suite_run/check" --no-tests=error --output-on-failure -R '^(f
 
 | 交付批次 | 完成时应能查到的结果 | 编制时状态 |
 | --- | --- | --- |
-| 首批 · 基线与续算 | V3 实际首轮对照、串行/MPI 合法续算、坏记录和单 rank 失败报告 | GNU Fortran 16.2.1/OpenBLAS/Check 下，两套独立构建的 `rmcdhf`、`rmcdhf_mem` 首轮科学输出一致。串行和 Open MPI 5.0.11 的 1/2/4-rank 续算回归已完成。 |
+| 首批 · 基线与续算 | V3 实际首轮对照、串行/MPI 合法续算、基组身份、坏记录和单 rank 失败报告 | GNU Fortran 16.2.1/OpenBLAS/Check 下，两套独立构建的 `rmcdhf`、`rmcdhf_mem` 首轮科学输出一致。补齐轨道尾部并启用 `R92RS2` 身份校验后，Check 和 Release 的串行及 MPI 1/2/4-rank 续算回归均通过。 |
 | MPI、ABI 与共享库 | 绑定和计数用例、链接库身份、错误传播、所有权及共享核差异报告 | 本机已增加 32 位边界、CSF 基组及活动系数所有权、混合流故障、Davidson 近简并和 Breit 回归。其余共享接口与部署环境继续按批核验。 |
 | 各程序的科学数值回归 | 四种 RMCDHF 各自的固定轮次/收敛记录、固定轨道 RCI、双正交及性质与跃迁分项对照 | 四种 RMCDHF 已完成小型多根、Zn I AS1 七根收敛及串行／2-rank 峰值内存对照。固定轨道 RCI 已覆盖小稠密块、解析存储分支及 Ni I 六种算符设置的双根对照。双正交已完成单电子解析和角缓存验收。辐射跃迁已完成单电子 E1/M1 及 Ni I 的 M1/E2 对照；Landé 因子已完成 LS、Ni I 态匹配和 MPI 归约对照。RHFS 已完成 A、B 及非对角元的相位、单位与归约对照。RIS4 与 FICAL 已核对 NMS、SMS、场位移及谱线总位移。密度批次已完成单电子解析和 Ni I 九根的串行与 MPI 对照。 |
 | 整体验收 | 候选提交的 24 配置结果、正确性告警逐项处理结论及目标部署环境报告 | 历史矩阵供追溯，候选版本另行签收 |

@@ -25,7 +25,7 @@
 | 源文件 | 计算或数据处理步骤 |
 | --- | --- |
 | [`configure_ci_debug_output.f90`](configure_ci_debug_output.f90) | 为 CI 初始化诊断标志，包括角向输出和调试路径的开关。主流程以这些标志控制后续记录。 |
-| [`connect_ci_restart_file.f90`](connect_ci_restart_file.f90) | 为新算例创建 `.rci.rankNNN.restart` 并写 `R92RES` 标记，或打开既有续算文件并校验标记。分别调用计算选项或续算读入路径。MPI 按 rank 选择文件。 |
+| [`connect_ci_restart_file.f90`](connect_ci_restart_file.f90) | 按 rank 打开 `.rci.rankNNN.restart`。每个 rank 在续算时校验自己的 `R92RS2` 分片及其 V3 描述符 SHA-256。旧 `R92RES` 分片须通过冷启动重新生成。 |
 | [`rci_mpi_main.f90`](rci_mpi_main.f90) | 初始化各 rank 的永久输入和临时目录，广播设置、打开分块描述符及本地续算流。并行生成径向积分表后进入分块求解，由 rank 0 写共享报告。 |
 | [`read_ci_mixing_coefficients_mpi.f90`](read_ci_mixing_coefficients_mpi.f90) | rank 0 交互取得目标根编号，广播根数、最大根号及选择列表。各 rank 由相同块维数计算本征向量布局，rank 0 写混合头。 |
 | [`read_ci_options.f90`](read_ci_options.f90) | rank 0 读取非默认速度以及各物理修正选项并广播。若启用零阶优先分区，从描述符头取得每块截止。读取核和径向数据后写本地续算设置。 |

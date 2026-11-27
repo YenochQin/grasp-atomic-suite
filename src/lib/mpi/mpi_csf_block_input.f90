@@ -2,6 +2,7 @@
 module mpi_csf_block_input
     ! Module dependencies
     use rci_csf_block_reader, only: open_csf_blocks, load_csf_block
+    use csf_descriptor_reader, only: loaded_csf_basis_id
     use mpi_csf_collectives, only: require_collective_success, broadcast_descriptor_arrays
     use mpi_state, only: mpi_rank, mpi_bcast, mpi_integer, mpi_character, mpi_comm_world
     use orbital_csf_basis, only: csf_count, orbital_count, orbital_principal_n, orbital_kappa, orbital_l, orbital_two_j, &
@@ -29,6 +30,8 @@ contains
         call require_collective_success(descriptor_status)
         if (mpi_rank == 0) basis_counts=[csf_count,orbital_count,core_subshell_count,electron_count,symmetry_block_count]
         call mpi_bcast(basis_counts,5,mpi_integer,0,mpi_comm_world,mpi_return_code)
+        call require_collective_success(mpi_return_code)
+        call mpi_bcast(loaded_csf_basis_id,len(loaded_csf_basis_id),mpi_character,0,mpi_comm_world,mpi_return_code)
         call require_collective_success(mpi_return_code)
         csf_count=basis_counts(1)
         orbital_count=basis_counts(2)
