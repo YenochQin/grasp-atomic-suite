@@ -15,7 +15,7 @@ OBJS= \
 	 \
 	copy_vector.o \
 	 \
-	read_state_filenames.o \
+	select_biorthogonal_symmetries.o \
 	 \
 	read_state_mixing_coefficients.o \
 	 \

@@ -5,7 +5,7 @@ add_executable(rbiotransform_mpi
     combine_vectors.f90
     write_matrix.f90
     copy_vector.f90
-    read_state_filenames.f90
+    select_biorthogonal_symmetries.f90
     read_state_mixing_coefficients.f90
     calculate_subshell_overlap.f90
     sum_integer_vector.f90

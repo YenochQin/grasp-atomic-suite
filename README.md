@@ -201,11 +201,11 @@ directories. States named `A` and `A.initial` also share the path `A.initial.wfn
 and need separate directories. State readers use `.wfn` for orbitals, `.mix` for
 RMCDHF coefficients, and `.cimix` for RCI coefficients.
 
-An empty state selects `rcsf_desc.parquet`, `rcsf_header.toml`, `rwfn.inp`,
-`rwfn.out` and `rmix.out`. The legacy answer format starts with the y/n settings
-response. For a single-letter state `Y` or `N` (either case), the
-matching header in the input directory takes precedence. Fixed-name runs can
-still be archived with [save_rmcdhf](scripts/README.md#保存-rmcdhf-计算结果).
+At each `Name of state:` prompt, enter a nonempty filename prefix from the
+calculation directory. State names have no path components, whitespace, or
+control characters. A single letter such as `Y` or `N` is a state name.
+For a two-state calculation, supply both prefixes in the prompted order.
+The shared reader validates both before the application uses either name.
 
 Common input files:
 

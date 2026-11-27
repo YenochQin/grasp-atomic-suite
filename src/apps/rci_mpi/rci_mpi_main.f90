@@ -19,7 +19,8 @@ program rci_mpi_main
     use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, processor_name, &
         processor_name_length
     use hamiltonian_correction_flags, only: include_transverse_interaction
-    use calculation_state_files, only: read_state_name, orbital_input_path, descriptor_input_path
+    use calculation_state_files, only: orbital_input_path, descriptor_input_path
+    use mpi_calculation_state, only: read_mpi_state_name
     use yes_no_input, only: read_yes_no
     use mpi_csf_block_input, only: open_csf_blocks_mpi
     use mpi_io_errors, only: abort_input_mpi
@@ -91,8 +92,8 @@ program rci_mpi_main
     isotope_file_path = ""
     orbital_path = ""
     descriptor_file_path = ""
+    call read_mpi_state_name(state_name)
     if (mpi_rank == 0) then
-        call read_state_name(state_name)
         open(newunit=calculation_log_unit,file=trim(state_name)//".clog",status="unknown")
         write(calculation_log_unit,"(a)") "y            ! Default settings"
         write(calculation_log_unit,"(a)") trim(state_name)

@@ -18,7 +18,7 @@ program rmcdhf_main
     use closed_core_subshells, only: closed_core_subshell_count
     use serial_mpi_context, only: mpi_process_count, mpi_rank
     use calculation_state_files, only: check_orbital_output
-    use calculation_state_files, only: state_files, state_name_length, files_for_state, select_state
+    use calculation_state_files, only: state_files, state_name_length, files_for_state, read_state_name, read_state_settings
     use run_timer, only: begin_run_timer, finish_run_timer
 
     ! Procedure interfaces
@@ -48,7 +48,7 @@ program rmcdhf_main
     integer :: core_subshell_count
     integer(int64) :: start_clock_count
     type(state_files) :: files
-    character(state_name_length) :: state
+    character(state_name_length+1) :: state
     logical :: extended_optimal_level, yes
     character :: block_labels(maximum_input_symmetry_blocks)*8
     call begin_run_timer (start_clock_count, "RMCDHF")
@@ -59,7 +59,8 @@ program rmcdhf_main
     write(*,*) "This program determines the radial orbitals   "
     write(*,*) "and the expansion coefficients of the CSFs         "
     write(*,*) "in a self-onsistent field proceedure               "
-    call select_state(state, "Default settings? (y/n)", yes)
+    call read_state_name(state)
+    call read_state_settings("Default settings? (y/n)", yes)
     files = files_for_state(state)
     call check_orbital_output(files%orbitals, writing_initial=.false.)
     write(*,*) "Input files: isodata, ", files%descriptors, ", ", files%header, ", ", files%initial_orbitals
@@ -67,7 +68,7 @@ program rmcdhf_main
 
 
     open(newunit=calculation_log_unit,file=files%scf_log,status="UNKNOWN")
-    if (state /= "") write(calculation_log_unit,"(A)") trim(state)
+    write(calculation_log_unit,"(A)") trim(state)
 
     ! Record whether the run uses default SCF options.
 
@@ -77,7 +78,7 @@ program rmcdhf_main
             write(calculation_log_unit,"(A)") "y            ! Default settings"
         else
             nondefault_options_flag = 1
-            if (state /= "") write(calculation_log_unit,"(A)") "n            ! Default settings"
+            write(calculation_log_unit,"(A)") "n            ! Default settings"
         end if
     end if
 

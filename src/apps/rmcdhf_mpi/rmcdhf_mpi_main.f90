@@ -20,7 +20,7 @@ program rmcdhf_mpi_main
     use mpi_state, only: mpi_process_count, mpi_rank, processor_name, processor_name_length
     use calculation_state_files, only: check_orbital_output
     use calculation_state_files, only: state_files, state_name_length, files_for_state
-    use mpi_calculation_state, only: select_mpi_state
+    use mpi_calculation_state, only: read_mpi_state_name, read_mpi_state_settings
 
     ! Procedure interfaces
     use configure_debug_output_mpi_interface, only: configure_debug_output_mpi
@@ -51,7 +51,7 @@ program rmcdhf_mpi_main
     integer :: core_subshell_count, lenperm
     integer(int64) :: start_clock_count
     type(state_files) :: files
-    character(state_name_length) :: state
+    character(state_name_length+1) :: state
     logical :: extended_optimal_level, yes
     character :: block_labels(maximum_input_symmetry_blocks)*8
     character (len = 128) :: startup_directory,serial_io_directory,rank_scratch_root
@@ -73,16 +73,15 @@ program rmcdhf_mpi_main
 
     ! Record whether the run uses default SCF options.
 
-    call select_mpi_state(state, "Default settings? (y/n)", yes, serial_io_directory)
+    call read_mpi_state_name(state)
+    call read_mpi_state_settings("Default settings? (y/n)", yes)
     files = files_for_state(state)
     if (mpi_rank == 0) call check_orbital_output(trim(serial_io_directory)//"/"//files%orbitals, writing_initial=.false.)
     nondefault_options_flag = merge(0, 1, yes)
     if (mpi_rank == 0) then
         open(newunit=calculation_log_unit,file=trim(startup_directory)//"/"//files%scf_log,status="UNKNOWN")
-        if (state /= "") then
-            write(calculation_log_unit,"(A)") trim(state)
-            write(calculation_log_unit,"(A)") merge("y","n",yes)//"            ! Default settings"
-        end if
+        write(calculation_log_unit,"(A)") trim(state)
+        write(calculation_log_unit,"(A)") merge("y","n",yes)//"            ! Default settings"
     end if
 
     ! Load the MCP metadata and the descriptor basis, then check that they agree.

@@ -101,11 +101,11 @@ def main() -> None:
     print(f"Inputs, logs and orbitals: {directory}", flush=True)
     z = {"Ni": 28, "Zn": 30}[args.element]
     content, expected = header(z)
-    (directory / "rcsf_header.toml").write_text("[header_info]\nheader_lines = " + json.dumps(content.splitlines()[:5]) + "\nelectron_count = " + str(z) + "\n")
+    (directory / "case_header.toml").write_text("[header_info]\nheader_lines = " + json.dumps(content.splitlines()[:5]) + "\nelectron_count = " + str(z) + "\n")
     # Static, spin-zero finite nuclei generated with upstream rnucleus.
     shutil.copyfile(Path(__file__).parent / "fixtures" / f"{args.element}.isodata",
                     directory / "isodata")
-    log = run(bindir / "rwfnestimate", directory, "y\n2\n*\n")
+    log = run(bindir / "rwfnestimate", directory, "case\ny\n2\n*\n")
     assert "RWFNESTIMATE: Execution complete." in log
     for error in (
         "Unable to compute",
@@ -114,7 +114,7 @@ def main() -> None:
         "could not be decoded",
     ):
         assert error not in log, log
-    summary = validate(directory / "rwfn.inp", expected, z)
+    summary = validate(directory / "case.initial.wfn", expected, z)
     (directory / "results.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(f"Validated {len(summary)} Thomas-Fermi orbitals for neutral {args.element}.")
 

@@ -320,6 +320,14 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="bio-") as tmp:
         work = args.output.resolve() if args.output else Path(tmp)
         work.mkdir(exist_ok=True)
+        invalid = work / "invalid-state"
+        invalid.mkdir()
+        (invalid / "isodata").write_text(ISOTOPE)
+        code, log = execute(invalid, args.binary.resolve(), launcher, "y\nn\nleft\n../right\n")
+        assert code != 0 and "Invalid state name" in log, log
+        assert log.count("Initial state - Name of state:") == 1, log
+        assert log.count("Final state - Name of state:") == 1, log
+        assert not list(invalid.glob("*.bw")) and not list(invalid.glob("*.bm"))
         for label in CASES:
             run_case(work, label, args.binary.resolve(), launcher)
         check_caches(work, args.binary.resolve(), launcher)

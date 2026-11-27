@@ -1,7 +1,7 @@
 ! Combine two RIS4 state reports and nuclear data into a line isotope shift.
 program isotope_shift_transition_main
     ! Module dependencies
-    use calculation_state_files, only: read_state_name
+    use calculation_state_files, only: read_state_pair
     use, intrinsic :: iso_fortran_env, only: int64, real64
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use run_timer, only: begin_run_timer, finish_run_timer
@@ -131,8 +131,7 @@ program isotope_shift_transition_main
         stop
     end if
 
-    call read_state_name(state1, role="Upper state")
-    call read_state_name(state2, role="Lower state")
+    call read_state_pair(state1, state2, roles=[character(11) :: "Upper state", "Lower state"])
 
     write(*,*) "Resulting isotope shifts from CI calculations (y/n)?: "
     read(*,*) ci

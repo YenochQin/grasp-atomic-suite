@@ -40,9 +40,9 @@ class MpiDescriptorTests(unittest.TestCase):
         directory = self.root / label
         directory.mkdir()
         if default_text:
-            shutil.copyfile(self.binary_path, directory / "rcsf_desc.parquet")
-            shutil.copyfile(self.binary_path.parent / "csfs_header.toml", directory / "rcsf_header.toml")
-        return self.run_mpi(ARGUMENTS.rangular, directory, ranks, options, interactive_input), directory
+            shutil.copyfile(self.binary_path, directory / "case_desc.parquet")
+            shutil.copyfile(self.binary_path.parent / "csfs_header.toml", directory / "case_header.toml")
+        return self.run_mpi(ARGUMENTS.rangular, directory, ranks, options, f"case\n{interactive_input}"), directory
 
     @staticmethod
     def run_mpi(

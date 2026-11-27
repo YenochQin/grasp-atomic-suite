@@ -66,9 +66,9 @@ contains
         implicit none (type, external)
 
         ! Arguments
-        character (len = 24), intent(inout) :: name(2)
+        character (len = 24), intent(in) :: name(2)
         character(len=3)  ::  block_label_text
-        character (len = 128), intent(inout) :: fullname(2)
+        character (len = 128), intent(in) :: fullname(2)
         character(len=128) :: startup_directory,tmpdir
 
         ! Local constants
@@ -82,7 +82,7 @@ contains
         ! Local declarations
         integer :: copied_mixing_unit
         type(mixing_file) :: initial_mixing, final_mixing
-        character(:), allocatable :: mixing_suffix
+        character(:), allocatable :: mixing_suffix, initial_mixing_path
         integer :: kka, transition_type_index, transition_angular_unit, my_nelec, initial_csf_count, &
             initial_orbital_count, iopar, initial_block_index, final_csf_count, &
             final_orbital_count, final_block_index, level_pair_count, m, ielec, initial_level_index, &
@@ -154,13 +154,11 @@ contains
         !                             N > 0
         kka = 1
         mixing_suffix = trim(merge(".cbm", ".bm ", input_mixing_file_kind == 0))
+        initial_mixing_path = trim(fullname(1))//mixing_suffix
+        if (same_initial_and_final_state) initial_mixing_path = trim(fullname(2))//"_CP"//mixing_suffix
         do transition_type_index = 1, requested_multipole_count
             unequal_j = different_j_only(requested_multipole_codes(transition_type_index))
-            ! read the head of the file of mixing coef. for initial
-            if (same_initial_and_final_state) fullname(1) = trim(fullname(2))//"_CP"
-            call open_mixing_input(initial_mixing, trim(fullname(1))//mixing_suffix, &
-                transition_csf_basis_ids(1))
-            if (same_initial_and_final_state) fullname(1) = fullname(2)
+            call open_mixing_input(initial_mixing, initial_mixing_path, transition_csf_basis_ids(1))
             electron_count = initial_mixing%electron_count
             initial_csf_count = initial_mixing%csf_count
             initial_orbital_count = initial_mixing%orbital_count

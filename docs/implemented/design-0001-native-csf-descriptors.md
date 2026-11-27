@@ -22,11 +22,11 @@
 三步使用同一状态名时，直接以各自的输出文件衔接。串行 rangular 输出 `mcp.NN`。
 `rangular_mpi` 在每个 rank 的工作目录写 `mcp.mcpidx`，两种 MPI RMCDHF 用相同基组和 rank 布局读取。
 旧 MPI 角系数需用当前生成器重新生成。[MPI MCP 格式和验收](design-0020-rmcdhf-mcp-io.md)
-状态名留空时使用 `rcsf_desc.parquet` 和 `rcsf_header.toml`。具名状态使用 `name_desc.parquet` 和 `name_header.toml`。
-串行与 MPI 的 MCP 位置、日志以及旧输入脚本的选择规则见[状态名计算流程](../../README_ZH.md#输入与输出)。
+状态名 `name` 对应 `name_desc.parquet` 和 `name_header.toml`。
+串行与 MPI 的 MCP 位置、日志及状态名输入见[状态名计算流程](../../README_ZH.md#输入与输出)。
 命名由 [calculation_state_files](../../src/lib/core/calculation_state_files.f90) 管理。
 [端到端回归](../../test/test_state_workflow.py) 在同一目录使用两个状态名，分别经过普通和内存版
-RMCDHF，再用 RCI 读取结果。串行对照还核对了命名模式与固定文件名模式的一步 SCF 二进制输出。
+RMCDHF，再用 RCI 读取结果。回归还检查无效状态名在写出前被拒绝。
 
 直接指定 Parquet 时，省略 `--header` 会从文件名推导。`name_desc.parquet` 和 `name.parquet` 均对应
 `name_header.toml`。MPI rangular 的相对路径以

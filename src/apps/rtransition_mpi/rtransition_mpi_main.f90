@@ -14,7 +14,7 @@ program rtransition_mpi_main
     use physical_constants, only: initialize_physical_constants
 
     ! Procedure interfaces
-    use read_state_filenames_interface, only: read_state_filenames
+    use mpi_calculation_state, only: read_mpi_state_pair
     use merge_transition_csf_bases_interface, only: merge_transition_csf_bases
 
     use read_transition_options_interface, only: read_transition_options
@@ -27,7 +27,7 @@ program rtransition_mpi_main
     use calculate_oscillator_strengths_interface, only: calculate_oscillator_strengths
 
     ! Module dependencies
-    use mpi_state, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
+    use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
         processor_name, processor_name_length
 
     use posix_services, only: terminate_process
@@ -95,8 +95,7 @@ program rtransition_mpi_main
     ! Initialize physical constants.
     call initialize_physical_constants
     ! Obtain the names of the initial and final state files
-    if (mpi_rank == 0) call read_state_filenames(name)
-    call mpi_bcast (name,48,mpi_character,0,mpi_comm_world,mpi_error_code)
+    call read_mpi_state_pair(name)
     fullname(1) = trim(startup_directory) // "/" // trim(name(1))
     fullname(2) = trim(startup_directory) // "/" // trim(name(2))
     ! Load and align the initial and final CSF bases in memory.

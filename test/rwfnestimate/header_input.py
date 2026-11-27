@@ -63,10 +63,10 @@ class HeaderInput(unittest.TestCase):
             electrons = sum(capacity(label) for label in lines[1].split())
             if len(csf.splitlines()) > 5:
                 electrons += sum(int(n) for n in re.findall(r"\(\s*(\d+)\)", csf.splitlines()[5]))
-            (directory / "rcsf_header.toml").write_text(encode_header(lines, electrons))
+            (directory / "case_header.toml").write_text(encode_header(lines, electrons))
         if arguments is not None:
             command += arguments
-        result = subprocess.run(command, cwd=directory, input=stdin, text=True,
+        result = subprocess.run(command, cwd=directory, input=f"case\n{stdin}", text=True,
                                 capture_output=True, timeout=30, check=False)
         (directory / "stdout.log").write_text(result.stdout)
         (directory / "stderr.log").write_text(result.stderr)
@@ -82,7 +82,7 @@ class HeaderInput(unittest.TestCase):
         result, directory = self.run_case(toml=toml)
         self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn(message, result.stderr)
-        self.assertFalse((directory / "rwfn.inp").exists())
+        self.assertFalse((directory / "case.initial.wfn").exists())
 
     def test_default_and_explicit_header_are_byte_identical_for_all_estimation_modes(self) -> None:
         for mode, stdin in [("tf", "y\n2\n*\n"), ("hyd", "y\n3\n*\n"),
@@ -93,10 +93,10 @@ class HeaderInput(unittest.TestCase):
                 self.assert_success(old)
                 self.assert_success(new)
                 self.assertIn("core subshells=7, orbitals=88, total electrons=28", new.stdout)
-                self.assertEqual((text_dir / "rwfn.inp").read_bytes(), (toml_dir / "rwfn.inp").read_bytes())
+                self.assertEqual((text_dir / "case.initial.wfn").read_bytes(), (toml_dir / "case.initial.wfn").read_bytes())
                 self.assertFalse((toml_dir / "rcsf.inp").exists())
                 if mode == "tf":
-                    validate(toml_dir / "rwfn.inp", self.expected, 28)
+                    validate(toml_dir / "case.initial.wfn", self.expected, 28)
 
     def test_no_core_and_closed_core_only(self) -> None:
         no_core = self.lines.copy()
@@ -111,7 +111,7 @@ class HeaderInput(unittest.TestCase):
                 toml, toml_dir = self.run_case(toml=encode_header(lines, electrons))
                 self.assert_success(text)
                 self.assert_success(toml)
-                self.assertEqual((text_dir / "rwfn.inp").read_bytes(), (toml_dir / "rwfn.inp").read_bytes())
+                self.assertEqual((text_dir / "case.initial.wfn").read_bytes(), (toml_dir / "case.initial.wfn").read_bytes())
 
     def test_toml_syntax_and_long_paths(self) -> None:
         baseline, baseline_dir = self.run_case(csf=self.csf)
@@ -131,12 +131,12 @@ class HeaderInput(unittest.TestCase):
             with self.subTest(encoding=encoding[:50]):
                 result, directory = self.run_case(toml=encoding, filename="输入 with spaces " + "x" * 140 + ".toml")
                 self.assert_success(result)
-                self.assertEqual((baseline_dir / "rwfn.inp").read_bytes(), (directory / "rwfn.inp").read_bytes())
+                self.assertEqual((baseline_dir / "case.initial.wfn").read_bytes(), (directory / "case.initial.wfn").read_bytes())
 
     def test_header_ignores_csf_files_and_block_metadata(self) -> None:
         result, _ = self.run_case(
             toml=encode_header(self.lines) + '\n[block_info]\nblock_lengths = "invalid"\n',
-            filename="rcsf_header.toml",
+            filename="case_header.toml",
             csf="deliberately invalid text\n",
             descriptor=b"deliberately invalid Parquet",
         )
@@ -190,13 +190,13 @@ class HeaderInput(unittest.TestCase):
         help_result, directory = self.run_case(arguments=["--help"], stdin="")
         self.assertEqual(help_result.returncode, 0)
         self.assertIn("--header", help_result.stdout)
-        self.assertFalse((directory / "rwfn.inp").exists())
+        self.assertFalse((directory / "case.initial.wfn").exists())
         for arguments, diagnostic in [(["--header"], "missing command argument"),
                                       (["--unknown"], "unknown option"),
                                       (["--csf-text", "a", "--header", "b"], "unknown option"),
                                       (["--header", "a", "--header", "b"], "duplicate --header"),
                                       (["--header", "missing.toml"], "cannot parse TOML header"),
-                                      (["--header", "rwfn.inp"], "reserved output name")]:
+                                      (["--header", "case.initial.wfn"], "reserved output name")]:
             with self.subTest(arguments=arguments):
                 result, _ = self.run_case(arguments=arguments)
                 self.assertNotEqual(result.returncode, 0)

@@ -177,7 +177,8 @@ RMCDHF 和 RCI 的串行与 MPI 版本都要求为 CSF 基组中的每个 `J/Par
 
 每个工作目录共用一套 MCP。应先完成本基组的 RMCDHF，再在同一目录为下一基组生成角系数。并行计算不同基组时，分别使用独立的工作目录和 MPI scratch 目录。`A` 和 `A.initial` 两个状态也应分目录保存，因为两者都会写 `A.initial.wfn`。下游程序读取 `.wfn` 轨道文件、`.mix` 的 RMCDHF 系数或 `.cimix` 的 RCI 系数。
 
-状态名留空会使用 `rcsf_desc.parquet`、`rcsf_header.toml`、`rwfn.inp`、`rwfn.out` 和 `rmix.out`。旧输入格式以 y/n 设置回答开头。若状态名恰为单字母 Y 或 N（含小写），相应输入目录里的同名头文件优先。固定文件名的已有计算仍可通过 [save_rmcdhf 归档](scripts/README.md#保存-rmcdhf-计算结果)。
+在每个 `Name of state:` 提示处输入计算目录中的非空文件名前缀。状态名中禁止路径、空白和控制字符。
+`Y`、`N` 等单字母也是普通状态名。双态计算按提示顺序给出两个前缀，公共读取模块会在应用使用前校验两者。
 
 常用输入文件：
 

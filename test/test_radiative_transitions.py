@@ -302,17 +302,18 @@ def regression(root: Path, binary: Path, launcher: list[str]) -> None:
 def nickel(work: Path, binary: Path, launcher: list[str]) -> None:
     work.mkdir()
     data = Path(__file__).resolve().parents[1] / "data"
+    state = "nickel_transition_state"
     for source, target in (
         ("isodata", "isodata"),
-        ("test.wfn", "ni.bw"),
-        ("test.mix", "ni.bm"),
-        ("test_desc.parquet", "ni_desc.parquet"),
-        ("test_header.toml", "ni_header.toml"),
+        ("test.wfn", f"{state}.bw"),
+        ("test.mix", f"{state}.bm"),
+        ("test_desc.parquet", f"{state}_desc.parquet"),
+        ("test_header.toml", f"{state}_header.toml"),
     ):
         shutil.copyfile(data / source, work / target)
     signed = binary.name == "rtransition_phase"
-    report = work / "ni.ni.t"
-    execute(binary, work, "y\nn\nni\nni\nM1,E2\nn\nn\n", launcher, native=True)
+    report = work / f"{state}.{state}.t"
+    execute(binary, work, f"y\nn\n{state}\n{state}\nM1,E2\nn\nn\n", launcher, native=True)
     lines = read_report(report, signed)
     assert {g: sum(k[-1] == g for k in lines) for g in ("M", "C", "B")} == {
         "M": 14,
@@ -333,7 +334,7 @@ def nickel(work: Path, binary: Path, launcher: list[str]) -> None:
             close(line.element, element)
     # Reuse the filenames and change both angular selections. The reference
     # for this run consists exactly of the unequal-J rows from the first run.
-    execute(binary, work, "y\nn\nni\nni\nM1,E2\ny\ny\n", launcher, native=True)
+    execute(binary, work, f"y\nn\n{state}\n{state}\nM1,E2\ny\ny\n", launcher, native=True)
     assert read_report(report, signed) == {
         k: v for k, v in lines.items() if k[0].j != k[1].j
     }

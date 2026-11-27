@@ -425,7 +425,7 @@ class DescriptorTests(unittest.TestCase):
         result = subprocess.run(
             [str(ARGUMENTS.rangular), "--csf-descriptors", str(self.parquet_path)],
             cwd=self.root,
-            input="y\n",
+            input="case\ny\n",
             text=True,
             capture_output=True,
             timeout=30,
@@ -441,7 +441,7 @@ class DescriptorTests(unittest.TestCase):
         )
         result = subprocess.run(
             [str(ARGUMENTS.rangular), "--csf-descriptors", str(path)],
-            cwd=self.root, input="y\n", text=True, capture_output=True, timeout=30,
+            cwd=self.root, input="case\ny\n", text=True, capture_output=True, timeout=30,
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("spin-angular term table", result.stderr)
@@ -471,8 +471,8 @@ class DescriptorTests(unittest.TestCase):
                     )
                     run_directory.mkdir()
                     if input_mode == "default":
-                        shutil.copyfile(self.parquet_path, run_directory / "rcsf_desc.parquet")
-                        shutil.copyfile(self.header_path, run_directory / "rcsf_header.toml")
+                        shutil.copyfile(self.parquet_path, run_directory / "case_desc.parquet")
+                        shutil.copyfile(self.header_path, run_directory / "case_header.toml")
                     command = [str(ARGUMENTS.rangular)]
                     if input_mode == "descriptors":
                         command += ["--csf-descriptors", str(self.parquet_path)]
@@ -481,7 +481,7 @@ class DescriptorTests(unittest.TestCase):
                     result = subprocess.run(
                         command,
                         cwd=run_directory,
-                        input=interactive_input,
+                        input=f"case\n{interactive_input}",
                         text=True,
                         capture_output=True,
                         timeout=60,

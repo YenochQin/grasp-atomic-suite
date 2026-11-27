@@ -155,9 +155,6 @@ if(Python3_Interpreter_FOUND)
             --mpiexec "${MPIEXEC_EXECUTABLE}" --probe $<TARGET_FILE:test.indexed_mcp>)
         set_tests_properties(rmcdhf_mcp_paths PROPERTIES PROCESSORS 2 TIMEOUT 180)
     endif()
-    add_test(NAME save_rmcdhf
-        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_save_rmcdhf.py"
-            "${PROJECT_BINARY_DIR}/bin/save_rmcdhf")
     if(TARGET rwfnestimate AND TARGET rci)
         add_test(NAME rci_restart_serial COMMAND "${Python3_EXECUTABLE}"
             "${CMAKE_CURRENT_SOURCE_DIR}/test_rci_restart.py"

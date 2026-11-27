@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "previous_manifest_sha256": "842d2bad2efbf412a578b8cadf0f927d7fd32994a9333c7f2916ebaaa2170736",
+  "note": "Require validated Suite state names in the four RMCDHF entry points.",
+  "files": {
+    "src/appl/rmcdhf/rscfvu.f90": {
+      "before_suite_sha256": "45ad557c14adec2f66ae1bd624b3f852d01c5cd28be4c28ebfeeeb5054598ec4",
+      "after_suite_sha256": "d7782e9f8c01af12ae7bae07a18adc8f0ca2b113f97a980a730fba488a0ec53b"
+    },
+    "src/appl/rmcdhf_mem/rscfvu.f90": {
+      "before_suite_sha256": "1778f6485aa0201bb1e61addaf273af1e76d700cdf83eb4acb19a0acf7cbebe1",
+      "after_suite_sha256": "4dee651796c6f1965be27ec60366ac6d41d1a020dc7705de7ca2205662f696e6"
+    },
+    "src/appl/rmcdhf_mpi/rscfmpivu.f90": {
+      "before_suite_sha256": "fdfa0c280aa11fec3e40f41f2b2fc2fbdf909995452576b7dd01fce536601578",
+      "after_suite_sha256": "9189a965e5cf76131cfa898a024d5601bca5db1d55184ef2dcd73fd0473282fd"
+    },
+    "src/appl/rmcdhf_mem_mpi/rscfmpivu.f90": {
+      "before_suite_sha256": "beff46938756d356b59494c9796e195267c70241066e0b48a8235347a2524f77",
+      "after_suite_sha256": "23de516e91b081cc22e6559301345551903b7a3d947865498dc4fb2cc33dd7f3"
+    }
+  }
+}

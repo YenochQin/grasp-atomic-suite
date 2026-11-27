@@ -34,7 +34,7 @@
 | [`read_final_radial_wavefunctions.f90`](read_final_radial_wavefunctions.f90) | 读取末态 `.bw` 的径向数组及量子数，以末态索引保存匹配记录供跨态积分使用。 |
 | [`read_initial_radial_wavefunctions.f90`](read_initial_radial_wavefunctions.f90) | 打开初态 `.bw`，验证二进制标记并按 $n,\kappa$ 匹配网格记录，载入初态轨道的分量、能量和原点参数。 |
 | [`read_multipole_options.f90`](read_multipole_options.f90) | 把 `E1`、`M2` 等词元解析成同时编码阶数和宇称的整数，拒绝不可识别的输入，并读取 M1/E2 是否限于异 $J$ 态。 |
-| [`read_state_filenames.f90`](read_state_filenames.f90) | 读取初态与末态状态名，按顺序交给文件加载和跨态输出路径解析。 |
+| [`calculation_state_files.f90`](../../lib/core/calculation_state_files.f90) | 读取初态与末态状态名，按顺序交给文件加载和跨态输出路径解析。 |
 | [`read_transition_mixing_coefficients.f90`](read_transition_mixing_coefficients.f90) | 读取已定位的初、末态混合块，分别提取各级编号、对称性、平均能量、本征值和 CSF 向量。 |
 | [`read_transition_options.f90`](read_transition_options.f90) | 设置核和径向网格、选择电／磁多极、能量单位、阈值和输出模式，装入两态双正交轨道并检查跨态径向重叠。 |
 | [`rtransition_main.f90`](rtransition_main.f90) | 载入初末态名，合并描述符基组并建立径向及多极设置。读双正交轨道和混合块后进入振幅收缩，写 `.t` 或 `.ct` 主报告。 |

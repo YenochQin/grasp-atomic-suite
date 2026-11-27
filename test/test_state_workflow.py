@@ -63,7 +63,6 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
 
     suffix = "_mpi" if launcher else ""
     previous_files: dict[Path, bytes] = {}
-    first_mcp: dict[str, bytes] = {}
     for name, solver in (("N", "rmcdhf"), ("N_3s", "rmcdhf_mem")):
         text = permanent / f"{name}.c"
         text.write_text(CSF if name == "N" else CSF.replace("2s", "3s"))
@@ -104,8 +103,6 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
             channel_dir = scratch / f"{rank:03d}" if launcher else permanent
             assert (channel_dir / ("mcp.mcpidx" if launcher else "mcp.30")).stat().st_size > 0
             assert not list(channel_dir.glob(f"{name}.mcp*"))
-        if not launcher and name == "N":
-            first_mcp = {p.name: p.read_bytes() for p in permanent.glob("mcp.*")}
 
     assert (permanent / "N.initial.wfn").read_bytes() != (
         permanent / "N_3s.initial.wfn"
@@ -171,28 +168,23 @@ def workflow(binaries: Path, root: Path, launcher: list[str]) -> None:
                 result.returncode != 0 and "Orbital path also belongs" in result.stderr
             ), result.stderr
             assert path.read_bytes() == original
-        # The same calculation with a legacy answer file must produce identical binary records.
-        legacy = root / "legacy"
-        legacy.mkdir()
-        for source, target in (
-            ("N_header.toml", "rcsf_header.toml"),
-            ("N_desc.parquet", "rcsf_desc.parquet"),
-            ("isodata", "isodata"),
-        ):
-            (legacy / target).write_bytes((permanent / source).read_bytes())
-        for program, answers in (
-            ("rwfnestimate", "y\n2\n*\n"),
-            ("rangular", "y\n"),
-            ("rmcdhf", "y\n1\n1s\n\n1\n"),
-        ):
-            run(program, answers, legacy)
-        for source, target in (
-            ("rwfn.inp", "N.initial.wfn"),
-            ("rwfn.out", "N.wfn"),
-            ("rmix.out", "N.mix"),
-        ):
-            assert (legacy / source).read_bytes() == (permanent / target).read_bytes()
-        assert {p.name: p.read_bytes() for p in legacy.glob("mcp.*")} == first_mcp
+    # Reject bad prefixes before touching calculation output, even with old inputs present.
+    invalid = root / "invalid"
+    invalid.mkdir()
+    if launcher:
+        (invalid / "disks").write_bytes((launch / "disks").read_bytes())
+    for source, target in (
+        ("N_header.toml", "rcsf_header.toml"),
+        ("N_desc.parquet", "rcsf_desc.parquet"),
+        ("isodata", "isodata"),
+    ):
+        (invalid / target).write_bytes((permanent / source).read_bytes())
+    expected_inputs = {item.name: item.read_bytes() for item in invalid.iterdir()}
+    for prefix in ("", "y ! Default settings", "two names", "../N", "a\\N", ".", "..", "a\x01b", "x" * 128):
+        run("rangular" + suffix, f"{prefix}\ny\n", invalid, failure="Invalid state name")
+    assert {item.name: item.read_bytes() for item in invalid.iterdir()} == expected_inputs
+    run("rwfnestimate", "y\ny\n2\n*\n", invalid, failure="y_header.toml")
+    assert not (invalid / "rwfn.inp").exists()
 
     # Request roots in two blocks with equal J and opposite parity.
     even = [Record((Shell(label, 2),), 0) for label in ("1s", "2s")]

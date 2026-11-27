@@ -119,7 +119,7 @@ class AngularReuseTests(unittest.TestCase):
         ):
             with self.subTest(options=options):
                 result = subprocess.run([str(ARGUMENTS.rangular), *options], cwd=self.root,
-                                        input="y\n", capture_output=True, text=True, timeout=10)
+                                        input="case\ny\n", capture_output=True, text=True, timeout=10)
                 self.assertNotEqual(result.returncode, 0)
                 self.assertFalse(list(self.root.glob("mcp.*")))
         existing = self.root / "stats.csv"

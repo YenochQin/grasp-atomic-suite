@@ -27,8 +27,6 @@ OBJS= \
 	 \
 	write_transition_level_energies.o \
 	 \
-	read_state_filenames.o \
-	 \
 	read_final_radial_wavefunctions.o \
 	 \
 	read_initial_radial_wavefunctions.o \

@@ -15,7 +15,7 @@ program rtransition_phase_main
     use physical_constants, only: initialize_physical_constants
 
     ! Procedure interfaces
-    use read_state_filenames_interface, only: read_state_filenames
+    use calculation_state_files, only: read_state_pair
     use merge_transition_csf_bases_interface, only: merge_transition_csf_bases
 
     use read_transition_options_interface, only: read_transition_options
@@ -85,7 +85,7 @@ program rtransition_phase_main
     ! Initialize physical constants.
     call initialize_physical_constants
     ! Obtain the names of the initial and final state files
-    call read_state_filenames (name)
+    call read_state_pair(name(1), name(2))
     ! Load and align the initial and final CSF bases in memory.
     call merge_transition_csf_bases (name)
     !

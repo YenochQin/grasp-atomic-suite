@@ -11,7 +11,6 @@ add_executable(rtransition_phase
     single_particle_transition_element.f90
     write_transition_csf_weights.f90
     write_transition_level_energies.f90
-    read_state_filenames.f90
     read_final_radial_wavefunctions.f90
     read_initial_radial_wavefunctions.f90
     read_multipole_options.f90

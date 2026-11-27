@@ -1,35 +1,27 @@
-! Resolve and check the files for the initial and final states.
-module read_state_filenames_interface
+! Select which J symmetries to transform for the validated state pair.
+module select_biorthogonal_symmetries_interface
     implicit none (type, external)
 
     ! Module interface
     private
-    public :: read_state_filenames
+    public :: select_biorthogonal_symmetries
 contains
 
-    ! Determines the name of the initial and final states
-    ! In addition this subroutine determines which J symmetries
-    ! that are to be transformed
-    !
     ! Written by Per Jonsson
-    subroutine read_state_filenames(name)
+    subroutine select_biorthogonal_symmetries(name)
         ! Module dependencies
         use input_error_handling, only: fail_input_io
-        use calculation_state_files, only: read_state_pair
         use, intrinsic :: iso_fortran_env, only: output_unit
         use biorthogonal_transition_selection, only: itjqj1, itjqj2, jqj1, jqj2, ntrans
         use yes_no_input, only: read_yes_no
         implicit none (type, external)
 
         ! Arguments
-        character(len=24), intent(out) :: name(2)
+        character(len=24), intent(in) :: name(2)
 
         ! Local declarations
         integer :: i
         logical :: yes
-        ! Obtain the names of the initial and final state files
-        call read_state_pair(name)
-
         ! Per april 2007
         ! Check if the initial and final states are identical.
 
@@ -70,5 +62,5 @@ contains
         end if
 
         return
-    end subroutine read_state_filenames
-end module read_state_filenames_interface
+    end subroutine select_biorthogonal_symmetries
+end module select_biorthogonal_symmetries_interface

@@ -1,4 +1,4 @@
-! Shared state-name input and filenames for the CSF -> initial orbitals -> SCF chain.
+! Shared state-name input and paths for Suite calculations.
 module calculation_state_files
     ! Module dependencies
     use iso_fortran_env, only: input_unit, error_unit, iostat_eor, iostat_end
@@ -7,7 +7,7 @@ module calculation_state_files
 
     ! Module interface
     private
-    public :: state_files, state_name_length, read_state_name, select_state, files_for_state
+    public :: state_files, state_name_length, read_state_name, read_state_settings, files_for_state
     public :: read_state_entry, read_state_pair, property_state_arguments, resolve_mixing_file
     public :: named_angular_output
     public :: orbital_input_path, mixing_input_path, ci_mixing_suffix
@@ -33,31 +33,20 @@ contains
         ! Arguments
         character(*), intent(in) :: name
         type(state_files) :: files
-        files%descriptors      = filename("rcsf"//descriptor_suffix, descriptor_suffix)
-        files%header           = filename("rcsf_header.toml", "_header.toml")
-        files%initial_orbitals = filename("rwfn.inp", initial_orbital_suffix)
-        files%orbitals         = filename("rwfn.out", orbital_suffix)
-        files%mixing           = filename("rmix.out", mixing_suffix)
+        files%descriptors      = descriptor_input_path(name)
+        files%header           = trim(name)//"_header.toml"
+        files%initial_orbitals = trim(name)//initial_orbital_suffix
+        files%orbitals         = orbital_input_path(name)
+        files%mixing           = mixing_input_path(name, .false.)
         files%mcp              = "mcp"
-        files%temporary        = filename("tmp", ".tmp")
-        files%angular_log      = filename("rangular.log", ".rangular.log")
-        files%angular_debug    = filename("genmcp.dbg", ".rangular.dbg")
-        files%estimate_summary = filename("erwf.sum", ".rwfnestimate.summary.txt")
-        files%estimate_debug   = filename("erwf.dbg", ".rwfnestimate.dbg")
-        files%scf_log          = filename("rmcdhf.log", ".rmcdhf.log")
-        files%scf_summary      = filename("rmcdhf.sum", ".rmcdhf.summary")
-        files%scf_debug        = filename("rscf92.dbg", ".rmcdhf.dbg")
-    contains
-        function filename(legacy, suffix) result(path)
-            ! Arguments
-            character(*), intent(in) :: legacy, suffix
-            character(:), allocatable :: path
-            if (name == "") then
-                path = legacy
-            else
-                path = trim(name)//suffix
-            end if
-        end function
+        files%temporary        = trim(name)//".tmp"
+        files%angular_log      = trim(name)//".rangular.log"
+        files%angular_debug    = trim(name)//".rangular.dbg"
+        files%estimate_summary = trim(name)//".rwfnestimate.summary.txt"
+        files%estimate_debug   = trim(name)//".rwfnestimate.dbg"
+        files%scf_log          = trim(name)//".rmcdhf.log"
+        files%scf_summary      = trim(name)//".rmcdhf.summary"
+        files%scf_debug        = trim(name)//".rmcdhf.dbg"
     end function
 
     ! Accept an explicit mixing file or resolve a state to one of its existing mixing files.
@@ -69,7 +58,7 @@ contains
 
         ! Local declarations
         logical :: exists, has_scf, has_ci
-        integer :: suffix
+        integer :: suffix, status, basename_start
         path = entry
         suffix = index(path, ".", back=.true.)
         if (suffix > 0) then
@@ -80,6 +69,9 @@ contains
         end if
         inquire(file=path, exist=exists)
         if (exists) return
+        basename_start = scan(path, "/"//achar(92), back=.true.) + 1
+        call validate_state_name(path(basename_start:), state_name_length, status)
+        if (status /= 0) error stop "Invalid state name or missing mixing file: "//entry
         scf_path = mixing_input_path(entry, .false.)
         ci_path = mixing_input_path(entry, .true.)
         inquire(file=scf_path, exist=has_scf)
@@ -193,7 +185,25 @@ contains
         if (present(message) .and. status /= 0) message = io_message
     end subroutine
 
-    ! Several consumers locate the end of a name by finding its first blank.
+    subroutine validate_state_name(name, limit, status)
+        ! Arguments
+        character(*), intent(in) :: name
+        integer, intent(in) :: limit
+        integer, intent(out) :: status
+
+        ! Local declarations
+        integer :: i, code
+        status = 2
+        if (len(name) == 0 .or. len(name) > limit .or. name == "." .or. name == "..") return
+        if (scan(name, "/"//achar(92)) /= 0) return
+        do i = 1, len(name)
+            code = iachar(name(i:i))
+            if (code <= 32 .or. code == 127) return
+        end do
+        status = 0
+    end subroutine
+
+    ! Reserve the trailing blank used by existing filename consumers.
     subroutine assign_state_name(text, name, status)
         ! Arguments
         character(*), intent(in) :: text
@@ -203,90 +213,80 @@ contains
         ! Local declarations
         integer :: limit
         limit = min(len(name)-1, state_name_length)
-        name = ""
-        if (len_trim(text) == 0 .or. len_trim(text) > limit .or. scan(trim(text), " "//achar(9)) /= 0) then
-            write(error_unit,"(A,I0,A)") "Enter a state name of 1 to ", limit, " characters without spaces."
-            status = 2
-            return
+        call validate_state_name(text, limit, status)
+        if (status == 0) then
+            name = text
+        else
+            name = ""
+            write(error_unit,"(A,I0,A)") "Invalid state name. Enter 1 to ", limit, &
+                " characters without whitespace, control characters, or a directory."
         end if
-        name = text
-        status = 0
     end subroutine
 
-    subroutine read_state_name(name, legacy_answer, directory, role, status)
+    subroutine read_state_name(name, role, status)
         ! Arguments
         character(*), intent(out) :: name
-        character, optional, intent(out) :: legacy_answer
-        character(*), optional, intent(in) :: directory, role
+        character(*), optional, intent(in) :: role
         integer, optional, intent(out) :: status
 
         ! Local declarations
-        character(:), allocatable :: record, token, parent
+        character(:), allocatable :: record
         character(256) :: io_message
-        integer :: ios, comment
-        logical :: named_header
-        name = ""
-        if (present(status)) status = 0
-        if (present(legacy_answer)) legacy_answer = " "
-        do
-            call read_state_entry(record, ios, role, io_message)
-            if (ios /= 0 .and. .not. (ios == iostat_end .and. len(record) > 0)) then
-                write(error_unit,"(A)") "Cannot read state name: "//trim(io_message)
-                if (.not. present(status)) error stop 1
-                status = 2
-                return
-            end if
-            if (present(legacy_answer)) then
-                if (record == "") return
-                ! Existing answer files begin with the first y/n response, often with a log comment.
-                comment = index(record, "!")
-                token = trim(record)
-                if (comment > 0) token = trim(record(:comment-1))
-                select case (token)
-                case ("y","Y","n","N")
-                    parent = "."
-                    if (present(directory)) parent = trim(directory)
-                    inquire(file=parent//"/"//token//"_header.toml", exist=named_header)
-                    if (.not. named_header .or. comment > 0) then
-                        legacy_answer = token
-                        return
-                    end if
-                end select
-                if (scan(record, "/"//achar(92)) /= 0) then
-                    write(error_unit,"(A)") "Enter a state name without a directory."
-                    cycle
-                end if
-            end if
+        integer :: ios
+        call read_state_entry(record, ios, role, io_message)
+        if (ios == 0 .or. (ios == iostat_end .and. len(record) > 0)) then
             call assign_state_name(record, name, ios)
-            if (ios == 0) return
-        end do
+        else
+            name = ""
+            write(error_unit,"(A)") "Cannot read state name: "//trim(io_message)
+            ios = 2
+        end if
+        if (present(status)) then
+            status = ios
+        else if (ios /= 0) then
+            error stop 1
+        end if
     end subroutine
 
-    subroutine read_state_pair(names)
+    subroutine read_state_pair(first, second, roles, status)
         ! Arguments
-        character(*), intent(out) :: names(2)
-        call read_state_name(names(1), role="Initial state")
-        call read_state_name(names(2), role="Final state")
-    end subroutine
-
-    subroutine select_state(name, question, answer, directory)
-        ! Arguments
-        character(*), intent(out) :: name
-        character(*), intent(in) :: question
-        logical, intent(out) :: answer
-        character(*), optional, intent(in) :: directory
+        character(*), intent(out) :: first, second
+        character(*), optional, intent(in) :: roles(2)
+        integer, optional, intent(out) :: status
 
         ! Local declarations
-        character :: legacy_answer
-        character(len(name)+1) :: padded_name
-        call read_state_name(padded_name, legacy_answer, directory)
-        name = trim(padded_name)
-        if (legacy_answer == " ") then
-            write(error_unit,"(A)") question
-            answer = read_yes_no()
+        character(*), parameter :: default_roles(2) = [character(13) :: "Initial state", "Final state"]
+        character(len(first)) :: first_name
+        character(len(second)) :: second_name
+        integer :: ios
+
+        if (present(roles)) then
+            call read_state_name(first_name, roles(1), ios)
+            if (ios == 0) call read_state_name(second_name, roles(2), ios)
         else
-            answer = index("Yy", legacy_answer) > 0
+            call read_state_name(first_name, default_roles(1), ios)
+            if (ios == 0) call read_state_name(second_name, default_roles(2), ios)
         end if
+        if (ios == 0) then
+            first = first_name
+            second = second_name
+        else
+            first = ""
+            second = ""
+        end if
+        if (present(status)) then
+            status = ios
+        else if (ios /= 0) then
+            error stop 1
+        end if
+    end subroutine
+
+    subroutine read_state_settings(question, answer)
+        ! Arguments
+        character(*), intent(in) :: question
+        logical, intent(out) :: answer
+        write(error_unit,"(A)") question
+        answer = read_yes_no()
     end subroutine
 
     ! Positional state and CI selection shared by property programs with a CLI.

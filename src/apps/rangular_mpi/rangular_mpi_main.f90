@@ -28,7 +28,7 @@ program rangular_mpi_main
     use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes
     use mcp_generation_options, only: max_coulomb_multipole_rank
     use calculation_state_files, only: state_files, state_name_length, files_for_state
-    use mpi_calculation_state, only: select_mpi_state
+    use mpi_calculation_state, only: read_mpi_state_name, read_mpi_state_settings
 
     ! Procedure interfaces
     use configure_debug_output_interface, only: configure_debug_output
@@ -66,7 +66,7 @@ program rangular_mpi_main
     type(mpi_angular_input_options) :: input_options
     type(state_files) :: files
     type(indexed_mcp) :: indexed_output
-    character(state_name_length) :: state
+    character(state_name_length+1) :: state
     integer(int64) :: program_start_count, stage_start_count
     character(len=16) :: input_format_name
     call parse_mpi_angular_options(input_options)
@@ -78,12 +78,13 @@ program rangular_mpi_main
         & start_clock_count, &
         startup_directory, permanent_directory, scratch_directory, "RANGULAR_MPI")
     write (block_label_text, "(I3.3)") mpi_rank
-    call select_mpi_state(state, "Use zero-first partition from descriptor header? (y/n)", yes, permanent_directory)
+    call read_mpi_state_name(state)
+    call read_mpi_state_settings("Use zero-first partition from descriptor header? (y/n)", yes)
     files = files_for_state(state)
     if (input_options%input_filename == "") input_options%input_filename = files%descriptors
     if (mpi_rank == 0) then
         open(newunit=angular_log_unit,file=trim(startup_directory)//"/"//files%angular_log,status="UNKNOWN")
-        if (state /= "") write(angular_log_unit,"(A)") trim(state)
+        write(angular_log_unit,"(A)") trim(state)
     end if
     call open_mpi_angular_profile(input_options)
     input_format_name = "descriptors"

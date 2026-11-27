@@ -18,28 +18,28 @@ def record(data): return struct.pack('<i',len(data))+data+struct.pack('<i',len(d
 def wave():
     return struct.pack('<8s6i5d', b'RAD--WFN', 1, 1, 1, -1, 1, 0, -1., 0., 0., 1., 0.)
 if name=='rwfnestimate':
-    Path('rwfn.inp').write_bytes(wave())
+    Path('sweep.initial.wfn').write_bytes(wave())
 elif name=='rangular':
     for n in (30,31,32,33):
         if mode=='missing' and n==33: continue
         sizes=[12,4,8,15,12,12,11,4,8] if n==30 else [15,12,12,15,8]
         if mode=='missing_record': sizes=sizes[:-1]
         Path(f'mcp.{n}').write_bytes(b''.join(record(b'x'*size) for size in sizes))
-    Path('rangular.log').write_text('angle 1.0\n')
+    Path('sweep.rangular.log').write_text('angle 1.0\n')
 else:
-    Path('rwfn.out').write_bytes(wave())
-    digest=sha256(Path('rcsf_desc.parquet').read_bytes()).hexdigest().encode()
+    Path('sweep.wfn').write_bytes(wave())
+    digest=sha256(Path('sweep_desc.parquet').read_bytes()).hexdigest().encode()
     if mode=='digest': digest=b'0'*64
     signature=b'BAD--MIX' if mode=='signature' else b'CSF--MIX'
-    Path('rmix.out').write_bytes(struct.pack('<8s5q64s',signature,2,1,1,1,1,digest)+
+    Path('sweep.mix').write_bytes(struct.pack('<8s5q64s',signature,2,1,1,1,1,digest)+
         struct.pack('<6qqdd',0,1,1,1,0,176,1,-1.,1.))
-    Path('rmcdhf.log').write_text('input fixed\n')
-    Path('rmcdhf.sum').write_text('Energy '+('2.0' if mode=='energy' else '1.0')+'\n')
+    Path('sweep.rmcdhf.log').write_text('input fixed\n')
+    Path('sweep.rmcdhf.summary').write_text('Energy '+('2.0' if mode=='energy' else '1.0')+'\n')
     print('Iteration number '+('2' if mode=='iteration' else '1'))
     print('Maximum iterations in SCF Exceeded.')
     if mode=='nan': print('diagnostic NaN')
     if mode=='warning': print('WARNING: changed diagnostic')
-    if mode=='truncated': Path('rmix.out').write_bytes(b'bad')
+    if mode=='truncated': Path('sweep.mix').write_bytes(b'bad')
     if mode=='empty': Path('mcp.33').write_bytes(b'')
     if mode=='extra': Path('mcp.34').write_bytes(record(b'fixture'))
 print('Wall time:')
@@ -53,7 +53,7 @@ from pathlib import Path
 import sys
 output=Path(sys.argv[3])
 output.write_text('simulated descriptor')
-output.with_name('rcsf_header.toml').write_text('simulated header')
+output.with_name('sweep_header.toml').write_text('simulated header')
 '''
 
 

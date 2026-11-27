@@ -32,13 +32,13 @@ strict/diag 独立变体已按用户决定[移除](adr-0002-retire-strict-and-di
 | --- | --- |
 | `isodata` | 核与同位素输入，由 `GETSCD → SETISO` 读取。 |
 | `name_desc.parquet` 与配套 TOML | `load_csf_basis_data` 安装 V3 占据和对称块信息，并与 MCP 元数据核对。 |
-| `name.initial.wfn` | 径向初猜或续算轨道。状态名留空时输入为 `rwfn.inp`。 |
+| `name.initial.wfn` | 径向初猜或续算轨道。 |
 | `mcp.30`、`mcp.31`、`mcp.(32+k)` | 稀疏结构、一电子/二电子角系数及选项元数据；初始化后在矩阵和系数构造中复读。 |
 | 可选 `npol.inp` | `NPOL_INIT` 初始化局域核极化修正，并更新核势数组 `ZZ`；输入契约见[核极化说明](design-0022-rmcdhf-nuclear-polarization.md)。 |
 | 交互输入 | 优化目标与权重、冻结轨道、改善顺序、求解方法、阻尼、精度和迭代上限。 |
-| `name.wfn` | 写出当前径向轨道。固定名模式为 `rwfn.out`，需从摘要核对收敛状态。 |
-| EOL 的 `name.mix` | 保存混合结果。固定名模式为 `rmix.out`。 |
-| `rmcdhf.sum`、`rmcdhf.log`、可选 `rscf92.dbg` | 计算摘要、交互记录和调试输出。 |
+| `name.wfn` | 写出当前径向轨道，收敛状态见计算摘要。 |
+| EOL 的 `name.mix` | 保存混合结果。 |
+| `name.rmcdhf.summary`、`name.rmcdhf.log`、可选 `name.rmcdhf.dbg` | 计算摘要、交互记录和调试输出。 |
 
 ## 2. 初始化与 EOL 主流程
 

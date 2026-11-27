@@ -12,7 +12,7 @@ program rwfnestimate_main
     use run_timer, only: begin_run_timer, finish_run_timer
     use rwfnestimate_input, only: radial_input_options, parse_radial_options, load_radial_header
     use calculation_state_files, only: check_orbital_output
-    use calculation_state_files, only: state_files, state_name_length, select_state, files_for_state, orbital_input_path
+    use calculation_state_files, only: state_files, state_name_length, read_state_name, read_state_settings, files_for_state
 
     ! Procedure interfaces
     use configure_debug_output_interface, only: configure_debug_output
@@ -35,7 +35,7 @@ program rwfnestimate_main
     use write_initial_radial_wavefunctions_interface, only: write_initial_radial_wavefunctions
     implicit none (type, external)
     type(state_files) :: files
-    character(state_name_length) :: state
+    character(state_name_length+1) :: state
     integer :: core_subshell_count
     integer(int64) :: start_clock_count
     logical :: yes
@@ -46,7 +46,8 @@ program rwfnestimate_main
     write (stderr_unit, *) "This program estimates radial wave functions"
     write (stderr_unit, *) "for orbitals"
     write (stderr_unit, *) "Input files: isodata, descriptor header TOML, optional rwfn file"
-    call select_state(state, "Default settings ?", yes)
+    call read_state_name(state)
+    call read_state_settings("Default settings ?", yes)
     files = files_for_state(state)
     call check_orbital_output(files%initial_orbitals, writing_initial=.true.)
     if (input_options%filename == "") input_options%filename = files%header
@@ -82,7 +83,6 @@ program rwfnestimate_main
     ! Write the first part of the  .sum  file
     if (nondefault_options_flag /= 0) call write_input_summary
     ! Generate the subshell radial wavefunctions
-    if (state /= "") files%orbitals = orbital_input_path(state)
     call generate_initial_radial_wavefunctions(files%orbitals)
     ! Orthogonalize the radial orbitals
     call orthogonalize_radial_orbitals

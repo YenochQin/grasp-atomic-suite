@@ -26,7 +26,7 @@ program rbiotransform_mpi_main
     use radial_wavefunctions,          only: initial_radial_large_components, initial_radial_small_components, &
         final_radial_large_components, final_radial_small_components
     use biorthogonal_orbital_rotations,         only: initial_orbital_rotation_values, final_orbital_rotation_values
-    use mpi_state, only: mpi_bcast, mpi_character, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
+    use mpi_state, only: mpi_bcast, mpi_comm_world, mpi_error_code, mpi_integer, mpi_process_count, mpi_rank, &
         processor_name, processor_name_length
     use yes_no_input, only: read_yes_no
     use machine_constants, only: initialize_machine_constants
@@ -41,7 +41,8 @@ program rbiotransform_mpi_main
     use radial_stencil_weights, only: initialize_radial_stencil_weights
 
     ! Procedure interfaces
-    use read_state_filenames_interface, only: read_state_filenames
+    use mpi_calculation_state, only: read_mpi_state_pair
+    use select_biorthogonal_symmetries_interface, only: select_biorthogonal_symmetries
     use load_merged_csf_basis_interface, only: load_merged_csf_basis
     use copy_state_csf_data_interface, only: copy_state_csf_data
     use biorthogonal_transition_selection, only: ntrans, itjqj1, itjqj2, jqj1, jqj2
@@ -148,8 +149,8 @@ program rbiotransform_mpi_main
     ! Initialize the radial integration and derivative stencils.
     call initialize_radial_stencil_weights
     ! Resolve the input paths and prepare output for the transformed orbitals and mixing coefficients.
-    if (mpi_rank == 0) call read_state_filenames (name)
-    call mpi_bcast (name,48,mpi_character,0,mpi_comm_world,mpi_error_code)
+    call read_mpi_state_pair(name)
+    if (mpi_rank == 0) call select_biorthogonal_symmetries(name)
     call mpi_bcast(ntrans, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)
     if (ntrans == 1) then
         call mpi_bcast(jqj1, 1, mpi_integer, 0, mpi_comm_world, mpi_error_code)

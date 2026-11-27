@@ -91,8 +91,8 @@ def run_logged(
     if input_csf is not None:
         shutil.copyfile(input_csf, directory / "rcsf.inp")
     if input_descriptors is not None:
-        shutil.copyfile(input_descriptors, directory / "rcsf_desc.parquet")
-        shutil.copyfile(input_descriptors.with_name("csfs_header.toml"), directory / "rcsf_header.toml")
+        shutil.copyfile(input_descriptors, directory / "csfs_desc.parquet")
+        shutil.copyfile(input_descriptors.with_name("csfs_header.toml"), directory / "csfs_header.toml")
     thread_environment = THREAD_ENVIRONMENT.copy()
     execution: dict[str, Any] = {
         "command": command,
@@ -305,6 +305,9 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
             stdin_path.write_bytes(b"y\n")
         summary["effective_stdin"] = file_identity(stdin_path)
         if descriptor_mode:
+            named_stdin = snapshots / "rangular.named.stdin"
+            named_stdin.write_bytes(b"csfs\n" + stdin_path.read_bytes())
+            summary["effective_named_stdin"] = file_identity(named_stdin)
             summary["effective_binary"] = file_identity(snapshots / "csfs_desc.parquet")
             verification_directory = output / "array_verification"
             summary["array_verification"] = run_logged(
@@ -357,7 +360,7 @@ def execute_comparison(arguments: argparse.Namespace) -> int:
                 execution = run_logged(
                     command,
                     directory,
-                    stdin_path,
+                    named_stdin if descriptor_mode and mode != "reference_text" else stdin_path,
                     arguments.timeout,
                     input_csf=None
                     if descriptor_mode and mode != "reference_text"
@@ -527,7 +530,7 @@ def main() -> int:
     parser.add_argument(
         "--stdin-file",
         type=Path,
-        help="interactive answers; default is full interaction: y",
+        help="settings answers; default is full interaction: y. The Suite state name is supplied automatically.",
     )
     parser.add_argument("--reference-text-oracle", action="store_true",
                         help="Use original text only for an explicitly selected historical reference executable")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare text and descriptor input in the same rangular_mpi executable."""
+"""Compare state-named and explicit descriptor input in the same rangular_mpi executable."""
 from __future__ import annotations
 
 import argparse
@@ -81,8 +81,8 @@ def run_mode(arguments: argparse.Namespace, inputs: Path, mode: str, repetition:
         raise ValueError("MPI scratch path is too long; choose a shorter --scratch-root")
     environment["MPI_TMP"] = str(directory)
     if mode == "default":
-        shutil.copyfile(inputs / "csfs_desc.parquet", directory / "rcsf_desc.parquet")
-        shutil.copyfile(inputs / "csfs_header.toml", directory / "rcsf_header.toml")
+        shutil.copyfile(inputs / "csfs_desc.parquet", directory / "csfs_desc.parquet")
+        shutil.copyfile(inputs / "csfs_header.toml", directory / "csfs_header.toml")
     command = [str(arguments.mpiexec), *arguments.mpiexec_arg, arguments.numproc_flag,
                str(arguments.ranks), str(arguments.executable)]
     if mode == "descriptors":
@@ -94,7 +94,7 @@ def run_mode(arguments: argparse.Namespace, inputs: Path, mode: str, repetition:
         "status": "running",
     }
     print(f"Running {mode}, repetition {repetition}", flush=True)
-    (directory / "stdin.txt").write_text("n\n")
+    (directory / "stdin.txt").write_text("csfs\nn\n")
     process: subprocess.Popen[bytes] | None = None
     started = time.perf_counter()
     try:

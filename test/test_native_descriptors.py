@@ -55,7 +55,7 @@ def main() -> None:
         result = subprocess.run(
             [str(binaries / "rangular"), "--csf-descriptors", str(parquet)],
             cwd=root,
-            input="y\n",
+            input="case\ny\n",
             check=False,
             capture_output=True,
             text=True,
@@ -69,16 +69,16 @@ def main() -> None:
         shutil.copyfile(parquet, legacy_parquet)
         rejected = subprocess.run(
             [binaries / "rangular", "--csf-descriptors", str(legacy_parquet), "--header", str(header)],
-            cwd=root, input="y\n", capture_output=True, text=True, check=False, timeout=30,
+            cwd=root, input="case\ny\n", capture_output=True, text=True, check=False, timeout=30,
         )
         assert rejected.returncode != 0 and "use a *_desc.parquet" in rejected.stderr, rejected
-        shutil.copyfile(parquet, root / "rcsf_descriptors.parquet")
-        shutil.copyfile(header, root / "rcsf_header.toml")
+        shutil.copyfile(parquet, root / "case_descriptors.parquet")
+        shutil.copyfile(header, root / "case_header.toml")
         rejected = subprocess.run(
-            [binaries / "rangular"], cwd=root, input="y\n",
+            [binaries / "rangular"], cwd=root, input="case\ny\n",
             capture_output=True, text=True, check=False, timeout=30,
         )
-        assert rejected.returncode != 0 and "rcsf_desc.parquet" in rejected.stderr, rejected
+        assert rejected.returncode != 0 and "case_desc.parquet" in rejected.stderr, rejected
         # A valid legacy input must never rescue an invalid descriptor/header.
         write_fixture(
             root / "legacy", ["1s"], ["2s", "2p-", "2p", "3s", "3p-"], basic_blocks()
@@ -88,7 +88,7 @@ def main() -> None:
         result = subprocess.run(
             [str(binaries / "rangular"), "--csf-descriptors", str(parquet)],
             cwd=root,
-            input="y\n",
+            input="case\ny\n",
             check=False,
             capture_output=True,
             text=True,

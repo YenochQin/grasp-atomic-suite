@@ -26,7 +26,7 @@ program rangular_main
     use hamiltonian_symmetry_blocks, only: csf_counts_by_block, symmetry_block_count
     use orbital_csf_basis, only: csf_count, csf_subshell_occupations, max_orbitals
     use csf_coupling_data, only: csf_angular_codes, csf_subshell_quantum_codes, csf_angular_code_count
-    use calculation_state_files, only: state_files, state_name_length, files_for_state, select_state
+    use calculation_state_files, only: state_files, state_name_length, files_for_state, read_state_name, read_state_settings
     use run_timer, only: begin_run_timer, finish_run_timer
 
     ! Procedure interfaces
@@ -58,13 +58,14 @@ program rangular_main
     integer :: mpi_rank,mpi_process_count
     type(angular_input_options) :: input_options
     type(state_files) :: files
-    character(state_name_length) :: state
+    character(state_name_length+1) :: state
     integer(int64) :: program_start_count, stage_start_count
     character(len=16) :: input_format_name
 
     call parse_angular_options(input_options)
     call begin_run_timer (start_clock_count, "RANGULAR")
-    call select_state(state, "Full interaction? (y/n)", yes)
+    call read_state_name(state)
+    call read_state_settings("Full interaction? (y/n)", yes)
     files = files_for_state(state)
     if (input_options%input_filename == "") input_options%input_filename = files%descriptors
     input_format_name = "descriptors"
@@ -75,7 +76,7 @@ program rangular_main
     write(*,*) files%angular_log
     write(*,*)
     open(newunit=angular_log_unit,file=files%angular_log,status="UNKNOWN")
-    if (state /= "") write(angular_log_unit,"(A)") trim(state)
+    write(angular_log_unit,"(A)") trim(state)
     mpi_rank = 0
     mpi_process_count = 1
     ! Record the choice of full or restricted CSF interactions.

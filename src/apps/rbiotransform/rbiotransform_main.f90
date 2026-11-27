@@ -39,7 +39,8 @@ program rbiotransform_main
     use radial_stencil_weights, only: initialize_radial_stencil_weights
 
     ! Procedure interfaces
-    use read_state_filenames_interface, only: read_state_filenames
+    use calculation_state_files, only: read_state_pair
+    use select_biorthogonal_symmetries_interface, only: select_biorthogonal_symmetries
     use load_merged_csf_basis_interface, only: load_merged_csf_basis
     use copy_state_csf_data_interface, only: copy_state_csf_data
     use prepare_biorthogonal_subshells_interface, only: prepare_biorthogonal_subshells
@@ -122,7 +123,8 @@ program rbiotransform_main
     ! Initialize the radial integration and derivative stencils.
     call initialize_radial_stencil_weights
     ! Resolve the input paths and prepare output for the transformed orbitals and mixing coefficients.
-    call read_state_filenames (name)
+    call read_state_pair(name(1), name(2))
+    call select_biorthogonal_symmetries(name)
     ! Load the initial-state CSF descriptors.
     call load_merged_csf_basis (name(1), initial_core_subshell_count,1)
     ! Preserve the initial-state data before loading the final state.

@@ -52,7 +52,7 @@ contains
         type(radial_input_options), intent(out) :: options
 
         ! Local declarations
-        character(len=:), allocatable :: argument, basename
+        character(len=:), allocatable :: argument
         logical :: selected
         integer :: position
         options%filename = ""
@@ -75,11 +75,6 @@ contains
             end select
             position = position + 2
         end do
-        basename = options%filename(scan(options%filename, "/\", back=.true.)+1:)
-        select case (basename)
-        case ("rwfn.inp", "erwf.sum", "erwf.dbg", "tmp_734")
-            call require_input(.false., "input filename uses a reserved output name")
-        end select
     end subroutine parse_radial_options
 
     subroutine load_radial_header(options, core_count)
