@@ -5,14 +5,15 @@
 //! Calls using the same live handle must be serialized; separate handles are independent.
 //! The unmangled `rcsfs_descriptor_*` symbols are reserved for this ABI and must
 //! have a single definition in the linked program.
+//!
+//! Raw pointers are necessary for the Fortran C ABI. The descriptor reader
+//! itself takes Rust references and returns ordinary Rust values and errors.
 use crate::descriptor_reader::{DescriptorReader, RadialHeader};
 use anyhow::{Result, ensure};
-use std::{
-    ffi::{CStr, c_char, c_void},
-    panic::{AssertUnwindSafe, catch_unwind},
-    path::Path,
-    ptr,
-};
+use std::ffi::{CStr, c_char, c_void};
+use std::panic::{self, AssertUnwindSafe};
+use std::path::Path;
+use std::ptr;
 
 struct Handle {
     reader: DescriptorReader,
@@ -24,7 +25,9 @@ struct Handle {
 /// When non-null and `capacity > 0`, `error` must remain writable for `capacity`
 /// bytes after `action` finishes.
 unsafe fn invoke(error: *mut c_char, capacity: usize, action: impl FnOnce() -> Result<()>) -> i32 {
-    let result = catch_unwind(AssertUnwindSafe(action));
+    // Recoverable input and I/O failures use Result. This boundary also
+    // reports an unexpected unwind before it can reach the Fortran caller.
+    let result = panic::catch_unwind(AssertUnwindSafe(action));
     let message = match result {
         Ok(Ok(())) => String::new(),
         Ok(Err(e)) => format!("{e:#}"),
@@ -46,6 +49,7 @@ unsafe fn invoke(error: *mut c_char, capacity: usize, action: impl FnOnce() -> R
     if message.is_empty() { 0 } else { 1 }
 }
 
+/// The C ABI revision implemented by the exported descriptor functions.
 #[unsafe(no_mangle)]
 pub extern "C" fn rcsfs_descriptor_abi_version() -> i32 {
     3
@@ -66,9 +70,9 @@ pub unsafe extern "C" fn rcsfs_descriptor_basis_id(handle: *const c_void, output
     unsafe {
         let reader = &(*handle.cast::<Handle>()).reader;
         ptr::copy_nonoverlapping(
-            reader.basis_id.as_ptr(),
+            reader.basis_id().as_ptr(),
             output.cast(),
-            reader.basis_id.len(),
+            reader.basis_id().len(),
         );
     }
 }
@@ -107,12 +111,12 @@ pub unsafe extern "C" fn rcsfs_descriptor_read_radial_header(
             i32::try_from(header.core_count)?,
             header.electron_count,
         ];
-        for (i, (n, kappa)) in header.orbitals.into_iter().enumerate() {
+        for (i, orbital) in header.orbitals.into_iter().enumerate() {
             // SAFETY: The caller provides room for two i32s per orbital, and
             // the capacity check bounds both indices.
             unsafe {
-                *orbitals.add(2 * i) = n;
-                *orbitals.add(2 * i + 1) = kappa;
+                *orbitals.add(2 * i) = orbital.principal_quantum_number;
+                *orbitals.add(2 * i + 1) = orbital.kappa;
             }
         }
         // SAFETY: info points to three writable i32s disjoint from local values.
@@ -198,13 +202,13 @@ pub unsafe extern "C" fn rcsfs_descriptor_info(
         ensure!(!handle.is_null() && !info.is_null(), "null info argument");
         // SAFETY: The handle came from open and stays live with no concurrent
         // access for the duration of this call.
-        let r = unsafe { &(*handle.cast::<Handle>()).reader };
+        let reader = unsafe { &(*handle.cast::<Handle>()).reader };
         let values = [
-            r.core_count as i64,
-            r.layout.subshell_count as i64,
-            r.block_lengths.len() as i64,
-            i64::try_from(r.block_lengths.iter().sum::<u64>())?,
-            i64::from(r.electron_count),
+            i64::try_from(reader.core_count())?,
+            i64::try_from(reader.layout().subshell_count)?,
+            i64::try_from(reader.block_lengths().len())?,
+            i64::try_from(reader.block_lengths().iter().sum::<u64>())?,
+            i64::from(reader.electron_count()),
         ];
         // SAFETY: info points to five writable i64s disjoint from local values.
         unsafe { ptr::copy_nonoverlapping(values.as_ptr(), info, 5) };
@@ -237,27 +241,29 @@ pub unsafe extern "C" fn rcsfs_descriptor_tables(
         );
         // SAFETY: The handle came from open and stays live with no concurrent
         // access for the duration of this call.
-        let r = unsafe { &(*handle.cast::<Handle>()).reader };
+        let reader = unsafe { &(*handle.cast::<Handle>()).reader };
         ensure!(
-            orbital_capacity >= r.orbitals.len() && block_capacity >= r.block_lengths.len(),
+            orbital_capacity >= reader.orbitals().len()
+                && block_capacity >= reader.block_lengths().len(),
             "table buffer too small"
         );
-        for (i, &(n, k)) in r.orbitals.iter().enumerate() {
+        for (i, orbital) in reader.orbitals().iter().enumerate() {
             // SAFETY: The caller provides two writable i32s per orbital, and
             // the capacity check bounds both indices.
             unsafe {
-                *orbitals.add(2 * i) = n;
-                *orbitals.add(2 * i + 1) = k;
+                *orbitals.add(2 * i) = orbital.principal_quantum_number;
+                *orbitals.add(2 * i + 1) = orbital.kappa;
             }
         }
-        for (i, (&length, &(j, p))) in r.block_lengths.iter().zip(&r.block_symmetries).enumerate() {
+        let blocks = reader.block_lengths().iter().zip(reader.block_symmetries());
+        for (i, (&length, symmetry)) in blocks.enumerate() {
             let length = i64::try_from(length)?;
             // SAFETY: The caller provides one length and two symmetry entries
             // per block. The loop and capacity check bound all three indices.
             unsafe {
                 *lengths.add(i) = length;
-                *symmetries.add(2 * i) = j;
-                *symmetries.add(2 * i + 1) = p;
+                *symmetries.add(2 * i) = symmetry.total_two_j;
+                *symmetries.add(2 * i + 1) = symmetry.parity;
             }
         }
         Ok(())
@@ -285,7 +291,7 @@ pub unsafe extern "C" fn rcsfs_descriptor_zero_order_counts(
         // SAFETY: The handle came from open and stays live with no concurrent
         // access for the duration of this call.
         let reader = unsafe { &(*handle.cast::<Handle>()).reader };
-        let values = reader.zero_order_counts.as_deref().ok_or_else(|| {
+        let values = reader.zero_order_counts().ok_or_else(|| {
             anyhow::anyhow!(
                 "missing block_info.zero_order_counts; regenerate the dataset with rcsfs zero-first"
             )
@@ -347,7 +353,7 @@ pub unsafe extern "C" fn rcsfs_descriptor_read(
         // access to the live Handle for this call.
         let h = unsafe { &mut *handle.cast::<Handle>() };
         let count = rows
-            .checked_mul(h.reader.layout.descriptor_row_channel_count())
+            .checked_mul(h.reader.layout().descriptor_row_channel_count())
             .ok_or_else(|| anyhow::anyhow!("size overflow"))?;
         ensure!(size >= count, "output buffer too small");
         let mut written = 0;

@@ -1,9 +1,13 @@
-use super::*;
-use arrow_array::RecordBatch;
-use parquet::{
-    arrow::ArrowWriter,
-    file::{metadata::KeyValue, properties::WriterProperties},
-};
+use super::{BlockSymmetry, DescriptorReader};
+use crate::descriptor_schema::DescriptorLayout;
+use anyhow::Result;
+use arrow_array::{Int8Array, RecordBatch};
+use parquet::arrow::ArrowWriter;
+use parquet::file::metadata::KeyValue;
+use parquet::file::properties::WriterProperties;
+use sha2::{Digest, Sha256};
+use std::fs::File;
+use std::path::Path;
 use std::sync::Arc;
 
 fn fixture_metadata(
@@ -144,8 +148,14 @@ fn strict_footer_keys_and_ordered_batches() -> Result<()> {
     let (path, header) = fixture(directory.path(), |_| {})?;
     let mut first = DescriptorReader::open(&path, &header, 1)?;
     let mut second = DescriptorReader::open(&path, &header, 2)?;
-    assert_eq!(first.block_lengths, [1, 1]);
-    assert_eq!(first.block_symmetries, [(0, 1), (0, 1)]);
+    assert_eq!(first.block_lengths(), [1, 1]);
+    assert_eq!(
+        first.block_symmetries(),
+        [BlockSymmetry {
+            total_two_j: 0,
+            parity: 1
+        }; 2]
+    );
     let (mut a, mut b) = (Vec::new(), Vec::new());
     assert_eq!(first.read_batch(&mut a)?, 1);
     assert_eq!(second.read_batch(&mut b)?, 2);
@@ -233,7 +243,11 @@ fn rejects_corrupt_payload_and_header_semantics() -> Result<()> {
 #[cfg(feature = "descriptor-ffi")]
 #[test]
 fn ffi_buffers_errors_and_independent_handles() -> Result<()> {
-    use crate::descriptor_ffi::*;
+    use crate::descriptor_ffi::{
+        rcsfs_descriptor_abi_version, rcsfs_descriptor_close, rcsfs_descriptor_format_version,
+        rcsfs_descriptor_info, rcsfs_descriptor_open, rcsfs_descriptor_read,
+        rcsfs_descriptor_select_block, rcsfs_descriptor_tables,
+    };
     use std::ffi::{CStr, CString, c_char, c_void};
     let directory = tempfile::tempdir()?;
     let (path, header) = fixture(directory.path(), |_| {})?;
@@ -241,6 +255,10 @@ fn ffi_buffers_errors_and_independent_handles() -> Result<()> {
     let header = CString::new(header.to_str().unwrap())?;
     let mut handles = [std::ptr::null_mut::<c_void>(); 2];
     let mut error = [0 as c_char; 512];
+    // SAFETY: The CString paths and stack buffers stay live through each call
+    // and each advertised capacity fits the corresponding buffer. Handle
+    // slots start null and successful opens are used serially before close.
+    // The repeated close uses an initialized null slot, and info checks a null handle.
     unsafe {
         assert_eq!(rcsfs_descriptor_abi_version(), 3);
         assert_eq!(rcsfs_descriptor_format_version(), 3);

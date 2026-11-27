@@ -31,7 +31,7 @@ set(cargo_network_args)
 if(GRASP_CSF_READER_OFFLINE)
     list(APPEND cargo_network_args --offline)
 endif()
-set(reader_sources src/lib.rs src/descriptor_transport.rs src/descriptor_reader.rs src/descriptor_ffi.rs)
+set(reader_sources src/lib.rs src/descriptor_transport.rs src/descriptor_reader.rs src/descriptor_ffi.rs src/state_file_ffi.rs)
 add_custom_command(OUTPUT "${reader_archive}"
     COMMAND "${CMAKE_COMMAND}" -E env "RUSTC=${GRASP_RUSTC}" "${GRASP_CARGO}" build
         --manifest-path "${reader_manifest}" --target-dir "${reader_target_dir}"

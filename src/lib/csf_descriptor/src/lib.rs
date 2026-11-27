@@ -4,3 +4,5 @@ pub mod descriptor_ffi;
 pub mod descriptor_reader;
 #[path = "descriptor_transport.rs"]
 pub mod descriptor_schema;
+#[cfg(all(unix, feature = "descriptor-ffi"))]
+mod state_file_ffi;

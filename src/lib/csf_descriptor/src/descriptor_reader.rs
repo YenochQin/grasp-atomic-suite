@@ -6,7 +6,12 @@ use parquet::arrow::arrow_reader::{
     ParquetRecordBatchReaderBuilder,
 };
 use sha2::{Digest, Sha256};
-use std::{fs::File, io::Seek, path::Path, sync::LazyLock};
+use std::collections::HashSet;
+use std::fs::{self, File};
+use std::io::{self, Seek};
+use std::path::Path;
+use std::str;
+use std::sync::LazyLock;
 
 use crate::descriptor_schema::{
     CHANNELS_PER_SUBSHELL, DESCRIPTOR_VERSION, DescriptorLayout, MAX_TWO_J,
@@ -14,6 +19,25 @@ use crate::descriptor_schema::{
 
 const ORBITAL_LETTERS: &str = "spdfghiklmn";
 
+/// A relativistic orbital in the descriptor's core or peel table.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct Orbital {
+    /// Principal quantum number, conventionally denoted by `n`.
+    pub principal_quantum_number: i32,
+    /// Relativistic angular quantum number. Positive values denote `j = l - 1/2`.
+    pub kappa: i32,
+}
+
+/// Total angular momentum and parity shared by all rows in a block.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct BlockSymmetry {
+    /// Twice the block's total angular momentum.
+    pub total_two_j: i32,
+    /// `1` for even parity and `-1` for odd parity.
+    pub parity: i32,
+}
+
+/// Streams validated V3 descriptor rows and supports seeking by explicit block.
 pub struct DescriptorReader {
     reader: Option<ParquetRecordBatchReader>,
     file: File,
@@ -22,24 +46,24 @@ pub struct DescriptorReader {
     // Cumulative logical row offsets, including the end sentinel.
     row_group_offsets: Vec<u64>,
     block_starts: Vec<u64>,
-    pub basis_id: [u8; 64],
-    pub header_lines: [String; 5],
-    pub block_lengths: Vec<u64>,
-    pub zero_order_counts: Option<Vec<i64>>,
-    pub layout: DescriptorLayout,
+    basis_id: [u8; 64],
+    header_lines: [String; 5],
+    block_lengths: Vec<u64>,
+    zero_order_counts: Option<Vec<i64>>,
+    layout: DescriptorLayout,
     remaining: u64,
     failed: bool,
-    pub core_count: usize,
-    pub orbitals: Vec<(i32, i32)>,
-    pub block_symmetries: Vec<(i32, i32)>,
-    pub electron_count: i32,
+    core_count: usize,
+    orbitals: Vec<Orbital>,
+    block_symmetries: Vec<BlockSymmetry>,
+    electron_count: i32,
     // Physical states may be readable by consumers that do not use the spin-angular library.
     require_spin_angular: bool,
     block_index: usize,
     block_rows: u64,
 }
 
-fn parse_orbital_label(label: &str) -> Result<(i32, i32)> {
+fn parse_orbital_label(label: &str) -> Result<Orbital> {
     ensure!(label.is_ascii(), "non-ASCII orbital label");
     let suffix_start = label
         .bytes()
@@ -63,13 +87,16 @@ fn parse_orbital_label(label: &str) -> Result<(i32, i32)> {
         Some(b'-') if l > 0 => l,
         _ => anyhow::bail!("invalid relativistic suffix in {label}"),
     };
-    Ok((n, kappa))
+    Ok(Orbital {
+        principal_quantum_number: n,
+        kappa,
+    })
 }
 
 fn read_header(header: &Path) -> Result<(Vec<u8>, toml::Value)> {
     let read = || -> Result<_> {
-        let bytes = std::fs::read(header)?;
-        let document = toml::from_str(std::str::from_utf8(&bytes)?)?;
+        let bytes = fs::read(header)?;
+        let document = toml::from_str(str::from_utf8(&bytes)?)?;
         Ok((bytes, document))
     };
     read().with_context(|| format!("cannot parse TOML header {}", header.display()))
@@ -123,14 +150,14 @@ const HEADER_LABELS: [(usize, &str); 3] = [
     (4, "CSF(s):"),
 ];
 
-fn header_orbitals(core: &[&str], peel: &[&str]) -> Result<Vec<(i32, i32)>> {
+fn header_orbitals(core: &[&str], peel: &[&str]) -> Result<Vec<Orbital>> {
     let orbitals = core
         .iter()
         .chain(peel)
         .map(|s| parse_orbital_label(s))
         .collect::<Result<Vec<_>>>()?;
     ensure!(!orbitals.is_empty(), "empty orbital table");
-    let unique: std::collections::HashSet<_> = orbitals.iter().copied().collect();
+    let unique: HashSet<_> = orbitals.iter().copied().collect();
     ensure!(
         unique.len() == orbitals.len(),
         "duplicate orbital across core/peel lists"
@@ -140,7 +167,7 @@ fn header_orbitals(core: &[&str], peel: &[&str]) -> Result<Vec<(i32, i32)>> {
 
 #[cfg(feature = "descriptor-ffi")]
 pub(crate) struct RadialHeader {
-    pub orbitals: Vec<(i32, i32)>,
+    pub orbitals: Vec<Orbital>,
     pub core_count: usize,
     pub electron_count: i32,
 }
@@ -276,7 +303,10 @@ impl DescriptorReader {
                 "invalid indexed symmetry"
             );
             block_starts.push(start);
-            block_symmetries.push((two_j, parity));
+            block_symmetries.push(BlockSymmetry {
+                total_two_j: two_j,
+                parity,
+            });
             total = total.checked_add(length).context("row count overflow")?;
         }
         for (section, key, expected) in [
@@ -357,25 +387,21 @@ impl DescriptorReader {
         let electron_count = declared_electrons(info)?;
         file.rewind()?;
         let mut file_digest = Sha256::new();
-        std::io::copy(&mut file, &mut file_digest)?;
+        io::copy(&mut file, &mut file_digest)?;
         ensure!(
             format!("{:x}", file_digest.finalize()) == expected,
             "descriptor_sha256 does not match the final Parquet file"
         );
         file.rewind()?;
-        let mut row_group_offsets = vec![0u64];
+        let mut row_group_offsets = vec![0];
+        let mut end = 0u64;
         for group in builder.metadata().row_groups() {
-            let end = row_group_offsets
-                .last()
-                .unwrap()
+            end = end
                 .checked_add(u64::try_from(group.num_rows())?)
                 .context("row group count overflow")?;
             row_group_offsets.push(end);
         }
-        ensure!(
-            row_group_offsets.last() == Some(&total),
-            "row group count mismatch"
-        );
+        ensure!(end == total, "row group count mismatch");
         Ok(Self {
             reader: None,
             file,
@@ -403,6 +429,60 @@ impl DescriptorReader {
         })
     }
 
+    /// Verified Parquet SHA-256 digest as lowercase ASCII hex.
+    #[must_use]
+    pub fn basis_id(&self) -> &[u8; 64] {
+        &self.basis_id
+    }
+
+    /// Original GRASP text header in file order.
+    #[must_use]
+    pub fn header_lines(&self) -> &[String; 5] {
+        &self.header_lines
+    }
+
+    /// Number of rows in each explicit block, in descriptor order.
+    #[must_use]
+    pub fn block_lengths(&self) -> &[u64] {
+        &self.block_lengths
+    }
+
+    /// Number of zero-order rows at the start of each block, if recorded.
+    #[must_use]
+    pub fn zero_order_counts(&self) -> Option<&[i64]> {
+        self.zero_order_counts.as_deref()
+    }
+
+    /// Channel layout for every row in this stream.
+    #[must_use]
+    pub fn layout(&self) -> DescriptorLayout {
+        self.layout
+    }
+
+    /// Number of closed-core entries at the start of the orbital table.
+    #[must_use]
+    pub fn core_count(&self) -> usize {
+        self.core_count
+    }
+
+    /// Relativistic orbitals in header order, with the core followed by the peel.
+    #[must_use]
+    pub fn orbitals(&self) -> &[Orbital] {
+        &self.orbitals
+    }
+
+    /// Total angular momentum and parity in explicit block order.
+    #[must_use]
+    pub fn block_symmetries(&self) -> &[BlockSymmetry] {
+        &self.block_symmetries
+    }
+
+    /// Total electrons in each CSF, including the closed core.
+    #[must_use]
+    pub fn electron_count(&self) -> i32 {
+        self.electron_count
+    }
+
     /// Whole-basis angular programs need this decision before creating MCP files.
     /// Check only high-j shells whose occupation statistics overlap the unsupported range.
     pub fn check_spin_angular(&mut self) -> Result<()> {
@@ -410,7 +490,14 @@ impl DescriptorReader {
         use parquet::file::statistics::Statistics;
 
         let metadata = self.metadata.metadata();
-        for (shell, &(n, kappa)) in self.orbitals[self.core_count..].iter().enumerate() {
+        for (
+            shell,
+            &Orbital {
+                principal_quantum_number: n,
+                kappa,
+            },
+        ) in self.orbitals[self.core_count..].iter().enumerate()
+        {
             let capacity = 2 * kappa.abs();
             if capacity < 10 {
                 continue;
@@ -477,6 +564,7 @@ impl DescriptorReader {
         Ok(())
     }
 
+    /// Seek to the start of a zero-based explicit block and limit reads to that block.
     pub fn select_block(&mut self, index: usize) -> Result<()> {
         ensure!(!self.failed, "reader failed; close and reopen it");
         let &start = self
@@ -514,17 +602,17 @@ impl DescriptorReader {
         ensure!(!self.failed, "reader failed; close and reopen it");
         self.failed = true;
         // The sequential C/Rust API still starts at row zero if no block was selected.
-        if self.reader.is_none() {
-            self.reader = Some(
+        let reader = match &mut self.reader {
+            Some(reader) => reader,
+            empty @ None => empty.insert(
                 ParquetRecordBatchReaderBuilder::new_with_metadata(
                     self.file.try_clone()?,
                     self.metadata.clone(),
                 )
                 .with_batch_size(self.batch_size)
                 .build()?,
-            );
-        }
-        let reader = self.reader.as_mut().expect("initialized descriptor reader");
+            ),
+        };
         let batch = loop {
             let Some(batch) = reader.next() else {
                 ensure!(self.remaining == 0, "premature end of descriptors");
@@ -592,7 +680,10 @@ impl DescriptorReader {
         let (peel, globals) = row.split_at(row.len() - 2);
         let total_two_j = decode_angular(globals[0])?;
         let parity = i32::from(globals[1]);
-        let symmetry = (total_two_j, parity);
+        let symmetry = BlockSymmetry {
+            total_two_j,
+            parity,
+        };
         ensure!(matches!(parity, 1 | -1), "invalid parity code");
         ensure!(
             self.block_symmetries[self.block_index] == symmetry,
@@ -600,19 +691,26 @@ impl DescriptorReader {
         );
         if peel.is_empty() {
             ensure!(
-                self.block_lengths == [1] && symmetry == (0, 1),
+                self.block_lengths == [1] && total_two_j == 0 && parity == 1,
                 "invalid closed-core basis"
             );
         }
         let mut electrons: i32 = self.orbitals[..self.core_count]
             .iter()
-            .map(|(_, k)| 2 * k.abs())
+            .map(|orbital| 2 * orbital.kappa.abs())
             .sum();
         let mut parity_exponent = 0;
         let mut previous_two_k = 0;
         let (subshell_rows, remainder) = peel.as_chunks::<CHANNELS_PER_SUBSHELL>();
         debug_assert!(remainder.is_empty());
-        for (channels, &(n, kappa)) in subshell_rows.iter().zip(&self.orbitals[self.core_count..]) {
+        for (
+            channels,
+            &Orbital {
+                principal_quantum_number: n,
+                kappa,
+            },
+        ) in subshell_rows.iter().zip(&self.orbitals[self.core_count..])
+        {
             let (occupation, seniority) = (i32::from(channels[0]), i32::from(channels[1]));
             let validate_shell = || -> Result<_> {
                 let two_j = decode_angular(channels[2])?;
@@ -730,7 +828,7 @@ static SUBSHELL_TERMS: LazyLock<Vec<Vec<ProjectionCounts>>> = LazyLock::new(|| {
                 .map(|projections| {
                     projections[PROJECTION_ORIGIN..PROJECTION_ORIGIN + PROJECTION_COUNT]
                         .try_into()
-                        .unwrap()
+                        .expect("projection slice has PROJECTION_COUNT entries")
                 })
                 .collect()
         })
