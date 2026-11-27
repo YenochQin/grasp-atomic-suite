@@ -72,6 +72,7 @@
 
 | 文档 | 范围与状态 |
 | --- | --- |
+| [Suite 生成文件的命名、结构与读写关系](reviews/evidence-0033-output-file-formats.md) | 核对 25 个应用目标的输出，详列双正交轨道、混合系数、角缓存和重启文件，以及命名迁移建议。 |
 | [辐射跃迁的选择定则、弱线与相位](reviews/evidence-0028-radiative-transition-lines.md) | 单电子 E1/M1、禁戒和相消弱线、能差与相位，以及 Ni I 九根的 M1/E2 谱线。 |
 | [Landé 因子与混合态身份](reviews/evidence-0029-lande-g-factors.md) | 三个单电子 LS 态、Ni I 九根的 MCDHF 与固定轨道 CI 匹配，以及两个算符在各 rank 的局部矩阵元和归约。 |
 | [同位素质量位移、场位移和两态差](reviews/evidence-0031-isotope-shifts.md) | 单电子解析对照，Ni I 九根 MCDHF 与 CI 的逐线核对，以及角缓存身份、交换同位素和截断报告回归。 |
